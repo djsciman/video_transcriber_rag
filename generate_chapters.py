@@ -925,7 +925,7 @@ def main():
         auto, auto_rows = auto_from_video(args.video, args.hue, args.sat, args.val)
 
     if mode == "auto":
-        found = find_color_frames.scan_auto(auto_rows, args.gap)
+        found = find_color_frames.walk_starts(auto_rows, args.gap, 2)
     elif mode == "dark":
         found = find_color_frames.scan_dark_saturated(
             args.video,
@@ -944,7 +944,7 @@ def main():
         )
         if mode == "dark":
             print(
-                "no color matches; scanning for pixels with "
+                "no color matches; using dark-saturated pixels with "
                 f"saturation > {find_color_frames.DARK_SAT_MIN:.2f} and "
                 f"value < {find_color_frames.DARK_VAL_MAX:.2f}",
                 file=sys.stderr,

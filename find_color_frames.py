@@ -635,16 +635,6 @@ def auto_match(frame, spec):
     return matched, best
 
 
-def scan_auto(rows, gap):
-    """Return [(timestamp, share), ...] from scored sample rows.
-
-    `rows` are (timestamp, matched, share), including samples that did not
-    match. Two adjacent matches open a chapter at the first sample. This
-    does not open the video.
-    """
-    return walk_starts(rows, gap, 2)
-
-
 def iter_pixel(video, x, y):
     ffmpeg = shutil.which("ffmpeg")
     if ffmpeg is None:
