@@ -443,8 +443,10 @@
     <p class="meta">
       Topic <strong>gi half guard</strong>.
       Citation steps are bullet lists: your body part, the action, the opponent body part.
-      Gi vs no-gi is framed as a difference to explain, not a winner to pick.
-      Same-ruleset winner/loser would wait for two gi methods.
+      <strong>Inside</strong> means toward the primary connection of the two bodies (in half guard, the entangled legs).
+      <strong>Outside</strong> is the opposite side.
+      Example: your inside arm shoots the underhook under their inside arm; your outside arm blocks their outside arm from the crossface.
+      Gi vs no-gi is a difference to explain, not a winner to pick.
     </p>
   </header>
 
@@ -452,9 +454,8 @@
     <details open>
       <summary>What changed in this pass</summary>
       <p>
-        Other-ruleset block asks <em>why</em> the gi and no-gi paths differ.
-        Each citation is steps, not a paragraph.
-        Layouts A/B/C remain for the next review.
+        Inside/outside now follow connection-relative language, not near/far shorthand.
+        Move titles still use the instructors’ names (Knee Lever verified in speech).
       </p>
     </details>
   </div>
@@ -487,13 +488,13 @@
         ruleset: "gi",
         otherRuleset: false,
         steps: [
-          { you: "outside foot", action: "place next to", against: "their outside knee" },
-          { you: "toes", action: "cross and pinch around", against: "their outside hip" },
-          { you: "hand", action: "put inside", against: "their armpit" },
-          { you: "knees", action: "pinch together", against: null },
-          { you: "hips", action: "lift slightly and rotate to the outside", against: null },
+          { you: "inside foot", action: "place next to", against: "their inside knee" },
+          { you: "inside toes", action: "cross and pinch around", against: "their inside hip" },
+          { you: "inside hand", action: "put into", against: "their inside armpit" },
+          { you: "knees", action: "pinch together around the inside connection", against: null },
+          { you: "hips", action: "lift slightly and rotate toward the outside", against: null },
           { you: "their hands", action: "force them to base on", against: "the mat" },
-          { you: "inside arm", action: "turn into an underhook as they return", against: "their torso" },
+          { you: "inside arm", action: "turn into an underhook under", against: "their inside arm" },
         ],
       },
       {
@@ -510,11 +511,12 @@
         ruleset: "gi",
         otherRuleset: false,
         steps: [
-          { you: "inside underhook arm", action: "wrap around", against: "their waist" },
+          { you: "inside arm", action: "wrap the tight waist around", against: "their waist" },
+          { you: "outside arm", action: "block", against: "their outside arm" },
           { you: "body", action: "get off the flat back onto the outside hip", against: null },
           { you: "outside hand or elbow", action: "post up so they cannot flatten you", against: "the mat" },
-          { you: "head", action: "keep the inside position", against: "their torso" },
-          { you: "inside hooking leg", action: "keep locked while the hips stay mobile under", against: "their hips" },
+          { you: "head", action: "keep the inside position against", against: "their torso" },
+          { you: "inside leg", action: "keep the hook while the hips stay mobile under", against: "their inside leg" },
         ],
       },
       {
@@ -531,10 +533,10 @@
         ruleset: "gi",
         otherRuleset: false,
         steps: [
-          { you: "inside tight waist + inside hook", action: "hold as the home system", against: "their waist and inside leg" },
+          { you: "inside arm + inside leg", action: "hold tight waist and hook as the home system", against: "their waist and inside leg" },
           { you: "outside base hand", action: "come up and capture", against: "their outside ankle or knee" },
-          { you: "whole body", action: "roll through to the outside when the far-leg path is blocked", against: "their center of gravity" },
-          { you: "inside underhook and head", action: "take the back when they defend the roll", against: "their back" },
+          { you: "whole body", action: "roll through toward the outside when that path is blocked", against: "their center of gravity" },
+          { you: "inside arm and head", action: "take the back when they defend the roll", against: "their back" },
         ],
       },
       {
@@ -552,10 +554,10 @@
         otherRuleset: false,
         steps: [
           { you: "inside knee block + inside tight waist", action: "get under", against: "their center of gravity" },
-          { you: "hand", action: "reach inside for", against: "their outside knee or pant grip" },
-          { you: "head", action: "keep the inside position", against: "their torso" },
-          { you: "whole body", action: "roll them through to the outside", against: "their posted base" },
-          { you: "pant grip", action: "lock the outside leg when the whizzer is strong", against: "their outside pant leg" },
+          { you: "inside hand", action: "reach for the inside grip on", against: "their outside knee or pant grip" },
+          { you: "head", action: "keep the inside position against", against: "their torso" },
+          { you: "whole body", action: "roll them through toward the outside", against: "their posted base" },
+          { you: "pant grip", action: "lock their outside leg when the whizzer is strong", against: "their outside pant leg" },
         ],
       },
       {
@@ -572,12 +574,13 @@
         ruleset: "no-gi",
         otherRuleset: true,
         steps: [
-          { you: "torso", action: "sit up until your outside shoulder meets", against: "their near shoulder" },
-          { you: "reaching arm", action: "do not hunt the underhook from flat toward", against: "their far armpit" },
-          { you: "body line", action: "stay square on the inside line so they cannot cross and squash", against: "your underhook arm" },
-          { you: "hips", action: "bump forward and scoot down around the outside corner", against: "their near hip" },
-          { you: "inside shin edge", action: "kick toward the roof just below", against: "their outside knee" },
-          { you: "underhook arm", action: "secure around the outside of", against: "their hip" },
+          { you: "torso", action: "sit up until your inside shoulder meets", against: "their inside shoulder" },
+          { you: "inside arm", action: "do not reach from flat under", against: "their inside armpit" },
+          { you: "outside arm", action: "keep them from winning the pummel with", against: "their outside arm" },
+          { you: "body line", action: "stay on the inside line so they cannot cross and squash", against: "your inside underhook" },
+          { you: "hips", action: "bump forward and scoot down around the corner toward the outside", against: "their inside hip" },
+          { you: "inside shin edge", action: "kick toward the roof just below", against: "their inside knee" },
+          { you: "inside arm", action: "secure the underhook around", against: "their inside hip" },
         ],
       },
       {
@@ -594,10 +597,11 @@
         ruleset: "no-gi",
         otherRuleset: true,
         steps: [
-          { you: "inside elbow and outside hand", action: "push then pull like an arm drag", against: "their posting arm" },
+          { you: "inside elbow", action: "push", against: "their posting arm" },
+          { you: "outside hand", action: "pull like an arm drag", against: "their posting arm" },
           { you: "inside frame", action: "remove it once their weight commits onto the midline", against: "their upper body" },
           { you: "legs", action: "curl back then extend to elevate", against: "their hips" },
-          { you: "outside hand", action: "reach mid-shin on the outside, not the knee", against: "their outside shin" },
+          { you: "outside hand", action: "reach mid-shin, not the knee, on", against: "their outside shin" },
           { you: "outside base hand + hips", action: "push and stand in the same beat", against: "the mat and their weight" },
         ],
       },
@@ -616,7 +620,7 @@
         citationId: "jd-trilemma",
         label: "Gi path · Danaher",
         claim:
-          "With the underhook, the Tight Waist Series is the home system. The Trilemma opens three paths: outside-leg come-up, Roll Through Sweeps, and back takes.",
+          "With the underhook, the Tight Waist Series is the home system. The Trilemma opens three paths: come up to capture their outside leg, Roll Through Sweeps, and back takes.",
       },
       sideB: {
         citationId: "lg-get-uh",
