@@ -12,7 +12,7 @@ The coach is the only user of the eventual application. Domain language lives in
 |--------|---------|
 | `generate_chapters.py` | Detect title-card chapter starts, OCR titles, write sidecar CSVs, optionally embed chapters into the video |
 | `find_color_frames.py` | Lower-level HSV color-frame scanner used by chapter detection (also usable alone) |
-| `batch_panoscribe.py` | Walk a video tree, transcribe with panoscribe, mirror JSON under an output root, stamp container chapters and `video_file` |
+| `batch_panoscribe.py` | Walk a video tree and complete each transcript: speech only when missing, container chapters, and `video_file` |
 
 Supporting material:
 
@@ -20,7 +20,7 @@ Supporting material:
 - `docs/adr/` — architecture decision records
 - `docs/volumes-awaiting-parse.md` — raw corpus volumes not yet curated
 - `docs/agents/` — how agents use the issue tracker, labels, and domain docs
-- `tests/` — unit tests for chapter-start detection (no ffmpeg, GPU, or panoscribe)
+- `tests/` — unit tests for chapter-start detection and batch completion (no ffmpeg, GPU, or real panoscribe)
 
 Video files and transcript JSON typically live **outside** this repo.
 
@@ -77,7 +77,7 @@ For volumes that still lack chapter markers:
 1. **Detect chapters** (writes `<stem>_chapters.csv` and `<stem>_chapternames.csv` next to the video).
 2. **Review** the CSVs (edit titles if OCR missed).
 3. **Embed** with `--apply` (stream-copy remux; close the file in VLC or other players first on Windows).
-4. **Transcribe** a directory tree with `batch_panoscribe.py` into a mirrored JSON library.
+4. **Transcribe** a directory tree with `batch_panoscribe.py` into a mirrored JSON corpus.
 
 For volumes that already have chapters in the container, skip to step 4.
 
@@ -134,34 +134,28 @@ py -3 find_color_frames.py "path\to\Volume 1.webm" 000000
 ### Batch-transcribe a video tree
 
 ```powershell
-py -3 batch_panoscribe.py "path\to\videos" "path\to\transcript-library"
+py -3 batch_panoscribe.py "path\to\videos" "path\to\transcript-corpus"
 ```
 
 Behavior:
 
 - Recursively finds `.mp4`, `.mkv`, `.avi`, `.mov`, `.webm`, `.m4v`, `.flv`, `.wmv`
 - Mirrors the folder tree under `output_dir` as `.json`
-- Calls `panoscribe transcribe` (OCR off by default)
-- Writes container chapters from ffprobe and sets `video_file` to the video’s basename (including extension)
-- Asks before overwriting existing transcripts unless you pass `--force`
-- Leaves already-present transcripts alone when you decline overwrite
+- Requests speech only when the transcript has no `segments` list (an empty list counts as finished)
+- Passes hard words from that volume’s container chapter titles as faster-whisper hotwords when speech runs
+- Copies container chapters when the stored list is missing or differs; keeps existing chapters when the container is empty
+- Writes `video_file` (basename including extension) when missing, empty, or different
+- Leaves finished volumes untouched; delete a transcript to get new speech
+- Prints created/updated/failed lines and a final Created / Updated / Unchanged / Failed summary
+- Exit status 0 when every volume succeeds or is unchanged; 1 when any volume fails
 
 Options:
 
 | Flag | Meaning |
 |------|---------|
-| `--force` | Overwrite existing transcripts without prompting |
-| `--stamp-video-file` | Only write `video_file` into existing transcripts; do not transcribe |
-| `--ocr` / `--no-ocr` | Pass OCR on/off to panoscribe (default: off) |
-| `--transcribe` / `--no-transcribe` | Enable/disable speech (default: on; `--no-transcribe` skips the file) |
+| `--ocr` / `--no-ocr` | On-screen OCR for speech requests only (default: off) |
 
-Example stamp-only pass:
-
-```powershell
-py -3 batch_panoscribe.py "path\to\videos" "path\to\transcript-library" --stamp-video-file
-```
-
-On Windows, paths of 260+ characters are opened with the `\\?\` extended-length prefix so long mirrored library paths still work when Long Paths are disabled.
+On Windows, paths of 260+ characters are opened with the `\\?\` extended-length prefix so long mirrored corpus paths still work when Long Paths are disabled.
 
 ## Project layout
 
