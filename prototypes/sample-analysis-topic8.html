@@ -12,7 +12,6 @@
       --muted: #57534e;
       --line: #d6d3d1;
       --accent: #9a3412;
-      --accent-soft: #ffedd5;
       --ok: #14532d;
       --ok-soft: #dcfce7;
       --warn: #854d0e;
@@ -79,10 +78,7 @@
       padding: .75rem 1rem;
       box-shadow: var(--shadow);
     }
-    .question summary {
-      cursor: pointer;
-      font-weight: 600;
-    }
+    .question summary { cursor: pointer; font-weight: 600; }
     .question p { margin: .6rem 0 0; color: var(--muted); font-size: .92rem; max-width: 70ch; }
     #app { max-width: 1100px; margin: 1rem auto; padding: 0 1.25rem; }
     .pill {
@@ -97,6 +93,7 @@
       text-transform: uppercase;
     }
     .pill-gi { background: var(--ok-soft); color: var(--ok); }
+    .pill-nogi { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
     .pill-other { background: var(--other-soft); color: var(--other); }
     .pill-disagree { background: var(--disagree-soft); color: var(--disagree); }
     .pill-caveat { background: var(--warn-soft); color: var(--warn); }
@@ -168,7 +165,6 @@
       font-size: .72rem;
     }
 
-    /* —— Variant A: Briefing memo —— */
     .A .memo {
       background: var(--paper);
       border: 1px solid var(--line);
@@ -249,7 +245,6 @@
       font-size: .92rem;
     }
 
-    /* —— Variant B: Citation gallery —— */
     .B .topic-bar {
       display: flex;
       flex-wrap: wrap;
@@ -259,9 +254,8 @@
     }
     .B .topic-bar h2 {
       font-family: var(--serif);
-      margin: 0;
+      margin: 0 0.4rem 0 0;
       font-size: 1.5rem;
-      margin-right: .4rem;
     }
     .B .grid {
       display: grid;
@@ -310,7 +304,6 @@
       font-size: .9rem;
     }
 
-    /* —— Variant C: Decide-first —— */
     .C .stage {
       display: grid;
       grid-template-columns: 1.2fr .8fr;
@@ -357,11 +350,7 @@
     .C .choice h3 { margin: 0 0 .35rem; font-size: 1rem; }
     .C .choice p { margin: 0; font-size: .9rem; }
     .C .choice .src { margin-top: .55rem; font-size: .8rem; color: var(--muted); }
-    .C .rail {
-      display: flex;
-      flex-direction: column;
-      gap: .75rem;
-    }
+    .C .rail { display: flex; flex-direction: column; gap: .75rem; }
     .C .rail section {
       background: var(--paper);
       border: 1px solid var(--line);
@@ -397,7 +386,6 @@
       padding: .85rem 1rem;
       white-space: pre-wrap;
     }
-    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -412,19 +400,20 @@
     <h1>Advisor analysis · before the system</h1>
     <p class="meta">
       Three layouts of the same rough analysis for topic
-      <strong>gi butterfly</strong>.
+      <strong>gi half guard</strong>.
       Cleaned statements are stand-ins written from speech the way a coach-accepted citation would read.
       Playback links show the volume file and the showing’s speech start; they do not open a player in this prototype.
+      Danaher S01E04 has no <code>video_file</code> stamped yet; the pointer still names the volume and timestamp.
     </p>
   </header>
 
   <div class="question">
-    <details>
-      <summary>What to react to</summary>
+    <details open>
+      <summary>Content change from the butterfly draft</summary>
       <p>
-        Look at hierarchy, disagreement, and the other-ruleset caveat.
-        Steal pieces across variants.
-        Do not judge class structure: this ticket stops before cutting the topic into classes.
+        Disagreement now compares John Danaher (gi · Half Guard BJJ Fundamentals) with Lachlan Giles (no-gi · Half Guard Anthology) on what to do once the underhook is the goal.
+        Giles enters as an other-ruleset instructional with a caveat.
+        React to that disagreement and caveat first; then pick a layout (A or B preferred).
       </p>
     </details>
   </div>
@@ -439,119 +428,140 @@
   </div>
 
   <script>
-    // PROTOTYPE DATA — stand-in curated citations for one topic analysis
     const TOPIC = {
-      name: "butterfly",
+      name: "half guard",
       ruleset: "gi",
-      label: "gi butterfly",
+      label: "gi half guard",
     };
 
     const citations = [
       {
-        id: "w1-basic",
-        instructor: "Adam Wardzinski",
-        instructional: "Butterfly Guard Re-Discovered",
-        volume: "Volume 1",
-        videoFile: "Butterfly Guard Re-Discovered by Adam Wardzinski - S01E01 - Volume 1.mp4",
-        chapter: "Basic Butterfly Guard Sweep",
-        chapterRaw: "00 00 - Basic Butterfly Guard Sweep",
-        movement: "basic butterfly sweep with belt underhook",
-        speechStart: 3.57,
+        id: "jd-get-uh",
+        instructor: "John Danaher",
+        instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
+        volume: "Underhooks and Roll Through Sweep",
+        videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
+        videoFileKnown: false,
+        chapter: "Getting to Underhooks",
+        chapterRaw: "Getting to Underhooks",
+        movement: "get the underhook from half guard bottom",
+        speechStart: 5.26,
         ruleset: "gi",
         otherRuleset: false,
         statement:
-          "Approach with the hips twisted outside. Shrug the shoulder deep under the armpit and grip the belt. Stay on that underhook side so the opponent cannot put an arm over or take a guillotine. Close the distance, go to the side rather than flat on the back, lift with the top hook, use the bottom leg as a lever from the mat, and finish the sweep.",
+          "When the opponent has dominant upper-body grips from half guard top, use a knee lever: put the near foot next to their knee, place the hand inside their armpit, pinch the knees, lift the hips slightly, and rotate so they base with the hands. As they return, that arm becomes your underhook and you can start attacking from bottom.",
       },
       {
-        id: "w1-post",
-        instructor: "Adam Wardzinski",
-        instructional: "Butterfly Guard Re-Discovered",
-        volume: "Volume 1",
-        videoFile: "Butterfly Guard Re-Discovered by Adam Wardzinski - S01E01 - Volume 1.mp4",
-        chapter: "Removing The Post Into Butterfly Sweep",
-        chapterRaw: "05 35 - Removing The Post Into Butterfly Sweep",
-        movement: "remove the post into butterfly sweep",
-        speechStart: 353.97,
+        id: "jd-tight-waist",
+        instructor: "John Danaher",
+        instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
+        volume: "Underhooks and Roll Through Sweep",
+        videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
+        videoFileKnown: false,
+        chapter: "Winning From Underhooks - The Tight Waist Series",
+        chapterRaw: "Winning From UnderhookS - The Tight Waist Series",
+        movement: "tight waist from half guard underhook",
+        speechStart: 460.91,
         ruleset: "gi",
         otherRuleset: false,
         statement:
-          "When the opponent posts after the belt underhook, bend that posting arm inside rather than pulling it. Keep the same sweep: go to the side and lift. If they grip the pants, stretch the inside leg while going to the side, add a sleeve grip, bend the bottom leg to ninety degrees for the lever, and finish.",
+          "With the underhook, get off the back onto the side and up to a hand or elbow so the opponent cannot flatten you. The tight waist is the arm around the waist (classically a wrestling seat-belt style grip on the waist). From that home position you keep mobility under their body and start the attacking series.",
       },
       {
-        id: "w1-kneeslice",
-        instructor: "Adam Wardzinski",
-        instructional: "Butterfly Guard Re-Discovered",
-        volume: "Volume 1",
-        videoFile: "Butterfly Guard Re-Discovered by Adam Wardzinski - S01E01 - Volume 1.mp4",
-        chapter: "Butterfly Sweep To Knee Slice",
-        chapterRaw: "12 34 - Butterfly Sweep To Knee Slice",
-        movement: "butterfly sweep to knee slice",
-        speechStart: 784.11,
+        id: "jd-trilemma",
+        instructor: "John Danaher",
+        instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
+        volume: "Underhooks and Roll Through Sweep",
+        videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
+        videoFileKnown: false,
+        chapter: "Fundamental Reason Why the Tight Waist Series is Most effective half guar position - The Trilemma",
+        chapterRaw: "Fundamental Reason Why the Tight Waist Series is Most effective half guar position - The Trilemma",
+        movement: "tight waist trilemma",
+        speechStart: 924.42,
         ruleset: "gi",
         otherRuleset: false,
         statement:
-          "After the sweep, keep the foot inside and leave only the foot for the opponent. Do not put the leg outside into a free half guard. From there knee-slice: pull the arm up and slide, or flatten the near shoulder and take side control.",
+          "When you hold dominant underhook grips, the tight waist series is the most effective half-guard attacking home. It creates a trilemma: come up to a base and capture the far leg; roll through; or take the back. As the opponent stops one path, another opens.",
       },
       {
-        id: "w3-mechanic",
-        instructor: "Adam Wardzinski",
-        instructional: "Butterfly Guard Rediscovered 3.0",
-        volume: "Volume 1",
-        videoFile: "Butterfly Guard Rediscovered 3.0 by Adam Wardzinski - S01E01 - Volume 1.mp4",
-        chapter: "Side Butterfly Guard - Basic Butterfly Guard Sweep Mechanic",
-        chapterRaw: "Side Butterfly Guard - Basic Butterfly Guard Sweep Mechanic",
-        movement: "basic butterfly sweep mechanic",
-        speechStart: 12.94,
+        id: "jd-roll",
+        instructor: "John Danaher",
+        instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
+        volume: "Underhooks and Roll Through Sweep",
+        videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
+        videoFileKnown: false,
+        chapter: "Roll Through Sweeps",
+        chapterRaw: "Roll Through Sweeps",
+        movement: "roll-through sweep from tight waist",
+        speechStart: 1344.85,
         ruleset: "gi",
         otherRuleset: false,
         statement:
-          "Keep one whole leg on the mat and the other on the foot, with the knee open away from the opponent’s center line. Put the hips outside past the opponent’s leg line. Control under the armpit or on the hip on that same side. Fall on the side, never flat on the back. Twist the far shoulder toward the mat as you lift.",
+          "From knee block, tight waist, hand posted, and head inside, get under their center of gravity. Reach the inside knee or pant grip, then roll them through. A strong whizzer is their main insurance; when the whizzer is light, go to the far leg and put them down. Gi pants grips lock the far leg for the roll.",
       },
       {
-        id: "mg-process",
-        instructor: "Marcelo Garcia",
-        instructional: "Butterfly",
-        volume: "Volume 1",
-        videoFile: "Butterfly by Marcelo Garcia - S01E01 - Volume 1.mp4",
-        chapter: "BUTTERFLY SWEEP PROCESS",
-        chapterRaw: "BUTTERFLY SWEEP PROCESS",
-        movement: "butterfly sweep with underhook",
-        speechStart: 1069.46,
+        id: "lg-get-uh",
+        instructor: "Lachlan Giles",
+        instructional: "Half Guard Anthology",
+        volume: "Volume 3",
+        videoFile: "Half Guard Anthology by Lachlan Giles - S01E03 - Volume 3.mp4",
+        videoFileKnown: true,
+        chapter: "ATTACKS: GETTING THE UNDERHOOK",
+        chapterRaw: "ATTACKS: GETTING THE UNDERHOOK",
+        movement: "get the underhook from knee shield",
+        speechStart: 516.56,
         ruleset: "no-gi",
         otherRuleset: true,
         statement:
-          "Close distance with a deep underhook that goes higher and farther, elbow up. Push the opponent’s elbow in; do not pull it. Bring the hips close to the heels, scoop and lift while turning onto the shoulder and side, not onto a flat back. Keep the lifting knee pointed out. Landing in half guard is acceptable when top is held.",
+          "From knee shield, the underhook switch is a high-percentage attack. Do not reach for the underhook from flat; that leaves a gap and they pummel through. Sit up until your shoulder connects to theirs, stay in line rather than letting them cross your body, bump forward as you scoot down around the corner, and use only the edge of the shin so they cannot squash the lift.",
+      },
+      {
+        id: "lg-overhead",
+        instructor: "Lachlan Giles",
+        instructional: "Half Guard Anthology",
+        volume: "Volume 3",
+        videoFile: "Half Guard Anthology by Lachlan Giles - S01E03 - Volume 3.mp4",
+        videoFileKnown: true,
+        chapter: "ATTACKS: OVERHEAD AND MODIFIED X SWEEP",
+        chapterRaw: "ATTACKS: OVERHEAD AND MODIFIED X SWEEP",
+        movement: "overhead and modified X sweep from underhook",
+        speechStart: 954.16,
+        ruleset: "no-gi",
+        otherRuleset: true,
+        statement:
+          "Once you have the underhook path, make them over-commit, remove the frame so their weight comes onto you on the midline, and pull like an arm drag while curling the legs back then extending to elevate. Reach mid-shin rather than the knee so they cannot step back. Push and stand in the same beat; a delayed stand lets them drive back in.",
       },
     ];
 
     const disagreement = {
-      about: "Where the sweep should land",
+      about: "What the underhook is for in half guard bottom",
       sideA: {
-        citationId: "w1-kneeslice",
+        citationId: "jd-trilemma",
         claim:
-          "Keep the foot inside after the sweep and knee-slice. A free half guard lets the bottom person recover hard.",
+          "With the underhook, the tight waist is the home system. Build a trilemma: far-leg come-up, roll-through, and back takes. Stopping one path opens another.",
       },
       sideB: {
-        citationId: "mg-process",
+        citationId: "lg-get-uh",
         claim:
-          "Landing in half guard is fine when top is held. Holding top matters more than the exact pass shape.",
+          "Win the underhook by sitting up to the shoulder; do not reach from flat. Once you have it, the high-percentage path is underhook-switch into overhead / modified X and related attacks, not camping a tight-waist seatbelt as the home system.",
       },
     };
 
     const caveat = {
-      onCitationId: "mg-process",
-      instructional: "Butterfly by Marcelo Garcia",
+      onCitationId: "lg-get-uh",
+      instructional: "Half Guard Anthology by Lachlan Giles",
       mayTransfer: [
-        "Deep underhook path (higher and farther)",
-        "Push the elbow in to stop the underhook being beaten",
-        "Hips close to heels before the lift",
-        "Fall on the side or shoulder, not a flat back",
-        "Keep the lifting knee pointed out",
+        "Sit up until the shoulders meet before hunting the underhook",
+        "Stay in line so they cannot squash a reaching underhook",
+        "Bump and scoot around the corner to secure the underhook",
+        "Overhead / modified X elevation once their weight is committed on the midline",
       ],
       dependsOnOtherTools: [
-        "The whole sweep is built without belt, collar, or sleeve; those are the gi tools this topic already uses",
-        "Elbow-in is the main way Marcelo stops the underhook being beaten; Wardzinski also secures with the belt grip",
+        "No pant or lapel grips for the far-leg lock Danaher uses on the roll-through",
+        "The series is taught as no-gi half guard; jacket frames and lapel single-legs from the gi instructional are absent",
       ],
+      paragraph:
+        "Giles’s sit-up underhook and overhead / modified X path may transfer into gi half guard. The roll-through far-leg lock Danaher builds with pant grips, and the jacket frames in the gi instructional, are tools this no-gi series does not share.",
     };
 
     function fmtTime(sec) {
@@ -559,10 +569,6 @@
       const m = Math.floor(s / 60);
       const r = s % 60;
       return m + ":" + String(r).padStart(2, "0");
-    }
-
-    function playbackPath(c) {
-      return c.videoFile + " @ " + fmtTime(c.speechStart) + " (speech start " + c.speechStart.toFixed(2) + "s)";
     }
 
     function byId(id) {
@@ -573,12 +579,20 @@
       const el = document.getElementById("toast");
       el.textContent =
         "Playback (prototype)\n" +
-        playbackPath(c) +
-        "\nchapter: " + c.chapterRaw +
+        c.videoFile +
+        " @ " +
+        fmtTime(c.speechStart) +
+        " (speech start " +
+        c.speechStart.toFixed(2) +
+        "s)\nchapter: " +
+        c.chapterRaw +
+        (c.videoFileKnown
+          ? ""
+          : "\nnote: transcript has no video_file yet; volume name still identifies the recording") +
         "\nOpens the volume video at this showing’s speech start when a player is wired.";
       el.classList.add("show");
       clearTimeout(showPlayback._t);
-      showPlayback._t = setTimeout(() => el.classList.remove("show"), 5000);
+      showPlayback._t = setTimeout(() => el.classList.remove("show"), 6000);
     }
 
     function playLink(c) {
@@ -591,7 +605,32 @@
       );
     }
 
-    // —— Variant A ——
+    function rulesetPill(c) {
+      if (c.otherRuleset) return '<span class="pill pill-other">other-ruleset · no-gi</span>';
+      return '<span class="pill pill-gi">gi</span>';
+    }
+
+    function caveatBlock(split) {
+      if (!split) {
+        return (
+          '<div class="caveat-box"><span class="pill pill-caveat">caveat</span> ' +
+          caveat.paragraph +
+          "</div>"
+        );
+      }
+      return (
+        '<div class="caveat-box"><span class="pill pill-caveat">caveat</span> ' +
+        "<strong>What may transfer / what depends on no-gi tools</strong>" +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.5rem">' +
+        "<div><em>May transfer</em><ul>" +
+        caveat.mayTransfer.map((x) => "<li>" + x + "</li>").join("") +
+        "</ul></div>" +
+        "<div><em>Depends on tools this gi topic does not share</em><ul>" +
+        caveat.dependsOnOtherTools.map((x) => "<li>" + x + "</li>").join("") +
+        "</ul></div></div></div>"
+      );
+    }
+
     function renderA() {
       const same = citations.filter((c) => !c.otherRuleset);
       const other = citations.filter((c) => c.otherRuleset);
@@ -604,9 +643,9 @@
         TOPIC.label +
         '</h2><div style="margin-top:.35rem"><span class="pill pill-gi">gi topic</span> ' +
         '<span class="pill pill-proto">prototype stand-in citations</span></div></div>' +
-        "<div style=\"color:var(--muted);font-size:.86rem;text-align:right\">Before the coach determines the system<br/>No classes yet</div>" +
+        '<div style="color:var(--muted);font-size:.86rem;text-align:right">Before the coach determines the system<br/>No classes yet</div>' +
         "</div>" +
-        '<p class="lede">The store has matching gi citations from two Wardzinski instructionals on the basic butterfly sweep, removing the post, and landing into a knee slice. Marcelo Garcia’s no-gi Butterfly is offered as an other-ruleset instructional with a caveat. Once welcomed, it disagrees with Wardzinski on where the sweep should land.</p>' +
+        '<p class="lede">Same-ruleset citations come from Danaher’s gi half-guard underhook and tight-waist material. Giles’s no-gi Half Guard Anthology is offered as an other-ruleset instructional. Once welcomed, it disagrees with Danaher on what the underhook is for.</p>' +
         "<h3>Disagreement</h3>" +
         '<div class="disagree-box">' +
         "<div><span class=\"pill pill-disagree\">disagreement</span> <strong>" +
@@ -615,9 +654,9 @@
         '<div class="sides">' +
         '<div class="side"><strong>' +
         a.instructor +
-        "</strong><p>" +
+        " · gi</strong><p>" +
         disagreement.sideA.claim +
-        "</p><div style=\"margin-top:.45rem\">" +
+        '</p><div style="margin-top:.45rem">' +
         playLink(a) +
         " · " +
         a.chapter +
@@ -626,7 +665,7 @@
         b.instructor +
         ' <span class="pill pill-other">other-ruleset</span></strong><p>' +
         disagreement.sideB.claim +
-        "</p><div style=\"margin-top:.45rem\">" +
+        '</p><div style="margin-top:.45rem">' +
         playLink(b) +
         " · " +
         b.chapter +
@@ -638,7 +677,9 @@
             (c) =>
               "<li><div class=\"cite-head\">" +
               c.movement +
-              ' <span class="pill pill-gi">gi</span></div>' +
+              " " +
+              rulesetPill(c) +
+              "</div>" +
               '<div class="cite-meta">' +
               c.instructor +
               " · " +
@@ -660,10 +701,12 @@
         other
           .map(
             (c) =>
-              '<div style="border:1px solid #93c5fd;border-radius:10px;padding:1rem;background:#eff6ff">' +
+              '<div style="border:1px solid #93c5fd;border-radius:10px;padding:1rem;background:#eff6ff;margin-bottom:.75rem">' +
               '<div class="cite-head">' +
               c.movement +
-              ' <span class="pill pill-other">other-ruleset · no-gi instructional</span></div>' +
+              " " +
+              rulesetPill(c) +
+              "</div>" +
               '<div class="cite-meta">' +
               c.instructor +
               " · " +
@@ -678,39 +721,31 @@
               '<div class="statement" style="margin:.4rem 0 .75rem">' +
               c.statement +
               "</div>" +
-              '<div class="caveat-box"><span class="pill pill-caveat">caveat</span> ' +
-              "<strong>What may transfer / what depends on no-gi tools</strong>" +
-              "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.5rem\">" +
-              "<div><em>May transfer</em><ul>" +
-              caveat.mayTransfer.map((x) => "<li>" + x + "</li>").join("") +
-              "</ul></div>" +
-              "<div><em>Depends on tools this gi topic does not share</em><ul>" +
-              caveat.dependsOnOtherTools.map((x) => "<li>" + x + "</li>").join("") +
-              "</ul></div></div></div></div>"
+              (c.id === caveat.onCitationId ? caveatBlock(true) : "") +
+              "</div>"
           )
           .join("") +
+        '<p style="font-size:.88rem;color:var(--muted)"><strong>Caveat as one paragraph (alt):</strong> ' +
+        caveat.paragraph +
+        "</p>" +
         '<p class="next">Next step in the product: the coach determines the system from this analysis. Cutting into classes is a later ticket.</p>' +
         "</article></div>"
       );
     }
 
-    // —— Variant B ——
     function renderB() {
       const same = citations.filter((c) => !c.otherRuleset);
       const other = citations.filter((c) => c.otherRuleset);
       const a = byId(disagreement.sideA.citationId);
       const b = byId(disagreement.sideB.citationId);
 
-      function card(c, extraClass) {
+      function card(c) {
         return (
-          '<article class="card ' +
-          (extraClass || "") +
+          '<article class="card' +
           (c.otherRuleset ? " other" : "") +
           '">' +
           '<div style="display:flex;gap:.35rem;flex-wrap:wrap">' +
-          (c.otherRuleset
-            ? '<span class="pill pill-other">other-ruleset</span>'
-            : '<span class="pill pill-gi">gi</span>') +
+          rulesetPill(c) +
           "</div>" +
           '<div class="who">' +
           c.instructor +
@@ -724,7 +759,7 @@
           " · " +
           playLink(c) +
           "</div>" +
-          "<div style=\"font-weight:650;font-size:.86rem\">" +
+          '<div style="font-weight:650;font-size:.86rem">' +
           c.movement +
           "</div>" +
           '<div class="statement">' +
@@ -738,50 +773,52 @@
         '<div class="B">' +
         '<div class="topic-bar"><h2>' +
         TOPIC.label +
-        '</h2><span class="pill pill-gi">gi</span><span class="pill pill-disagree">1 disagreement</span><span class="pill pill-other">1 other-ruleset</span><span class="pill pill-proto">prototype</span></div>' +
+        '</h2><span class="pill pill-gi">gi</span><span class="pill pill-disagree">1 disagreement</span><span class="pill pill-other">other-ruleset · Giles</span><span class="pill pill-proto">prototype</span></div>' +
         '<div class="pair"><div class="pair-label"><span class="pill pill-disagree">disagreement</span> ' +
         disagreement.about +
-        "</div><div class=\"grid\">" +
+        '</div><div class="grid">' +
         card(a) +
         card(b) +
         "</div>" +
-        '<p style="margin:.65rem 0 0;font-size:.9rem"><strong>Wardzinski:</strong> ' +
+        '<p style="margin:.65rem 0 0;font-size:.9rem"><strong>Danaher:</strong> ' +
         disagreement.sideA.claim +
-        " <strong>Marcelo (other-ruleset):</strong> " +
+        " <strong>Giles (other-ruleset):</strong> " +
         disagreement.sideB.claim +
         "</p></div>" +
-        "<h3 style=\"margin:0 0 .55rem;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)\">Same-ruleset citations</h3>" +
+        '<h3 style="margin:0 0 .55rem;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Same-ruleset citations</h3>' +
         '<div class="grid">' +
         same.map((c) => card(c)).join("") +
         "</div>" +
-        "<h3 style=\"margin:1.1rem 0 .55rem;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)\">Other-ruleset instructional</h3>" +
+        '<h3 style="margin:1.1rem 0 .55rem;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Other-ruleset instructional</h3>' +
         '<div class="grid">' +
         other.map((c) => card(c)).join("") +
         "</div>" +
         '<div class="caveat-strip"><span class="pill pill-caveat">caveat</span> on ' +
         caveat.instructional +
-        "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.45rem\">" +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.45rem">' +
         "<div><strong>May transfer</strong><ul style=\"margin:.25rem 0 0;padding-left:1.1rem\">" +
         caveat.mayTransfer.map((x) => "<li>" + x + "</li>").join("") +
         "</ul></div>" +
         "<div><strong>Depends on no-gi tools</strong><ul style=\"margin:.25rem 0 0;padding-left:1.1rem\">" +
         caveat.dependsOnOtherTools.map((x) => "<li>" + x + "</li>").join("") +
-        "</ul></div></div></div>" +
+        "</ul></div></div>" +
+        '<p style="margin:.65rem 0 0"><em>Paragraph form:</em> ' +
+        caveat.paragraph +
+        "</p></div>" +
         "</div>"
       );
     }
 
-    // —— Variant C ——
     const cState = { choice: null };
 
     function renderC() {
-      const same = citations.filter((c) => !c.otherRuleset && c.id !== disagreement.sideA.citationId);
-      const other = byId(disagreement.sideB.citationId);
+      const same = citations.filter((c) => !c.otherRuleset);
+      const otherMain = byId(disagreement.sideB.citationId);
       const a = byId(disagreement.sideA.citationId);
       const stateText =
         "topic: " +
         TOPIC.label +
-        "\nsystem: (not determined)\nlanding_choice: " +
+        "\nsystem: (not determined)\nunderhook_job: " +
         (cState.choice || "(none)") +
         "\nother_ruleset_yes_no: yes (prototype assumes welcomed)\ncitations_shown: " +
         citations.length;
@@ -789,12 +826,12 @@
       return (
         '<div class="C"><div class="stage">' +
         '<div class="decision">' +
-        "<h2>Decide the landing</h2>" +
-        '<p class="prompt">The analysis puts the disagreement first. Supporting citations stay on the rail. The system is not written until you choose.</p>' +
+        "<h2>What is the underhook for?</h2>" +
+        '<p class="prompt">Disagreement first. Supporting citations stay on the rail. The system is not written until you choose.</p>' +
         '<div class="columns">' +
         '<div class="choice' +
-        (cState.choice === "kneeslice" ? " selected" : "") +
-        '" data-choice="kneeslice"><h3>Knee-slice finish</h3><p>' +
+        (cState.choice === "tight-waist-home" ? " selected" : "") +
+        '" data-choice="tight-waist-home"><h3>Tight waist home</h3><p>' +
         disagreement.sideA.claim +
         '</p><div class="src">' +
         a.instructor +
@@ -802,19 +839,18 @@
         playLink(a) +
         "</div></div>" +
         '<div class="choice' +
-        (cState.choice === "halfguard-ok" ? " selected" : "") +
-        '" data-choice="halfguard-ok"><h3>Half guard OK on top</h3><p>' +
+        (cState.choice === "situp-overhead" ? " selected" : "") +
+        '" data-choice="situp-overhead"><h3>Sit-up into overhead / X</h3><p>' +
         disagreement.sideB.claim +
         '</p><div class="src">' +
-        other.instructor +
+        otherMain.instructor +
         ' · <span class="pill pill-other">other-ruleset</span> · ' +
-        playLink(other) +
+        playLink(otherMain) +
         "</div></div>" +
         "</div></div>" +
         '<div class="rail">' +
         "<section><h3>Same-ruleset support</h3>" +
-        [a]
-          .concat(same)
+        same
           .map(
             (c) =>
               '<div class="mini-cite"><strong>' +
@@ -822,7 +858,7 @@
               '</strong><div class="meta">' +
               c.instructor +
               " · " +
-              c.instructional +
+              c.volume +
               " · " +
               playLink(c) +
               "</div>" +
@@ -832,23 +868,24 @@
           .join("") +
         "</section>" +
         '<section class="other-panel"><h3>Other-ruleset · caveat</h3>' +
-        '<div class="mini-cite"><strong>' +
-        other.movement +
-        '</strong><div class="meta">' +
-        other.instructor +
-        " · " +
-        other.instructional +
-        " · " +
-        playLink(other) +
-        "</div>" +
-        other.statement +
-        "</div>" +
+        citations
+          .filter((c) => c.otherRuleset)
+          .map(
+            (c) =>
+              '<div class="mini-cite"><strong>' +
+              c.movement +
+              '</strong><div class="meta">' +
+              c.instructor +
+              " · " +
+              playLink(c) +
+              "</div>" +
+              c.statement +
+              "</div>"
+          )
+          .join("") +
         '<div style="margin-top:.55rem;font-size:.86rem"><span class="pill pill-caveat">caveat</span>' +
-        "<div style=\"margin-top:.35rem\"><em>May transfer:</em> " +
-        caveat.mayTransfer.join("; ") +
-        "</div>" +
-        "<div style=\"margin-top:.35rem\"><em>Depends on no-gi tools:</em> " +
-        caveat.dependsOnOtherTools.join("; ") +
+        '<div style="margin-top:.35rem">' +
+        caveat.paragraph +
         "</div></div></section>" +
         '<div class="state-panel">' +
         stateText +
