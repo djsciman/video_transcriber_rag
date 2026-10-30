@@ -17,8 +17,8 @@ A person the coach trains. A student does not use this application.
 _Avoid_: user, athlete
 
 **Instructional**:
-A named series of teaching volumes credited to an instructor.
-_Avoid_: DVD, course, video
+A named series of teaching volumes credited to an instructor. The series is gi or no-gi as a whole.
+_Avoid_: DVD, course, video, mixed series
 
 **Volume**:
 One recording inside an instructional. One transcript file is one volume. It is raw until curation admits it to the curated store.
@@ -33,7 +33,7 @@ Names the instructor, the instructional, the volume, the chapter, and the moveme
 _Avoid_: clip, quote
 
 **Cleaned statement**:
-One statement of a movement. It keeps every detail from each time that instructor shows the movement in the chapter, with names restored to the words the instructor said. The coach accepts it before the advisor may use the citation.
+One statement of a movement, written from the speech, keeping every spoken detail from each showing in the chapter, with names restored to the words the instructor said. A detail the instructor shows and does not say stays out, and the coach accepts the statement before the advisor may use the citation.
 _Avoid_: transcript, quote
 
 **Playback link**:
@@ -53,7 +53,7 @@ The records the advisor is allowed to read. A raw volume is not among them until
 _Avoid_: database, knowledge graph, vector store
 
 **Advisor**:
-The part of the application that reads the curated store and advises the coach. The coach determines the system.
+The part of the application that reads the curated store and advises the coach. It is given that store only, the coach uses the playback link to watch the video, and the coach determines the system.
 _Avoid_: chatbot, bot, model, language model
 
 **Gi**:
@@ -65,7 +65,7 @@ Jiu-jitsu fought without the kimono. A no-gi topic is a different topic from its
 _Avoid_: nogi
 
 **Topic**:
-Gi or no-gi work the coach chooses to teach, at the grain the coach names. The coach names it because a student failed it under resistance or because the coach plans to teach it.
+Gi or no-gi work the coach chooses to teach, at the grain the coach names, because a student failed it under resistance or because the coach plans to teach it. The same ruleset and the same name, with trailing spaces removed, are one topic, and any other characters are another topic.
 _Avoid_: situation, subject, question, debate
 
 **System**:
@@ -73,19 +73,23 @@ The coach's own choice of how one topic is taught, one per topic and one unit, a
 _Avoid_: line, style, house game
 
 **System conflict**:
-An earlier system of the same ruleset that cannot be taught together with one side of a disagreement.
+An earlier system of the same ruleset that a student cannot follow together with one side of a disagreement.
 _Avoid_: debate, contradiction, line conflict
+
+**Set-aside**:
+The coach's choice that one earlier system stays off one topic until the coach shows that system on that topic again.
+_Avoid_: dismissal
 
 **Disagreement**:
 Incompatible instruction from two or more instructors on the same topic. A citation accompanies each side. The coach determines the system.
 _Avoid_: debate, conflict
 
-**Cross-ruleset chapter**:
-A chapter taught in the other ruleset that may still inform a topic, because some mechanics transfer. It keeps its own ruleset label and carries a caveat. It enters a lesson only when the coach places it there.
-_Avoid_: mixed chapter, universal technique
+**Other-ruleset variant**:
+A showing of a movement, inside an instructional of one ruleset, where the instructor briefly shows that movement for the other ruleset. The coach marks it on the citation, it carries a caveat, and it enters a lesson only when the coach places it there.
+_Avoid_: cross-ruleset chapter, mixed chapter, universal technique
 
 **Caveat**:
-The note on a cross-ruleset chapter that says what may transfer and what depends on tools the topic's ruleset does not share.
+The note that says what may transfer and what depends on tools the topic's ruleset does not share. On an other-ruleset variant, the note sits on that showing. When the coach chooses yes for an instructional of the other ruleset, the note sits on that yes, and each citation from that instructional uses it for the topic.
 _Avoid_: disclaimer, warning
 
 **Unit**:

@@ -34,8 +34,8 @@ if that share clears the same fraction. A hex scan that finds nothing
 uses that same dark-saturated test. With no --samples and no hex, one
 frame a second is scored for color concentration and dark saturation.
 A metric whose high scores form a rare cluster, separated from the
-lesson by a gap, supplies the chapter test. A matching run has to hold
-for half a second.
+lesson by a gap, supplies the chapter test. A matching run is two
+adjacent samples from that one-second pass.
 
 Embedding reads that CSV together with <video stem>_chapternames.csv and
 writes the named chapters into the video. Streams are copied, not
@@ -746,7 +746,11 @@ def plate_from_samples(video, samples, hue, sat, val, fraction):
 
 
 def auto_from_video(video, hue, sat, val):
-    """Score the file and choose the card tests from the high clusters."""
+    """Score the file once and choose the card tests from the high clusters.
+
+    Also returns one (timestamp, matched, share) row per sample, including
+    misses, after the plate test. Scaled frames are dropped before return.
+    """
     def on_sample(timestamp):
         if timestamp > 0 and timestamp % 60 == 0:
             print(f"scored {find_color_frames.format_timestamp(timestamp)}", flush=True)
@@ -756,6 +760,7 @@ def auto_from_video(video, hue, sat, val):
     )
     spec = find_color_frames.auto_spec(rows, hue, sat, val)
     if spec is None:
+        rows.clear()
         sys.exit("no abnormal color concentration or dark saturation in this video")
     if spec["dark_cut"] is None:
         print("dark saturated: no separate high cluster")
@@ -774,7 +779,12 @@ def auto_from_video(video, hue, sat, val):
             f"#{rgb[0]:02X}{rgb[1]:02X}{rgb[2]:02X}" for rgb, _cut, _ranges in spec["plates"]
         )
         print(f"color cut {cut * 100:.1f}% plate {hexes} ({count} of {len(rows)} samples)")
-    return spec
+    matched_rows = [
+        (row[0], *find_color_frames.auto_match(row[4], spec))
+        for row in rows
+    ]
+    rows.clear()
+    return spec, matched_rows
 
 
 def detection_requested(argv):
@@ -912,18 +922,18 @@ def main():
         )
     elif args.color is None:
         mode = "auto"
-        auto = auto_from_video(args.video, args.hue, args.sat, args.val)
+        auto, auto_rows = auto_from_video(args.video, args.hue, args.sat, args.val)
 
     if mode == "auto":
-        _fps, found = find_color_frames.scan_auto(args.video, args.gap, auto)
+        found = find_color_frames.scan_auto(auto_rows, args.gap)
     elif mode == "dark":
-        _fps, found = find_color_frames.scan_dark_saturated(
+        found = find_color_frames.scan_dark_saturated(
             args.video,
             args.gap,
             args.fraction,
         )
     else:
-        _fps, found = find_color_frames.scan_frames(
+        mode, found = find_color_frames.scan_frames(
             args.video,
             args.color,
             args.gap,
@@ -932,18 +942,12 @@ def main():
             args.val,
             args.fraction,
         )
-        if not found:
+        if mode == "dark":
             print(
                 "no color matches; scanning for pixels with "
                 f"saturation > {find_color_frames.DARK_SAT_MIN:.2f} and "
                 f"value < {find_color_frames.DARK_VAL_MAX:.2f}",
                 file=sys.stderr,
-            )
-            mode = "dark"
-            _fps, found = find_color_frames.scan_dark_saturated(
-                args.video,
-                args.gap,
-                args.fraction,
             )
     if not found:
         print("no matches", file=sys.stderr)

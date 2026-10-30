@@ -155,56 +155,6 @@ def read_frame(video, seconds):
     return frame.reshape(height, width, 3).copy()
 
 
-def iter_frames(video):
-    """Yield each frame as an HxWx3 uint8 array, same matrix as iter_pixel."""
-    numpy = _numpy()
-    ffmpeg = shutil.which("ffmpeg")
-    if ffmpeg is None:
-        sys.exit("ffmpeg not found on PATH")
-    width, height = video_size(video)
-    graph = FRAME_GRAPH
-    proc = subprocess.Popen(
-        [
-            ffmpeg,
-            "-v",
-            "error",
-            "-i",
-            video,
-            "-an",
-            "-vsync",
-            "0",
-            "-vf",
-            graph,
-            "-f",
-            "rawvideo",
-            "-",
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    assert proc.stdout is not None
-    errors = []
-
-    def _read_errors():
-        if proc.stderr is not None:
-            errors.append(proc.stderr.read())
-
-    reader = threading.Thread(target=_read_errors)
-    reader.start()
-    nbytes = width * height * 3
-    while True:
-        raw = proc.stdout.read(nbytes)
-        if len(raw) < nbytes:
-            break
-        frame = numpy.frombuffer(raw, dtype=numpy.uint8).reshape(height, width, 3)
-        yield frame
-    reader.join()
-    code = proc.wait()
-    if code != 0:
-        stderr = errors[0].decode("utf-8", "replace") if errors else ""
-        sys.exit(f"ffmpeg exited {code}\n{stderr}")
-
-
 def _numpy():
     try:
         import numpy
@@ -420,53 +370,95 @@ def dark_saturated_share(frame, bounds=None):
     return dark_saturated_count(frame, bounds) / total
 
 
-def _scan(video, gap, minimum, count_frame):
-    """Return (fps, [(timestamp, fraction), ...]).
+def share_clears(share, fraction):
+    """True when `share` is strictly greater than `fraction`."""
+    return share > fraction
 
-    A frame counts when `count_frame` is strictly greater than `minimum`
-    times the pixel count. Further frames are ignored until `gap` seconds pass.
+
+def walk_starts(rows, gap, run_length):
+    """Pick chapter starts from (timestamp, matched, share) samples.
+
+    run_length 1 keeps a match when its time is at least `gap` after the
+    last kept start. run_length 2 keeps the first sample of two adjacent
+    matches, once per run, and that first sample's share. A run whose
+    first sample sits inside the gap is dropped, including later samples
+    of that same run. A miss ends the run.
     """
-    fps = frame_rate(video)
-    last = None
     found = []
-    total = None
-    for index, frame in enumerate(iter_frames(video)):
-        if total is None:
-            total = frame.shape[0] * frame.shape[1]
-        count = count_frame(frame)
-        if count <= minimum * total:
+    last = None
+    run = []
+    for timestamp, matched, share in rows:
+        if not matched:
+            run = []
             continue
-        timestamp = index / fps
-        if last is not None and timestamp < last + gap:
+        run.append((timestamp, share))
+        if len(run) != run_length:
             continue
-        found.append((timestamp, count / total))
-        last = timestamp
-    return fps, found
+        start, start_share = run[0]
+        if last is None or start >= last + gap:
+            found.append((start, start_share))
+            last = start
+        # A one-sample run is over, so the next match can open again after
+        # `gap`. A longer run stays open until a miss and marks once.
+        if run_length == 1:
+            run = []
+    return found
 
 
 def scan_frames(video, rgb, gap, hue_tol, sat_tol, val_tol, minimum):
-    """Return (fps, [(timestamp, fraction), ...]) for one hex plate color."""
+    """Return ("color" or "dark", [(timestamp, share), ...]).
+
+    One 4 Hz scaled pass scores the hex plate and dark saturation. Dark
+    starts are used only when the hex walk returns nothing. The frame is
+    not kept.
+    """
     target_hsv = colorsys.rgb_to_hsv(rgb[0] / 255.0, rgb[1] / 255.0, rgb[2] / 255.0)
     ranges = tolerance_ranges(target_hsv, hue_tol, sat_tol, val_tol)
-    return _scan(video, gap, minimum, lambda frame: match_count(frame, ranges))
+    bounds = dark_saturated_bounds()
+    hex_rows = []
+    dark_rows = []
+
+    def on_frame(timestamp, frame):
+        total = frame.shape[0] * frame.shape[1]
+        hex_share = match_count(frame, ranges) / total
+        dark_share = dark_saturated_count(frame, bounds) / total
+        hex_rows.append((timestamp, share_clears(hex_share, minimum), hex_share))
+        dark_rows.append((timestamp, share_clears(dark_share, minimum), dark_share))
+
+    _each_scaled_sample(video, CHAPTER_SAMPLE_SECONDS, on_frame)
+    found = walk_starts(hex_rows, gap, 1)
+    if found:
+        return "color", found
+    return "dark", walk_starts(dark_rows, gap, 1)
 
 
 def scan_dark_saturated(video, gap, minimum, sat_min=DARK_SAT_MIN, val_max=DARK_VAL_MAX):
-    """Return (fps, [(timestamp, fraction), ...]) for dark saturated pixels."""
+    """Return [(timestamp, share), ...] for dark saturated pixels.
+
+    One 4 Hz scaled pass. Does not score a hex plate.
+    """
     bounds = dark_saturated_bounds(sat_min, val_max)
-    return _scan(video, gap, minimum, lambda frame: dark_saturated_count(frame, bounds))
+    rows = []
+
+    def on_frame(timestamp, frame):
+        total = frame.shape[0] * frame.shape[1]
+        share = dark_saturated_count(frame, bounds) / total
+        rows.append((timestamp, share_clears(share, minimum), share))
+
+    _each_scaled_sample(video, CHAPTER_SAMPLE_SECONDS, on_frame)
+    return walk_starts(rows, gap, 1)
 
 
 # One frame a second is enough to see a title card that stays up for several seconds.
 AUTO_SAMPLE_SECONDS = 1.0
 AUTO_SAMPLE_WIDTH = 320
+# Hex and dark chapter scans. Four samples a second, same width as the auto pass.
+CHAPTER_SAMPLE_SECONDS = 0.25
 # The lesson cluster and a card cluster must be at least this far apart.
 AUTO_SCORE_GAP = 0.15
 AUTO_BIN_WIDTH = 0.02
 # Cards are a small part of the file. A wider high cluster is the lesson.
 AUTO_MAX_CARD_FRACTION = 0.20
-# A spike shorter than this does not open a chapter.
-AUTO_HOLD_SECONDS = 0.5
 
 
 def anomalous_threshold(scores, gap=AUTO_SCORE_GAP, max_fraction=AUTO_MAX_CARD_FRACTION, bin_width=AUTO_BIN_WIDTH):
@@ -521,8 +513,13 @@ def _scaled_size(video, width):
     return scaled_w, scaled_h
 
 
-def score_timeline(video, hue_tol, sat_tol, val_tol, step=AUTO_SAMPLE_SECONDS, on_sample=None):
-    """Return (timestamp, dark share, dominant-color share, rgb) once per `step` seconds."""
+def _each_scaled_sample(video, step, on_frame):
+    """Call on_frame(timestamp, frame) once per `step` seconds.
+
+    The fps filter drops frames before scale and FRAME_GRAPH, so the frames
+    between samples are not converted to RGB or pulled into Python.
+    Timestamp is index * step, starting at 0. The frame is a copy.
+    """
     numpy = _numpy()
     ffmpeg = shutil.which("ffmpeg")
     if ffmpeg is None:
@@ -544,25 +541,37 @@ def score_timeline(video, hue_tol, sat_tol, val_tol, step=AUTO_SAMPLE_SECONDS, o
     reader = threading.Thread(target=_read_errors)
     reader.start()
     nbytes = width * height * 3
-    rows = []
     index = 0
     while True:
         raw = proc.stdout.read(nbytes)
         if len(raw) < nbytes:
             break
         frame = numpy.frombuffer(raw, dtype=numpy.uint8, count=nbytes).reshape(height, width, 3).copy()
-        dark = dark_saturated_share(frame)
-        rgb, share = dominant_rgb(frame, hue_tol, sat_tol, val_tol)
-        timestamp = index * step
-        rows.append((timestamp, dark, share, rgb))
-        if on_sample is not None:
-            on_sample(timestamp)
+        on_frame(index * step, frame)
         index += 1
     reader.join()
     code = proc.wait()
     if code != 0:
         stderr = errors[0].decode("utf-8", "replace") if errors else ""
         sys.exit(f"ffmpeg exited {code}\n{stderr}")
+
+
+def score_timeline(video, hue_tol, sat_tol, val_tol, step=AUTO_SAMPLE_SECONDS, on_sample=None):
+    """Return (timestamp, dark share, dominant-color share, rgb, frame) once per `step` seconds.
+
+    The frame stays on the row so the plate test can run without a second
+    decode. About 600MB per hour at this size; the caller drops it before title OCR.
+    """
+    rows = []
+
+    def on_frame(timestamp, frame):
+        dark = dark_saturated_share(frame)
+        rgb, share = dominant_rgb(frame, hue_tol, sat_tol, val_tol)
+        rows.append((timestamp, dark, share, rgb, frame))
+        if on_sample is not None:
+            on_sample(timestamp)
+
+    _each_scaled_sample(video, step, on_frame)
     return rows
 
 
@@ -626,34 +635,14 @@ def auto_match(frame, spec):
     return matched, best
 
 
-def scan_auto(video, gap, spec, hold=AUTO_HOLD_SECONDS):
-    """Return (fps, [(timestamp, fraction), ...]) for histogram cards.
+def scan_auto(rows, gap):
+    """Return [(timestamp, share), ...] from scored sample rows.
 
-    A run has to stay matched for `hold` seconds. The chapter opens at the
-    first frame of that run. Further runs are ignored until `gap` seconds
-    after that start.
+    `rows` are (timestamp, matched, share), including samples that did not
+    match. Two adjacent matches open a chapter at the first sample. This
+    does not open the video.
     """
-    fps = frame_rate(video)
-    run_start = None
-    emitted = False
-    last_emit = None
-    found = []
-    for index, frame in enumerate(iter_frames(video)):
-        timestamp = index / fps
-        matched, share = auto_match(frame, spec)
-        if matched:
-            if run_start is None:
-                run_start = timestamp
-                emitted = False
-            if not emitted and timestamp - run_start >= hold - (0.5 / fps):
-                if last_emit is None or run_start >= last_emit + gap:
-                    found.append((run_start, share))
-                    last_emit = run_start
-                emitted = True
-            continue
-        run_start = None
-        emitted = False
-    return fps, found
+    return walk_starts(rows, gap, 2)
 
 
 def iter_pixel(video, x, y):
