@@ -34,22 +34,13 @@ Video files and transcript JSON typically live **outside** this repo.
 
 ### Python packages
 
-There is no `requirements.txt` yet. Install what the scripts import:
-
-```text
-numpy
-opencv-python
-rapidocr
-panoscribe
-```
-
-Example:
+Install from [`requirements.txt`](requirements.txt):
 
 ```powershell
-py -3 -m pip install numpy opencv-python rapidocr panoscribe
+py -3 -m pip install -r requirements.txt
 ```
 
-`panoscribe` pulls in faster-whisper (and typically needs a CUDA-capable GPU for comfortable speed; CPU works but is slow). Chapter title OCR uses RapidOCR; speech OCR in panoscribe is off by default in the batch script.
+That pulls in `numpy`, `opencv-python-headless`, `rapidocr`, and `panoscribe`. `panoscribe` also pulls in faster-whisper (and typically needs a CUDA-capable GPU for comfortable speed; CPU works but is slow). Chapter title OCR uses RapidOCR; speech OCR in panoscribe is off by default in the batch script.
 
 ## Getting started
 
@@ -62,7 +53,11 @@ py -3 -m pip install numpy opencv-python rapidocr panoscribe
    ffprobe -version
    ```
 
-3. Install the Python packages listed above.
+3. Install the Python packages:
+
+   ```powershell
+   py -3 -m pip install -r requirements.txt
+   ```
 4. Confirm panoscribe (for transcription):
 
    ```powershell
