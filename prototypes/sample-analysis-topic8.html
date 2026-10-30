@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PROTOTYPE — Advisor analysis before the system · topic 8</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --paper: #fffcf6;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #d6d3d1;
+      --accent: #9a3412;
+      --accent-soft: #ffedd5;
+      --ok: #14532d;
+      --ok-soft: #dcfce7;
+      --warn: #854d0e;
+      --warn-soft: #fef9c3;
+      --other: #1e3a8a;
+      --other-soft: #dbeafe;
+      --disagree: #9f1239;
+      --disagree-soft: #ffe4e6;
+      --shadow: 0 1px 2px rgba(28,25,23,.06), 0 8px 24px rgba(28,25,23,.06);
+      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #fde68a55, transparent 60%),
+        radial-gradient(900px 500px at 100% 0%, #fdba7455, transparent 55%),
+        var(--bg);
+      line-height: 1.45;
+      padding-bottom: 6rem;
+    }
+    .banner {
+      background: #1c1917;
+      color: #fafaf9;
+      padding: .65rem 1.25rem;
+      font-size: .85rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: baseline;
+    }
+    .banner strong { color: #fdba74; }
+    .banner code { font-family: var(--mono); font-size: .8rem; color: #e7e5e4; }
+    header.page {
+      max-width: 1100px;
+      margin: 1.25rem auto 0;
+      padding: 0 1.25rem;
+    }
+    header.page h1 {
+      font-family: var(--serif);
+      font-weight: 600;
+      font-size: 1.75rem;
+      margin: 0 0 .35rem;
+      letter-spacing: -.02em;
+    }
+    header.page .meta {
+      color: var(--muted);
+      font-size: .95rem;
+      max-width: 62ch;
+    }
+    .question {
+      max-width: 1100px;
+      margin: .9rem auto 0;
+      padding: 0 1.25rem;
+    }
+    .question details {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .75rem 1rem;
+      box-shadow: var(--shadow);
+    }
+    .question summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .question p { margin: .6rem 0 0; color: var(--muted); font-size: .92rem; max-width: 70ch; }
+    #app { max-width: 1100px; margin: 1rem auto; padding: 0 1.25rem; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      border-radius: 999px;
+      padding: .15rem .55rem;
+      font-size: .72rem;
+      font-weight: 650;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+    .pill-gi { background: var(--ok-soft); color: var(--ok); }
+    .pill-other { background: var(--other-soft); color: var(--other); }
+    .pill-disagree { background: var(--disagree-soft); color: var(--disagree); }
+    .pill-caveat { background: var(--warn-soft); color: var(--warn); }
+    .pill-proto { background: #e7e5e4; color: #44403c; }
+    a.play {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: .85em;
+    }
+    a.play:hover { color: #7c2d12; }
+    .toast {
+      position: fixed;
+      right: 1rem;
+      bottom: 5.2rem;
+      max-width: 28rem;
+      background: #1c1917;
+      color: #fafaf9;
+      padding: .75rem 1rem;
+      border-radius: 10px;
+      font-size: .82rem;
+      box-shadow: var(--shadow);
+      display: none;
+      z-index: 40;
+      white-space: pre-wrap;
+      font-family: var(--mono);
+    }
+    .toast.show { display: block; }
+    .switcher {
+      position: fixed;
+      left: 50%;
+      bottom: 1rem;
+      transform: translateX(-50%);
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      background: #0c0a09;
+      color: #fafaf9;
+      border-radius: 999px;
+      padding: .45rem .55rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      user-select: none;
+    }
+    .switcher button {
+      border: 0;
+      background: #292524;
+      color: #fafaf9;
+      width: 2.1rem;
+      height: 2.1rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .switcher button:hover { background: #44403c; }
+    .switcher .label {
+      min-width: 16rem;
+      text-align: center;
+      font-size: .85rem;
+      font-weight: 600;
+      padding: 0 .4rem;
+    }
+    .switcher .label span {
+      display: block;
+      font-weight: 400;
+      color: #a8a29e;
+      font-size: .72rem;
+    }
+
+    /* —— Variant A: Briefing memo —— */
+    .A .memo {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 1.5rem 1.75rem 2rem;
+    }
+    .A .memo-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+    }
+    .A .memo h2 {
+      font-family: var(--serif);
+      margin: 0;
+      font-size: 1.45rem;
+    }
+    .A .lede { font-size: 1.05rem; max-width: 68ch; }
+    .A h3 {
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin: 1.4rem 0 .55rem;
+    }
+    .A .cite-list { list-style: none; padding: 0; margin: 0; }
+    .A .cite-list > li {
+      border-top: 1px solid var(--line);
+      padding: .85rem 0;
+    }
+    .A .cite-list > li:first-child { border-top: 0; }
+    .A .cite-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem .6rem;
+      align-items: center;
+      margin-bottom: .35rem;
+      font-weight: 650;
+    }
+    .A .cite-meta { color: var(--muted); font-size: .86rem; margin-bottom: .35rem; }
+    .A .statement { max-width: 72ch; }
+    .A .disagree-box {
+      background: var(--disagree-soft);
+      border: 1px solid #fecdd3;
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+    }
+    .A .disagree-box .sides {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .85rem;
+      margin-top: .65rem;
+    }
+    @media (max-width: 720px) { .A .disagree-box .sides { grid-template-columns: 1fr; } }
+    .A .side {
+      background: #fff;
+      border-radius: 8px;
+      padding: .75rem .85rem;
+      border: 1px solid #fecdd3;
+    }
+    .A .side strong { display: block; margin-bottom: .25rem; }
+    .A .caveat-box {
+      background: var(--warn-soft);
+      border: 1px solid #fde047;
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+    }
+    .A .caveat-box ul { margin: .4rem 0 0; padding-left: 1.1rem; }
+    .A .next {
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--line);
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    /* —— Variant B: Citation gallery —— */
+    .B .topic-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .B .topic-bar h2 {
+      font-family: var(--serif);
+      margin: 0;
+      font-size: 1.5rem;
+      margin-right: .4rem;
+    }
+    .B .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: .85rem;
+    }
+    .B .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: .45rem;
+      min-height: 12rem;
+    }
+    .B .card.other { border-color: #93c5fd; background: linear-gradient(180deg, #eff6ff, var(--paper) 40%); }
+    .B .card .who { font-weight: 700; font-size: .95rem; }
+    .B .card .where { color: var(--muted); font-size: .82rem; }
+    .B .card .statement { font-size: .92rem; flex: 1; }
+    .B .pair {
+      margin: 1.1rem 0;
+      border: 2px solid #fb7185;
+      border-radius: 14px;
+      padding: .85rem;
+      background: #fff1f2;
+    }
+    .B .pair-label {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin-bottom: .65rem;
+      font-weight: 700;
+      color: var(--disagree);
+    }
+    .B .pair .grid { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 720px) { .B .pair .grid { grid-template-columns: 1fr; } }
+    .B .pair .card { border-color: #fecdd3; box-shadow: none; }
+    .B .caveat-strip {
+      margin-top: .85rem;
+      background: var(--warn-soft);
+      border: 1px dashed #ca8a04;
+      border-radius: 10px;
+      padding: .85rem 1rem;
+      font-size: .9rem;
+    }
+
+    /* —— Variant C: Decide-first —— */
+    .C .stage {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 1rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) { .C .stage { grid-template-columns: 1fr; } }
+    .C .decision {
+      background: #fff;
+      border: 2px solid var(--disagree);
+      border-radius: 14px;
+      padding: 1.15rem 1.25rem 1.35rem;
+      box-shadow: var(--shadow);
+    }
+    .C .decision h2 {
+      font-family: var(--serif);
+      margin: 0 0 .35rem;
+      font-size: 1.35rem;
+    }
+    .C .decision .prompt {
+      color: var(--muted);
+      margin: 0 0 1rem;
+      font-size: .92rem;
+    }
+    .C .columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .75rem;
+    }
+    @media (max-width: 640px) { .C .columns { grid-template-columns: 1fr; } }
+    .C .choice {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .85rem;
+      background: var(--paper);
+      cursor: pointer;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .C .choice:hover { border-color: #fb7185; }
+    .C .choice.selected {
+      border-color: var(--disagree);
+      box-shadow: 0 0 0 3px #fecdd3;
+    }
+    .C .choice h3 { margin: 0 0 .35rem; font-size: 1rem; }
+    .C .choice p { margin: 0; font-size: .9rem; }
+    .C .choice .src { margin-top: .55rem; font-size: .8rem; color: var(--muted); }
+    .C .rail {
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+    }
+    .C .rail section {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: .9rem 1rem;
+      box-shadow: var(--shadow);
+    }
+    .C .rail h3 {
+      margin: 0 0 .55rem;
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+    }
+    .C .mini-cite {
+      border-top: 1px solid var(--line);
+      padding: .55rem 0;
+      font-size: .88rem;
+    }
+    .C .mini-cite:first-of-type { border-top: 0; padding-top: 0; }
+    .C .mini-cite strong { display: block; }
+    .C .mini-cite .meta { color: var(--muted); font-size: .78rem; margin: .15rem 0 .25rem; }
+    .C .other-panel {
+      border-color: #93c5fd;
+      background: linear-gradient(180deg, #eff6ff, var(--paper) 50%);
+    }
+    .C .state-panel {
+      font-family: var(--mono);
+      font-size: .78rem;
+      background: #1c1917;
+      color: #e7e5e4;
+      border-radius: 12px;
+      padding: .85rem 1rem;
+      white-space: pre-wrap;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <strong>PROTOTYPE · throwaway</strong>
+    <span>Ticket: A sample analysis of one real topic</span>
+    <span>Question: how should the advisor’s analysis look before the coach determines the system?</span>
+    <code>prototypes/sample-analysis-topic8.html?variant=A|B|C</code>
+  </div>
+
+  <header class="page">
+    <h1>Advisor analysis · before the system</h1>
+    <p class="meta">
+      Three layouts of the same rough analysis for topic
+      <strong>gi butterfly</strong>.
+      Cleaned statements are stand-ins written from speech the way a coach-accepted citation would read.
+      Playback links show the volume file and the showing’s speech start; they do not open a player in this prototype.
+    </p>
+  </header>
+
+  <div class="question">
+    <details>
+      <summary>What to react to</summary>
+      <p>
+        Look at hierarchy, disagreement, and the other-ruleset caveat.
+        Steal pieces across variants.
+        Do not judge class structure: this ticket stops before cutting the topic into classes.
+      </p>
+    </details>
+  </div>
+
+  <div id="app"></div>
+  <div id="toast" class="toast" role="status"></div>
+
+  <div class="switcher" aria-label="Prototype variant switcher">
+    <button type="button" id="prev" aria-label="Previous variant">←</button>
+    <div class="label" id="switcher-label">A<span>Briefing memo</span></div>
+    <button type="button" id="next" aria-label="Next variant">→</button>
+  </div>
+
+  <script>
+    // PROTOTYPE DATA — stand-in curated citations for one topic analysis
+    const TOPIC = {
+      name: "butterfly",
+      ruleset: "gi",
+      label: "gi butterfly",
+    };
+
+    const citations = [
+      {
+        id: "w1-basic",
+        instructor: "Adam Wardzinski",
+        instructional: "Butterfly Guard Re-Discovered",
+        volume: "Volume 1",
+        videoFile: "Butterfly Guard Re-Discovered by Adam Wardzinski - S01E01 - Volume 1.mp4",
+        chapter: "Basic Butterfly Guard Sweep",
+        chapterRaw: "00 00 - Basic Butterfly Guard Sweep",
+        movement: "basic butterfly sweep with belt underhook",
+        speechStart: 3.57,
+        ruleset: "gi",
+        otherRuleset: false,
+        statement:
+          "Approach with the hips twisted outside. Shrug the shoulder deep under the armpit and grip the belt. Stay on that underhook side so the opponent cannot put an arm over or take a guillotine. Close the distance, go to the side rather than flat on the back, lift with the top hook, use the bottom leg as a lever from the mat, and finish the sweep.",
+      },
+      {
+        id: "w1-post",
+        instructor: "Adam Wardzinski",
+        instructional: "Butterfly Guard Re-Discovered",
+        volume: "Volume 1",
+        videoFile: "Butterfly Guard Re-Discovered by Adam Wardzinski - S01E01 - Volume 1.mp4",
+        chapter: "Removing The Post Into Butterfly Sweep",
+        chapterRaw: "05 35 - Removing The Post Into Butterfly Sweep",
+        movement: "remove the post into butterfly sweep",
+        speechStart: 353.97,
+        ruleset: "gi",
+        otherRuleset: false,
+        statement:
+          "When the opponent posts after the belt underhook, bend that posting arm inside rather than pulling it. Keep the same sweep: go to the side and lift. If they grip the pants, stretch the inside leg while going to the side, add a sleeve grip, bend the bottom leg to ninety degrees for the lever, and finish.",
+      },
+      {
+        id: "w1-kneeslice",
+        instructor: "Adam Wardzinski",
+        instructional: "Butterfly Guard Re-Discovered",
+        volume: "Volume 1",
+        videoFile: "Butterfly Guard Re-Discovered by Adam Wardzinski - S01E01 - Volume 1.mp4",
+        chapter: "Butterfly Sweep To Knee Slice",
+        chapterRaw: "12 34 - Butterfly Sweep To Knee Slice",
+        movement: "butterfly sweep to knee slice",
+        speechStart: 784.11,
+        ruleset: "gi",
+        otherRuleset: false,
+        statement:
+          "After the sweep, keep the foot inside and leave only the foot for the opponent. Do not put the leg outside into a free half guard. From there knee-slice: pull the arm up and slide, or flatten the near shoulder and take side control.",
+      },
+      {
+        id: "w3-mechanic",
+        instructor: "Adam Wardzinski",
+        instructional: "Butterfly Guard Rediscovered 3.0",
+        volume: "Volume 1",
+        videoFile: "Butterfly Guard Rediscovered 3.0 by Adam Wardzinski - S01E01 - Volume 1.mp4",
+        chapter: "Side Butterfly Guard - Basic Butterfly Guard Sweep Mechanic",
+        chapterRaw: "Side Butterfly Guard - Basic Butterfly Guard Sweep Mechanic",
+        movement: "basic butterfly sweep mechanic",
+        speechStart: 12.94,
+        ruleset: "gi",
+        otherRuleset: false,
+        statement:
+          "Keep one whole leg on the mat and the other on the foot, with the knee open away from the opponent’s center line. Put the hips outside past the opponent’s leg line. Control under the armpit or on the hip on that same side. Fall on the side, never flat on the back. Twist the far shoulder toward the mat as you lift.",
+      },
+      {
+        id: "mg-process",
+        instructor: "Marcelo Garcia",
+        instructional: "Butterfly",
+        volume: "Volume 1",
+        videoFile: "Butterfly by Marcelo Garcia - S01E01 - Volume 1.mp4",
+        chapter: "BUTTERFLY SWEEP PROCESS",
+        chapterRaw: "BUTTERFLY SWEEP PROCESS",
+        movement: "butterfly sweep with underhook",
+        speechStart: 1069.46,
+        ruleset: "no-gi",
+        otherRuleset: true,
+        statement:
+          "Close distance with a deep underhook that goes higher and farther, elbow up. Push the opponent’s elbow in; do not pull it. Bring the hips close to the heels, scoop and lift while turning onto the shoulder and side, not onto a flat back. Keep the lifting knee pointed out. Landing in half guard is acceptable when top is held.",
+      },
+    ];
+
+    const disagreement = {
+      about: "Where the sweep should land",
+      sideA: {
+        citationId: "w1-kneeslice",
+        claim:
+          "Keep the foot inside after the sweep and knee-slice. A free half guard lets the bottom person recover hard.",
+      },
+      sideB: {
+        citationId: "mg-process",
+        claim:
+          "Landing in half guard is fine when top is held. Holding top matters more than the exact pass shape.",
+      },
+    };
+
+    const caveat = {
+      onCitationId: "mg-process",
+      instructional: "Butterfly by Marcelo Garcia",
+      mayTransfer: [
+        "Deep underhook path (higher and farther)",
+        "Push the elbow in to stop the underhook being beaten",
+        "Hips close to heels before the lift",
+        "Fall on the side or shoulder, not a flat back",
+        "Keep the lifting knee pointed out",
+      ],
+      dependsOnOtherTools: [
+        "The whole sweep is built without belt, collar, or sleeve; those are the gi tools this topic already uses",
+        "Elbow-in is the main way Marcelo stops the underhook being beaten; Wardzinski also secures with the belt grip",
+      ],
+    };
+
+    function fmtTime(sec) {
+      const s = Math.floor(sec);
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return m + ":" + String(r).padStart(2, "0");
+    }
+
+    function playbackPath(c) {
+      return c.videoFile + " @ " + fmtTime(c.speechStart) + " (speech start " + c.speechStart.toFixed(2) + "s)";
+    }
+
+    function byId(id) {
+      return citations.find((c) => c.id === id);
+    }
+
+    function showPlayback(c) {
+      const el = document.getElementById("toast");
+      el.textContent =
+        "Playback (prototype)\n" +
+        playbackPath(c) +
+        "\nchapter: " + c.chapterRaw +
+        "\nOpens the volume video at this showing’s speech start when a player is wired.";
+      el.classList.add("show");
+      clearTimeout(showPlayback._t);
+      showPlayback._t = setTimeout(() => el.classList.remove("show"), 5000);
+    }
+
+    function playLink(c) {
+      return (
+        '<a class="play" data-id="' +
+        c.id +
+        '" title="Prototype playback pointer">' +
+        fmtTime(c.speechStart) +
+        "</a>"
+      );
+    }
+
+    // —— Variant A ——
+    function renderA() {
+      const same = citations.filter((c) => !c.otherRuleset);
+      const other = citations.filter((c) => c.otherRuleset);
+      const a = byId(disagreement.sideA.citationId);
+      const b = byId(disagreement.sideB.citationId);
+      return (
+        '<div class="A"><article class="memo">' +
+        '<div class="memo-top">' +
+        "<div><h2>" +
+        TOPIC.label +
+        '</h2><div style="margin-top:.35rem"><span class="pill pill-gi">gi topic</span> ' +
+        '<span class="pill pill-proto">prototype stand-in citations</span></div></div>' +
+        "<div style=\"color:var(--muted);font-size:.86rem;text-align:right\">Before the coach determines the system<br/>No classes yet</div>" +
+        "</div>" +
+        '<p class="lede">The store has matching gi citations from two Wardzinski instructionals on the basic butterfly sweep, removing the post, and landing into a knee slice. Marcelo Garcia’s no-gi Butterfly is offered as an other-ruleset instructional with a caveat. Once welcomed, it disagrees with Wardzinski on where the sweep should land.</p>' +
+        "<h3>Disagreement</h3>" +
+        '<div class="disagree-box">' +
+        "<div><span class=\"pill pill-disagree\">disagreement</span> <strong>" +
+        disagreement.about +
+        "</strong></div>" +
+        '<div class="sides">' +
+        '<div class="side"><strong>' +
+        a.instructor +
+        "</strong><p>" +
+        disagreement.sideA.claim +
+        "</p><div style=\"margin-top:.45rem\">" +
+        playLink(a) +
+        " · " +
+        a.chapter +
+        "</div></div>" +
+        '<div class="side"><strong>' +
+        b.instructor +
+        ' <span class="pill pill-other">other-ruleset</span></strong><p>' +
+        disagreement.sideB.claim +
+        "</p><div style=\"margin-top:.45rem\">" +
+        playLink(b) +
+        " · " +
+        b.chapter +
+        "</div></div>" +
+        "</div></div>" +
+        "<h3>Same-ruleset citations</h3><ul class=\"cite-list\">" +
+        same
+          .map(
+            (c) =>
+              "<li><div class=\"cite-head\">" +
+              c.movement +
+              ' <span class="pill pill-gi">gi</span></div>' +
+              '<div class="cite-meta">' +
+              c.instructor +
+              " · " +
+              c.instructional +
+              " · " +
+              c.volume +
+              " · " +
+              c.chapter +
+              " · " +
+              playLink(c) +
+              "</div>" +
+              '<div class="statement">' +
+              c.statement +
+              "</div></li>"
+          )
+          .join("") +
+        "</ul>" +
+        "<h3>Other-ruleset · with caveat</h3>" +
+        other
+          .map(
+            (c) =>
+              '<div style="border:1px solid #93c5fd;border-radius:10px;padding:1rem;background:#eff6ff">' +
+              '<div class="cite-head">' +
+              c.movement +
+              ' <span class="pill pill-other">other-ruleset · no-gi instructional</span></div>' +
+              '<div class="cite-meta">' +
+              c.instructor +
+              " · " +
+              c.instructional +
+              " · " +
+              c.volume +
+              " · " +
+              c.chapter +
+              " · " +
+              playLink(c) +
+              "</div>" +
+              '<div class="statement" style="margin:.4rem 0 .75rem">' +
+              c.statement +
+              "</div>" +
+              '<div class="caveat-box"><span class="pill pill-caveat">caveat</span> ' +
+              "<strong>What may transfer / what depends on no-gi tools</strong>" +
+              "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.5rem\">" +
+              "<div><em>May transfer</em><ul>" +
+              caveat.mayTransfer.map((x) => "<li>" + x + "</li>").join("") +
+              "</ul></div>" +
+              "<div><em>Depends on tools this gi topic does not share</em><ul>" +
+              caveat.dependsOnOtherTools.map((x) => "<li>" + x + "</li>").join("") +
+              "</ul></div></div></div></div>"
+          )
+          .join("") +
+        '<p class="next">Next step in the product: the coach determines the system from this analysis. Cutting into classes is a later ticket.</p>' +
+        "</article></div>"
+      );
+    }
+
+    // —— Variant B ——
+    function renderB() {
+      const same = citations.filter((c) => !c.otherRuleset);
+      const other = citations.filter((c) => c.otherRuleset);
+      const a = byId(disagreement.sideA.citationId);
+      const b = byId(disagreement.sideB.citationId);
+
+      function card(c, extraClass) {
+        return (
+          '<article class="card ' +
+          (extraClass || "") +
+          (c.otherRuleset ? " other" : "") +
+          '">' +
+          '<div style="display:flex;gap:.35rem;flex-wrap:wrap">' +
+          (c.otherRuleset
+            ? '<span class="pill pill-other">other-ruleset</span>'
+            : '<span class="pill pill-gi">gi</span>') +
+          "</div>" +
+          '<div class="who">' +
+          c.instructor +
+          "</div>" +
+          '<div class="where">' +
+          c.instructional +
+          " · " +
+          c.volume +
+          "<br/>" +
+          c.chapter +
+          " · " +
+          playLink(c) +
+          "</div>" +
+          "<div style=\"font-weight:650;font-size:.86rem\">" +
+          c.movement +
+          "</div>" +
+          '<div class="statement">' +
+          c.statement +
+          "</div>" +
+          "</article>"
+        );
+      }
+
+      return (
+        '<div class="B">' +
+        '<div class="topic-bar"><h2>' +
+        TOPIC.label +
+        '</h2><span class="pill pill-gi">gi</span><span class="pill pill-disagree">1 disagreement</span><span class="pill pill-other">1 other-ruleset</span><span class="pill pill-proto">prototype</span></div>' +
+        '<div class="pair"><div class="pair-label"><span class="pill pill-disagree">disagreement</span> ' +
+        disagreement.about +
+        "</div><div class=\"grid\">" +
+        card(a) +
+        card(b) +
+        "</div>" +
+        '<p style="margin:.65rem 0 0;font-size:.9rem"><strong>Wardzinski:</strong> ' +
+        disagreement.sideA.claim +
+        " <strong>Marcelo (other-ruleset):</strong> " +
+        disagreement.sideB.claim +
+        "</p></div>" +
+        "<h3 style=\"margin:0 0 .55rem;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)\">Same-ruleset citations</h3>" +
+        '<div class="grid">' +
+        same.map((c) => card(c)).join("") +
+        "</div>" +
+        "<h3 style=\"margin:1.1rem 0 .55rem;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)\">Other-ruleset instructional</h3>" +
+        '<div class="grid">' +
+        other.map((c) => card(c)).join("") +
+        "</div>" +
+        '<div class="caveat-strip"><span class="pill pill-caveat">caveat</span> on ' +
+        caveat.instructional +
+        "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.45rem\">" +
+        "<div><strong>May transfer</strong><ul style=\"margin:.25rem 0 0;padding-left:1.1rem\">" +
+        caveat.mayTransfer.map((x) => "<li>" + x + "</li>").join("") +
+        "</ul></div>" +
+        "<div><strong>Depends on no-gi tools</strong><ul style=\"margin:.25rem 0 0;padding-left:1.1rem\">" +
+        caveat.dependsOnOtherTools.map((x) => "<li>" + x + "</li>").join("") +
+        "</ul></div></div></div>" +
+        "</div>"
+      );
+    }
+
+    // —— Variant C ——
+    const cState = { choice: null };
+
+    function renderC() {
+      const same = citations.filter((c) => !c.otherRuleset && c.id !== disagreement.sideA.citationId);
+      const other = byId(disagreement.sideB.citationId);
+      const a = byId(disagreement.sideA.citationId);
+      const stateText =
+        "topic: " +
+        TOPIC.label +
+        "\nsystem: (not determined)\nlanding_choice: " +
+        (cState.choice || "(none)") +
+        "\nother_ruleset_yes_no: yes (prototype assumes welcomed)\ncitations_shown: " +
+        citations.length;
+
+      return (
+        '<div class="C"><div class="stage">' +
+        '<div class="decision">' +
+        "<h2>Decide the landing</h2>" +
+        '<p class="prompt">The analysis puts the disagreement first. Supporting citations stay on the rail. The system is not written until you choose.</p>' +
+        '<div class="columns">' +
+        '<div class="choice' +
+        (cState.choice === "kneeslice" ? " selected" : "") +
+        '" data-choice="kneeslice"><h3>Knee-slice finish</h3><p>' +
+        disagreement.sideA.claim +
+        '</p><div class="src">' +
+        a.instructor +
+        " · " +
+        playLink(a) +
+        "</div></div>" +
+        '<div class="choice' +
+        (cState.choice === "halfguard-ok" ? " selected" : "") +
+        '" data-choice="halfguard-ok"><h3>Half guard OK on top</h3><p>' +
+        disagreement.sideB.claim +
+        '</p><div class="src">' +
+        other.instructor +
+        ' · <span class="pill pill-other">other-ruleset</span> · ' +
+        playLink(other) +
+        "</div></div>" +
+        "</div></div>" +
+        '<div class="rail">' +
+        "<section><h3>Same-ruleset support</h3>" +
+        [a]
+          .concat(same)
+          .map(
+            (c) =>
+              '<div class="mini-cite"><strong>' +
+              c.movement +
+              '</strong><div class="meta">' +
+              c.instructor +
+              " · " +
+              c.instructional +
+              " · " +
+              playLink(c) +
+              "</div>" +
+              c.statement +
+              "</div>"
+          )
+          .join("") +
+        "</section>" +
+        '<section class="other-panel"><h3>Other-ruleset · caveat</h3>' +
+        '<div class="mini-cite"><strong>' +
+        other.movement +
+        '</strong><div class="meta">' +
+        other.instructor +
+        " · " +
+        other.instructional +
+        " · " +
+        playLink(other) +
+        "</div>" +
+        other.statement +
+        "</div>" +
+        '<div style="margin-top:.55rem;font-size:.86rem"><span class="pill pill-caveat">caveat</span>' +
+        "<div style=\"margin-top:.35rem\"><em>May transfer:</em> " +
+        caveat.mayTransfer.join("; ") +
+        "</div>" +
+        "<div style=\"margin-top:.35rem\"><em>Depends on no-gi tools:</em> " +
+        caveat.dependsOnOtherTools.join("; ") +
+        "</div></div></section>" +
+        '<div class="state-panel">' +
+        stateText +
+        "</div>" +
+        "</div></div></div>"
+      );
+    }
+
+    const variants = [
+      { key: "A", name: "Briefing memo", render: renderA },
+      { key: "B", name: "Citation gallery", render: renderB },
+      { key: "C", name: "Decide-first", render: renderC },
+    ];
+
+    function currentKey() {
+      const u = new URL(window.location.href);
+      return (u.searchParams.get("variant") || "A").toUpperCase();
+    }
+
+    function setVariant(key) {
+      const u = new URL(window.location.href);
+      u.searchParams.set("variant", key);
+      history.replaceState(null, "", u.toString());
+      paint();
+    }
+
+    function cycle(delta) {
+      const i = variants.findIndex((v) => v.key === currentKey());
+      const next = variants[(i + delta + variants.length) % variants.length];
+      setVariant(next.key);
+    }
+
+    function paint() {
+      const key = currentKey();
+      const v = variants.find((x) => x.key === key) || variants[0];
+      document.getElementById("app").innerHTML = v.render();
+      document.getElementById("switcher-label").innerHTML =
+        v.key + "<span>" + v.name + "</span>";
+      document.getElementById("app").onclick = (e) => {
+        const play = e.target.closest("a.play");
+        if (play) {
+          e.preventDefault();
+          showPlayback(byId(play.getAttribute("data-id")));
+          return;
+        }
+        const choice = e.target.closest(".choice");
+        if (choice && currentKey() === "C") {
+          cState.choice = choice.getAttribute("data-choice");
+          paint();
+        }
+      };
+    }
+
+    document.getElementById("prev").onclick = () => cycle(-1);
+    document.getElementById("next").onclick = () => cycle(1);
+    document.addEventListener("keydown", (e) => {
+      const t = e.target;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      if (e.key === "ArrowLeft") cycle(-1);
+      if (e.key === "ArrowRight") cycle(1);
+    });
+
+    paint();
+  </script>
+</body>
+</html>
