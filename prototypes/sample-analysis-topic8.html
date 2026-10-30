@@ -64,7 +64,7 @@
     header.page .meta {
       color: var(--muted);
       font-size: .95rem;
-      max-width: 62ch;
+      max-width: 68ch;
     }
     .question {
       max-width: 1100px;
@@ -79,7 +79,7 @@
       box-shadow: var(--shadow);
     }
     .question summary { cursor: pointer; font-weight: 600; }
-    .question p { margin: .6rem 0 0; color: var(--muted); font-size: .92rem; max-width: 70ch; }
+    .question p { margin: .6rem 0 0; color: var(--muted); font-size: .92rem; max-width: 72ch; }
     #app { max-width: 1100px; margin: 1rem auto; padding: 0 1.25rem; }
     .pill {
       display: inline-flex;
@@ -93,9 +93,8 @@
       text-transform: uppercase;
     }
     .pill-gi { background: var(--ok-soft); color: var(--ok); }
-    .pill-nogi { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
     .pill-other { background: var(--other-soft); color: var(--other); }
-    .pill-disagree { background: var(--disagree-soft); color: var(--disagree); }
+    .pill-diff { background: var(--disagree-soft); color: var(--disagree); }
     .pill-caveat { background: var(--warn-soft); color: var(--warn); }
     .pill-proto { background: #e7e5e4; color: #44403c; }
     a.play {
@@ -107,6 +106,14 @@
       font-size: .85em;
     }
     a.play:hover { color: #7c2d12; }
+    .steps {
+      margin: .35rem 0 0;
+      padding-left: 1.15rem;
+      max-width: 72ch;
+    }
+    .steps li { margin: .28rem 0; }
+    .steps .you { font-weight: 650; }
+    .steps .opp { color: #9a3412; }
     .toast {
       position: fixed;
       right: 1rem;
@@ -181,11 +188,7 @@
       padding-bottom: 1rem;
       margin-bottom: 1rem;
     }
-    .A .memo h2 {
-      font-family: var(--serif);
-      margin: 0;
-      font-size: 1.45rem;
-    }
+    .A .memo h2 { font-family: var(--serif); margin: 0; font-size: 1.45rem; }
     .A .lede { font-size: 1.05rem; max-width: 68ch; }
     .A h3 {
       font-size: .78rem;
@@ -195,10 +198,7 @@
       margin: 1.4rem 0 .55rem;
     }
     .A .cite-list { list-style: none; padding: 0; margin: 0; }
-    .A .cite-list > li {
-      border-top: 1px solid var(--line);
-      padding: .85rem 0;
-    }
+    .A .cite-list > li { border-top: 1px solid var(--line); padding: .85rem 0; }
     .A .cite-list > li:first-child { border-top: 0; }
     .A .cite-head {
       display: flex;
@@ -209,20 +209,19 @@
       font-weight: 650;
     }
     .A .cite-meta { color: var(--muted); font-size: .86rem; margin-bottom: .35rem; }
-    .A .statement { max-width: 72ch; }
-    .A .disagree-box {
+    .A .diff-box {
       background: var(--disagree-soft);
       border: 1px solid #fecdd3;
       border-radius: 10px;
       padding: 1rem 1.1rem;
     }
-    .A .disagree-box .sides {
+    .A .diff-box .sides {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: .85rem;
       margin-top: .65rem;
     }
-    @media (max-width: 720px) { .A .disagree-box .sides { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) { .A .diff-box .sides { grid-template-columns: 1fr; } }
     .A .side {
       background: #fff;
       border-radius: 8px;
@@ -230,6 +229,23 @@
       border: 1px solid #fecdd3;
     }
     .A .side strong { display: block; margin-bottom: .25rem; }
+    .A .why {
+      margin-top: .85rem;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px dashed #fb7185;
+      padding: .75rem .85rem;
+    }
+    .A .why label { display: block; font-weight: 650; margin-bottom: .35rem; }
+    .A .why textarea {
+      width: 100%;
+      min-height: 4.5rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: .55rem .65rem;
+      font: inherit;
+      resize: vertical;
+    }
     .A .caveat-box {
       background: var(--warn-soft);
       border: 1px solid #fde047;
@@ -254,7 +270,7 @@
     }
     .B .topic-bar h2 {
       font-family: var(--serif);
-      margin: 0 0.4rem 0 0;
+      margin: 0 .4rem 0 0;
       font-size: 1.5rem;
     }
     .B .grid {
@@ -276,7 +292,6 @@
     .B .card.other { border-color: #93c5fd; background: linear-gradient(180deg, #eff6ff, var(--paper) 40%); }
     .B .card .who { font-weight: 700; font-size: .95rem; }
     .B .card .where { color: var(--muted); font-size: .82rem; }
-    .B .card .statement { font-size: .92rem; flex: 1; }
     .B .pair {
       margin: 1.1rem 0;
       border: 2px solid #fb7185;
@@ -294,7 +309,24 @@
     }
     .B .pair .grid { grid-template-columns: 1fr 1fr; }
     @media (max-width: 720px) { .B .pair .grid { grid-template-columns: 1fr; } }
-    .B .pair .card { border-color: #fecdd3; box-shadow: none; }
+    .B .pair .card { border-color: #fecdd3; box-shadow: none; min-height: 0; }
+    .B .why {
+      margin-top: .75rem;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px dashed #fb7185;
+      padding: .75rem .85rem;
+    }
+    .B .why label { display: block; font-weight: 650; margin-bottom: .35rem; }
+    .B .why textarea {
+      width: 100%;
+      min-height: 4rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: .55rem .65rem;
+      font: inherit;
+      resize: vertical;
+    }
     .B .caveat-strip {
       margin-top: .85rem;
       background: var(--warn-soft);
@@ -306,7 +338,7 @@
 
     .C .stage {
       display: grid;
-      grid-template-columns: 1.2fr .8fr;
+      grid-template-columns: 1.15fr .85fr;
       gap: 1rem;
       align-items: start;
     }
@@ -334,22 +366,32 @@
       gap: .75rem;
     }
     @media (max-width: 640px) { .C .columns { grid-template-columns: 1fr; } }
-    .C .choice {
+    .C .path {
       border: 1px solid var(--line);
       border-radius: 10px;
       padding: .85rem;
       background: var(--paper);
-      cursor: pointer;
-      transition: border-color .15s, box-shadow .15s;
     }
-    .C .choice:hover { border-color: #fb7185; }
-    .C .choice.selected {
-      border-color: var(--disagree);
-      box-shadow: 0 0 0 3px #fecdd3;
+    .C .path h3 { margin: 0 0 .35rem; font-size: 1rem; }
+    .C .path .src { margin-top: .55rem; font-size: .8rem; color: var(--muted); }
+    .C .why {
+      margin-top: .9rem;
+      border: 1px dashed #fb7185;
+      border-radius: 10px;
+      padding: .75rem .85rem;
+      background: #fff1f2;
     }
-    .C .choice h3 { margin: 0 0 .35rem; font-size: 1rem; }
-    .C .choice p { margin: 0; font-size: .9rem; }
-    .C .choice .src { margin-top: .55rem; font-size: .8rem; color: var(--muted); }
+    .C .why label { display: block; font-weight: 650; margin-bottom: .35rem; }
+    .C .why textarea {
+      width: 100%;
+      min-height: 5rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: .55rem .65rem;
+      font: inherit;
+      resize: vertical;
+    }
+    .C .hints { margin: .45rem 0 0; padding-left: 1.1rem; font-size: .86rem; color: var(--muted); }
     .C .rail { display: flex; flex-direction: column; gap: .75rem; }
     .C .rail section {
       background: var(--paper);
@@ -399,21 +441,20 @@
   <header class="page">
     <h1>Advisor analysis · before the system</h1>
     <p class="meta">
-      Three layouts of the same rough analysis for topic
-      <strong>gi half guard</strong>.
-      Cleaned statements are stand-ins written from speech the way a coach-accepted citation would read.
-      Playback links show the volume file and the showing’s speech start; they do not open a player in this prototype.
-      Danaher S01E04 has no <code>video_file</code> stamped yet; the pointer still names the volume and timestamp.
+      Topic <strong>gi half guard</strong>.
+      Citation steps are bullet lists: your body part, the action, the opponent body part.
+      Gi vs no-gi is framed as a difference to explain, not a winner to pick.
+      Same-ruleset winner/loser would wait for two gi methods.
     </p>
   </header>
 
   <div class="question">
     <details open>
-      <summary>Content change from the butterfly draft</summary>
+      <summary>What changed in this pass</summary>
       <p>
-        Disagreement now compares John Danaher (gi · Half Guard BJJ Fundamentals) with Lachlan Giles (no-gi · Half Guard Anthology) on what to do once the underhook is the goal.
-        Giles enters as an other-ruleset instructional with a caveat.
-        React to that disagreement and caveat first; then pick a layout (A or B preferred).
+        Other-ruleset block asks <em>why</em> the gi and no-gi paths differ.
+        Each citation is steps, not a paragraph.
+        Layouts A/B/C remain for the next review.
       </p>
     </details>
   </div>
@@ -428,12 +469,9 @@
   </div>
 
   <script>
-    const TOPIC = {
-      name: "half guard",
-      ruleset: "gi",
-      label: "gi half guard",
-    };
+    const TOPIC = { name: "half guard", ruleset: "gi", label: "gi half guard" };
 
+    // steps: { you, action, against } — against may be null for solo posture
     const citations = [
       {
         id: "jd-get-uh",
@@ -448,8 +486,14 @@
         speechStart: 5.26,
         ruleset: "gi",
         otherRuleset: false,
-        statement:
-          "When the opponent has dominant upper-body grips from half guard top, use a knee lever: put the near foot next to their knee, place the hand inside their armpit, pinch the knees, lift the hips slightly, and rotate so they base with the hands. As they return, that arm becomes your underhook and you can start attacking from bottom.",
+        steps: [
+          { you: "near foot", action: "place next to", against: "their near knee" },
+          { you: "hand", action: "put inside", against: "their armpit" },
+          { you: "knees", action: "pinch together", against: null },
+          { you: "hips", action: "lift slightly and rotate out", against: null },
+          { you: "their hands", action: "force them to base", against: "the mat" },
+          { you: "same arm", action: "turn into an underhook as they return", against: "their torso" },
+        ],
       },
       {
         id: "jd-tight-waist",
@@ -464,8 +508,13 @@
         speechStart: 460.91,
         ruleset: "gi",
         otherRuleset: false,
-        statement:
-          "With the underhook, get off the back onto the side and up to a hand or elbow so the opponent cannot flatten you. The tight waist is the arm around the waist (classically a wrestling seat-belt style grip on the waist). From that home position you keep mobility under their body and start the attacking series.",
+        steps: [
+          { you: "underhook arm", action: "wrap around", against: "their waist" },
+          { you: "body", action: "get off the flat back onto the side", against: null },
+          { you: "hand or elbow", action: "post up so they cannot flatten you", against: "the mat" },
+          { you: "head", action: "keep inside position", against: "their torso" },
+          { you: "hips and legs", action: "keep mobility under their body", against: "their hips" },
+        ],
       },
       {
         id: "jd-trilemma",
@@ -480,8 +529,12 @@
         speechStart: 924.42,
         ruleset: "gi",
         otherRuleset: false,
-        statement:
-          "When you hold dominant underhook grips, the tight waist series is the most effective half-guard attacking home. It creates a trilemma: come up to a base and capture the far leg; roll through; or take the back. As the opponent stops one path, another opens.",
+        steps: [
+          { you: "tight waist + inside hook", action: "hold as the home system", against: "their waist and near leg" },
+          { you: "base hand", action: "come up and capture", against: "their far ankle or knee" },
+          { you: "whole body", action: "roll through when the far-leg path is blocked", against: "their center of gravity" },
+          { you: "underhook and head", action: "take the back when they defend the roll", against: "their back" },
+        ],
       },
       {
         id: "jd-roll",
@@ -496,8 +549,13 @@
         speechStart: 1344.85,
         ruleset: "gi",
         otherRuleset: false,
-        statement:
-          "From knee block, tight waist, hand posted, and head inside, get under their center of gravity. Reach the inside knee or pant grip, then roll them through. A strong whizzer is their main insurance; when the whizzer is light, go to the far leg and put them down. Gi pants grips lock the far leg for the roll.",
+        steps: [
+          { you: "knee block + tight waist", action: "start under their center of gravity", against: "their hips" },
+          { you: "hand", action: "reach inside for", against: "their far knee or pant grip" },
+          { you: "head", action: "keep inside", against: "their torso" },
+          { you: "whole body", action: "roll them through toward the far side", against: "their posted base" },
+          { you: "pant grip", action: "lock the far leg when the whizzer is strong", against: "their far pant leg" },
+        ],
       },
       {
         id: "lg-get-uh",
@@ -512,8 +570,14 @@
         speechStart: 516.56,
         ruleset: "no-gi",
         otherRuleset: true,
-        statement:
-          "From knee shield, the underhook switch is a high-percentage attack. Do not reach for the underhook from flat; that leaves a gap and they pummel through. Sit up until your shoulder connects to theirs, stay in line rather than letting them cross your body, bump forward as you scoot down around the corner, and use only the edge of the shin so they cannot squash the lift.",
+        steps: [
+          { you: "torso", action: "sit up until your shoulder meets", against: "their shoulder" },
+          { you: "reaching arm", action: "do not hunt the underhook from flat", against: "their far armpit" },
+          { you: "body line", action: "stay square so they cannot cross and squash", against: "your underhook arm" },
+          { you: "hips", action: "bump forward and scoot down around the corner", against: "their near hip" },
+          { you: "shin edge", action: "kick toward the roof just below", against: "their knee" },
+          { you: "underhook arm", action: "secure around", against: "their hip" },
+        ],
       },
       {
         id: "lg-overhead",
@@ -528,22 +592,36 @@
         speechStart: 954.16,
         ruleset: "no-gi",
         otherRuleset: true,
-        statement:
-          "Once you have the underhook path, make them over-commit, remove the frame so their weight comes onto you on the midline, and pull like an arm drag while curling the legs back then extending to elevate. Reach mid-shin rather than the knee so they cannot step back. Push and stand in the same beat; a delayed stand lets them drive back in.",
+        steps: [
+          { you: "elbow and hand", action: "push then pull like an arm drag", against: "their posting arm" },
+          { you: "frame", action: "remove it once their weight commits onto the midline", against: "their upper body" },
+          { you: "legs", action: "curl back then extend to elevate", against: "their hips" },
+          { you: "hand", action: "reach mid-shin, not the knee", against: "their far shin" },
+          { you: "base hand + hips", action: "push and stand in the same beat", against: "the mat and their weight" },
+        ],
       },
     ];
 
-    const disagreement = {
+    const difference = {
+      kind: "other-ruleset", // winner/loser reserved for same-ruleset
       about: "What the underhook is for in half guard bottom",
+      prompt: "Why do these gi and no-gi paths differ?",
+      hints: [
+        "Which grips exist in the gi that Giles never uses?",
+        "Which body connections replace those grips in no-gi?",
+        "What becomes the “home” once the underhook is won in each ruleset?",
+      ],
       sideA: {
         citationId: "jd-trilemma",
+        label: "Gi path · Danaher",
         claim:
-          "With the underhook, the tight waist is the home system. Build a trilemma: far-leg come-up, roll-through, and back takes. Stopping one path opens another.",
+          "With the underhook, the tight waist is the home system. Build a trilemma: far-leg come-up, roll-through, and back takes.",
       },
       sideB: {
         citationId: "lg-get-uh",
+        label: "No-gi path · Giles",
         claim:
-          "Win the underhook by sitting up to the shoulder; do not reach from flat. Once you have it, the high-percentage path is underhook-switch into overhead / modified X and related attacks, not camping a tight-waist seatbelt as the home system.",
+          "Sit up to the shoulder to win the underhook. High-percentage path is underhook-switch into overhead / modified X, not camping a tight-waist seatbelt as home.",
       },
     };
 
@@ -563,6 +641,8 @@
       paragraph:
         "Giles’s sit-up underhook and overhead / modified X path may transfer into gi half guard. The roll-through far-leg lock Danaher builds with pant grips, and the jacket frames in the gi instructional, are tools this no-gi series does not share.",
     };
+
+    const whyState = { text: "" };
 
     function fmtTime(sec) {
       const s = Math.floor(sec);
@@ -588,8 +668,7 @@
         c.chapterRaw +
         (c.videoFileKnown
           ? ""
-          : "\nnote: transcript has no video_file yet; volume name still identifies the recording") +
-        "\nOpens the volume video at this showing’s speech start when a player is wired.";
+          : "\nnote: transcript has no video_file yet; volume name still identifies the recording");
       el.classList.add("show");
       clearTimeout(showPlayback._t);
       showPlayback._t = setTimeout(() => el.classList.remove("show"), 6000);
@@ -608,6 +687,42 @@
     function rulesetPill(c) {
       if (c.otherRuleset) return '<span class="pill pill-other">other-ruleset · no-gi</span>';
       return '<span class="pill pill-gi">gi</span>';
+    }
+
+    function stepsHtml(c) {
+      return (
+        '<ol class="steps">' +
+        c.steps
+          .map((s) => {
+            const against = s.against
+              ? ' against <span class="opp">' + s.against + "</span>"
+              : "";
+            return (
+              "<li><span class=\"you\">" +
+              s.you +
+              "</span>: " +
+              s.action +
+              against +
+              "</li>"
+            );
+          })
+          .join("") +
+        "</ol>"
+      );
+    }
+
+    function whyBox(cls) {
+      return (
+        '<div class="why"><label for="why-input">' +
+        difference.prompt +
+        "</label>" +
+        '<textarea id="why-input" placeholder="e.g. Gi pants lock the far leg for the roll-through; no-gi has to elevate before they re-pummel…">' +
+        (whyState.text || "") +
+        "</textarea>" +
+        '<ul class="hints">' +
+        difference.hints.map((h) => "<li>" + h + "</li>").join("") +
+        "</ul></div>"
+      );
     }
 
     function caveatBlock(split) {
@@ -634,8 +749,8 @@
     function renderA() {
       const same = citations.filter((c) => !c.otherRuleset);
       const other = citations.filter((c) => c.otherRuleset);
-      const a = byId(disagreement.sideA.citationId);
-      const b = byId(disagreement.sideB.citationId);
+      const a = byId(difference.sideA.citationId);
+      const b = byId(difference.sideB.citationId);
       return (
         '<div class="A"><article class="memo">' +
         '<div class="memo-top">' +
@@ -645,32 +760,34 @@
         '<span class="pill pill-proto">prototype stand-in citations</span></div></div>' +
         '<div style="color:var(--muted);font-size:.86rem;text-align:right">Before the coach determines the system<br/>No classes yet</div>' +
         "</div>" +
-        '<p class="lede">Same-ruleset citations come from Danaher’s gi half-guard underhook and tight-waist material. Giles’s no-gi Half Guard Anthology is offered as an other-ruleset instructional. Once welcomed, it disagrees with Danaher on what the underhook is for.</p>' +
-        "<h3>Disagreement</h3>" +
-        '<div class="disagree-box">' +
-        "<div><span class=\"pill pill-disagree\">disagreement</span> <strong>" +
-        disagreement.about +
+        '<p class="lede">Danaher supplies the gi underhook and tight-waist path. Giles’s no-gi Half Guard Anthology is an other-ruleset offer. The block below asks why the paths differ; it does not pick a winner.</p>' +
+        "<h3>Ruleset difference</h3>" +
+        '<div class="diff-box">' +
+        "<div><span class=\"pill pill-diff\">gi ↔ no-gi</span> <strong>" +
+        difference.about +
         "</strong></div>" +
         '<div class="sides">' +
         '<div class="side"><strong>' +
-        a.instructor +
-        " · gi</strong><p>" +
-        disagreement.sideA.claim +
+        difference.sideA.label +
+        "</strong><p>" +
+        difference.sideA.claim +
         '</p><div style="margin-top:.45rem">' +
         playLink(a) +
         " · " +
         a.chapter +
         "</div></div>" +
         '<div class="side"><strong>' +
-        b.instructor +
+        difference.sideB.label +
         ' <span class="pill pill-other">other-ruleset</span></strong><p>' +
-        disagreement.sideB.claim +
+        difference.sideB.claim +
         '</p><div style="margin-top:.45rem">' +
         playLink(b) +
         " · " +
         b.chapter +
         "</div></div>" +
-        "</div></div>" +
+        "</div>" +
+        whyBox("A") +
+        "</div>" +
         "<h3>Same-ruleset citations</h3><ul class=\"cite-list\">" +
         same
           .map(
@@ -691,9 +808,8 @@
               " · " +
               playLink(c) +
               "</div>" +
-              '<div class="statement">' +
-              c.statement +
-              "</div></li>"
+              stepsHtml(c) +
+              "</li>"
           )
           .join("") +
         "</ul>" +
@@ -718,17 +834,17 @@
               " · " +
               playLink(c) +
               "</div>" +
-              '<div class="statement" style="margin:.4rem 0 .75rem">' +
-              c.statement +
-              "</div>" +
-              (c.id === caveat.onCitationId ? caveatBlock(true) : "") +
+              stepsHtml(c) +
+              (c.id === caveat.onCitationId
+                ? '<div style="margin-top:.75rem">' + caveatBlock(true) + "</div>"
+                : "") +
               "</div>"
           )
           .join("") +
         '<p style="font-size:.88rem;color:var(--muted)"><strong>Caveat as one paragraph (alt):</strong> ' +
         caveat.paragraph +
         "</p>" +
-        '<p class="next">Next step in the product: the coach determines the system from this analysis. Cutting into classes is a later ticket.</p>' +
+        '<p class="next">Same-ruleset winner/loser appears only when two gi methods conflict. Cutting into classes is a later ticket.</p>' +
         "</article></div>"
       );
     }
@@ -736,8 +852,8 @@
     function renderB() {
       const same = citations.filter((c) => !c.otherRuleset);
       const other = citations.filter((c) => c.otherRuleset);
-      const a = byId(disagreement.sideA.citationId);
-      const b = byId(disagreement.sideB.citationId);
+      const a = byId(difference.sideA.citationId);
+      const b = byId(difference.sideB.citationId);
 
       function card(c) {
         return (
@@ -762,9 +878,7 @@
           '<div style="font-weight:650;font-size:.86rem">' +
           c.movement +
           "</div>" +
-          '<div class="statement">' +
-          c.statement +
-          "</div>" +
+          stepsHtml(c) +
           "</article>"
         );
       }
@@ -773,18 +887,20 @@
         '<div class="B">' +
         '<div class="topic-bar"><h2>' +
         TOPIC.label +
-        '</h2><span class="pill pill-gi">gi</span><span class="pill pill-disagree">1 disagreement</span><span class="pill pill-other">other-ruleset · Giles</span><span class="pill pill-proto">prototype</span></div>' +
-        '<div class="pair"><div class="pair-label"><span class="pill pill-disagree">disagreement</span> ' +
-        disagreement.about +
-        '</div><div class="grid">' +
+        '</h2><span class="pill pill-gi">gi</span><span class="pill pill-diff">ruleset difference</span><span class="pill pill-other">other-ruleset · Giles</span><span class="pill pill-proto">prototype</span></div>' +
+        '<div class="pair"><div class="pair-label"><span class="pill pill-diff">gi ↔ no-gi</span> ' +
+        difference.about +
+        ' · no winner</div><div class="grid">' +
         card(a) +
         card(b) +
         "</div>" +
         '<p style="margin:.65rem 0 0;font-size:.9rem"><strong>Danaher:</strong> ' +
-        disagreement.sideA.claim +
-        " <strong>Giles (other-ruleset):</strong> " +
-        disagreement.sideB.claim +
-        "</p></div>" +
+        difference.sideA.claim +
+        " <strong>Giles:</strong> " +
+        difference.sideB.claim +
+        "</p>" +
+        whyBox("B") +
+        "</div>" +
         '<h3 style="margin:0 0 .55rem;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Same-ruleset citations</h3>' +
         '<div class="grid">' +
         same.map((c) => card(c)).join("") +
@@ -809,45 +925,49 @@
       );
     }
 
-    const cState = { choice: null };
-
     function renderC() {
       const same = citations.filter((c) => !c.otherRuleset);
-      const otherMain = byId(disagreement.sideB.citationId);
-      const a = byId(disagreement.sideA.citationId);
+      const a = byId(difference.sideA.citationId);
+      const b = byId(difference.sideB.citationId);
       const stateText =
         "topic: " +
         TOPIC.label +
-        "\nsystem: (not determined)\nunderhook_job: " +
-        (cState.choice || "(none)") +
+        "\nsystem: (not determined)\nframe: ruleset-difference (no winner)\nwhy: " +
+        (whyState.text ? whyState.text.slice(0, 80) + (whyState.text.length > 80 ? "…" : "") : "(empty)") +
         "\nother_ruleset_yes_no: yes (prototype assumes welcomed)\ncitations_shown: " +
         citations.length;
 
       return (
         '<div class="C"><div class="stage">' +
         '<div class="decision">' +
-        "<h2>What is the underhook for?</h2>" +
-        '<p class="prompt">Disagreement first. Supporting citations stay on the rail. The system is not written until you choose.</p>' +
+        "<h2>Why do these paths differ?</h2>" +
+        '<p class="prompt">Gi and no-gi underhook paths sit side by side. Explain the difference. Do not crown a winner here.</p>' +
         '<div class="columns">' +
-        '<div class="choice' +
-        (cState.choice === "tight-waist-home" ? " selected" : "") +
-        '" data-choice="tight-waist-home"><h3>Tight waist home</h3><p>' +
-        disagreement.sideA.claim +
-        '</p><div class="src">' +
-        a.instructor +
-        " · " +
+        '<div class="path"><h3>' +
+        difference.sideA.label +
+        "</h3><p>" +
+        difference.sideA.claim +
+        "</p>" +
+        stepsHtml(a) +
+        '<div class="src">' +
         playLink(a) +
+        " · " +
+        a.chapter +
         "</div></div>" +
-        '<div class="choice' +
-        (cState.choice === "situp-overhead" ? " selected" : "") +
-        '" data-choice="situp-overhead"><h3>Sit-up into overhead / X</h3><p>' +
-        disagreement.sideB.claim +
-        '</p><div class="src">' +
-        otherMain.instructor +
-        ' · <span class="pill pill-other">other-ruleset</span> · ' +
-        playLink(otherMain) +
+        '<div class="path"><h3>' +
+        difference.sideB.label +
+        ' <span class="pill pill-other">other-ruleset</span></h3><p>' +
+        difference.sideB.claim +
+        "</p>" +
+        stepsHtml(b) +
+        '<div class="src">' +
+        playLink(b) +
+        " · " +
+        b.chapter +
         "</div></div>" +
-        "</div></div>" +
+        "</div>" +
+        whyBox("C") +
+        "</div>" +
         '<div class="rail">' +
         "<section><h3>Same-ruleset support</h3>" +
         same
@@ -862,7 +982,7 @@
               " · " +
               playLink(c) +
               "</div>" +
-              c.statement +
+              stepsHtml(c) +
               "</div>"
           )
           .join("") +
@@ -879,7 +999,7 @@
               " · " +
               playLink(c) +
               "</div>" +
-              c.statement +
+              stepsHtml(c) +
               "</div>"
           )
           .join("") +
@@ -897,7 +1017,7 @@
     const variants = [
       { key: "A", name: "Briefing memo", render: renderA },
       { key: "B", name: "Citation gallery", render: renderB },
-      { key: "C", name: "Decide-first", render: renderC },
+      { key: "C", name: "Why-first", render: renderC },
     ];
 
     function currentKey() {
@@ -913,6 +1033,8 @@
     }
 
     function cycle(delta) {
+      const ta = document.getElementById("why-input");
+      if (ta) whyState.text = ta.value;
       const i = variants.findIndex((v) => v.key === currentKey());
       const next = variants[(i + delta + variants.length) % variants.length];
       setVariant(next.key);
@@ -924,17 +1046,17 @@
       document.getElementById("app").innerHTML = v.render();
       document.getElementById("switcher-label").innerHTML =
         v.key + "<span>" + v.name + "</span>";
+      const ta = document.getElementById("why-input");
+      if (ta) {
+        ta.addEventListener("input", () => {
+          whyState.text = ta.value;
+        });
+      }
       document.getElementById("app").onclick = (e) => {
         const play = e.target.closest("a.play");
         if (play) {
           e.preventDefault();
           showPlayback(byId(play.getAttribute("data-id")));
-          return;
-        }
-        const choice = e.target.closest(".choice");
-        if (choice && currentKey() === "C") {
-          cState.choice = choice.getAttribute("data-choice");
-          paint();
         }
       };
     }
