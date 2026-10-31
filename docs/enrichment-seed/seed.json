@@ -1,0 +1,2360 @@
+{
+  "meta": {
+    "version": 1,
+    "assembled": "2026-10-31",
+    "ticket": "https://github.com/djsciman/video_transcriber_rag/issues/25",
+    "purpose": "Raw one-time consensus enrichment seed for hierarchy browse and dimensional search. Import as the starting tree; the coach edits the live copy afterward.",
+    "path_levels": [
+      "starting_position",
+      "move_type",
+      "ending_position_or_submission"
+    ],
+    "leaf_ruleset_values": [
+      "gi",
+      "no-gi",
+      "both"
+    ],
+    "notes": [
+      "Shared path levels apply to both rulesets. Only named-move leaves carry gi / no-gi / both.",
+      "This seed is raw consensus material for prototype organization (#26), not a final product tree.",
+      "seen_in on leaves records which consulted sources listed that name; absence does not mean the move is rare.",
+      "Uncategorized is a product browse bucket for citations with no node link; it is not a seed node."
+    ],
+    "counts": {
+      "move_types": 7,
+      "starting_positions": 36,
+      "ending_positions_or_submissions": 55,
+      "paths": 100,
+      "named_move_leaves": 139
+    }
+  },
+  "sources": [
+    {
+      "id": "bjj-data",
+      "title": "bjj-data taxonomy.json (positions and submissions vocabulary)",
+      "url": "https://github.com/grapple-flows/bjj-data",
+      "version": "v0.1.0",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "attribution": "Data from bjj-data by Grapple Flows (https://grappleflows.com)",
+      "local_copy": "reference/bjj-data-taxonomy-v0.1.0.json",
+      "role": "Primary open vocabulary of position and submission labels and aliases"
+    },
+    {
+      "id": "wikipedia",
+      "title": "List of Brazilian jiu-jitsu techniques",
+      "url": "https://en.wikipedia.org/wiki/List_of_Brazilian_jiu-jitsu_techniques",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "attribution": "Wikipedia contributors, List of Brazilian jiu-jitsu techniques",
+      "role": "Technique type categories and common named moves"
+    },
+    {
+      "id": "wikibooks",
+      "title": "Brazilian Jiu Jitsu: Positional and Technical Guide",
+      "url": "https://en.wikibooks.org/wiki/Brazilian_Jiu_Jitsu:_Positional_and_Technical_Guide",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "attribution": "Wikibooks contributors, Brazilian Jiu Jitsu: Positional and Technical Guide",
+      "role": "Position family outline (pins, guards, submissions)"
+    },
+    {
+      "id": "grapplepedia",
+      "title": "Grapplepedia position and technique map",
+      "url": "https://jiujitsuauthority.com/grapplepedia/",
+      "license": "All rights reserved (consulted; names rewritten as consensus labels)",
+      "license_url": null,
+      "attribution": "Jiu-Jitsu Authority Grapplepedia (structure consulted; no wholesale copy)",
+      "role": "Cross-check of ~35 core positions and move-type groupings for consensus coverage"
+    }
+  ],
+  "license_notes": [
+    "bjj-data data is CC BY 4.0: keep attribution when redistributing the reference file or derived vocabulary labels.",
+    "Wikipedia and Wikibooks text is CC BY-SA 4.0: share-alike applies to adapted text from those pages; this seed uses short common technique names as consensus labels rather than copying article prose.",
+    "Grapplepedia was consulted for coverage consensus only. Do not treat this seed as a Grapplepedia dump; its site license is not an open reuse grant.",
+    "BJJGraph (bjjgraph.org) is source-available noncommercial and was not copied into this seed.",
+    "The seed is finder-node labels only. It does not include lesson fields, instructional content, or video."
+  ],
+  "move_types": [
+    {
+      "id": "takedown",
+      "label": "Takedown"
+    },
+    {
+      "id": "sweep",
+      "label": "Sweep"
+    },
+    {
+      "id": "pass",
+      "label": "Pass"
+    },
+    {
+      "id": "escape",
+      "label": "Escape"
+    },
+    {
+      "id": "submission",
+      "label": "Submission"
+    },
+    {
+      "id": "transition",
+      "label": "Transition"
+    },
+    {
+      "id": "back-take",
+      "label": "Back take"
+    }
+  ],
+  "starting_positions": [
+    {
+      "id": "standing",
+      "label": "Standing",
+      "family": "standing"
+    },
+    {
+      "id": "clinch",
+      "label": "Clinch",
+      "family": "standing"
+    },
+    {
+      "id": "front-headlock",
+      "label": "Front headlock",
+      "family": "standing"
+    },
+    {
+      "id": "closed-guard",
+      "label": "Closed guard",
+      "family": "guard"
+    },
+    {
+      "id": "open-guard",
+      "label": "Open guard",
+      "family": "guard"
+    },
+    {
+      "id": "half-guard",
+      "label": "Half guard",
+      "family": "guard"
+    },
+    {
+      "id": "deep-half-guard",
+      "label": "Deep half guard",
+      "family": "guard"
+    },
+    {
+      "id": "z-guard",
+      "label": "Z-guard",
+      "family": "guard",
+      "aliases": [
+        "Knee shield",
+        "93 guard"
+      ]
+    },
+    {
+      "id": "butterfly-guard",
+      "label": "Butterfly guard",
+      "family": "guard"
+    },
+    {
+      "id": "de-la-riva",
+      "label": "De La Riva",
+      "family": "guard",
+      "aliases": [
+        "DLR"
+      ]
+    },
+    {
+      "id": "reverse-de-la-riva",
+      "label": "Reverse De La Riva",
+      "family": "guard",
+      "aliases": [
+        "RDLR"
+      ]
+    },
+    {
+      "id": "spider-guard",
+      "label": "Spider guard",
+      "family": "guard"
+    },
+    {
+      "id": "lasso-guard",
+      "label": "Lasso guard",
+      "family": "guard"
+    },
+    {
+      "id": "collar-sleeve",
+      "label": "Collar sleeve",
+      "family": "guard"
+    },
+    {
+      "id": "x-guard",
+      "label": "X-guard",
+      "family": "guard"
+    },
+    {
+      "id": "single-leg-x",
+      "label": "Single-leg X",
+      "family": "leg-entanglement",
+      "aliases": [
+        "SLX",
+        "Ashi garami"
+      ]
+    },
+    {
+      "id": "k-guard",
+      "label": "K-guard",
+      "family": "guard"
+    },
+    {
+      "id": "rubber-guard",
+      "label": "Rubber guard",
+      "family": "guard"
+    },
+    {
+      "id": "worm-guard",
+      "label": "Worm guard",
+      "family": "guard"
+    },
+    {
+      "id": "shin-to-shin",
+      "label": "Shin-to-shin",
+      "family": "guard"
+    },
+    {
+      "id": "fifty-fifty",
+      "label": "50/50",
+      "family": "leg-entanglement"
+    },
+    {
+      "id": "saddle",
+      "label": "Saddle",
+      "family": "leg-entanglement",
+      "aliases": [
+        "Honey hole",
+        "411",
+        "Inside sankaku"
+      ]
+    },
+    {
+      "id": "outside-ashi",
+      "label": "Outside ashi",
+      "family": "leg-entanglement"
+    },
+    {
+      "id": "headquarters",
+      "label": "Headquarters",
+      "family": "passing"
+    },
+    {
+      "id": "leg-drag-position",
+      "label": "Leg drag position",
+      "family": "passing"
+    },
+    {
+      "id": "side-control",
+      "label": "Side control",
+      "family": "pin"
+    },
+    {
+      "id": "kesa-gatame",
+      "label": "Kesa gatame",
+      "family": "pin",
+      "aliases": [
+        "Scarf hold"
+      ]
+    },
+    {
+      "id": "north-south",
+      "label": "North-south",
+      "family": "pin"
+    },
+    {
+      "id": "knee-on-belly",
+      "label": "Knee on belly",
+      "family": "pin"
+    },
+    {
+      "id": "mount",
+      "label": "Mount",
+      "family": "pin"
+    },
+    {
+      "id": "s-mount",
+      "label": "S-mount",
+      "family": "pin"
+    },
+    {
+      "id": "technical-mount",
+      "label": "Technical mount",
+      "family": "pin"
+    },
+    {
+      "id": "turtle",
+      "label": "Turtle",
+      "family": "turtle"
+    },
+    {
+      "id": "truck",
+      "label": "Truck",
+      "family": "leg-entanglement"
+    },
+    {
+      "id": "back-control",
+      "label": "Back control",
+      "family": "back"
+    },
+    {
+      "id": "crucifix",
+      "label": "Crucifix",
+      "family": "back"
+    }
+  ],
+  "ending_positions_or_submissions": [
+    {
+      "id": "standing",
+      "label": "Standing",
+      "kind": "position"
+    },
+    {
+      "id": "clinch",
+      "label": "Clinch",
+      "kind": "position"
+    },
+    {
+      "id": "front-headlock",
+      "label": "Front headlock",
+      "kind": "position"
+    },
+    {
+      "id": "closed-guard",
+      "label": "Closed guard",
+      "kind": "position"
+    },
+    {
+      "id": "open-guard",
+      "label": "Open guard",
+      "kind": "position"
+    },
+    {
+      "id": "half-guard",
+      "label": "Half guard",
+      "kind": "position"
+    },
+    {
+      "id": "deep-half-guard",
+      "label": "Deep half guard",
+      "kind": "position"
+    },
+    {
+      "id": "butterfly-guard",
+      "label": "Butterfly guard",
+      "kind": "position"
+    },
+    {
+      "id": "de-la-riva",
+      "label": "De La Riva",
+      "kind": "position"
+    },
+    {
+      "id": "reverse-de-la-riva",
+      "label": "Reverse De La Riva",
+      "kind": "position"
+    },
+    {
+      "id": "x-guard",
+      "label": "X-guard",
+      "kind": "position"
+    },
+    {
+      "id": "single-leg-x",
+      "label": "Single-leg X",
+      "kind": "position"
+    },
+    {
+      "id": "k-guard",
+      "label": "K-guard",
+      "kind": "position"
+    },
+    {
+      "id": "saddle",
+      "label": "Saddle",
+      "kind": "position"
+    },
+    {
+      "id": "fifty-fifty",
+      "label": "50/50",
+      "kind": "position"
+    },
+    {
+      "id": "outside-ashi",
+      "label": "Outside ashi",
+      "kind": "position"
+    },
+    {
+      "id": "headquarters",
+      "label": "Headquarters",
+      "kind": "position"
+    },
+    {
+      "id": "leg-drag-position",
+      "label": "Leg drag position",
+      "kind": "position"
+    },
+    {
+      "id": "side-control",
+      "label": "Side control",
+      "kind": "position"
+    },
+    {
+      "id": "kesa-gatame",
+      "label": "Kesa gatame",
+      "kind": "position"
+    },
+    {
+      "id": "north-south",
+      "label": "North-south",
+      "kind": "position"
+    },
+    {
+      "id": "knee-on-belly",
+      "label": "Knee on belly",
+      "kind": "position"
+    },
+    {
+      "id": "mount",
+      "label": "Mount",
+      "kind": "position"
+    },
+    {
+      "id": "s-mount",
+      "label": "S-mount",
+      "kind": "position"
+    },
+    {
+      "id": "technical-mount",
+      "label": "Technical mount",
+      "kind": "position"
+    },
+    {
+      "id": "turtle",
+      "label": "Turtle",
+      "kind": "position"
+    },
+    {
+      "id": "truck",
+      "label": "Truck",
+      "kind": "position"
+    },
+    {
+      "id": "back-control",
+      "label": "Back control",
+      "kind": "position"
+    },
+    {
+      "id": "crucifix",
+      "label": "Crucifix",
+      "kind": "position"
+    },
+    {
+      "id": "rear-naked-choke",
+      "label": "Rear naked choke",
+      "kind": "submission"
+    },
+    {
+      "id": "guillotine",
+      "label": "Guillotine",
+      "kind": "submission"
+    },
+    {
+      "id": "darce",
+      "label": "D'Arce choke",
+      "kind": "submission"
+    },
+    {
+      "id": "anaconda",
+      "label": "Anaconda choke",
+      "kind": "submission"
+    },
+    {
+      "id": "arm-triangle",
+      "label": "Arm triangle",
+      "kind": "submission"
+    },
+    {
+      "id": "triangle",
+      "label": "Triangle choke",
+      "kind": "submission"
+    },
+    {
+      "id": "armbar",
+      "label": "Armbar",
+      "kind": "submission"
+    },
+    {
+      "id": "kimura",
+      "label": "Kimura",
+      "kind": "submission"
+    },
+    {
+      "id": "americana",
+      "label": "Americana",
+      "kind": "submission"
+    },
+    {
+      "id": "omoplata",
+      "label": "Omoplata",
+      "kind": "submission"
+    },
+    {
+      "id": "ezekiel",
+      "label": "Ezekiel choke",
+      "kind": "submission"
+    },
+    {
+      "id": "north-south-choke",
+      "label": "North-south choke",
+      "kind": "submission"
+    },
+    {
+      "id": "cross-collar-choke",
+      "label": "Cross collar choke",
+      "kind": "submission"
+    },
+    {
+      "id": "bow-and-arrow",
+      "label": "Bow and arrow choke",
+      "kind": "submission"
+    },
+    {
+      "id": "loop-choke",
+      "label": "Loop choke",
+      "kind": "submission"
+    },
+    {
+      "id": "clock-choke",
+      "label": "Clock choke",
+      "kind": "submission"
+    },
+    {
+      "id": "baseball-bat-choke",
+      "label": "Baseball bat choke",
+      "kind": "submission"
+    },
+    {
+      "id": "paper-cutter",
+      "label": "Paper cutter choke",
+      "kind": "submission"
+    },
+    {
+      "id": "gogoplata",
+      "label": "Gogoplata",
+      "kind": "submission"
+    },
+    {
+      "id": "straight-ankle-lock",
+      "label": "Straight ankle lock",
+      "kind": "submission"
+    },
+    {
+      "id": "heel-hook",
+      "label": "Heel hook",
+      "kind": "submission"
+    },
+    {
+      "id": "toe-hold",
+      "label": "Toe hold",
+      "kind": "submission"
+    },
+    {
+      "id": "kneebar",
+      "label": "Kneebar",
+      "kind": "submission"
+    },
+    {
+      "id": "calf-slicer",
+      "label": "Calf slicer",
+      "kind": "submission"
+    },
+    {
+      "id": "twister",
+      "label": "Twister",
+      "kind": "submission"
+    },
+    {
+      "id": "wrist-lock",
+      "label": "Wrist lock",
+      "kind": "submission"
+    }
+  ],
+  "paths": [
+    {
+      "start": "back-control",
+      "move_type": "escape",
+      "end": "turtle",
+      "leaves": [
+        {
+          "name": "Chair sit escape",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "back-control",
+      "move_type": "submission",
+      "end": "armbar",
+      "leaves": [
+        {
+          "name": "Armbar from back control",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "back-control",
+      "move_type": "submission",
+      "end": "bow-and-arrow",
+      "leaves": [
+        {
+          "name": "Bow and arrow choke",
+          "ruleset": "gi",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "back-control",
+      "move_type": "submission",
+      "end": "rear-naked-choke",
+      "leaves": [
+        {
+          "name": "Rear naked choke",
+          "ruleset": "both",
+          "aliases": [
+            "Mata leão",
+            "Hadaka jime"
+          ],
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia",
+            "bjj-data"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "butterfly-guard",
+      "move_type": "back-take",
+      "end": "back-control",
+      "leaves": [
+        {
+          "name": "Arm drag from butterfly",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "butterfly-guard",
+      "move_type": "pass",
+      "end": "side-control",
+      "leaves": [
+        {
+          "name": "Float and smash pass",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        },
+        {
+          "name": "Body lock pass",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "butterfly-guard",
+      "move_type": "sweep",
+      "end": "mount",
+      "leaves": [
+        {
+          "name": "Butterfly sweep",
+          "ruleset": "both",
+          "aliases": [
+            "Hook sweep"
+          ],
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "butterfly-guard",
+      "move_type": "transition",
+      "end": "x-guard",
+      "leaves": [
+        {
+          "name": "X-guard entry",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "clinch",
+      "move_type": "back-take",
+      "end": "back-control",
+      "leaves": [
+        {
+          "name": "Duck under",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "clinch",
+      "move_type": "takedown",
+      "end": "side-control",
+      "leaves": [
+        {
+          "name": "Body lock takedown",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Inside trip",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        },
+        {
+          "name": "Outside trip",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "closed-guard",
+      "move_type": "pass",
+      "end": "side-control",
+      "leaves": [
+        {
+          "name": "Standing guard break",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Knee-in-tailbone break",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        },
+        {
+          "name": "Double forearm wedge break",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "closed-guard",
+      "move_type": "submission",
+      "end": "armbar",
+      "leaves": [
+        {
+          "name": "Armbar from closed guard",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "closed-guard",
+      "move_type": "submission",
+      "end": "cross-collar-choke",
+      "leaves": [
+        {
+          "name": "Cross collar choke",
+          "ruleset": "gi",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "closed-guard",
+      "move_type": "submission",
+      "end": "kimura",
+      "leaves": [
+        {
+          "name": "Kimura from closed guard",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "closed-guard",
+      "move_type": "submission",
+      "end": "omoplata",
+      "leaves": [
+        {
+          "name": "Omoplata",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia",
+            "bjj-data"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "closed-guard",
+      "move_type": "submission",
+      "end": "triangle",
+      "leaves": [
+        {
+          "name": "Triangle choke",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia",
+            "bjj-data"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "closed-guard",
+      "move_type": "sweep",
+      "end": "mount",
+      "leaves": [
+        {
+          "name": "Hip bump sweep",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Scissor sweep",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Flower sweep",
+          "ruleset": "both",
+          "aliases": [
+            "Pendulum sweep"
+          ],
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Lumberjack sweep",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        },
+        {
+          "name": "Waiter sweep",
+          "ruleset": "both",
+          "aliases": [
+            "Muscle sweep"
+          ],
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "closed-guard",
+      "move_type": "sweep",
+      "end": "side-control",
+      "leaves": [
+        {
+          "name": "Omoplata sweep",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        },
+        {
+          "name": "Balloon sweep",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "closed-guard",
+      "move_type": "transition",
+      "end": "rubber-guard",
+      "leaves": [
+        {
+          "name": "Mission control entry",
+          "ruleset": "no-gi",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "closed-guard",
+      "move_type": "transition",
+      "end": "worm-guard",
+      "leaves": [
+        {
+          "name": "Worm guard entry",
+          "ruleset": "gi",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "collar-sleeve",
+      "move_type": "submission",
+      "end": "triangle",
+      "leaves": [
+        {
+          "name": "Collar-sleeve triangle",
+          "ruleset": "gi",
+          "seen_in": [
+            "bjj-data"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "crucifix",
+      "move_type": "submission",
+      "end": "rear-naked-choke",
+      "leaves": [
+        {
+          "name": "Crucifix choke",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "de-la-riva",
+      "move_type": "back-take",
+      "end": "back-control",
+      "leaves": [
+        {
+          "name": "Berimbolo",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia",
+            "bjj-data"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "de-la-riva",
+      "move_type": "escape",
+      "end": "side-control",
+      "leaves": [
+        {
+          "name": "Backstep vs De La Riva",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        },
+        {
+          "name": "Knee cut through hook",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "de-la-riva",
+      "move_type": "sweep",
+      "end": "mount",
+      "leaves": [
+        {
+          "name": "De La Riva sweep",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "deep-half-guard",
+      "move_type": "sweep",
+      "end": "mount",
+      "leaves": [
+        {
+          "name": "Waiter sweep",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Electric chair",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "fifty-fifty",
+      "move_type": "submission",
+      "end": "heel-hook",
+      "leaves": [
+        {
+          "name": "Inside heel hook from 50/50",
+          "ruleset": "no-gi",
+          "seen_in": [
+            "grapplepedia",
+            "bjj-data"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "front-headlock",
+      "move_type": "back-take",
+      "end": "back-control",
+      "leaves": [
+        {
+          "name": "Front headlock go-behind",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "front-headlock",
+      "move_type": "escape",
+      "end": "standing",
+      "leaves": [
+        {
+          "name": "Front headlock escape",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "front-headlock",
+      "move_type": "submission",
+      "end": "anaconda",
+      "leaves": [
+        {
+          "name": "Anaconda choke",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "front-headlock",
+      "move_type": "submission",
+      "end": "darce",
+      "leaves": [
+        {
+          "name": "D'Arce choke",
+          "ruleset": "both",
+          "aliases": [
+            "Brabo choke"
+          ],
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "front-headlock",
+      "move_type": "submission",
+      "end": "guillotine",
+      "leaves": [
+        {
+          "name": "Guillotine choke",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia",
+            "bjj-data"
+          ]
+        },
+        {
+          "name": "Peruvian necktie",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Japanese necktie",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "half-guard",
+      "move_type": "back-take",
+      "end": "back-control",
+      "leaves": [
+        {
+          "name": "Back take from half guard",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "half-guard",
+      "move_type": "pass",
+      "end": "side-control",
+      "leaves": [
+        {
+          "name": "Crossface and underhook pass",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Knee slice pass",
+          "ruleset": "both",
+          "aliases": [
+            "Knee cut pass"
+          ],
+          "seen_in": [
+            "wikipedia"
+          ]
+        },
+        {
+          "name": "Backstep pass",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "half-guard",
+      "move_type": "sweep",
+      "end": "side-control",
+      "leaves": [
+        {
+          "name": "Old school sweep",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "John Wayne sweep",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "half-guard",
+      "move_type": "transition",
+      "end": "deep-half-guard",
+      "leaves": [
+        {
+          "name": "Deep half entry",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "half-guard",
+      "move_type": "transition",
+      "end": "z-guard",
+      "leaves": [
+        {
+          "name": "Knee shield entry",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "headquarters",
+      "move_type": "pass",
+      "end": "side-control",
+      "leaves": [
+        {
+          "name": "Knee cut pass",
+          "ruleset": "both",
+          "aliases": [
+            "Knee slice"
+          ],
+          "seen_in": [
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Long step pass",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "k-guard",
+      "move_type": "transition",
+      "end": "saddle",
+      "leaves": [
+        {
+          "name": "K-guard roll to saddle",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "kesa-gatame",
+      "move_type": "escape",
+      "end": "half-guard",
+      "leaves": [
+        {
+          "name": "Kesa gatame escape",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "knee-on-belly",
+      "move_type": "escape",
+      "end": "half-guard",
+      "leaves": [
+        {
+          "name": "Knee on belly escape",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "knee-on-belly",
+      "move_type": "submission",
+      "end": "baseball-bat-choke",
+      "leaves": [
+        {
+          "name": "Baseball bat choke",
+          "ruleset": "gi",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "lasso-guard",
+      "move_type": "pass",
+      "end": "side-control",
+      "leaves": [
+        {
+          "name": "Strip sleeve and backstep",
+          "ruleset": "gi",
+          "seen_in": [
+            "wikipedia"
+          ]
+        },
+        {
+          "name": "Step over lasso smash pass",
+          "ruleset": "gi",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "lasso-guard",
+      "move_type": "sweep",
+      "end": "mount",
+      "leaves": [
+        {
+          "name": "Lasso sweep",
+          "ruleset": "gi",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "leg-drag-position",
+      "move_type": "back-take",
+      "end": "back-control",
+      "leaves": [
+        {
+          "name": "Back take from leg drag",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "leg-drag-position",
+      "move_type": "pass",
+      "end": "side-control",
+      "leaves": [
+        {
+          "name": "Leg drag finish to side control",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "mount",
+      "move_type": "back-take",
+      "end": "back-control",
+      "leaves": [
+        {
+          "name": "Gift wrap to back",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "mount",
+      "move_type": "escape",
+      "end": "half-guard",
+      "leaves": [
+        {
+          "name": "Upa escape",
+          "ruleset": "both",
+          "aliases": [
+            "Bridge and roll"
+          ],
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Elbow-knee escape",
+          "ruleset": "both",
+          "aliases": [
+            "Shrimp escape"
+          ],
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "mount",
+      "move_type": "submission",
+      "end": "armbar",
+      "leaves": [
+        {
+          "name": "Armbar from mount",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "mount",
+      "move_type": "submission",
+      "end": "cross-collar-choke",
+      "leaves": [
+        {
+          "name": "Cross collar choke from mount",
+          "ruleset": "gi",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "mount",
+      "move_type": "submission",
+      "end": "ezekiel",
+      "leaves": [
+        {
+          "name": "Ezekiel choke",
+          "ruleset": "both",
+          "aliases": [
+            "Sode guruma jime"
+          ],
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "mount",
+      "move_type": "transition",
+      "end": "s-mount",
+      "leaves": [
+        {
+          "name": "Climb to S-mount",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "mount",
+      "move_type": "transition",
+      "end": "technical-mount",
+      "leaves": [
+        {
+          "name": "Follow to technical mount",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "north-south",
+      "move_type": "submission",
+      "end": "north-south-choke",
+      "leaves": [
+        {
+          "name": "North-south choke",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "open-guard",
+      "move_type": "pass",
+      "end": "leg-drag-position",
+      "leaves": [
+        {
+          "name": "Leg drag",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia",
+            "bjj-data"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "open-guard",
+      "move_type": "pass",
+      "end": "side-control",
+      "leaves": [
+        {
+          "name": "Toreando pass",
+          "ruleset": "both",
+          "aliases": [
+            "Bullfighter pass"
+          ],
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Over-under pass",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Double under pass",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Body lock pass",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "X-pass",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        },
+        {
+          "name": "Shin pin pass",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "open-guard",
+      "move_type": "sweep",
+      "end": "mount",
+      "leaves": [
+        {
+          "name": "Tripod sweep",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Sickle sweep",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Heel grab sweep",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        },
+        {
+          "name": "Tomahawk sweep",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "outside-ashi",
+      "move_type": "submission",
+      "end": "heel-hook",
+      "leaves": [
+        {
+          "name": "Outside heel hook",
+          "ruleset": "no-gi",
+          "seen_in": [
+            "grapplepedia",
+            "bjj-data"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "reverse-de-la-riva",
+      "move_type": "back-take",
+      "end": "back-control",
+      "leaves": [
+        {
+          "name": "Kiss of the dragon",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "reverse-de-la-riva",
+      "move_type": "transition",
+      "end": "single-leg-x",
+      "leaves": [
+        {
+          "name": "RDLR to single-leg X",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "rubber-guard",
+      "move_type": "submission",
+      "end": "gogoplata",
+      "leaves": [
+        {
+          "name": "Gogoplata",
+          "ruleset": "no-gi",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "s-mount",
+      "move_type": "submission",
+      "end": "armbar",
+      "leaves": [
+        {
+          "name": "S-mount armbar",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "saddle",
+      "move_type": "escape",
+      "end": "half-guard",
+      "leaves": [
+        {
+          "name": "Saddle escape",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "saddle",
+      "move_type": "submission",
+      "end": "heel-hook",
+      "leaves": [
+        {
+          "name": "Inside heel hook from the saddle",
+          "ruleset": "no-gi",
+          "seen_in": [
+            "grapplepedia",
+            "bjj-data"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "saddle",
+      "move_type": "submission",
+      "end": "kneebar",
+      "leaves": [
+        {
+          "name": "Kneebar",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia",
+            "bjj-data"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "saddle",
+      "move_type": "submission",
+      "end": "toe-hold",
+      "leaves": [
+        {
+          "name": "Toe hold",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "shin-to-shin",
+      "move_type": "transition",
+      "end": "single-leg-x",
+      "leaves": [
+        {
+          "name": "Shin-to-shin to single-leg X",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "side-control",
+      "move_type": "escape",
+      "end": "closed-guard",
+      "leaves": [
+        {
+          "name": "Elbow escape to guard",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "side-control",
+      "move_type": "escape",
+      "end": "half-guard",
+      "leaves": [
+        {
+          "name": "Frames and shrimp escape",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "side-control",
+      "move_type": "submission",
+      "end": "americana",
+      "leaves": [
+        {
+          "name": "Americana",
+          "ruleset": "both",
+          "aliases": [
+            "Keylock",
+            "Ude garami"
+          ],
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "side-control",
+      "move_type": "submission",
+      "end": "arm-triangle",
+      "leaves": [
+        {
+          "name": "Arm triangle choke",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "side-control",
+      "move_type": "submission",
+      "end": "kimura",
+      "leaves": [
+        {
+          "name": "Kimura from side control",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "side-control",
+      "move_type": "submission",
+      "end": "paper-cutter",
+      "leaves": [
+        {
+          "name": "Paper cutter choke",
+          "ruleset": "gi",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "side-control",
+      "move_type": "transition",
+      "end": "knee-on-belly",
+      "leaves": [
+        {
+          "name": "Knee on belly transition",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "side-control",
+      "move_type": "transition",
+      "end": "mount",
+      "leaves": [
+        {
+          "name": "Knee slide to mount",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "side-control",
+      "move_type": "transition",
+      "end": "north-south",
+      "leaves": [
+        {
+          "name": "Move to north-south",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "single-leg-x",
+      "move_type": "submission",
+      "end": "straight-ankle-lock",
+      "leaves": [
+        {
+          "name": "Straight ankle lock",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia",
+            "bjj-data"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "single-leg-x",
+      "move_type": "sweep",
+      "end": "mount",
+      "leaves": [
+        {
+          "name": "Single-leg X sweep",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "spider-guard",
+      "move_type": "pass",
+      "end": "side-control",
+      "leaves": [
+        {
+          "name": "Posture and elbow peel",
+          "ruleset": "gi",
+          "seen_in": [
+            "wikipedia"
+          ]
+        },
+        {
+          "name": "C-scoop arm escape",
+          "ruleset": "gi",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "spider-guard",
+      "move_type": "sweep",
+      "end": "mount",
+      "leaves": [
+        {
+          "name": "Spider guard sweep",
+          "ruleset": "gi",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "standing",
+      "move_type": "back-take",
+      "end": "back-control",
+      "leaves": [
+        {
+          "name": "Standing arm drag",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Duck under",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "standing",
+      "move_type": "escape",
+      "end": "standing",
+      "leaves": [
+        {
+          "name": "Sprawl",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "standing",
+      "move_type": "takedown",
+      "end": "closed-guard",
+      "leaves": [
+        {
+          "name": "Guard pull",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "standing",
+      "move_type": "takedown",
+      "end": "front-headlock",
+      "leaves": [
+        {
+          "name": "Snap down",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "standing",
+      "move_type": "takedown",
+      "end": "mount",
+      "leaves": [
+        {
+          "name": "Body lock takedown",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "standing",
+      "move_type": "takedown",
+      "end": "side-control",
+      "leaves": [
+        {
+          "name": "Double leg takedown",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Single leg takedown",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Ankle pick",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "standing",
+      "move_type": "takedown",
+      "end": "turtle",
+      "leaves": [
+        {
+          "name": "Osoto gari",
+          "ruleset": "both",
+          "aliases": [
+            "Outside trip"
+          ],
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Seoi nage",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Uchi mata",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "O goshi",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Fireman's carry",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        },
+        {
+          "name": "Knee tap",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "standing",
+      "move_type": "transition",
+      "end": "single-leg-x",
+      "leaves": [
+        {
+          "name": "Imanari roll",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "technical-mount",
+      "move_type": "back-take",
+      "end": "back-control",
+      "leaves": [
+        {
+          "name": "Back take from technical mount",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "truck",
+      "move_type": "submission",
+      "end": "calf-slicer",
+      "leaves": [
+        {
+          "name": "Calf slicer",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "truck",
+      "move_type": "submission",
+      "end": "twister",
+      "leaves": [
+        {
+          "name": "Twister",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "turtle",
+      "move_type": "back-take",
+      "end": "back-control",
+      "leaves": [
+        {
+          "name": "Back take from turtle",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "turtle",
+      "move_type": "escape",
+      "end": "closed-guard",
+      "leaves": [
+        {
+          "name": "Granby roll",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        },
+        {
+          "name": "Sit-out",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "turtle",
+      "move_type": "submission",
+      "end": "clock-choke",
+      "leaves": [
+        {
+          "name": "Clock choke",
+          "ruleset": "gi",
+          "seen_in": [
+            "wikipedia",
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "turtle",
+      "move_type": "transition",
+      "end": "crucifix",
+      "leaves": [
+        {
+          "name": "Crucifix entry",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "turtle",
+      "move_type": "transition",
+      "end": "truck",
+      "leaves": [
+        {
+          "name": "Truck entry",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "worm-guard",
+      "move_type": "sweep",
+      "end": "mount",
+      "leaves": [
+        {
+          "name": "Worm guard sweep",
+          "ruleset": "gi",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "x-guard",
+      "move_type": "escape",
+      "end": "side-control",
+      "leaves": [
+        {
+          "name": "Kick out leg",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        },
+        {
+          "name": "Backstep and knee twist",
+          "ruleset": "both",
+          "seen_in": [
+            "wikipedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "x-guard",
+      "move_type": "sweep",
+      "end": "mount",
+      "leaves": [
+        {
+          "name": "X-guard sweep",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "z-guard",
+      "move_type": "transition",
+      "end": "k-guard",
+      "leaves": [
+        {
+          "name": "K-guard entry",
+          "ruleset": "both",
+          "seen_in": [
+            "grapplepedia"
+          ]
+        }
+      ]
+    }
+  ]
+}
