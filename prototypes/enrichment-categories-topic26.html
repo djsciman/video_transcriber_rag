@@ -54,7 +54,7 @@
     .banner strong { color: #86efac; }
     .banner code { font-family: var(--mono); font-size: .8rem; color: #e7e5e4; }
     header.page, .question, #app {
-      max-width: 1280px;
+      max-width: 1400px;
       margin: 1.1rem auto 0;
       padding: 0 1.25rem;
     }
@@ -237,6 +237,45 @@
     }
     .toast.show { display: block; }
     .changed { background: #fef3c7; }
+    .plot-panel { margin-top: .9rem; }
+    .plot-panel .body { padding: 0 .55rem .7rem; }
+    .plot-svg {
+      width: 100%;
+      height: 560px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+    .rel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .6rem;
+      margin-top: .55rem;
+    }
+    @media (max-width: 800px) { .rel-grid { grid-template-columns: 1fr; } }
+    .rel-grid h3 {
+      font-size: .78rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 .3rem;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .45rem 1rem;
+      font-size: .78rem;
+      color: var(--muted);
+      padding: .35rem .2rem .55rem;
+    }
+    .legend i {
+      display: inline-block;
+      width: .7rem;
+      height: .7rem;
+      border-radius: 99px;
+      margin-right: .3rem;
+      vertical-align: -1px;
+    }
   </style>
 </head>
 <body>
@@ -248,8 +287,9 @@
   <header class="page">
     <h1>Starting finder tree</h1>
     <p class="meta">
-      Shared path: starting position → type of move → ending position or submission.
-      Named-move leaves carry gi, no-gi, or both. Uncategorized is a browse bucket for citations with no link, not a seed node.
+      One position record is used as a start and as an end. Submissions are endings only.
+      A path is a relationship: position → type of move → position or submission.
+      Named-move leaves carry gi, no-gi, or both.
     </p>
   </header>
   <div class="question">
@@ -257,7 +297,7 @@
       <summary>Question this prototype answers</summary>
       <p>
         Does this starting tree of finder nodes look right to import as the live copy the coach then edits?
-        A yes means the category names, path grain, and ruleset tags on the leaves are acceptable.
+        An ending position is the same identity as that starting position. The plot shows those unique identities and the paths that join them.
         Use the walkthroughs and the editor to rename, add, move, or delete, then say what should change before import.
       </p>
     </details>
@@ -317,20 +357,55 @@
         .replace(/^-|-$/g, "") || ("n-" + Date.now());
     }
 
+    function unifySeed(raw) {
+      const seed = clone(raw);
+      const positions = clone(seed.starting_positions || []);
+      const index = Object.fromEntries(positions.map((p) => [p.id, p]));
+      const submissions = [];
+      (seed.ending_positions_or_submissions || []).forEach((e) => {
+        if (e.kind === "submission") {
+          submissions.push({
+            id: e.id,
+            label: e.label,
+            kind: "submission",
+            cross_refs: e.cross_refs,
+            aliases: e.aliases
+          });
+          return;
+        }
+        if (!index[e.id]) {
+          const p = {
+            id: e.id,
+            label: e.label,
+            family: e.family || "other",
+            cross_refs: e.cross_refs,
+            aliases: e.aliases
+          };
+          positions.push(p);
+          index[e.id] = p;
+        }
+      });
+      seed.positions = positions;
+      seed.submissions = submissions;
+      delete seed.starting_positions;
+      delete seed.ending_positions_or_submissions;
+      return seed;
+    }
+
     function load(seed, citations) {
       return {
-        seed: clone(seed),
+        seed: unifySeed(seed),
         citations: clone(citations),
-        selected: { start: null, moveType: null, end: null, leaf: null },
+        selected: { start: null, moveType: null, end: null, leaf: null, identity: null },
         query: "",
         ruleset: "all",
-        lastChange: "Loaded the consensus seed.",
+        lastChange: "Loaded the consensus seed with one record per position.",
         accepted: false
       };
     }
 
     function byId(list, id) {
-      return list.find((x) => x.id === id);
+      return (list || []).find((x) => x.id === id);
     }
 
     function labelOf(list, id, fallback) {
@@ -338,37 +413,91 @@
       return n ? n.label : (fallback || id);
     }
 
+    function endRef(seed, id) {
+      const p = byId(seed.positions, id);
+      if (p) return { id: p.id, label: p.label, kind: "position", family: p.family, cross_refs: p.cross_refs, aliases: p.aliases };
+      const s = byId(seed.submissions, id);
+      if (s) return { id: s.id, label: s.label, kind: "submission", cross_refs: s.cross_refs, aliases: s.aliases };
+      return null;
+    }
+
+    function identityLabel(seed, id) {
+      const n = endRef(seed, id);
+      return n ? n.label : id;
+    }
+
+    function relations(state, id) {
+      const outbound = [];
+      const inbound = [];
+      if (!id) return { outbound, inbound };
+      state.seed.paths.forEach((p) => {
+        if (p.start === id) outbound.push(p);
+        if (p.end === id) inbound.push(p);
+      });
+      return { outbound, inbound };
+    }
+
+    function exportSeed(state) {
+      const s = state.seed;
+      return {
+        meta: Object.assign({}, s.meta, {
+          identity_rule: "A position is one finder record used as a start and as an end. A submission is an ending only.",
+          counts: {
+            positions: s.positions.length,
+            submissions: s.submissions.length,
+            move_types: s.move_types.length,
+            paths: s.paths.length,
+            named_move_leaves: s.paths.reduce((n, p) => n + (p.leaves || []).length, 0)
+          }
+        }),
+        sources: s.sources,
+        license_notes: s.license_notes,
+        move_types: s.move_types,
+        positions: s.positions,
+        submissions: s.submissions,
+        paths: s.paths,
+        crosswalk: s.crosswalk
+      };
+    }
+
     function issues(state) {
       const s = state.seed;
-      const startIds = new Set(s.starting_positions.map((x) => x.id));
+      const posIds = new Set(s.positions.map((x) => x.id));
+      const subIds = new Set(s.submissions.map((x) => x.id));
+      const identIds = new Set([...posIds, ...subIds]);
       const mtIds = new Set(s.move_types.map((x) => x.id));
-      const endIds = new Set(s.ending_positions_or_submissions.map((x) => x.id));
       const usedStarts = new Set();
       const usedMts = new Set();
       const usedEnds = new Set();
       const names = {};
-      const missingEnds = new Set();
+      const unknownEnds = new Set();
       s.paths.forEach((p) => {
         usedStarts.add(p.start);
         usedMts.add(p.move_type);
         usedEnds.add(p.end);
-        if (!endIds.has(p.end)) missingEnds.add(p.end);
+        if (!identIds.has(p.end)) unknownEnds.add(p.end);
         (p.leaves || []).forEach((l) => {
           (names[l.name] ||= []).push(p);
         });
       });
-      const unusedStarts = [...startIds].filter((id) => !usedStarts.has(id));
+      const neverLeft = [...posIds].filter((id) => !usedStarts.has(id));
+      const neverLanded = [...posIds].filter((id) => !usedEnds.has(id));
       const unusedMts = [...mtIds].filter((id) => !usedMts.has(id));
-      const unusedEnds = [...endIds].filter((id) => !usedEnds.has(id));
+      const unusedSubmissions = [...subIds].filter((id) => !usedEnds.has(id));
       const dups = Object.entries(names).filter(([, v]) => v.length > 1).map(([n]) => n);
       return {
-        missingEnds: [...missingEnds],
-        unusedStarts,
+        missingEnds: [...unknownEnds],
+        neverLeft,
+        neverLanded,
+        unusedStarts: neverLeft,
         unusedMts,
-        unusedEnds,
+        unusedEnds: unusedSubmissions.concat(neverLanded),
+        unusedSubmissions,
         duplicateLeafNames: dups,
         uncategorized: state.citations.filter((c) => !c.link).length,
-        linked: state.citations.filter((c) => c.link).length
+        linked: state.citations.filter((c) => c.link).length,
+        positionCount: s.positions.length,
+        submissionCount: s.submissions.length
       };
     }
 
@@ -387,9 +516,9 @@
     }
 
     function pathVisible(state, path) {
-      const start = byId(state.seed.starting_positions, path.start);
+      const start = byId(state.seed.positions, path.start);
       const mt = byId(state.seed.move_types, path.move_type);
-      const end = byId(state.seed.ending_positions_or_submissions, path.end);
+      const end = endRef(state.seed, path.end);
       const hay = [
         start && start.label, path.start,
         mt && mt.label, path.move_type,
@@ -406,7 +535,7 @@
       state.seed.paths.forEach((p) => {
         if (pathVisible(state, p)) counts[p.start] = (counts[p.start] || 0) + 1;
       });
-      return state.seed.starting_positions
+      return state.seed.positions
         .filter((s) => counts[s.id] || matchQuery(state, s.label) || s.id === state.selected.start)
         .map((s) => ({ ...s, pathCount: counts[s.id] || 0 }));
     }
@@ -430,7 +559,7 @@
       return state.seed.paths
         .filter((p) => p.start === start && p.move_type === moveType && pathVisible(state, p))
         .map((p) => {
-          const end = byId(state.seed.ending_positions_or_submissions, p.end);
+          const end = endRef(state.seed, p.end);
           return {
             id: p.end,
             label: end ? end.label : p.end,
@@ -473,8 +602,18 @@
       const a = action || {};
       const type = a.type;
       if (type === "SELECT_START") {
-        next.selected = { start: a.id, moveType: null, end: null, leaf: null };
-        next.lastChange = "Selected starting position " + labelOf(next.seed.starting_positions, a.id) + ".";
+        next.selected = { start: a.id, moveType: null, end: null, leaf: null, identity: a.id };
+        next.lastChange = "Selected position " + identityLabel(next.seed, a.id) + " as a start.";
+      } else if (type === "SELECT_IDENTITY") {
+        const node = endRef(next.seed, a.id);
+        next.selected.identity = a.id;
+        next.selected.leaf = null;
+        if (node && node.kind === "position") {
+          next.selected.start = a.id;
+          next.selected.moveType = null;
+          next.selected.end = null;
+        }
+        next.lastChange = "Focused identity " + (node ? node.label : a.id) + (node ? " (" + node.kind + ")" : "") + ".";
       } else if (type === "SELECT_MOVE_TYPE") {
         next.selected.moveType = a.id;
         next.selected.end = null;
@@ -483,8 +622,9 @@
       } else if (type === "SELECT_END") {
         next.selected.end = a.id;
         next.selected.leaf = null;
-        const end = byId(next.seed.ending_positions_or_submissions, a.id);
-        next.lastChange = "Selected ending " + (end ? end.label : a.id + " (not in ending list)") + ".";
+        next.selected.identity = a.id;
+        const end = endRef(next.seed, a.id);
+        next.lastChange = "Selected ending " + (end ? end.label + " (" + end.kind + ")" : a.id) + ".";
       } else if (type === "SELECT_LEAF") {
         next.selected.leaf = a.name;
         next.lastChange = "Selected named move " + a.name + ".";
@@ -496,15 +636,19 @@
         next.lastChange = "Ruleset filter set to " + a.ruleset + ".";
       } else if (type === "RENAME") {
         const { kind, id, label } = a;
-        if (kind === "start") {
-          const n = byId(next.seed.starting_positions, id);
-          if (n) { n.label = label; next.lastChange = "Renamed starting position to " + label + "."; }
+        if (kind === "start" || kind === "position" || kind === "end") {
+          const pos = byId(next.seed.positions, id);
+          const sub = byId(next.seed.submissions, id);
+          if (pos) {
+            pos.label = label;
+            next.lastChange = "Renamed position to " + label + ". Start and end both use this record.";
+          } else if (sub) {
+            sub.label = label;
+            next.lastChange = "Renamed submission to " + label + ".";
+          }
         } else if (kind === "move_type") {
           const n = byId(next.seed.move_types, id);
           if (n) { n.label = label; next.lastChange = "Renamed type of move to " + label + "."; }
-        } else if (kind === "end") {
-          const n = byId(next.seed.ending_positions_or_submissions, id);
-          if (n) { n.label = label; next.lastChange = "Renamed ending to " + label + "."; }
         } else if (kind === "leaf") {
           const p = selectedPath(next);
           const leaf = p && (p.leaves || []).find((l) => l.name === id);
@@ -521,11 +665,11 @@
         }
       } else if (type === "ADD_START") {
         const id = slug(a.label);
-        if (!byId(next.seed.starting_positions, id)) {
-          next.seed.starting_positions.push({ id, label: a.label, family: a.family || "guard" });
+        if (!byId(next.seed.positions, id)) {
+          next.seed.positions.push({ id, label: a.label, family: a.family || "guard" });
         }
-        next.selected = { start: id, moveType: null, end: null, leaf: null };
-        next.lastChange = "Added starting position " + a.label + ".";
+        next.selected = { start: id, moveType: null, end: null, leaf: null, identity: id };
+        next.lastChange = "Added position " + a.label + ".";
       } else if (type === "ADD_MOVE_TYPE") {
         const id = slug(a.label);
         if (!byId(next.seed.move_types, id)) {
@@ -534,10 +678,17 @@
         next.lastChange = "Added type of move " + a.label + ".";
       } else if (type === "ADD_END") {
         const id = a.id || slug(a.label);
-        if (!byId(next.seed.ending_positions_or_submissions, id)) {
-          next.seed.ending_positions_or_submissions.push({ id, label: a.label, kind: a.kind || "position" });
+        if ((a.kind || "position") === "submission") {
+          if (!byId(next.seed.submissions, id)) {
+            next.seed.submissions.push({ id, label: a.label, kind: "submission" });
+          }
+          next.lastChange = "Added submission " + a.label + ".";
+        } else if (!byId(next.seed.positions, id)) {
+          next.seed.positions.push({ id, label: a.label, family: a.family || "other" });
+          next.lastChange = "Added position " + a.label + " (usable as start and as end).";
+        } else {
+          next.lastChange = a.label + " already exists as a position.";
         }
-        next.lastChange = "Added ending " + a.label + ".";
       } else if (type === "ADD_LEAF") {
         const { start, moveType, end } = next.selected;
         if (start && moveType && end) {
@@ -563,17 +714,17 @@
                 c.link = { start: a.start, move_type: a.move_type, end: a.end, leaf: leaf.name };
               }
             });
-            next.selected = { start: a.start, moveType: a.move_type, end: a.end, leaf: leaf.name };
+            next.selected = { start: a.start, moveType: a.move_type, end: a.end, leaf: leaf.name, identity: a.start };
             next.lastChange = "Moved " + leaf.name + ". Citation links stayed on that named move.";
           }
         }
-      } else if (type === "DELETE_START") {
+      } else if (type === "DELETE_START" || type === "DELETE_POSITION") {
         const id = a.id;
-        unlinkMatching(next, (link) => link.start === id);
-        next.seed.starting_positions = next.seed.starting_positions.filter((x) => x.id !== id);
-        next.seed.paths = next.seed.paths.filter((p) => p.start !== id);
-        next.selected = { start: null, moveType: null, end: null, leaf: null };
-        next.lastChange = "Deleted starting position. Linked citations are uncategorized.";
+        unlinkMatching(next, (link) => link.start === id || link.end === id);
+        next.seed.positions = next.seed.positions.filter((x) => x.id !== id);
+        next.seed.paths = next.seed.paths.filter((p) => p.start !== id && p.end !== id);
+        next.selected = { start: null, moveType: null, end: null, leaf: null, identity: null };
+        next.lastChange = "Deleted position. Paths in and out are gone. Linked citations are uncategorized.";
       } else if (type === "DELETE_MOVE_TYPE") {
         const id = a.id;
         unlinkMatching(next, (link) => link.move_type === id);
@@ -585,12 +736,17 @@
         next.lastChange = "Deleted type of move. Linked citations are uncategorized.";
       } else if (type === "DELETE_END") {
         const id = a.id;
+        const node = endRef(next.seed, id);
+        if (node && node.kind === "position") {
+          return dispatch(next, { type: "DELETE_POSITION", id });
+        }
         unlinkMatching(next, (link) => link.end === id);
-        next.seed.ending_positions_or_submissions = next.seed.ending_positions_or_submissions.filter((x) => x.id !== id);
+        next.seed.submissions = next.seed.submissions.filter((x) => x.id !== id);
         next.seed.paths = next.seed.paths.filter((p) => p.end !== id);
         next.selected.end = null;
         next.selected.leaf = null;
-        next.lastChange = "Deleted ending. Linked citations are uncategorized.";
+        if (next.selected.identity === id) next.selected.identity = null;
+        next.lastChange = "Deleted submission. Linked citations are uncategorized.";
       } else if (type === "DELETE_LEAF") {
         const p = selectedPath(next);
         if (p && a.name) {
@@ -615,19 +771,7 @@
           next.lastChange = "Removed the enrichment link from " + c.movement + ".";
         }
       } else if (type === "FIX_MISSING_ENDS") {
-        const iss = issues(next);
-        const starts = next.seed.starting_positions;
-        iss.missingEnds.forEach((id) => {
-          const src = byId(starts, id);
-          next.seed.ending_positions_or_submissions.push({
-            id,
-            label: src ? src.label : id,
-            kind: "position"
-          });
-        });
-        next.lastChange = iss.missingEnds.length
-          ? ("Added missing endings: " + iss.missingEnds.join(", ") + ".")
-          : "No missing endings to add.";
+        next.lastChange = "Positions already share identity with endings. Nothing to copy.";
       } else if (type === "RESET") {
         return load(SEED, SAMPLE_CITATIONS);
       } else if (type === "ACCEPT") {
@@ -638,7 +782,8 @@
     }
 
     return {
-      load, dispatch, issues, visibleStarts, visibleMoveTypes, visibleEnds, visibleLeaves, selectedPath, labelOf, byId
+      load, dispatch, issues, visibleStarts, visibleMoveTypes, visibleEnds, visibleLeaves,
+      selectedPath, labelOf, byId, endRef, identityLabel, relations, exportSeed
     };
   })();
 
@@ -669,15 +814,16 @@
       ]
     },
     {
-      id: "missing-end",
-      name: "Missing ending list row",
-      blurb: "Worm guard entry uses worm-guard as an ending, but worm-guard is not in the ending list. That is a seed gap.",
+      id: "identity",
+      name: "One Mount identity",
+      blurb: "Mount as an ending is the same Mount as a start. The plot highlights Closed guard sweeping into Mount, then Mount as a start toward Armbar.",
       steps: [
-        { label: "Search worm", action: { type: "SEARCH", query: "worm" } },
+        { label: "Clear search", action: { type: "SEARCH", query: "" } },
         { label: "Open Closed guard", action: { type: "SELECT_START", id: "closed-guard" } },
-        { label: "Open Transition", action: { type: "SELECT_MOVE_TYPE", id: "transition" } },
-        { label: "Open worm-guard ending", action: { type: "SELECT_END", id: "worm-guard" } },
-        { label: "Add the three missing endings", action: { type: "FIX_MISSING_ENDS" } }
+        { label: "Open Sweep", action: { type: "SELECT_MOVE_TYPE", id: "sweep" } },
+        { label: "Open Mount as the ending", action: { type: "SELECT_END", id: "mount" } },
+        { label: "Focus Mount on the plot", action: { type: "SELECT_IDENTITY", id: "mount" } },
+        { label: "Open Worm guard as a start (same record can end a path)", action: { type: "SELECT_START", id: "worm-guard" } }
       ]
     },
     {
@@ -756,29 +902,231 @@
     return v && v.trim() ? v.trim() : null;
   }
 
+  const FAMILY_COLOR = {
+    standing: "#57534e",
+    guard: "#1e3a8a",
+    "leg-entanglement": "#5b21b6",
+    passing: "#9a3412",
+    pin: "#14532d",
+    turtle: "#854d0e",
+    back: "#9f1239",
+    other: "#78716c"
+  };
+  const MOVE_COLOR = {
+    takedown: "#57534e",
+    sweep: "#1d4ed8",
+    pass: "#c2410c",
+    escape: "#15803d",
+    submission: "#9f1239",
+    transition: "#7c3aed",
+    "back-take": "#b45309"
+  };
+
+  function svgEl(tag, attrs) {
+    const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    Object.entries(attrs || {}).forEach(([k, v]) => {
+      if (k === "on") Object.entries(v).forEach(([ev, fn]) => n.addEventListener(ev, fn));
+      else n.setAttribute(k, v);
+    });
+    return n;
+  }
+
+  function layoutIdentities(state) {
+    const cols = FAMILY_ORDER.concat(["submission"]);
+    const buckets = {};
+    cols.forEach((c) => { buckets[c] = []; });
+    state.seed.positions.forEach((p) => {
+      const fam = cols.includes(p.family) ? p.family : "standing";
+      buckets[fam].push(p);
+    });
+    buckets.submission = state.seed.submissions.slice();
+    cols.forEach((c) => buckets[c].sort((a, b) => a.label.localeCompare(b.label)));
+    const width = 1360;
+    const height = 540;
+    const left = 70;
+    const right = 70;
+    const top = 36;
+    const bottom = 28;
+    const nodes = {};
+    cols.forEach((col, i) => {
+      const list = buckets[col];
+      const x = left + (cols.length === 1 ? 0 : i * (width - left - right) / (cols.length - 1));
+      list.forEach((n, j) => {
+        const y = list.length === 1 ? height / 2 : top + j * ((height - top - bottom) / Math.max(1, list.length - 1));
+        nodes[n.id] = {
+          id: n.id,
+          label: n.label,
+          kind: col === "submission" ? "submission" : "position",
+          family: col === "submission" ? "submission" : (n.family || "other"),
+          x, y
+        };
+      });
+    });
+    return { nodes, width, height, cols };
+  }
+
+  function renderPlot(state) {
+    const wrap = el("section", { class: "panel plot-panel" }, [
+      el("h2", {}, ["Unique identities and their paths"])
+    ]);
+    const body = el("div", { class: "body" });
+    const legend = el("div", { class: "legend" });
+    Object.entries(MOVE_COLOR).forEach(([id, color]) => {
+      const mt = Tree.byId(state.seed.move_types, id);
+      legend.append(el("span", {}, [el("i", { style: "background:" + color }), mt ? mt.label : id]));
+    });
+    legend.append(el("span", {}, ["Circle = position · Diamond = submission. Click a node or a path."]));
+    body.append(legend);
+
+    const layout = layoutIdentities(state);
+    const svg = svgEl("svg", {
+      class: "plot-svg",
+      viewBox: "0 0 " + layout.width + " " + layout.height,
+      role: "img"
+    });
+    layout.cols.forEach((col, i) => {
+      const x = 70 + i * (layout.width - 140) / (layout.cols.length - 1);
+      const t = svgEl("text", {
+        x: String(x), y: "18", "text-anchor": "middle",
+        fill: "#78716c", "font-size": "11", "font-family": "Segoe UI, sans-serif"
+      });
+      t.textContent = col.replace(/-/g, " ");
+      svg.appendChild(t);
+    });
+
+    const focus = state.selected.identity || state.selected.start;
+    const pathSel = Tree.selectedPath(state);
+
+    state.seed.paths.forEach((p) => {
+      const a = layout.nodes[p.start];
+      const b = layout.nodes[p.end];
+      if (!a || !b) return;
+      const hot = focus && (p.start === focus || p.end === focus);
+      const chosen = pathSel && pathSel.start === p.start && pathSel.move_type === p.move_type && pathSel.end === p.end;
+      const line = svgEl("path", {
+        d: "M " + a.x + " " + a.y + " C " + (a.x + 40) + " " + a.y + ", " + (b.x - 40) + " " + b.y + ", " + b.x + " " + b.y,
+        fill: "none",
+        stroke: MOVE_COLOR[p.move_type] || "#a8a29e",
+        "stroke-width": chosen ? "3.4" : (hot ? "2.2" : "1"),
+        opacity: chosen ? "1" : (hot ? "0.9" : (focus ? "0.06" : "0.18")),
+        "stroke-linecap": "round",
+        style: "cursor:pointer"
+      });
+      line.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        go({ type: "SELECT_START", id: p.start });
+        go({ type: "SELECT_MOVE_TYPE", id: p.move_type });
+        go({ type: "SELECT_END", id: p.end });
+      });
+      svg.appendChild(line);
+    });
+
+    Object.values(layout.nodes).forEach((n) => {
+      const g = svgEl("g", { style: "cursor:pointer" });
+      const on = n.id === focus;
+      const fill = n.kind === "submission" ? "#0f172a" : (FAMILY_COLOR[n.family] || "#57534e");
+      if (n.kind === "submission") {
+        const d = 9;
+        g.appendChild(svgEl("polygon", {
+          points: n.x + "," + (n.y - d) + " " + (n.x + d) + "," + n.y + " " + n.x + "," + (n.y + d) + " " + (n.x - d) + "," + n.y,
+          fill, stroke: on ? "#ea580c" : "#fff", "stroke-width": on ? "3" : "1.2"
+        }));
+      } else {
+        g.appendChild(svgEl("circle", {
+          cx: String(n.x), cy: String(n.y), r: on ? "8" : "6",
+          fill, stroke: on ? "#ea580c" : "#fff", "stroke-width": on ? "3" : "1.2"
+        }));
+      }
+      const label = svgEl("text", {
+        x: String(n.x + 10), y: String(n.y + 3),
+        fill: "#1c1917", "font-size": "10", "font-family": "Segoe UI, sans-serif",
+        "font-weight": on ? "700" : "500"
+      });
+      label.textContent = n.label;
+      g.appendChild(label);
+      g.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        go({ type: "SELECT_IDENTITY", id: n.id });
+      });
+      svg.appendChild(g);
+    });
+    body.append(svg);
+
+    const rel = Tree.relations(state, focus);
+    const ident = Tree.endRef(state.seed, focus);
+    const relGrid = el("div", { class: "rel-grid" });
+    const outBox = el("div", {}, [
+      el("h3", {}, ["Outbound from " + (ident ? ident.label : "a selected identity")])
+    ]);
+    if (!rel.outbound.length) outBox.append(el("p", { class: "xref" }, ["No outbound paths."]));
+    rel.outbound.forEach((p) => {
+      const end = Tree.endRef(state.seed, p.end);
+      const mt = Tree.byId(state.seed.move_types, p.move_type);
+      outBox.append(el("button", {
+        class: "row" + (state.selected.end === p.end && state.selected.moveType === p.move_type ? " on" : ""),
+        on: { click: () => {
+          go({ type: "SELECT_START", id: p.start });
+          go({ type: "SELECT_MOVE_TYPE", id: p.move_type });
+          go({ type: "SELECT_END", id: p.end });
+        } }
+      }, [
+        (mt ? mt.label : p.move_type) + " → " + (end ? end.label : p.end),
+        el("span", { class: "count" }, [(end ? end.kind : "?") + " · " + (p.leaves || []).length])
+      ]));
+    });
+    const inBox = el("div", {}, [
+      el("h3", {}, ["Inbound onto " + (ident ? ident.label : "a selected identity")])
+    ]);
+    if (!rel.inbound.length) inBox.append(el("p", { class: "xref" }, ["No inbound paths. This identity is never an ending in the seed."]));
+    rel.inbound.forEach((p) => {
+      const start = Tree.byId(state.seed.positions, p.start);
+      const mt = Tree.byId(state.seed.move_types, p.move_type);
+      inBox.append(el("button", {
+        class: "row" + (state.selected.start === p.start && state.selected.moveType === p.move_type ? " on" : ""),
+        on: { click: () => {
+          go({ type: "SELECT_START", id: p.start });
+          go({ type: "SELECT_MOVE_TYPE", id: p.move_type });
+          go({ type: "SELECT_END", id: p.end });
+        } }
+      }, [
+        (start ? start.label : p.start) + " → " + (mt ? mt.label : p.move_type),
+        el("span", { class: "count" }, [String((p.leaves || []).length)])
+      ]));
+    });
+    relGrid.append(outBox, inBox);
+    body.append(relGrid);
+    wrap.append(body);
+    return wrap;
+  }
+
   function renderStatePanel() {
     const iss = Tree.issues(state);
     const sel = state.selected;
-    const start = Tree.byId(state.seed.starting_positions, sel.start);
+    const start = Tree.byId(state.seed.positions, sel.start);
     const mt = Tree.byId(state.seed.move_types, sel.moveType);
-    const end = Tree.byId(state.seed.ending_positions_or_submissions, sel.end);
+    const end = Tree.endRef(state.seed, sel.end);
+    const ident = Tree.endRef(state.seed, sel.identity);
+    const rel = Tree.relations(state, sel.identity || sel.start);
     const lines = [
       "last_change: " + state.lastChange,
       "accepted: " + state.accepted,
       "search: " + JSON.stringify(state.query),
       "ruleset_filter: " + state.ruleset,
+      "focused_identity: " + (ident ? ident.label + " (" + ident.kind + ")" : sel.identity),
       "selected_start: " + (start ? start.label : sel.start),
       "selected_move_type: " + (mt ? mt.label : sel.moveType),
-      "selected_end: " + (end ? end.label : sel.end),
+      "selected_end: " + (end ? end.label + " (" + end.kind + ")" : sel.end),
       "selected_named_move: " + sel.leaf,
-      "counts: starts " + state.seed.starting_positions.length +
+      "identity_counts: positions " + iss.positionCount +
+        ", submissions " + iss.submissionCount +
         ", move_types " + state.seed.move_types.length +
-        ", endings " + state.seed.ending_positions_or_submissions.length +
         ", paths " + state.seed.paths.length +
         ", leaves " + state.seed.paths.reduce((n, p) => n + (p.leaves || []).length, 0),
-      "missing_endings: " + (iss.missingEnds.join(", ") || "none"),
-      "unused_endings: " + (iss.unusedEnds.join(", ") || "none"),
+      "unknown_path_ends: " + (iss.missingEnds.join(", ") || "none"),
+      "positions_never_landed_on: " + (iss.neverLanded.join(", ") || "none"),
+      "empty_submissions: " + (iss.unusedSubmissions.join(", ") || "none"),
       "duplicate_leaf_names: " + (iss.duplicateLeafNames.join(", ") || "none"),
+      "focused_outbound: " + rel.outbound.length + " inbound: " + rel.inbound.length,
       "citations_uncategorized: " + iss.uncategorized + " / linked " + iss.linked
     ];
     return lines.join("\n");
@@ -796,12 +1144,17 @@
 
     const issuePills = el("div", { class: "issues" }, [
       el("span", { class: "pill pill-proto" }, ["seed v" + (SEED.meta && SEED.meta.version)]),
+      el("span", { class: "pill pill-ok" }, [iss.positionCount + " position identities"]),
+      el("span", { class: "pill pill-ok" }, [iss.submissionCount + " submissions (end only)"]),
       el("span", { class: "pill pill-ok" }, [state.seed.paths.length + " paths"]),
       el("span", { class: "pill " + (iss.missingEnds.length ? "pill-bad" : "pill-ok") }, [
-        iss.missingEnds.length ? (iss.missingEnds.length + " path endings missing from the ending list") : "every path ending is in the ending list"
+        iss.missingEnds.length ? (iss.missingEnds.length + " path ends with no identity") : "every path end is a position or a submission"
       ]),
-      el("span", { class: "pill " + (iss.unusedEnds.length ? "pill-warn" : "pill-ok") }, [
-        iss.unusedEnds.length + " unused endings"
+      el("span", { class: "pill " + (iss.neverLanded.length ? "pill-warn" : "pill-ok") }, [
+        iss.neverLanded.length + " positions never landed on"
+      ]),
+      el("span", { class: "pill " + (iss.unusedSubmissions.length ? "pill-warn" : "pill-ok") }, [
+        iss.unusedSubmissions.length + " empty submissions"
       ]),
       el("span", { class: "pill pill-warn" }, [iss.duplicateLeafNames.length + " repeated leaf names"]),
       el("span", { class: "pill pill-proto" }, [iss.uncategorized + " uncategorized citations"])
@@ -891,26 +1244,28 @@
       el("h2", {}, ["Reorganize"]),
       el("div", { class: "toolbar" }, [
         el("button", { on: { click: () => {
-          const label = ask("New name for the selected starting position", Tree.labelOf(state.seed.starting_positions, sel.start));
-          if (label && sel.start) go({ type: "RENAME", kind: "start", id: sel.start, label });
-        } } }, ["Rename start"]),
+          const id = sel.identity || sel.start;
+          const cur = Tree.endRef(state.seed, id);
+          const label = ask("New name for this position (start and end share it)", cur ? cur.label : "");
+          if (label && id) go({ type: "RENAME", kind: "position", id, label });
+        } } }, ["Rename position"]),
         el("button", { on: { click: () => {
           const label = ask("New name for the selected type of move", Tree.labelOf(state.seed.move_types, sel.moveType));
           if (label && sel.moveType) go({ type: "RENAME", kind: "move_type", id: sel.moveType, label });
         } } }, ["Rename type"]),
         el("button", { on: { click: () => {
-          const cur = Tree.byId(state.seed.ending_positions_or_submissions, sel.end);
-          const label = ask("New name for the selected ending", cur ? cur.label : sel.end);
+          const cur = Tree.endRef(state.seed, sel.end);
+          const label = ask("New name for the selected ending identity", cur ? cur.label : sel.end);
           if (label && sel.end) go({ type: "RENAME", kind: "end", id: sel.end, label });
-        } } }, ["Rename ending"]),
+        } } }, ["Rename ending identity"]),
         el("button", { on: { click: () => {
           const label = ask("New name for the selected named move", sel.leaf);
           if (label && sel.leaf) go({ type: "RENAME", kind: "leaf", id: sel.leaf, label });
         } } }, ["Rename named move"]),
         el("button", { on: { click: () => {
-          const label = ask("New starting position name");
+          const label = ask("New position name (usable as start and as end)");
           if (label) go({ type: "ADD_START", label });
-        } } }, ["Add start"]),
+        } } }, ["Add position"]),
         el("button", { on: { click: () => {
           const label = ask("New type of move");
           if (label) go({ type: "ADD_MOVE_TYPE", label });
@@ -933,19 +1288,18 @@
           const end = ask("… ending id", sel.end);
           if (start && move_type && end) go({ type: "MOVE_LEAF", start, move_type, end });
         } } }, ["Move named move"]),
-        el("button", { class: "danger", on: { click: () => sel.start && go({ type: "DELETE_START", id: sel.start }) } }, ["Delete start"]),
+        el("button", { class: "danger", on: { click: () => sel.start && go({ type: "DELETE_POSITION", id: sel.start }) } }, ["Delete position"]),
         el("button", { class: "danger", on: { click: () => sel.moveType && go({ type: "DELETE_MOVE_TYPE", id: sel.moveType }) } }, ["Delete type"]),
-        el("button", { class: "danger", on: { click: () => sel.end && go({ type: "DELETE_END", id: sel.end }) } }, ["Delete ending"]),
+        el("button", { class: "danger", on: { click: () => sel.end && go({ type: "DELETE_END", id: sel.end }) } }, ["Delete ending identity"]),
         el("button", { class: "danger", on: { click: () => sel.leaf && go({ type: "DELETE_LEAF", name: sel.leaf }) } }, ["Delete named move"]),
-        el("button", { on: { click: () => go({ type: "FIX_MISSING_ENDS" }) } }, ["Add missing endings"]),
         el("button", { on: { click: () => go({ type: "RESET" }) } }, ["Reset seed"]),
         el("button", { class: "primary", on: { click: () => {
-          const blob = new Blob([JSON.stringify(state.seed, null, 2)], { type: "application/json" });
+          const blob = new Blob([JSON.stringify(Tree.exportSeed(state), null, 2)], { type: "application/json" });
           const a = document.createElement("a");
           a.href = URL.createObjectURL(blob);
           a.download = "organized-seed.json";
           a.click();
-          toast("Downloaded the current tree as organized-seed.json");
+          toast("Downloaded unique identities as organized-seed.json");
         } } }, ["Download tree JSON"]),
         el("button", { class: "primary", on: { click: () => go({ type: "ACCEPT" }) } }, ["Mark tree acceptable"])
       ])
@@ -956,9 +1310,9 @@
     state.citations.forEach((c) => {
       const card = el("div", { class: "cite" + (c.link ? " linked" : "") });
       const path = c.link
-        ? (Tree.labelOf(state.seed.starting_positions, c.link.start) + " → " +
+        ? (Tree.identityLabel(state.seed, c.link.start) + " → " +
            Tree.labelOf(state.seed.move_types, c.link.move_type) + " → " +
-           Tree.labelOf(state.seed.ending_positions_or_submissions, c.link.end, c.link.end) + " → " +
+           Tree.identityLabel(state.seed, c.link.end) + " → " +
            c.link.leaf)
         : "Uncategorized";
       card.append(el("div", {}, [
@@ -991,7 +1345,7 @@
           stepIndex = 0;
           if (s.id === "delete") {
             /* keep current until Reset step */
-          } else if (s.id !== "missing-end") {
+          } else if (s.id !== "identity") {
             state = Tree.dispatch(state, { type: "SEARCH", query: "" });
           }
           render();
@@ -1021,6 +1375,7 @@
     ]);
 
     root.append(issuePills);
+    root.append(renderPlot(state));
     root.append(el("div", { class: "layout" }, [startCol, mtCol, endCol, leafCol]));
     root.append(editor);
     root.append(uncat);
