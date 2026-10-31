@@ -29,11 +29,11 @@ A titled time range inside a volume.
 _Avoid_: clip, section
 
 **Citation**:
-Names the instructor, the instructional, the volume, the chapter, and the movement. The words are the cleaned statement the coach has accepted. Each time the instructor shows a detail of that movement in the chapter has a timestamp and a playback link. The volume is the video.
+Names the instructor, the instructional, the volume, the chapter, and the movement. The words are the cleaned statement the coach has accepted. Each time the instructor shows a detail of that movement in the chapter has a timestamp and a playback link. The volume is the video. When the coach changes the move name in the cleaned statement, the movement name on the citation updates with that edit. The coach may remove an accepted citation from the curated store.
 _Avoid_: clip, quote
 
 **Cleaned statement**:
-One statement of a movement, written from the speech, keeping every spoken detail from each showing in the chapter, with names restored to the words the instructor said. A detail the instructor shows and does not say stays out, and the coach accepts the statement before the advisor may use the citation.
+One statement of a movement, written from the speech, keeping every spoken detail from each showing in the chapter, with names restored to the words the instructor said. A detail the instructor shows and does not say stays out, and the coach accepts the statement before the advisor may use the citation. The coach may correct those words before accept and after accept; after accept the curated store replaces the statement and keeps no earlier version.
 _Avoid_: transcript, quote
 
 **Playback link**:
@@ -65,7 +65,7 @@ Jiu-jitsu fought without the kimono. A no-gi topic is a different topic from its
 _Avoid_: nogi
 
 **Topic**:
-Gi or no-gi work the coach chooses to teach, at the grain the coach names, because a student failed it under resistance or because the coach plans to teach it. The same ruleset and the same name, with trailing spaces removed, are one topic, and any other characters are another topic.
+Gi or no-gi work the coach chooses to teach, at the grain the coach names, because a student failed it under resistance or because the coach plans to teach it. The same ruleset and the same name, with trailing spaces removed, are one topic, and any other characters are another topic. Once open, the name and the ruleset stay fixed. The coach can remove a topic at any time; remove clears what belonged to that topic; the same ruleset and the same name can open again.
 _Avoid_: situation, subject, question, debate
 
 **System**:
@@ -93,11 +93,11 @@ The note that says what may transfer and what depends on tools the topic's rules
 _Avoid_: disclaimer, warning
 
 **Unit**:
-The classes that teach one system through to performance under resistance. A unit can take multiple classes, as when a knee cut takes more than one class to learn.
+The classes that teach one system through to performance under resistance. It carries a paragraph in the coach's words used as an advisor build prompt or as a descriptor while the coach builds by hand. It keeps a history of saved states; the coach can copy a past state into a new editable unit. There is no maximum number of classes.
 _Avoid_: course, curriculum, camp
 
 **Class**:
-One meeting of students inside a unit. It is made up of lessons, and it can be a single sparring lesson.
+One meeting of students inside a unit. It has a short purpose line, which may be empty, and an ordered list of lessons. It always has at least one lesson and may have no technique lesson. The coach packs lessons into classes; any lesson type may open a class.
 _Avoid_: module
 
 **Lesson**:
@@ -105,11 +105,11 @@ One part of a class. A lesson is a technique, a drill, sparring, or a game.
 _Avoid_: class, module
 
 **Technique**:
-A lesson that explains a movement in detail before the students perform it. In the same class, a drill follows, and the partner job challenges the student who performs the technique.
+A lesson that explains a movement in detail before the students perform it. It carries the citations the coach placed for that movement. In the same class, its drill follows with nothing between them, and the partner job challenges the student who performs the technique.
 _Avoid_: lecture
 
 **Drill**:
-A lesson of regular core movements that students perform with little further instruction against opponents who resist in a predictable way.
+A lesson of regular core movements that students perform with little further instruction against opponents who resist in a predictable way. It carries the partner job as text. A drill may sit in a class with no technique ahead of it.
 _Avoid_: flow roll
 
 **Partner job**:
@@ -117,7 +117,7 @@ The predictable resistance the coach sets inside a drill. It starts light and be
 _Avoid_: script, flow roll
 
 **Sparring**:
-A lesson of live rounds that can sit anywhere in a class, including as the only lesson. A round can be positional, for points, or until submission.
+A lesson of live rounds that can sit anywhere in a class, including as the only lesson. It carries the scenario in the coach's words. A round can be positional, for points, or until submission.
 _Avoid_: rolling, free play
 
 **Scenario**:
@@ -125,8 +125,16 @@ Where a positional sparring round starts and restarts. Both people may work what
 _Avoid_: situation, game
 
 **Game**:
-A sparring lesson that adds a condition on the move or the goal. A positional round, a points round, or a round until submission is sparring.
+A sparring lesson that adds a condition on the move or the goal. It carries that condition in the coach's words. A positional round, a points round, or a round until submission is sparring.
 _Avoid_: situational sparring
+
+**Custom lesson**:
+A lesson saved from a unit, or created in the Custom library, that the coach can pull into a unit through search or hierarchy browse under Custom.
+_Avoid_: template, favorite, snippet
+
+**Enrichment**:
+Material from outside the corpus that fills hierarchy and search nodes the transcripts never name.
+_Avoid_: scrape, ontology import
 
 **Resistance**:
 A partner trying to stop the student. In a drill the partner job sets it. In sparring and in a game the round sets it.
