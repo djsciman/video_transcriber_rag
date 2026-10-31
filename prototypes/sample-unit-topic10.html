@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PROTOTYPE — Sample unit after the system · topic 10</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --paper: #fffcf6;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #d6d3d1;
+      --accent: #9a3412;
+      --ok: #14532d;
+      --ok-soft: #dcfce7;
+      --tech: #1e3a8a;
+      --tech-soft: #dbeafe;
+      --drill: #854d0e;
+      --drill-soft: #fef9c3;
+      --spar: #9f1239;
+      --spar-soft: #ffe4e6;
+      --game: #5b21b6;
+      --game-soft: #ede9fe;
+      --shadow: 0 1px 2px rgba(28,25,23,.06), 0 8px 24px rgba(28,25,23,.06);
+      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #fde68a55, transparent 60%),
+        radial-gradient(900px 500px at 100% 0%, #bbf7d055, transparent 55%),
+        var(--bg);
+      line-height: 1.45;
+      padding-bottom: 6rem;
+    }
+    .banner {
+      background: #1c1917;
+      color: #fafaf9;
+      padding: .65rem 1.25rem;
+      font-size: .85rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: baseline;
+    }
+    .banner strong { color: #86efac; }
+    .banner code { font-family: var(--mono); font-size: .8rem; color: #e7e5e4; }
+    header.page {
+      max-width: 1100px;
+      margin: 1.25rem auto 0;
+      padding: 0 1.25rem;
+    }
+    header.page h1 {
+      font-family: var(--serif);
+      font-weight: 600;
+      font-size: 1.75rem;
+      margin: 0 0 .35rem;
+      letter-spacing: -.02em;
+    }
+    header.page .meta {
+      color: var(--muted);
+      font-size: .95rem;
+      max-width: 70ch;
+    }
+    .question {
+      max-width: 1100px;
+      margin: .9rem auto 0;
+      padding: 0 1.25rem;
+    }
+    .question details {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .75rem 1rem;
+      box-shadow: var(--shadow);
+    }
+    .question summary { cursor: pointer; font-weight: 600; }
+    .question p { margin: .6rem 0 0; color: var(--muted); font-size: .92rem; max-width: 72ch; }
+    #app { max-width: 1100px; margin: 1rem auto; padding: 0 1.25rem; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      border-radius: 999px;
+      padding: .15rem .55rem;
+      font-size: .72rem;
+      font-weight: 650;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+    .pill-gi { background: var(--ok-soft); color: var(--ok); }
+    .pill-proto { background: #e7e5e4; color: #44403c; }
+    .pill-tech { background: var(--tech-soft); color: var(--tech); }
+    .pill-drill { background: var(--drill-soft); color: var(--drill); }
+    .pill-spar { background: var(--spar-soft); color: var(--spar); }
+    .pill-game { background: var(--game-soft); color: var(--game); }
+    .pill-glue { background: #ffedd5; color: #9a3412; }
+    a.play {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: .85em;
+    }
+    a.play:hover { color: #7c2d12; }
+    .steps { margin: .35rem 0 0; padding-left: 1.15rem; max-width: 72ch; }
+    .steps li { margin: .28rem 0; }
+    .steps .you { font-weight: 650; }
+    .toast {
+      position: fixed;
+      right: 1rem;
+      bottom: 5.2rem;
+      max-width: 28rem;
+      background: #1c1917;
+      color: #fafaf9;
+      padding: .75rem 1rem;
+      border-radius: 10px;
+      font-size: .82rem;
+      box-shadow: var(--shadow);
+      display: none;
+      z-index: 40;
+      white-space: pre-wrap;
+      font-family: var(--mono);
+    }
+    .toast.show { display: block; }
+    .switcher {
+      position: fixed;
+      left: 50%;
+      bottom: 1rem;
+      transform: translateX(-50%);
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      background: #0c0a09;
+      color: #fafaf9;
+      border-radius: 999px;
+      padding: .45rem .55rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      user-select: none;
+    }
+    .switcher button {
+      border: 0;
+      background: #292524;
+      color: #fafaf9;
+      width: 2.1rem;
+      height: 2.1rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .switcher button:hover { background: #44403c; }
+    .switcher .label {
+      min-width: 17rem;
+      text-align: center;
+      font-size: .85rem;
+      font-weight: 600;
+      padding: 0 .4rem;
+    }
+    .switcher .label span {
+      display: block;
+      font-weight: 400;
+      color: #a8a29e;
+      font-size: .72rem;
+    }
+
+    /* Shared unit chrome */
+    .unit-top {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 1.15rem 1.35rem;
+      margin-bottom: 1rem;
+    }
+    .unit-top h2 {
+      font-family: var(--serif);
+      margin: 0 0 .35rem;
+      font-size: 1.45rem;
+    }
+    .unit-top .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem .55rem;
+      align-items: center;
+      margin-bottom: .65rem;
+    }
+    .unit-para {
+      background: #fff;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      padding: .75rem .9rem;
+      max-width: 78ch;
+      font-size: .95rem;
+    }
+    .unit-para label {
+      display: block;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      font-weight: 650;
+      margin-bottom: .35rem;
+    }
+    .success {
+      margin-top: .75rem;
+      font-size: .88rem;
+      color: var(--muted);
+      max-width: 78ch;
+    }
+    .success strong { color: var(--ink); }
+
+    /* A — meeting cards */
+    .A .classes { display: flex; flex-direction: column; gap: 1rem; }
+    .A .class-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .A .class-head {
+      padding: .9rem 1.15rem;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #fff, var(--paper));
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem 1rem;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    .A .class-head h3 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: 1.2rem;
+    }
+    .A .purpose {
+      color: var(--muted);
+      font-size: .92rem;
+      max-width: 56ch;
+    }
+    .A .lessons { padding: .35rem 0; }
+    .A .lesson {
+      padding: .85rem 1.15rem;
+      border-top: 1px solid var(--line);
+    }
+    .A .lesson:first-child { border-top: 0; }
+    .A .lesson.glued {
+      border-top: 0;
+      margin-top: -.15rem;
+      padding-top: .35rem;
+      background: linear-gradient(90deg, #ffedd522, transparent 40%);
+      border-left: 3px solid #fdba74;
+    }
+    .A .lesson-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem .6rem;
+      align-items: center;
+      margin-bottom: .35rem;
+    }
+    .A .lesson-head strong { font-size: 1rem; }
+    .A .field {
+      margin-top: .45rem;
+      font-size: .9rem;
+      max-width: 72ch;
+    }
+    .A .field .k {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+      font-weight: 650;
+      display: block;
+      margin-bottom: .2rem;
+    }
+    .A .cite {
+      margin-top: .55rem;
+      padding: .55rem .7rem;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: .88rem;
+    }
+    .A .cite .meta { color: var(--muted); font-size: .8rem; margin: .15rem 0 .3rem; }
+
+    /* B — spine with cut rails */
+    .B .spine {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: .5rem 0 1rem;
+    }
+    .B .cut {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin: .85rem 1.15rem;
+      padding: .55rem .75rem;
+      background: #1c1917;
+      color: #fafaf9;
+      border-radius: 10px;
+    }
+    .B .cut .n {
+      font-family: var(--mono);
+      font-size: .75rem;
+      color: #a8a29e;
+    }
+    .B .cut h3 { margin: 0; font-size: 1rem; font-family: var(--serif); }
+    .B .cut .purpose { color: #d6d3d1; font-size: .85rem; margin-left: auto; max-width: 42ch; text-align: right; }
+    @media (max-width: 720px) {
+      .B .cut { flex-direction: column; align-items: flex-start; }
+      .B .cut .purpose { margin-left: 0; text-align: left; }
+    }
+    .B .block {
+      margin: 0 1.15rem;
+      padding: .75rem 0 .85rem;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 6.5rem 1fr;
+      gap: .75rem;
+    }
+    @media (max-width: 640px) { .B .block { grid-template-columns: 1fr; } }
+    .B .block:last-child { border-bottom: 0; }
+    .B .block.pair {
+      background: #fff7ed;
+      margin: 0;
+      padding: .75rem 1.15rem .85rem;
+      border-bottom: 1px solid #fed7aa;
+      border-left: 4px solid #fb923c;
+    }
+    .B .typecol { display: flex; flex-direction: column; gap: .35rem; }
+    .B .block h4 { margin: 0 0 .35rem; font-size: 1rem; }
+    .B .body { font-size: .9rem; max-width: 70ch; }
+    .B .meta { color: var(--muted); font-size: .8rem; }
+
+    /* C — run sheet */
+    .C .sheet {
+      background: #fff;
+      border: 2px solid #1c1917;
+      border-radius: 4px;
+      box-shadow: var(--shadow);
+      padding: 1rem 1.1rem 1.25rem;
+      font-size: .92rem;
+    }
+    .C .sheet h2 {
+      margin: 0 0 .25rem;
+      font-family: var(--serif);
+      font-size: 1.35rem;
+      border-bottom: 2px solid #1c1917;
+      padding-bottom: .35rem;
+    }
+    .C .sys {
+      font-size: .88rem;
+      margin: .45rem 0 .7rem;
+      max-width: 78ch;
+    }
+    .C table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .86rem;
+    }
+    .C th, .C td {
+      border: 1px solid #a8a29e;
+      padding: .4rem .5rem;
+      vertical-align: top;
+      text-align: left;
+    }
+    .C th {
+      background: #f5f5f4;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .C tr.class-row td {
+      background: #1c1917;
+      color: #fafaf9;
+      font-weight: 650;
+      border-color: #1c1917;
+    }
+    .C .tiny { color: var(--muted); font-size: .78rem; }
+    .C .check {
+      width: 2.2rem;
+      text-align: center;
+      font-family: var(--mono);
+      color: #a8a29e;
+    }
+    .C .foot {
+      margin-top: .75rem;
+      font-size: .82rem;
+      color: var(--muted);
+      border-top: 1px dashed #a8a29e;
+      padding-top: .55rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <strong>PROTOTYPE · throwaway</strong>
+    <span>Ticket <code>#10</code> · sample unit after the system</span>
+    <span>Branch <code>prototype/sample-unit-topic10</code></span>
+    <span>Open file locally · arrow keys cycle layouts</span>
+  </div>
+
+  <header class="page">
+    <h1>How should a unit read as a plan the coach can run?</h1>
+    <p class="meta">
+      Same topic as the sample analysis: <strong>gi half guard</strong>.
+      Assumed system: Danaher tight waist is home after the underhook; the trilemma opens far-leg come-up, roll-through, and back takes.
+      Partner jobs use the sit-up / underhook-switch path as predictable resistance.
+      Flip A / B / C and say which shape the spec should require (or mix pieces).
+    </p>
+  </header>
+
+  <div class="question">
+    <details>
+      <summary>What this prototype is checking</summary>
+      <p>
+        After the coach determines the system, Build returns a unit: one coach paragraph, classes with purpose lines,
+        and ordered lessons (technique + glued drill, sparring with scenario, game with condition).
+        Citations already carry instructor move names, step bullets, and playback links.
+        React to the <em>shape</em> of the plan, not to whether every citation is final.
+        Success watch from the sparring ticket: one positional round; by eye, none / some / most / all attempted, and completed or came close against a better partner.
+      </p>
+    </details>
+  </div>
+
+  <div id="app"></div>
+  <div class="toast" id="toast"></div>
+  <div class="switcher" role="toolbar" aria-label="Prototype layout switcher">
+    <button type="button" id="prev" aria-label="Previous layout">←</button>
+    <div class="label" id="switch-label">A</div>
+    <button type="button" id="next" aria-label="Next layout">→</button>
+  </div>
+
+  <script>
+(function () {
+  const TOPIC = { name: "half guard", ruleset: "gi", label: "gi half guard" };
+
+  const SYSTEM =
+    "Tight waist is home after the underhook. The trilemma opens three paths from that home: come up to capture their far leg, roll through, and take the back. A partner who sits up to switch for the underhook and hunts overhead or modified X is the resistance the drills answer.";
+
+  const UNIT_PARAGRAPH =
+    "Build a gi half guard unit where students win the underhook, make tight waist home, then branch the trilemma under rising partner jobs, and finish able to attempt the topic in a positional round from half guard bottom against a ready partner.";
+
+  const SUCCESS =
+    "Positional round from half guard bottom, free play inside gi rules. Coach read by eye: how many attempted the topic, and how many completed it or came close against a better partner (none / some / most / all).";
+
+  function cite(c) {
+    return {
+      instructor: c.instructor,
+      instructional: c.instructional,
+      volume: c.volume,
+      chapter: c.chapter,
+      movement: c.movement,
+      videoFile: c.videoFile,
+      start: c.start,
+      steps: c.steps
+    };
+  }
+
+  const C = {
+    underhook: cite({
+      instructor: "John Danaher",
+      instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
+      volume: "S01E04 - Underhooks and Roll Through Sweep",
+      chapter: "Knee Lever",
+      movement: "Knee Lever - Get the underhook from half guard bottom",
+      videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
+      start: "12:40",
+      steps: [
+        { you: "inside knee", action: "lever under", against: "their far thigh" },
+        { you: "inside arm", action: "turn into an underhook under", against: "their inside arm" },
+        { you: "outside arm", action: "block the crossface from", against: "their outside arm" }
+      ]
+    }),
+    tightWaist: cite({
+      instructor: "John Danaher",
+      instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
+      volume: "S01E04 - Underhooks and Roll Through Sweep",
+      chapter: "Tight Waist Series",
+      movement: "Tight Waist Series - Winning from underhooks",
+      videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
+      start: "24:05",
+      steps: [
+        { you: "inside arm", action: "wrap the tight waist around", against: "their waist" },
+        { you: "inside hook", action: "keep the half guard locked on", against: "their inside leg" },
+        { you: "head and chest", action: "stay glued to the near hip so the waist stays home", against: null }
+      ]
+    }),
+    trilemma: cite({
+      instructor: "John Danaher",
+      instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
+      volume: "S01E04 - Underhooks and Roll Through Sweep",
+      chapter: "The Trilemma",
+      movement: "The Trilemma - Tight Waist Series",
+      videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
+      start: "31:20",
+      steps: [
+        { you: "inside arm + inside leg", action: "hold tight waist and hook as the home system", against: "their waist and inside leg" },
+        { you: "free hand and far knee", action: "threaten the far-leg come-up, the roll-through, and the back take so they cannot kill all three", against: null }
+      ]
+    }),
+    rollThrough: cite({
+      instructor: "John Danaher",
+      instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
+      volume: "S01E04 - Underhooks and Roll Through Sweep",
+      chapter: "Roll Through Sweeps",
+      movement: "Roll Through Sweeps - From tight waist",
+      videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
+      start: "38:10",
+      steps: [
+        { you: "inside knee block + inside tight waist", action: "get under", against: "their center of gravity" },
+        { you: "outside hand", action: "lock the far pant or ankle and roll through", against: "their far leg" }
+      ]
+    })
+  };
+
+  const UNIT = {
+    topic: TOPIC,
+    system: SYSTEM,
+    paragraph: UNIT_PARAGRAPH,
+    success: SUCCESS,
+    classes: [
+      {
+        id: 1,
+        title: "Class 1",
+        purpose: "Win the underhook and make tight waist the home they refuse to leave.",
+        lessons: [
+          {
+            type: "technique",
+            title: "Get the underhook",
+            citations: [C.underhook],
+            glue: "drill-1a"
+          },
+          {
+            type: "drill",
+            id: "drill-1a",
+            title: "Underhook reps",
+            partnerJob:
+              "Start cooperative: let them take the underhook and set tight waist. Then frame and crossface lightly so they must re-win the underhook. Later in the drill, sit up toward the shoulder and try an underhook switch; they must recover tight waist before anything else."
+          },
+          {
+            type: "technique",
+            title: "Tight waist as home",
+            citations: [C.tightWaist],
+            glue: "drill-1b"
+          },
+          {
+            type: "drill",
+            id: "drill-1b",
+            title: "Stay in tight waist",
+            partnerJob:
+              "Open harder than the first drill: from settled tight waist, the partner tries to kill the waist with a strong crossface and a sit-up switch. The student only restarts when tight waist is back. No sweeps yet."
+          },
+          {
+            type: "sparring",
+            title: "Positional rounds — half guard bottom",
+            scenario:
+              "Start and restart in half guard bottom with the underhook available or just lost. Both may work anything gi allows inside that start. Coach watches attempts at underhook → tight waist, and completions or close ones against a better partner."
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: "Class 2",
+        purpose: "From tight waist home, open the trilemma and hit the roll-through under a partner who hunts the switch.",
+        lessons: [
+          {
+            type: "technique",
+            title: "The trilemma",
+            citations: [C.trilemma],
+            glue: "drill-2a"
+          },
+          {
+            type: "drill",
+            id: "drill-2a",
+            title: "Trilemma threats",
+            partnerJob:
+              "Partner starts ready: strong crossface and an early sit-up to switch. Student must keep tight waist, show two of the three threats, and only finish the path the partner leaves open. Intensity rises each minute."
+          },
+          {
+            type: "technique",
+            title: "Roll through from tight waist",
+            citations: [C.rollThrough],
+            glue: "drill-2b"
+          },
+          {
+            type: "drill",
+            id: "drill-2b",
+            title: "Roll-through finishes",
+            partnerJob:
+              "Opens harder than class 1: partner sprawls the far leg and fights the pant grip. Student resets to tight waist on every failed roll. Near the end, partner may fully commit to the underhook-switch / overhead path; student answers by re-homing the waist before rolling."
+          },
+          {
+            type: "game",
+            title: "Game — end in the roll-through",
+            condition:
+              "Positional start in half guard bottom with tight waist available. Point only if the bottom player finishes the roll-through sweep. Top player scores by standing free or flattening the underhook for three seconds."
+          }
+        ]
+      },
+      {
+        id: 3,
+        title: "Class 3",
+        purpose: "Live test: attempt the whole topic under free play from half guard bottom.",
+        lessons: [
+          {
+            type: "drill",
+            title: "Cold open — home under fire",
+            partnerJob:
+              "No technique first. From half guard bottom, partner immediately sits up for the switch and hunts overhead or modified X. Student’s only job for two minutes is recover underhook and tight waist. Then open to any trilemma finish."
+          },
+          {
+            type: "sparring",
+            title: "Unit success round",
+            scenario:
+              "One positional round from half guard bottom. Restart there when the round leaves that fight. Both free inside gi. Coach read: none / some / most / all attempted the topic; none / some / most / all completed or came close against a better partner."
+          }
+        ]
+      }
+    ]
+  };
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => el.classList.remove("show"), 3200);
+  }
+
+  function playLink(c) {
+    const href = "#play/" + encodeURIComponent(c.videoFile) + "@" + encodeURIComponent(c.start);
+    return '<a class="play" href="' + href + '" data-file="' + escapeAttr(c.videoFile) + '" data-start="' + escapeAttr(c.start) + '">' +
+      c.start + "</a>";
+  }
+
+  function escapeAttr(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function stepsHtml(steps) {
+    return '<ul class="steps">' + steps.map(function (s) {
+      const against = s.against ? ' <span class="opp">→ ' + escapeHtml(s.against) + "</span>" : "";
+      return "<li><span class=\"you\">" + escapeHtml(s.you) + "</span> " + escapeHtml(s.action) + against + "</li>";
+    }).join("") + "</ul>";
+  }
+
+  function citeHtml(c) {
+    return '<div class="cite">' +
+      "<strong>" + escapeHtml(c.movement) + "</strong>" +
+      '<div class="meta">' + escapeHtml(c.instructor) + " · " + escapeHtml(c.instructional) + " · " +
+      escapeHtml(c.volume) + " · " + escapeHtml(c.chapter) + " · " + playLink(c) + "</div>" +
+      stepsHtml(c.steps) +
+      "</div>";
+  }
+
+  function typePill(type) {
+    const map = { technique: "pill-tech", drill: "pill-drill", sparring: "pill-spar", game: "pill-game" };
+    return '<span class="pill ' + map[type] + '">' + type + "</span>";
+  }
+
+  function unitChrome() {
+    return '<div class="unit-top">' +
+      '<div class="row">' +
+      "<h2>" + escapeHtml(UNIT.topic.label) + "</h2>" +
+      '<span class="pill pill-gi">' + escapeHtml(UNIT.topic.ruleset) + "</span>" +
+      '<span class="pill pill-proto">prototype</span>' +
+      "</div>" +
+      '<div class="unit-para"><label>System (coach words)</label>' + escapeHtml(UNIT.system) + "</div>" +
+      '<div class="unit-para" style="margin-top:.55rem"><label>Unit paragraph (Build prompt)</label>' + escapeHtml(UNIT.paragraph) + "</div>" +
+      '<p class="success"><strong>Success watch:</strong> ' + escapeHtml(UNIT.success) + "</p>" +
+      "</div>";
+  }
+
+  function renderLessonA(lesson, prevGlued) {
+    const glued = prevGlued && lesson.type === "drill";
+    let html = '<div class="lesson' + (glued ? " glued" : "") + '">';
+    html += '<div class="lesson-head">' + typePill(lesson.type);
+    if (lesson.glue) html += '<span class="pill pill-glue">+ drill glued</span>';
+    if (glued) html += '<span class="pill pill-glue">follows technique</span>';
+    html += "<strong>" + escapeHtml(lesson.title) + "</strong></div>";
+
+    if (lesson.type === "technique" && lesson.citations) {
+      html += lesson.citations.map(citeHtml).join("");
+    }
+    if (lesson.type === "drill") {
+      html += '<div class="field"><span class="k">Partner job</span>' + escapeHtml(lesson.partnerJob) + "</div>";
+    }
+    if (lesson.type === "sparring") {
+      html += '<div class="field"><span class="k">Scenario</span>' + escapeHtml(lesson.scenario) + "</div>";
+    }
+    if (lesson.type === "game") {
+      html += '<div class="field"><span class="k">Condition</span>' + escapeHtml(lesson.condition) + "</div>";
+    }
+    html += "</div>";
+    return html;
+  }
+
+  function renderA() {
+    let html = '<div class="A">' + unitChrome() + '<div class="classes">';
+    UNIT.classes.forEach(function (klass) {
+      html += '<section class="class-card">';
+      html += '<div class="class-head"><h3>' + escapeHtml(klass.title) + "</h3>";
+      html += '<div class="purpose">' + escapeHtml(klass.purpose) + "</div></div>";
+      html += '<div class="lessons">';
+      let pendingGlue = false;
+      klass.lessons.forEach(function (lesson) {
+        html += renderLessonA(lesson, pendingGlue);
+        pendingGlue = !!lesson.glue;
+      });
+      html += "</div></section>";
+    });
+    html += "</div></div>";
+    return html;
+  }
+
+  function renderB() {
+    let html = '<div class="B">' + unitChrome() + '<div class="spine">';
+    UNIT.classes.forEach(function (klass) {
+      html += '<div class="cut"><span class="n">CUT</span><h3>' + escapeHtml(klass.title) + "</h3>";
+      html += '<div class="purpose">' + escapeHtml(klass.purpose) + "</div></div>";
+      let i = 0;
+      while (i < klass.lessons.length) {
+        const lesson = klass.lessons[i];
+        const next = klass.lessons[i + 1];
+        const isPair = lesson.type === "technique" && lesson.glue && next && next.type === "drill";
+        if (isPair) {
+          html += '<div class="block pair">';
+          html += '<div class="typecol">' + typePill("technique") + typePill("drill") + '<span class="pill pill-glue">glued</span></div>';
+          html += "<div><h4>" + escapeHtml(lesson.title) + " → " + escapeHtml(next.title) + "</h4>";
+          if (lesson.citations) html += lesson.citations.map(citeHtml).join("");
+          html += '<div class="body" style="margin-top:.45rem"><span class="meta">Partner job</span><br>' +
+            escapeHtml(next.partnerJob) + "</div></div></div>";
+          i += 2;
+        } else {
+          html += '<div class="block">';
+          html += '<div class="typecol">' + typePill(lesson.type) + "</div>";
+          html += "<div><h4>" + escapeHtml(lesson.title) + "</h4>";
+          if (lesson.type === "sparring") {
+            html += '<div class="body"><span class="meta">Scenario</span><br>' + escapeHtml(lesson.scenario) + "</div>";
+          } else if (lesson.type === "game") {
+            html += '<div class="body"><span class="meta">Condition</span><br>' + escapeHtml(lesson.condition) + "</div>";
+          } else if (lesson.type === "drill") {
+            html += '<div class="body"><span class="meta">Partner job</span><br>' + escapeHtml(lesson.partnerJob) + "</div>";
+          }
+          html += "</div></div>";
+          i += 1;
+        }
+      }
+    });
+    html += "</div></div>";
+    return html;
+  }
+
+  function renderC() {
+    let html = '<div class="C"><div class="sheet">';
+    html += "<h2>Run sheet · " + escapeHtml(UNIT.topic.label) + "</h2>";
+    html += '<p class="sys"><strong>System:</strong> ' + escapeHtml(UNIT.system) + "</p>";
+    html += '<p class="sys"><strong>Build paragraph:</strong> ' + escapeHtml(UNIT.paragraph) + "</p>";
+    html += "<table><thead><tr>" +
+      '<th class="check">✓</th><th>Class</th><th>Lesson</th><th>Type</th><th>What to run</th><th>Playback</th>' +
+      "</tr></thead><tbody>";
+    UNIT.classes.forEach(function (klass) {
+      html += '<tr class="class-row"><td colspan="6">' + escapeHtml(klass.title) +
+        " — " + escapeHtml(klass.purpose) + "</td></tr>";
+      klass.lessons.forEach(function (lesson) {
+        let what = "";
+        let play = "—";
+        if (lesson.type === "technique" && lesson.citations) {
+          what = lesson.citations.map(function (c) {
+            return escapeHtml(c.movement) + '<div class="tiny">' + escapeHtml(c.instructor) + " · " + escapeHtml(c.chapter) + "</div>";
+          }).join("");
+          play = lesson.citations.map(playLink).join("<br>");
+        } else if (lesson.type === "drill") {
+          what = '<span class="tiny">Partner job</span><br>' + escapeHtml(lesson.partnerJob);
+        } else if (lesson.type === "sparring") {
+          what = '<span class="tiny">Scenario</span><br>' + escapeHtml(lesson.scenario);
+        } else if (lesson.type === "game") {
+          what = '<span class="tiny">Condition</span><br>' + escapeHtml(lesson.condition);
+        }
+        const glueNote = lesson.glue ? ' <span class="tiny">(+ drill)</span>' : "";
+        html += "<tr><td class=\"check\">☐</td><td>" + escapeHtml(klass.title) + "</td><td>" +
+          escapeHtml(lesson.title) + glueNote + "</td><td>" + escapeHtml(lesson.type) + "</td><td>" +
+          what + "</td><td>" + play + "</td></tr>";
+      });
+    });
+    html += "</tbody></table>";
+    html += '<p class="foot"><strong>Success watch:</strong> ' + escapeHtml(UNIT.success) + "</p>";
+    html += "</div></div>";
+    return html;
+  }
+
+  const VARIANTS = [
+    { key: "A", name: "Meeting cards", render: renderA },
+    { key: "B", name: "Lesson spine + cuts", render: renderB },
+    { key: "C", name: "Mat run sheet", render: renderC }
+  ];
+
+  function currentKey() {
+    const p = new URLSearchParams(location.search);
+    const v = (p.get("variant") || "A").toUpperCase();
+    return VARIANTS.some(function (x) { return x.key === v; }) ? v : "A";
+  }
+
+  function setVariant(key) {
+    const url = new URL(location.href);
+    url.searchParams.set("variant", key);
+    history.replaceState(null, "", url);
+    paint();
+  }
+
+  function paint() {
+    const key = currentKey();
+    const variant = VARIANTS.find(function (v) { return v.key === key; });
+    document.getElementById("app").innerHTML = variant.render();
+    document.getElementById("switch-label").innerHTML =
+      key + " (" + variant.name + ")<span>arrow keys or buttons</span>";
+    document.body.dataset.variant = key;
+  }
+
+  function cycle(delta) {
+    const keys = VARIANTS.map(function (v) { return v.key; });
+    const i = keys.indexOf(currentKey());
+    const next = keys[(i + delta + keys.length) % keys.length];
+    setVariant(next);
+  }
+
+  document.getElementById("prev").addEventListener("click", function () { cycle(-1); });
+  document.getElementById("next").addEventListener("click", function () { cycle(1); });
+  document.addEventListener("keydown", function (e) {
+    const t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+    if (e.key === "ArrowLeft") { e.preventDefault(); cycle(-1); }
+    if (e.key === "ArrowRight") { e.preventDefault(); cycle(1); }
+  });
+  document.getElementById("app").addEventListener("click", function (e) {
+    const a = e.target.closest("a.play");
+    if (!a) return;
+    e.preventDefault();
+    toast("Playback (prototype stub)\n" + a.getAttribute("data-file") + "\n@" + a.getAttribute("data-start"));
+  });
+
+  paint();
+})();
+  </script>
+</body>
+</html>
