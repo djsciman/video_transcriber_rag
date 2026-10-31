@@ -1286,14 +1286,48 @@
     const focus = state.selected.identity || state.selected.start;
     const mtSel = state.selected.moveType;
     const endSel = state.selected.end;
+    const hasSel = !!(state.selected.start || state.selected.moveType || state.selected.end);
+
+    function pathTouchesSelection(p) {
+      if (!hasSel) return false;
+      if (state.selected.start && p.start !== state.selected.start) return false;
+      if (state.selected.moveType && p.move_type !== state.selected.moveType) return false;
+      if (state.selected.end && p.end !== state.selected.end) return false;
+      return true;
+    }
+    function ribbonRelated(lnk) {
+      return (lnk.paths || []).some(pathTouchesSelection);
+    }
+    function nodeRelated(n) {
+      if (!hasSel) return true;
+      if (n.col === "start") {
+        if (state.selected.start) return n.id === state.selected.start;
+        return (n.value > 0) && layout.links1.some((l) => l.start === n.id && ribbonRelated(l));
+      }
+      if (n.col === "mt") {
+        if (state.selected.moveType) return n.id === state.selected.moveType;
+        return layout.links1.some((l) => l.move_type === n.id && ribbonRelated(l)) ||
+          layout.links2.some((l) => l.move_type === n.id && ribbonRelated(l));
+      }
+      if (state.selected.end) return n.id === state.selected.end;
+      return layout.links2.some((l) => l.end === n.id && ribbonRelated(l));
+    }
+    function selectionPred(m) {
+      if (m.source) return ribbonRelated(m);
+      return nodeRelated(m);
+    }
 
     function setHot(pred) {
-      ribbons.forEach((r) => r.setAttribute("opacity", pred(r._meta) ? "0.88" : "0.06"));
+      ribbons.forEach((r) => r.setAttribute("opacity", pred(r._meta) ? "0.9" : "0.06"));
       nodeEls.forEach((n) => n.setAttribute("opacity", pred(n._meta) ? "1" : "0.28"));
     }
-    function clearHot() {
-      ribbons.forEach((r) => r.setAttribute("opacity", r._baseOp));
-      nodeEls.forEach((n) => n.setAttribute("opacity", "1"));
+    function applySelectionHot() {
+      if (!hasSel) {
+        ribbons.forEach((r) => r.setAttribute("opacity", r._baseOp));
+        nodeEls.forEach((n) => n.setAttribute("opacity", "1"));
+        return;
+      }
+      setHot(selectionPred);
     }
 
     layout.columns.forEach((col) => {
@@ -1354,7 +1388,7 @@
             if (m.source) return m.source.key === n.key || m.target.key === n.key;
             return m.key === n.key;
           }));
-          grp.addEventListener("mouseleave", clearHot);
+          grp.addEventListener("mouseleave", applySelectionHot);
           grp.addEventListener("click", (ev) => {
             ev.stopPropagation();
             hideTip();
@@ -1377,11 +1411,7 @@
           stroke: "none",
           style: "cursor:pointer"
         });
-        const chosen = lnk.paths.some((p) => {
-          const sel = Tree.selectedPath(state);
-          return sel && sel.start === p.start && sel.move_type === p.move_type && sel.end === p.end;
-        });
-        path._baseOp = chosen ? "0.9" : "0.32";
+        path._baseOp = ribbonRelated(lnk) ? "0.9" : "0.32";
         path.setAttribute("opacity", path._baseOp);
         path._meta = lnk;
         ribbons.push(path);
@@ -1399,7 +1429,7 @@
           return m === lnk || (m.start === lnk.start && m.move_type === lnk.move_type) ||
             (m.move_type === lnk.move_type && m.end === lnk.end);
         }));
-        path.addEventListener("mouseleave", clearHot);
+        path.addEventListener("mouseleave", applySelectionHot);
         path.addEventListener("click", (ev) => {
           ev.stopPropagation();
           hideTip();
@@ -1421,6 +1451,7 @@
     }
     addRibbons(layout.links1, "Start to type of move");
     addRibbons(layout.links2, "Type of move to ending");
+    applySelectionHot();
     return svg;
   }
 
@@ -1998,7 +2029,7 @@
       const mt = Tree.byId(state.seed.move_types, id);
       legend.append(el("span", {}, [el("i", { style: "background:" + color }), mt ? mt.label : id]));
     });
-    legend.append(el("span", {}, ["Hover a ribbon or bar. Click to select that path."]));
+    legend.append(el("span", {}, ["Hover a ribbon or bar to preview its lines. Click to keep those lines lit."]));
     body.append(legend);
     const sankeyTools = el("div", { class: "plot-tools" }, [
       el("button", {
