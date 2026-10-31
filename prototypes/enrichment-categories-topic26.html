@@ -247,7 +247,7 @@
       display: block;
     }
     .sankey-svg { height: 880px; }
-    .force-svg { height: 580px; margin-top: .45rem; }
+    .force-svg { height: 640px; margin-top: .45rem; }
     .hover-tip {
       position: fixed;
       z-index: 80;
@@ -307,7 +307,7 @@
     <p class="meta">
       One position record is used as a start and as an end. Submissions are endings only.
       The Sankey groups starting positions and endings by family, then by the specific position.
-      Type of move is its own column. Hover a bar or ribbon for names. The force graph under it is a sample of those same four kinds of node.
+      Type of move is its own column. Hover a bar or ribbon for names. The force graph under it is a linear journey: start, then type of move, then the next position or submission.
     </p>
   </header>
   <div class="question">
@@ -911,7 +911,7 @@
     toast._t = setTimeout(() => t.classList.remove("show"), 2400);
   }
 
-  let forceScope = "sample";
+  let forceJourney = [];
   let forcePos = {};
   let forceRaf = 0;
 
@@ -1339,79 +1339,202 @@
     return svg;
   }
 
-  function samplePaths(state) {
+  function buildJourneyLayers(state) {
     const paths = visiblePathList(state);
-    if (forceScope === "full") return paths;
-    const focus = state.selected.identity || state.selected.start || state.selected.end;
-    if (focus) return paths.filter((p) => p.start === focus || p.end === focus || p.move_type === focus);
-    const core = new Set(["closed-guard", "half-guard", "mount", "standing", "side-control", "back-control", "turtle"]);
-    return paths.filter((p) => core.has(p.start) || core.has(p.end));
+    const layers = [];
+    layers.push({
+      kind: "start",
+      label: "Starting position",
+      options: state.seed.positions.map((p) => ({
+        id: p.id,
+        label: p.label,
+        kind: "start",
+        family: familyKey(p)
+      })),
+      selected: forceJourney[0] && forceJourney[0].kind === "start" ? forceJourney[0].id : null
+    });
+    let hopFrom = layers[0].selected;
+    let j = 1;
+    while (hopFrom) {
+      const mtIds = [];
+      paths.forEach((p) => {
+        if (p.start === hopFrom && mtIds.indexOf(p.move_type) < 0) mtIds.push(p.move_type);
+      });
+      const mtPick = forceJourney[j] && forceJourney[j].kind === "move" ? forceJourney[j].id : null;
+      layers.push({
+        kind: "move",
+        label: "Type of move",
+        from: hopFrom,
+        options: mtIds.map((id) => {
+          const m = Tree.byId(state.seed.move_types, id);
+          return { id, label: m ? m.label : id, kind: "move", family: "move" };
+        }),
+        selected: mtPick
+      });
+      j += 1;
+      if (!mtPick) break;
+      const seen = {};
+      const endOpts = [];
+      paths.forEach((p) => {
+        if (p.start !== hopFrom || p.move_type !== mtPick || seen[p.end]) return;
+        seen[p.end] = true;
+        const e = Tree.endRef(state.seed, p.end);
+        endOpts.push({
+          id: p.end,
+          label: e ? e.label : p.end,
+          kind: e && e.kind === "submission" ? "submission" : "end",
+          endKind: e ? e.kind : "position",
+          family: e && e.kind === "submission" ? "submission" : familyKey(e)
+        });
+      });
+      const endPick = forceJourney[j] && forceJourney[j].kind === "end" ? forceJourney[j].id : null;
+      layers.push({
+        kind: "end",
+        label: "Ending position or submission",
+        from: hopFrom,
+        move: mtPick,
+        options: endOpts,
+        selected: endPick
+      });
+      j += 1;
+      if (!endPick) break;
+      const picked = endOpts.find((o) => o.id === endPick);
+      if (!picked || picked.endKind === "submission") break;
+      hopFrom = endPick;
+    }
+    return layers;
+  }
+
+  function journeyTrail(layers) {
+    return layers.filter((l) => l.selected).map((l) => {
+      const opt = l.options.find((o) => o.id === l.selected);
+      return opt ? opt.label : l.selected;
+    }).join(" → ");
+  }
+
+  function syncTreeFromJourney(layers) {
+    let startId = null;
+    let moveId = null;
+    let endId = null;
+    layers.forEach((layer) => {
+      if (!layer.selected) return;
+      if (layer.kind === "start") {
+        startId = layer.selected;
+        moveId = null;
+        endId = null;
+      } else if (layer.kind === "move") {
+        startId = layer.from;
+        moveId = layer.selected;
+        endId = null;
+      } else if (layer.kind === "end") {
+        startId = layer.from;
+        moveId = layer.move;
+        endId = layer.selected;
+      }
+    });
+    if (startId) state = Tree.dispatch(state, { type: "SELECT_START", id: startId });
+    if (moveId) state = Tree.dispatch(state, { type: "SELECT_MOVE_TYPE", id: moveId });
+    if (endId) state = Tree.dispatch(state, { type: "SELECT_END", id: endId });
+  }
+
+  function pickJourney(layerIndex, opt, reopen) {
+    if (reopen) forceJourney = forceJourney.slice(0, layerIndex + 1);
+    else {
+      forceJourney = forceJourney.slice(0, layerIndex);
+      forceJourney.push({
+        kind: opt.kind === "submission" ? "end" : opt.kind,
+        id: opt.id,
+        endKind: opt.endKind
+      });
+    }
+    const layers = buildJourneyLayers(state);
+    syncTreeFromJourney(layers);
+    const trail = journeyTrail(layers);
+    const last = layers[layers.length - 1];
+    const msg = last && last.kind === "end" && last.selected && (last.options.find((o) => o.id === last.selected) || {}).endKind === "submission"
+      ? (trail + ". Submission is an ending only.")
+      : (trail || "Journey reset.");
+    render();
+    toast(msg || state.lastChange);
   }
 
   function renderForce(state) {
     if (forceRaf) cancelAnimationFrame(forceRaf);
-    const width = 1480;
-    const height = 560;
+    const layers = buildJourneyLayers(state);
+    const nLayers = Math.max(1, layers.length);
+    const width = Math.max(1480, 220 * nLayers + 200);
+    const height = 620;
     const svg = svgEl("svg", {
       class: "force-svg",
       viewBox: "0 0 " + width + " " + height,
       role: "img"
     });
-    const paths = samplePaths(state);
-    const nodeMap = {};
-    function addNode(id, kind, label, family) {
-      if (nodeMap[id]) return nodeMap[id];
-      const prev = forcePos[id];
-      const n = {
-        id, kind, label, family,
-        x: prev ? prev.x : width / 2 + (Math.random() - 0.5) * 280,
-        y: prev ? prev.y : height / 2 + (Math.random() - 0.5) * 180,
-        vx: 0, vy: 0
-      };
-      nodeMap[id] = n;
-      return n;
+    function layerX(i) {
+      if (nLayers <= 1) return width * 0.5;
+      return 90 + i * ((width - 180) / (nLayers - 1));
     }
+    layers.forEach((layer, i) => {
+      const t = svgEl("text", {
+        x: String(layerX(i)), y: "18",
+        "text-anchor": "middle", fill: "#78716c",
+        "font-size": "11", "font-weight": "650",
+        "font-family": "Segoe UI, sans-serif"
+      });
+      t.textContent = (i + 1) + ". " + layer.label;
+      svg.appendChild(t);
+    });
+    const nodeMap = {};
     const links = [];
-    paths.forEach((p) => {
-      const start = Tree.byId(state.seed.positions, p.start);
-      const mt = Tree.byId(state.seed.move_types, p.move_type);
-      const end = Tree.endRef(state.seed, p.end);
-      if (!start || !mt || !end) return;
-      const ns = addNode("start:" + start.id, "start", start.label, familyKey(start));
-      const nm = addNode("mt:" + mt.id, "move", mt.label, "move");
-      const ne = addNode(
-        (end.kind === "submission" ? "sub:" : "end:") + end.id,
-        end.kind === "submission" ? "submission" : "end",
-        end.label,
-        end.kind === "submission" ? "submission" : familyKey(end)
-      );
-      links.push({ s: ns, t: nm, path: p, hop: 1 });
-      links.push({ s: nm, t: ne, path: p, hop: 2 });
+    const selectedAt = [];
+    layers.forEach((layer, i) => {
+      layer.options.forEach((opt, k) => {
+        const nid = i + ":" + opt.kind + ":" + opt.id;
+        const prev = forcePos[nid];
+        const n = {
+          id: nid,
+          kind: opt.kind,
+          label: opt.label,
+          family: opt.family,
+          opt,
+          layerIndex: i,
+          dimmed: !!(layer.selected && layer.selected !== opt.id),
+          chosen: layer.selected === opt.id,
+          x: prev ? prev.x : layerX(i) + (Math.random() - 0.5) * 24,
+          y: prev ? prev.y : 50 + (k + 0.5) * ((height - 70) / Math.max(1, layer.options.length)),
+          vx: 0,
+          vy: 0
+        };
+        nodeMap[nid] = n;
+        if (n.chosen) selectedAt[i] = n;
+      });
+      if (i > 0 && selectedAt[i - 1]) {
+        layer.options.forEach((opt) => {
+          const t = nodeMap[i + ":" + opt.kind + ":" + opt.id];
+          links.push({
+            s: selectedAt[i - 1],
+            t,
+            dimmed: !!(layer.selected && layer.selected !== opt.id),
+            move: layer.move || (selectedAt[i - 1].kind === "move" ? selectedAt[i - 1].opt.id : null)
+          });
+        });
+      }
     });
     const nodes = Object.values(nodeMap);
     const linkG = svgEl("g");
     const nodeG = svgEl("g");
     svg.appendChild(linkG);
     svg.appendChild(nodeG);
-    const lineEls = links.map((lnk) => {
+    links.forEach((lnk) => {
       const line = svgEl("line", {
-        stroke: MOVE_COLOR[lnk.path.move_type] || "#a8a29e",
-        "stroke-width": "1.4",
-        opacity: "0.45"
+        stroke: lnk.dimmed ? "#d6d3d1" : (MOVE_COLOR[lnk.move] || "#a8a29e"),
+        "stroke-width": lnk.t.chosen || !lnk.t.dimmed ? "2" : "1",
+        opacity: lnk.dimmed ? "0.25" : "0.7"
       });
-      line.style.cursor = "pointer";
-      wireHover(line, () => lnk.s.label + " → " + lnk.t.label, () => {
-        const names = leafNames(state, [lnk.path]);
-        return [lnk.path.start + " → " + lnk.path.move_type + " → " + lnk.path.end, names.join(" · ") || ""];
-      });
-      line.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        hideTip();
-        selectPath(lnk.path);
-      });
+      wireHover(line, () => lnk.s.label + " → " + lnk.t.label, () => [
+        layers[lnk.t.layerIndex].label
+      ]);
       linkG.appendChild(line);
       lnk.el = line;
-      return line;
     });
     let dragging = null;
     svg.addEventListener("mousemove", (ev) => {
@@ -1425,36 +1548,44 @@
       if (dragging) { dragging.fx = dragging.fy = null; }
       dragging = null;
     });
-    const nodeEls = nodes.map((n) => {
+    nodes.forEach((n) => {
       const g = svgEl("g");
       g.style.cursor = "pointer";
-      const fill = n.kind === "move"
-        ? (MOVE_COLOR[n.id.replace(/^mt:/, "")] || "#57534e")
+      const liveFill = n.kind === "move"
+        ? (MOVE_COLOR[n.opt.id] || "#57534e")
         : (n.kind === "submission" ? "#0f172a" : (FAMILY_COLOR[n.family] || "#57534e"));
+      const fill = n.dimmed ? "#d6d3d1" : liveFill;
+      const stroke = n.chosen ? "#ea580c" : (n.dimmed ? "#a8a29e" : "#fff");
       let shape;
       if (n.kind === "move") {
-        shape = svgEl("rect", { x: "-7", y: "-7", width: "14", height: "14", rx: "3", fill, stroke: "#fff", "stroke-width": "1.2" });
+        shape = svgEl("rect", { x: "-8", y: "-8", width: "16", height: "16", rx: "3", fill, stroke, "stroke-width": n.chosen ? "3" : "1.2" });
       } else if (n.kind === "submission") {
-        shape = svgEl("polygon", { points: "0,-8 8,0 0,8 -8,0", fill, stroke: "#fff", "stroke-width": "1.2" });
+        shape = svgEl("polygon", { points: "0,-9 9,0 0,9 -9,0", fill, stroke, "stroke-width": n.chosen ? "3" : "1.2" });
       } else if (n.kind === "end") {
-        shape = svgEl("circle", { r: "7", fill: "#fff", stroke: fill, "stroke-width": "3" });
+        shape = svgEl("circle", { r: "8", fill: n.dimmed ? "#d6d3d1" : "#fff", stroke: n.dimmed ? "#a8a29e" : liveFill, "stroke-width": n.chosen ? "4" : "3" });
       } else {
-        shape = svgEl("circle", { r: "7", fill, stroke: "#fff", "stroke-width": "1.2" });
+        shape = svgEl("circle", { r: "8", fill, stroke, "stroke-width": n.chosen ? "3" : "1.2" });
       }
       const lab = svgEl("text", {
-        x: "10", y: "3", fill: "#1c1917", "font-size": "10", "font-family": "Segoe UI, sans-serif"
+        x: "11", y: "4",
+        fill: n.dimmed ? "#a8a29e" : "#1c1917",
+        "font-size": "10",
+        "font-weight": n.chosen ? "700" : "500",
+        "font-family": "Segoe UI, sans-serif"
       });
       lab.textContent = n.label;
       g.appendChild(shape);
       g.appendChild(lab);
       const kindLabel = n.kind === "start" ? "Starting position" : n.kind === "end" ? "Ending position" : n.kind === "move" ? "Type of move" : "Submission";
-      wireHover(g, () => n.label, () => [kindLabel, n.family && n.family !== "move" ? n.family.replace(/-/g, " ") : ""]);
+      wireHover(g, () => n.label, () => [
+        kindLabel,
+        n.dimmed ? "Not selected on this layer" : (n.chosen ? "Selected" : "Click to pick"),
+        n.family && n.family !== "move" ? n.family.replace(/-/g, " ") : ""
+      ]);
       g.addEventListener("click", (ev) => {
         ev.stopPropagation();
         hideTip();
-        if (n.kind === "start") go({ type: "SELECT_START", id: n.id.slice(6) });
-        else if (n.kind === "move") go({ type: "SELECT_MOVE_TYPE", id: n.id.slice(3) });
-        else go({ type: "SELECT_END", id: n.id.replace(/^(end|sub):/, "") });
+        pickJourney(n.layerIndex, n.opt, n.chosen);
       });
       g.addEventListener("mousedown", (ev) => {
         dragging = n;
@@ -1464,7 +1595,6 @@
       });
       nodeG.appendChild(g);
       n.el = g;
-      return g;
     });
 
     function tick() {
@@ -1474,7 +1604,8 @@
           let dy = nodes[j].y - nodes[i].y;
           let d2 = dx * dx + dy * dy || 1;
           let d = Math.sqrt(d2);
-          let f = 1400 / d2;
+          const same = nodes[i].layerIndex === nodes[j].layerIndex;
+          let f = (same ? 2200 : 900) / d2;
           let fx = (dx / d) * f;
           let fy = (dy / d) * f;
           nodes[i].vx -= fx;
@@ -1487,8 +1618,8 @@
         let dx = lnk.t.x - lnk.s.x;
         let dy = lnk.t.y - lnk.s.y;
         let dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        let rest = 90;
-        let f = (dist - rest) * 0.012;
+        let rest = 130;
+        let f = (dist - rest) * 0.016;
         let fx = (dx / dist) * f;
         let fy = (dy / dist) * f;
         lnk.s.vx += fx;
@@ -1497,20 +1628,18 @@
         lnk.t.vy -= fy;
       });
       nodes.forEach((n) => {
-        n.vx += (width / 2 - n.x) * 0.004;
-        n.vy += (height / 2 - n.y) * 0.004;
-        if (n.kind === "start") n.vx += (width * 0.18 - n.x) * 0.01;
-        if (n.kind === "move") n.vx += (width * 0.5 - n.x) * 0.01;
-        if (n.kind === "end" || n.kind === "submission") n.vx += (width * 0.82 - n.x) * 0.01;
+        const tx = layerX(n.layerIndex);
+        n.vx += (tx - n.x) * 0.05;
+        n.vy += (height / 2 - n.y) * 0.002;
         if (n.fx != null) { n.x = n.fx; n.y = n.fy; n.vx = 0; n.vy = 0; }
         else {
-          n.vx *= 0.82;
-          n.vy *= 0.82;
+          n.vx *= 0.78;
+          n.vy *= 0.78;
           n.x += n.vx;
           n.y += n.vy;
         }
-        n.x = Math.max(30, Math.min(width - 80, n.x));
-        n.y = Math.max(20, Math.min(height - 20, n.y));
+        n.x = Math.max(30, Math.min(width - 90, n.x));
+        n.y = Math.max(28, Math.min(height - 18, n.y));
         forcePos[n.id] = { x: n.x, y: n.y };
         n.el.setAttribute("transform", "translate(" + n.x + "," + n.y + ")");
       });
@@ -1523,7 +1652,7 @@
       forceRaf = requestAnimationFrame(tick);
     }
     tick();
-    return { svg, count: nodes.length, pathCount: paths.length };
+    return { svg, layers, count: nodes.length, width };
   }
 
   function renderPlot(state) {
@@ -1541,28 +1670,32 @@
     const layout = layoutSankey(state);
     body.append(renderSankey(state, layout));
 
-    const forceHead = el("h2", {}, ["Force-directed sample"]);
+    const forceHead = el("h2", {}, ["Force-directed journey"]);
     forceHead.style.marginTop = "1rem";
     body.append(forceHead);
+    const force = renderForce(state);
+    const trail = journeyTrail(force.layers);
     const forceTools = el("div", { class: "toolbar" }, [
       el("button", {
-        class: forceScope === "sample" ? "primary" : "",
-        on: { click: () => { forceScope = "sample"; forcePos = {}; render(); } }
-      }, ["Sample around selection"]),
-      el("button", {
-        class: forceScope === "full" ? "primary" : "",
-        on: { click: () => { forceScope = "full"; forcePos = {}; render(); } }
-      }, ["Full graph"]),
+        class: "primary",
+        on: { click: () => { forceJourney = []; forcePos = {}; render(); toast("Journey reset. Pick a starting position."); } }
+      }, ["Reset journey"]),
       el("span", { class: "xref" }, [
-        "Filled circle = starting position · Hollow circle = ending position · Square = type of move · Diamond = submission. Drag a node."
+        trail
+          ? ("Path: " + trail)
+          : "Pick a starting position. Next layer is types of move, then the ending position or submission. Unchosen options stay visible and grey."
       ])
     ]);
     body.append(forceTools);
-    const force = renderForce(state);
-    body.append(force.svg);
     body.append(el("p", { class: "xref" }, [
-      force.pathCount + " paths · " + force.count + " nodes in this graph" +
-      (forceScope === "sample" ? " (sample). Select a position above to center the sample on it." : ".")
+      "Filled circle = starting position · Hollow circle = ending position · Square = type of move · Diamond = submission. Click to pick. Click a grey node to change that step. Drag a node."
+    ]));
+    body.append(force.svg);
+    const last = force.layers[force.layers.length - 1];
+    const emptyNext = last && last.selected && last.kind === "end" && last.options.some((o) => o.id === last.selected && o.endKind === "submission");
+    body.append(el("p", { class: "xref" }, [
+      force.layers.length + " layers · " + force.count + " nodes" +
+      (emptyNext ? ". Submission is an ending only, so the journey stops." : ".")
     ]));
 
     const focus = state.selected.identity || state.selected.start;
