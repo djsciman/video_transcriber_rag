@@ -239,13 +239,31 @@
     .changed { background: #fef3c7; }
     .plot-panel { margin-top: .9rem; }
     .plot-panel .body { padding: 0 .55rem .7rem; }
-    .plot-svg {
+    .sankey-svg, .force-svg {
       width: 100%;
-      height: 560px;
       background: #fff;
       border: 1px solid var(--line);
       border-radius: 10px;
+      display: block;
     }
+    .sankey-svg { height: 880px; }
+    .force-svg { height: 580px; margin-top: .45rem; }
+    .hover-tip {
+      position: fixed;
+      z-index: 80;
+      max-width: 22rem;
+      background: #1c1917;
+      color: #fafaf9;
+      padding: .55rem .7rem;
+      border-radius: 8px;
+      font-size: .8rem;
+      line-height: 1.35;
+      pointer-events: none;
+      box-shadow: var(--shadow);
+    }
+    .hover-tip[hidden] { display: none; }
+    .hover-tip strong { display: block; margin-bottom: .2rem; }
+    .hover-tip .muted { color: #a8a29e; font-size: .75rem; }
     .rel-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -288,8 +306,8 @@
     <h1>Starting finder tree</h1>
     <p class="meta">
       One position record is used as a start and as an end. Submissions are endings only.
-      A path is a relationship: position → type of move → position or submission.
-      Named-move leaves carry gi, no-gi, or both.
+      The Sankey groups starting positions and endings by family, then by the specific position.
+      Type of move is its own column. Hover a bar or ribbon for names. The force graph under it is a sample of those same four kinds of node.
     </p>
   </header>
   <div class="question">
@@ -304,6 +322,7 @@
   </div>
   <div id="app"></div>
   <div class="toast" id="toast"></div>
+  <div class="hover-tip" id="hover-tip" hidden></div>
   <script>
   const SEED = {"meta": {"version": 2, "assembled": "2026-10-31", "ticket": "https://github.com/djsciman/video_transcriber_rag/issues/25", "purpose": "Raw one-time consensus enrichment seed for hierarchy browse and dimensional search. Import as the starting tree; the coach edits the live copy afterward.", "path_levels": ["starting_position", "move_type", "ending_position_or_submission"], "leaf_ruleset_values": ["gi", "no-gi", "both"], "notes": ["Shared path levels apply to both rulesets. Only named-move leaves carry gi / no-gi / both.", "This seed is raw consensus material for prototype organization (#26), not a final product tree.", "seen_in on leaves records which consulted sources listed that name; absence does not mean the move is rare.", "Uncategorized is a product browse bucket for citations with no node link; it is not a seed node.", "cross_refs on leaves and some positions map BJJ finder names to judo and wrestling names from open sources.", "crosswalk is a flat index of those mappings for prototype search and display."], "counts": {"move_types": 7, "starting_positions": 36, "ending_positions_or_submissions": 55, "paths": 102, "named_move_leaves": 149, "leaves_with_cross_refs": 45, "crosswalk_entries": 75}, "updated": "2026-10-31"}, "sources": [{"id": "bjj-data", "title": "bjj-data taxonomy.json (positions and submissions vocabulary)", "url": "https://github.com/grapple-flows/bjj-data", "version": "v0.1.0", "license": "CC BY 4.0", "license_url": "https://creativecommons.org/licenses/by/4.0/", "attribution": "Data from bjj-data by Grapple Flows (https://grappleflows.com)", "local_copy": "reference/bjj-data-taxonomy-v0.1.0.json", "role": "Primary open vocabulary of position and submission labels and aliases"}, {"id": "wikipedia", "title": "List of Brazilian jiu-jitsu techniques", "url": "https://en.wikipedia.org/wiki/List_of_Brazilian_jiu-jitsu_techniques", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0/", "attribution": "Wikipedia contributors, List of Brazilian jiu-jitsu techniques", "role": "Technique type categories and common named moves"}, {"id": "wikibooks", "title": "Brazilian Jiu Jitsu: Positional and Technical Guide", "url": "https://en.wikibooks.org/wiki/Brazilian_Jiu_Jitsu:_Positional_and_Technical_Guide", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0/", "attribution": "Wikibooks contributors, Brazilian Jiu Jitsu: Positional and Technical Guide", "role": "Position family outline (pins, guards, submissions)"}, {"id": "grapplepedia", "title": "Grapplepedia position and technique map", "url": "https://jiujitsuauthority.com/grapplepedia/", "license": "All rights reserved (consulted; names rewritten as consensus labels)", "license_url": null, "attribution": "Jiu-Jitsu Authority Grapplepedia (structure consulted; no wholesale copy)", "role": "Cross-check of ~35 core positions and move-type groupings for consensus coverage"}, {"id": "kodokan-wikipedia", "title": "List of Kodokan judo techniques", "url": "https://en.wikipedia.org/wiki/List_of_Kodokan_judo_techniques", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0/", "attribution": "Wikipedia contributors, List of Kodokan judo techniques", "role": "Official Kodokan nage-waza and katame-waza names for BJJ leaf crosswalk"}, {"id": "judo-techniques-wikipedia", "title": "List of judo techniques", "url": "https://en.wikipedia.org/wiki/List_of_judo_techniques", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0/", "attribution": "Wikipedia contributors, List of judo techniques", "role": "Te-waza / koshi-waza / ashi-waza classification cross-check"}, {"id": "wrestling-takedown-wikipedia", "title": "Takedown (grappling)", "url": "https://en.wikipedia.org/wiki/Takedown_(grappling)", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0/", "attribution": "Wikipedia contributors, Takedown (grappling)", "role": "Wrestling and shared grappling takedown names, including judo correspondences"}, {"id": "folkstyle-wikibooks", "title": "Folkstyle Wrestling (Wikibooks)", "url": "https://en.wikibooks.org/wiki/Folkstyle_Wrestling", "license": "CC BY-SA 3.0", "license_url": "https://creativecommons.org/licenses/by-sa/3.0/", "attribution": "Wikibooks contributors, Folkstyle Wrestling", "role": "Folkstyle positions (neutral, referee's position) and mat moves for crosswalk"}], "license_notes": ["bjj-data data is CC BY 4.0: keep attribution when redistributing the reference file or derived vocabulary labels.", "Wikipedia and Wikibooks text is CC BY-SA 4.0: share-alike applies to adapted text from those pages; this seed uses short common technique names as consensus labels rather than copying article prose.", "Grapplepedia was consulted for coverage consensus only. Do not treat this seed as a Grapplepedia dump; its site license is not an open reuse grant.", "BJJGraph (bjjgraph.org) is source-available noncommercial and was not copied into this seed.", "The seed is finder-node labels only. It does not include lesson fields, instructional content, or video.", "Kodokan judo and wrestling takedown pages on Wikipedia are CC BY-SA 4.0: short technique names used as cross-ref labels, not copied article prose.", "Folkstyle Wrestling Wikibooks is CC BY-SA 3.0: position and move names used as cross-ref labels only.", "Cross-refs link BJJ finder leaves to judo/wrestling names. They do not add a fourth path level or change gi/no-gi leaf rules."], "move_types": [{"id": "takedown", "label": "Takedown"}, {"id": "sweep", "label": "Sweep"}, {"id": "pass", "label": "Pass"}, {"id": "escape", "label": "Escape"}, {"id": "submission", "label": "Submission"}, {"id": "transition", "label": "Transition"}, {"id": "back-take", "label": "Back take"}], "starting_positions": [{"id": "standing", "label": "Standing", "family": "standing", "cross_refs": [{"art": "wrestling", "name": "Neutral", "source": "folkstyle-wikibooks"}]}, {"id": "clinch", "label": "Clinch", "family": "standing", "cross_refs": [{"art": "wrestling", "name": "Tie-up / clinch", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Kumikata / clinch", "source": "kodokan-wikipedia"}]}, {"id": "front-headlock", "label": "Front headlock", "family": "standing", "cross_refs": [{"art": "wrestling", "name": "Front headlock", "source": "wrestling-takedown-wikipedia"}]}, {"id": "closed-guard", "label": "Closed guard", "family": "guard"}, {"id": "open-guard", "label": "Open guard", "family": "guard"}, {"id": "half-guard", "label": "Half guard", "family": "guard"}, {"id": "deep-half-guard", "label": "Deep half guard", "family": "guard"}, {"id": "z-guard", "label": "Z-guard", "family": "guard", "aliases": ["Knee shield", "93 guard"]}, {"id": "butterfly-guard", "label": "Butterfly guard", "family": "guard"}, {"id": "de-la-riva", "label": "De La Riva", "family": "guard", "aliases": ["DLR"]}, {"id": "reverse-de-la-riva", "label": "Reverse De La Riva", "family": "guard", "aliases": ["RDLR"]}, {"id": "spider-guard", "label": "Spider guard", "family": "guard"}, {"id": "lasso-guard", "label": "Lasso guard", "family": "guard"}, {"id": "collar-sleeve", "label": "Collar sleeve", "family": "guard"}, {"id": "x-guard", "label": "X-guard", "family": "guard"}, {"id": "single-leg-x", "label": "Single-leg X", "family": "leg-entanglement", "aliases": ["SLX", "Ashi garami"]}, {"id": "k-guard", "label": "K-guard", "family": "guard"}, {"id": "rubber-guard", "label": "Rubber guard", "family": "guard"}, {"id": "worm-guard", "label": "Worm guard", "family": "guard"}, {"id": "shin-to-shin", "label": "Shin-to-shin", "family": "guard"}, {"id": "fifty-fifty", "label": "50/50", "family": "leg-entanglement"}, {"id": "saddle", "label": "Saddle", "family": "leg-entanglement", "aliases": ["Honey hole", "411", "Inside sankaku"]}, {"id": "outside-ashi", "label": "Outside ashi", "family": "leg-entanglement"}, {"id": "headquarters", "label": "Headquarters", "family": "passing"}, {"id": "leg-drag-position", "label": "Leg drag position", "family": "passing"}, {"id": "side-control", "label": "Side control", "family": "pin", "cross_refs": [{"art": "judo", "name": "Yoko-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia"}]}, {"id": "kesa-gatame", "label": "Kesa gatame", "family": "pin", "aliases": ["Scarf hold"], "cross_refs": [{"art": "judo", "name": "Kesa-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia"}]}, {"id": "north-south", "label": "North-south", "family": "pin", "cross_refs": [{"art": "judo", "name": "Kami-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia", "note": "Upper four-quarter; north-south is the common BJJ name"}]}, {"id": "knee-on-belly", "label": "Knee on belly", "family": "pin"}, {"id": "mount", "label": "Mount", "family": "pin", "cross_refs": [{"art": "judo", "name": "Tate-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia"}]}, {"id": "s-mount", "label": "S-mount", "family": "pin"}, {"id": "technical-mount", "label": "Technical mount", "family": "pin"}, {"id": "turtle", "label": "Turtle", "family": "turtle", "cross_refs": [{"art": "wrestling", "name": "Referee's position (bottom)", "source": "folkstyle-wikibooks"}, {"art": "wrestling", "name": "All fours / turtle", "source": "folkstyle-wikibooks"}]}, {"id": "truck", "label": "Truck", "family": "leg-entanglement"}, {"id": "back-control", "label": "Back control", "family": "back"}, {"id": "crucifix", "label": "Crucifix", "family": "back"}], "ending_positions_or_submissions": [{"id": "standing", "label": "Standing", "kind": "position", "cross_refs": [{"art": "wrestling", "name": "Neutral", "source": "folkstyle-wikibooks"}]}, {"id": "clinch", "label": "Clinch", "kind": "position", "cross_refs": [{"art": "wrestling", "name": "Tie-up / clinch", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Kumikata / clinch", "source": "kodokan-wikipedia"}]}, {"id": "front-headlock", "label": "Front headlock", "kind": "position", "cross_refs": [{"art": "wrestling", "name": "Front headlock", "source": "wrestling-takedown-wikipedia"}]}, {"id": "closed-guard", "label": "Closed guard", "kind": "position"}, {"id": "open-guard", "label": "Open guard", "kind": "position"}, {"id": "half-guard", "label": "Half guard", "kind": "position"}, {"id": "deep-half-guard", "label": "Deep half guard", "kind": "position"}, {"id": "butterfly-guard", "label": "Butterfly guard", "kind": "position"}, {"id": "de-la-riva", "label": "De La Riva", "kind": "position"}, {"id": "reverse-de-la-riva", "label": "Reverse De La Riva", "kind": "position"}, {"id": "x-guard", "label": "X-guard", "kind": "position"}, {"id": "single-leg-x", "label": "Single-leg X", "kind": "position"}, {"id": "k-guard", "label": "K-guard", "kind": "position"}, {"id": "saddle", "label": "Saddle", "kind": "position"}, {"id": "fifty-fifty", "label": "50/50", "kind": "position"}, {"id": "outside-ashi", "label": "Outside ashi", "kind": "position"}, {"id": "headquarters", "label": "Headquarters", "kind": "position"}, {"id": "leg-drag-position", "label": "Leg drag position", "kind": "position"}, {"id": "side-control", "label": "Side control", "kind": "position", "cross_refs": [{"art": "judo", "name": "Yoko-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia"}]}, {"id": "kesa-gatame", "label": "Kesa gatame", "kind": "position", "cross_refs": [{"art": "judo", "name": "Kesa-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia"}]}, {"id": "north-south", "label": "North-south", "kind": "position", "cross_refs": [{"art": "judo", "name": "Kami-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia", "note": "Upper four-quarter; north-south is the common BJJ name"}]}, {"id": "knee-on-belly", "label": "Knee on belly", "kind": "position"}, {"id": "mount", "label": "Mount", "kind": "position", "cross_refs": [{"art": "judo", "name": "Tate-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia"}]}, {"id": "s-mount", "label": "S-mount", "kind": "position"}, {"id": "technical-mount", "label": "Technical mount", "kind": "position"}, {"id": "turtle", "label": "Turtle", "kind": "position", "cross_refs": [{"art": "wrestling", "name": "Referee's position (bottom)", "source": "folkstyle-wikibooks"}, {"art": "wrestling", "name": "All fours / turtle", "source": "folkstyle-wikibooks"}]}, {"id": "truck", "label": "Truck", "kind": "position"}, {"id": "back-control", "label": "Back control", "kind": "position"}, {"id": "crucifix", "label": "Crucifix", "kind": "position"}, {"id": "rear-naked-choke", "label": "Rear naked choke", "kind": "submission", "cross_refs": [{"art": "judo", "name": "Hadaka-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}, {"id": "guillotine", "label": "Guillotine", "kind": "submission"}, {"id": "darce", "label": "D'Arce choke", "kind": "submission"}, {"id": "anaconda", "label": "Anaconda choke", "kind": "submission"}, {"id": "arm-triangle", "label": "Arm triangle", "kind": "submission"}, {"id": "triangle", "label": "Triangle choke", "kind": "submission", "cross_refs": [{"art": "judo", "name": "Sankaku-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}, {"id": "armbar", "label": "Armbar", "kind": "submission", "cross_refs": [{"art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}, {"id": "kimura", "label": "Kimura", "kind": "submission", "cross_refs": [{"art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}, {"id": "americana", "label": "Americana", "kind": "submission", "cross_refs": [{"art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}, {"id": "omoplata", "label": "Omoplata", "kind": "submission"}, {"id": "ezekiel", "label": "Ezekiel choke", "kind": "submission", "cross_refs": [{"art": "judo", "name": "Sode-guruma-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}, {"id": "north-south-choke", "label": "North-south choke", "kind": "submission"}, {"id": "cross-collar-choke", "label": "Cross collar choke", "kind": "submission", "cross_refs": [{"art": "judo", "name": "Nami-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}, {"art": "judo", "name": "Gyaku-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}, {"art": "judo", "name": "Kata-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}, {"id": "bow-and-arrow", "label": "Bow and arrow choke", "kind": "submission"}, {"id": "loop-choke", "label": "Loop choke", "kind": "submission"}, {"id": "clock-choke", "label": "Clock choke", "kind": "submission"}, {"id": "baseball-bat-choke", "label": "Baseball bat choke", "kind": "submission"}, {"id": "paper-cutter", "label": "Paper cutter choke", "kind": "submission"}, {"id": "gogoplata", "label": "Gogoplata", "kind": "submission"}, {"id": "straight-ankle-lock", "label": "Straight ankle lock", "kind": "submission"}, {"id": "heel-hook", "label": "Heel hook", "kind": "submission"}, {"id": "toe-hold", "label": "Toe hold", "kind": "submission"}, {"id": "kneebar", "label": "Kneebar", "kind": "submission"}, {"id": "calf-slicer", "label": "Calf slicer", "kind": "submission"}, {"id": "twister", "label": "Twister", "kind": "submission"}, {"id": "wrist-lock", "label": "Wrist lock", "kind": "submission"}], "paths": [{"start": "back-control", "move_type": "escape", "end": "turtle", "leaves": [{"name": "Chair sit escape", "ruleset": "both", "seen_in": ["folkstyle-wikibooks", "grapplepedia"], "cross_refs": [{"art": "wrestling", "name": "Stand-up escape family", "class": "escape", "source": "folkstyle-wikibooks"}]}]}, {"start": "back-control", "move_type": "submission", "end": "armbar", "leaves": [{"name": "Armbar from back control", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "back-control", "move_type": "submission", "end": "bow-and-arrow", "leaves": [{"name": "Bow and arrow choke", "ruleset": "gi", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Okuri-eri-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": "Related sliding-lapel / back choke family"}]}]}, {"start": "back-control", "move_type": "submission", "end": "rear-naked-choke", "leaves": [{"name": "Rear naked choke", "ruleset": "both", "aliases": ["Mata leão", "Hadaka jime"], "seen_in": ["bjj-data", "grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Hadaka-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "butterfly-guard", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Arm drag from butterfly", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "butterfly-guard", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Float and smash pass", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Body lock pass", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "butterfly-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Butterfly sweep", "ruleset": "both", "aliases": ["Hook sweep"], "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "butterfly-guard", "move_type": "transition", "end": "x-guard", "leaves": [{"name": "X-guard entry", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "clinch", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Duck under", "ruleset": "both", "seen_in": ["grapplepedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Duck under", "class": "takedown", "source": "wrestling-takedown-wikipedia"}]}]}, {"start": "clinch", "move_type": "takedown", "end": "side-control", "leaves": [{"name": "Body lock takedown", "ruleset": "both", "seen_in": ["grapplepedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Body lock", "class": "takedown", "source": "wrestling-takedown-wikipedia"}, {"art": "wrestling", "name": "Bear hug", "class": "takedown", "source": "wrestling-takedown-wikipedia"}]}, {"name": "Inside trip", "ruleset": "both", "seen_in": ["kodokan-wikipedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Inside trip", "class": "trip", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "O-uchi-gari", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": "Major inner reap; related inside trip family"}, {"art": "judo", "name": "Ko-uchi-gari", "class": "ashi-waza", "source": "kodokan-wikipedia"}]}, {"name": "Outside trip", "ruleset": "both", "seen_in": ["kodokan-wikipedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Outside trip", "class": "trip", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "O-soto-gari", "class": "ashi-waza", "source": "kodokan-wikipedia"}, {"art": "judo", "name": "Ko-soto-gari", "class": "ashi-waza", "source": "kodokan-wikipedia"}]}, {"name": "Lateral drop", "ruleset": "both", "seen_in": ["wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Lateral drop", "class": "throw", "source": "wrestling-takedown-wikipedia"}]}, {"name": "Suplex", "ruleset": "both", "seen_in": ["wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Suplex", "class": "throw", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Ura-nage", "class": "ma-sutemi-waza", "source": "kodokan-wikipedia", "note": "Related rear throw / arch family"}]}]}, {"start": "closed-guard", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Standing guard break", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Knee-in-tailbone break", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Double forearm wedge break", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "closed-guard", "move_type": "submission", "end": "armbar", "leaves": [{"name": "Armbar from closed guard", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "closed-guard", "move_type": "submission", "end": "cross-collar-choke", "leaves": [{"name": "Cross collar choke", "ruleset": "gi", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Nami-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}, {"art": "judo", "name": "Gyaku-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}, {"art": "judo", "name": "Kata-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "closed-guard", "move_type": "submission", "end": "kimura", "leaves": [{"name": "Kimura from closed guard", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": "Gyaku ude-garami family"}]}]}, {"start": "closed-guard", "move_type": "submission", "end": "omoplata", "leaves": [{"name": "Omoplata", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia", "bjj-data"]}]}, {"start": "closed-guard", "move_type": "submission", "end": "triangle", "leaves": [{"name": "Triangle choke", "ruleset": "both", "seen_in": ["bjj-data", "grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Sankaku-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "closed-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Hip bump sweep", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Scissor sweep", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Flower sweep", "ruleset": "both", "aliases": ["Pendulum sweep"], "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Lumberjack sweep", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Waiter sweep", "ruleset": "both", "aliases": ["Muscle sweep"], "seen_in": ["wikipedia"]}]}, {"start": "closed-guard", "move_type": "sweep", "end": "side-control", "leaves": [{"name": "Omoplata sweep", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Balloon sweep", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "closed-guard", "move_type": "transition", "end": "rubber-guard", "leaves": [{"name": "Mission control entry", "ruleset": "no-gi", "seen_in": ["grapplepedia"]}]}, {"start": "closed-guard", "move_type": "transition", "end": "worm-guard", "leaves": [{"name": "Worm guard entry", "ruleset": "gi", "seen_in": ["grapplepedia"]}]}, {"start": "collar-sleeve", "move_type": "submission", "end": "triangle", "leaves": [{"name": "Collar-sleeve triangle", "ruleset": "gi", "seen_in": ["bjj-data"]}]}, {"start": "crucifix", "move_type": "submission", "end": "rear-naked-choke", "leaves": [{"name": "Crucifix choke", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "de-la-riva", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Berimbolo", "ruleset": "both", "seen_in": ["grapplepedia", "bjj-data"]}]}, {"start": "de-la-riva", "move_type": "escape", "end": "side-control", "leaves": [{"name": "Backstep vs De La Riva", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Knee cut through hook", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "de-la-riva", "move_type": "sweep", "end": "mount", "leaves": [{"name": "De La Riva sweep", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "deep-half-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Waiter sweep", "ruleset": "both", "seen_in": ["grapplepedia"]}, {"name": "Electric chair", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "fifty-fifty", "move_type": "submission", "end": "heel-hook", "leaves": [{"name": "Inside heel hook from 50/50", "ruleset": "no-gi", "seen_in": ["grapplepedia", "bjj-data"]}]}, {"start": "front-headlock", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Front headlock go-behind", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "front-headlock", "move_type": "escape", "end": "standing", "leaves": [{"name": "Front headlock escape", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "front-headlock", "move_type": "submission", "end": "anaconda", "leaves": [{"name": "Anaconda choke", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "front-headlock", "move_type": "submission", "end": "darce", "leaves": [{"name": "D'Arce choke", "ruleset": "both", "aliases": ["Brabo choke"], "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "front-headlock", "move_type": "submission", "end": "guillotine", "leaves": [{"name": "Guillotine choke", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia", "bjj-data"]}, {"name": "Peruvian necktie", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Japanese necktie", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "half-guard", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Back take from half guard", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "half-guard", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Crossface and underhook pass", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Knee slice pass", "ruleset": "both", "aliases": ["Knee cut pass"], "seen_in": ["wikipedia"]}, {"name": "Backstep pass", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "half-guard", "move_type": "sweep", "end": "side-control", "leaves": [{"name": "Old school sweep", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "John Wayne sweep", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "half-guard", "move_type": "transition", "end": "deep-half-guard", "leaves": [{"name": "Deep half entry", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "half-guard", "move_type": "transition", "end": "z-guard", "leaves": [{"name": "Knee shield entry", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "headquarters", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Knee cut pass", "ruleset": "both", "aliases": ["Knee slice"], "seen_in": ["grapplepedia"]}, {"name": "Long step pass", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "k-guard", "move_type": "transition", "end": "saddle", "leaves": [{"name": "K-guard roll to saddle", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "kesa-gatame", "move_type": "escape", "end": "half-guard", "leaves": [{"name": "Kesa gatame escape", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "knee-on-belly", "move_type": "escape", "end": "half-guard", "leaves": [{"name": "Knee on belly escape", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "knee-on-belly", "move_type": "submission", "end": "baseball-bat-choke", "leaves": [{"name": "Baseball bat choke", "ruleset": "gi", "seen_in": ["grapplepedia"]}]}, {"start": "lasso-guard", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Strip sleeve and backstep", "ruleset": "gi", "seen_in": ["wikipedia"]}, {"name": "Step over lasso smash pass", "ruleset": "gi", "seen_in": ["wikipedia"]}]}, {"start": "lasso-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Lasso sweep", "ruleset": "gi", "seen_in": ["grapplepedia"]}]}, {"start": "leg-drag-position", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Back take from leg drag", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "leg-drag-position", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Leg drag finish to side control", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "mount", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Gift wrap to back", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "mount", "move_type": "escape", "end": "half-guard", "leaves": [{"name": "Upa escape", "ruleset": "both", "aliases": ["Bridge and roll"], "seen_in": ["folkstyle-wikibooks", "grapplepedia", "wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Bridge", "class": "escape", "source": "folkstyle-wikibooks"}]}, {"name": "Elbow-knee escape", "ruleset": "both", "aliases": ["Shrimp escape"], "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "mount", "move_type": "submission", "end": "armbar", "leaves": [{"name": "Armbar from mount", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "mount", "move_type": "submission", "end": "cross-collar-choke", "leaves": [{"name": "Cross collar choke from mount", "ruleset": "gi", "seen_in": ["kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Nami-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}, {"art": "judo", "name": "Gyaku-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "mount", "move_type": "submission", "end": "ezekiel", "leaves": [{"name": "Ezekiel choke", "ruleset": "both", "aliases": ["Sode guruma jime"], "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Sode-guruma-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "mount", "move_type": "transition", "end": "s-mount", "leaves": [{"name": "Climb to S-mount", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "mount", "move_type": "transition", "end": "technical-mount", "leaves": [{"name": "Follow to technical mount", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "north-south", "move_type": "submission", "end": "north-south-choke", "leaves": [{"name": "North-south choke", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "open-guard", "move_type": "pass", "end": "leg-drag-position", "leaves": [{"name": "Leg drag", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia", "bjj-data"]}]}, {"start": "open-guard", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Toreando pass", "ruleset": "both", "aliases": ["Bullfighter pass"], "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Over-under pass", "ruleset": "both", "seen_in": ["grapplepedia"]}, {"name": "Double under pass", "ruleset": "both", "seen_in": ["grapplepedia"]}, {"name": "Body lock pass", "ruleset": "both", "seen_in": ["grapplepedia"]}, {"name": "X-pass", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Shin pin pass", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "open-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Tripod sweep", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Sickle sweep", "ruleset": "both", "seen_in": ["grapplepedia"]}, {"name": "Heel grab sweep", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Tomahawk sweep", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "outside-ashi", "move_type": "submission", "end": "heel-hook", "leaves": [{"name": "Outside heel hook", "ruleset": "no-gi", "seen_in": ["grapplepedia", "bjj-data"]}]}, {"start": "reverse-de-la-riva", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Kiss of the dragon", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "reverse-de-la-riva", "move_type": "transition", "end": "single-leg-x", "leaves": [{"name": "RDLR to single-leg X", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "rubber-guard", "move_type": "submission", "end": "gogoplata", "leaves": [{"name": "Gogoplata", "ruleset": "no-gi", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "s-mount", "move_type": "submission", "end": "armbar", "leaves": [{"name": "S-mount armbar", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "saddle", "move_type": "escape", "end": "half-guard", "leaves": [{"name": "Saddle escape", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "saddle", "move_type": "submission", "end": "heel-hook", "leaves": [{"name": "Inside heel hook from the saddle", "ruleset": "no-gi", "seen_in": ["grapplepedia", "bjj-data"]}]}, {"start": "saddle", "move_type": "submission", "end": "kneebar", "leaves": [{"name": "Kneebar", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia", "bjj-data"]}]}, {"start": "saddle", "move_type": "submission", "end": "toe-hold", "leaves": [{"name": "Toe hold", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "shin-to-shin", "move_type": "transition", "end": "single-leg-x", "leaves": [{"name": "Shin-to-shin to single-leg X", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "side-control", "move_type": "escape", "end": "closed-guard", "leaves": [{"name": "Elbow escape to guard", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "side-control", "move_type": "escape", "end": "half-guard", "leaves": [{"name": "Frames and shrimp escape", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "side-control", "move_type": "submission", "end": "americana", "leaves": [{"name": "Americana", "ruleset": "both", "aliases": ["Keylock", "Ude garami"], "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "side-control", "move_type": "submission", "end": "arm-triangle", "leaves": [{"name": "Arm triangle choke", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "side-control", "move_type": "submission", "end": "kimura", "leaves": [{"name": "Kimura from side control", "ruleset": "both", "seen_in": ["kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "side-control", "move_type": "submission", "end": "paper-cutter", "leaves": [{"name": "Paper cutter choke", "ruleset": "gi", "seen_in": ["grapplepedia"]}]}, {"start": "side-control", "move_type": "transition", "end": "knee-on-belly", "leaves": [{"name": "Knee on belly transition", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "side-control", "move_type": "transition", "end": "mount", "leaves": [{"name": "Knee slide to mount", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "side-control", "move_type": "transition", "end": "north-south", "leaves": [{"name": "Move to north-south", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "single-leg-x", "move_type": "submission", "end": "straight-ankle-lock", "leaves": [{"name": "Straight ankle lock", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia", "bjj-data"]}]}, {"start": "single-leg-x", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Single-leg X sweep", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "spider-guard", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Posture and elbow peel", "ruleset": "gi", "seen_in": ["wikipedia"]}, {"name": "C-scoop arm escape", "ruleset": "gi", "seen_in": ["wikipedia"]}]}, {"start": "spider-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Spider guard sweep", "ruleset": "gi", "seen_in": ["grapplepedia"]}]}, {"start": "standing", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Standing arm drag", "ruleset": "both", "seen_in": ["grapplepedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Arm drag", "class": "takedown", "source": "wrestling-takedown-wikipedia"}]}, {"name": "Duck under", "ruleset": "both", "seen_in": ["grapplepedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Duck under", "class": "takedown", "source": "wrestling-takedown-wikipedia"}]}]}, {"start": "standing", "move_type": "escape", "end": "standing", "leaves": [{"name": "Sprawl", "ruleset": "both", "seen_in": ["grapplepedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Sprawl", "class": "defense", "source": "wrestling-takedown-wikipedia"}]}]}, {"start": "standing", "move_type": "takedown", "end": "closed-guard", "leaves": [{"name": "Guard pull", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "standing", "move_type": "takedown", "end": "front-headlock", "leaves": [{"name": "Snap down", "ruleset": "both", "seen_in": ["grapplepedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Snapdown", "class": "takedown", "source": "wrestling-takedown-wikipedia"}]}]}, {"start": "standing", "move_type": "takedown", "end": "mount", "leaves": [{"name": "Body lock takedown", "ruleset": "both", "seen_in": ["grapplepedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Body lock", "class": "takedown", "source": "wrestling-takedown-wikipedia"}, {"art": "wrestling", "name": "Bear hug", "class": "takedown", "source": "wrestling-takedown-wikipedia"}]}]}, {"start": "standing", "move_type": "takedown", "end": "side-control", "leaves": [{"name": "Double leg takedown", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Double leg", "class": "takedown", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Morote-gari", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Kodokan two-hand reap; often the double-leg correspondence"}, {"art": "judo", "name": "Sukui-nage", "class": "te-waza", "source": "wrestling-takedown-wikipedia", "note": "When the opponent is lifted or scooped"}]}, {"name": "Single leg takedown", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Single leg", "class": "takedown", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Kuchiki-taoshi", "class": "te-waza", "source": "kodokan-wikipedia"}]}, {"name": "Ankle pick", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Ankle pick", "class": "takedown", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Kibisu-gaeshi", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Heel trip / one-hand reversal"}]}, {"name": "High crotch", "ruleset": "both", "seen_in": ["wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "High crotch", "class": "takedown", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Sukui-nage", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Related scoop / high-crotch lift family"}]}]}, {"start": "standing", "move_type": "takedown", "end": "turtle", "leaves": [{"name": "Osoto gari", "ruleset": "both", "aliases": ["Outside trip"], "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "judo", "name": "O-soto-gari", "class": "ashi-waza", "source": "kodokan-wikipedia"}, {"art": "wrestling", "name": "Outside trip", "class": "trip", "source": "wrestling-takedown-wikipedia"}]}, {"name": "Seoi nage", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "Seoi-nage", "class": "te-waza", "source": "kodokan-wikipedia"}, {"art": "judo", "name": "Ippon-seoi-nage", "class": "te-waza", "source": "kodokan-wikipedia"}]}, {"name": "Uchi mata", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "Uchi-mata", "class": "ashi-waza", "source": "kodokan-wikipedia"}]}, {"name": "O goshi", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "O-goshi", "class": "koshi-waza", "source": "kodokan-wikipedia"}]}, {"name": "Fireman's carry", "ruleset": "both", "seen_in": ["kodokan-wikipedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Fireman's carry", "class": "takedown", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Kata-guruma", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Shoulder wheel; related fireman's / carry family"}]}, {"name": "Knee tap", "ruleset": "both", "seen_in": ["wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Knee tap", "class": "trip", "source": "wrestling-takedown-wikipedia"}]}, {"name": "Tai otoshi", "ruleset": "both", "aliases": ["Body drop"], "seen_in": ["kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "Tai-otoshi", "class": "te-waza", "source": "kodokan-wikipedia"}]}, {"name": "Harai goshi", "ruleset": "both", "aliases": ["Sweeping hip throw"], "seen_in": ["kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "Harai-goshi", "class": "koshi-waza", "source": "kodokan-wikipedia"}]}, {"name": "De ashi barai", "ruleset": "both", "aliases": ["Advanced foot sweep"], "seen_in": ["kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "De-ashi-harai", "class": "ashi-waza", "source": "kodokan-wikipedia"}, {"art": "wrestling", "name": "Foot sweep", "class": "trip", "source": "wrestling-takedown-wikipedia"}]}, {"name": "O uchi gari", "ruleset": "both", "aliases": ["Major inner reap"], "seen_in": ["kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "O-uchi-gari", "class": "ashi-waza", "source": "kodokan-wikipedia"}, {"art": "wrestling", "name": "Inside trip", "class": "trip", "source": "wrestling-takedown-wikipedia"}]}]}, {"start": "standing", "move_type": "transition", "end": "single-leg-x", "leaves": [{"name": "Imanari roll", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "technical-mount", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Back take from technical mount", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "truck", "move_type": "submission", "end": "calf-slicer", "leaves": [{"name": "Calf slicer", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "truck", "move_type": "submission", "end": "twister", "leaves": [{"name": "Twister", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "turtle", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Back take from turtle", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "turtle", "move_type": "escape", "end": "closed-guard", "leaves": [{"name": "Granby roll", "ruleset": "both", "seen_in": ["folkstyle-wikibooks", "grapplepedia"], "cross_refs": [{"art": "wrestling", "name": "Granby / hip heist family", "class": "escape", "source": "folkstyle-wikibooks"}]}, {"name": "Sit-out", "ruleset": "both", "seen_in": ["folkstyle-wikibooks", "grapplepedia"], "cross_refs": [{"art": "wrestling", "name": "Sit-out", "class": "escape", "source": "folkstyle-wikibooks"}]}]}, {"start": "turtle", "move_type": "escape", "end": "standing", "leaves": [{"name": "Stand-up escape", "ruleset": "both", "seen_in": ["folkstyle-wikibooks"], "cross_refs": [{"art": "wrestling", "name": "Stand-up", "class": "escape", "source": "folkstyle-wikibooks"}]}, {"name": "Switch reversal", "ruleset": "both", "seen_in": ["folkstyle-wikibooks"], "cross_refs": [{"art": "wrestling", "name": "Switch", "class": "reversal", "source": "folkstyle-wikibooks"}]}]}, {"start": "turtle", "move_type": "submission", "end": "clock-choke", "leaves": [{"name": "Clock choke", "ruleset": "gi", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "turtle", "move_type": "transition", "end": "crucifix", "leaves": [{"name": "Crucifix entry", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "turtle", "move_type": "transition", "end": "side-control", "leaves": [{"name": "Tight waist far ankle breakdown", "ruleset": "both", "seen_in": ["folkstyle-wikibooks"], "cross_refs": [{"art": "wrestling", "name": "Tight waist, far ankle", "class": "breakdown", "source": "folkstyle-wikibooks"}]}]}, {"start": "turtle", "move_type": "transition", "end": "truck", "leaves": [{"name": "Truck entry", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "worm-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Worm guard sweep", "ruleset": "gi", "seen_in": ["grapplepedia"]}]}, {"start": "x-guard", "move_type": "escape", "end": "side-control", "leaves": [{"name": "Kick out leg", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Backstep and knee twist", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "x-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "X-guard sweep", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "z-guard", "move_type": "transition", "end": "k-guard", "leaves": [{"name": "K-guard entry", "ruleset": "both", "seen_in": ["grapplepedia"]}]}], "crosswalk": [{"seed_leaf": "Chair sit escape", "seed_path": {"start": "back-control", "move_type": "escape", "end": "turtle"}, "art": "wrestling", "name": "Stand-up escape family", "class": "escape", "source": "folkstyle-wikibooks", "note": null}, {"seed_leaf": "Armbar from back control", "seed_path": {"start": "back-control", "move_type": "submission", "end": "armbar"}, "art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Bow and arrow choke", "seed_path": {"start": "back-control", "move_type": "submission", "end": "bow-and-arrow"}, "art": "judo", "name": "Okuri-eri-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": "Related sliding-lapel / back choke family"}, {"seed_leaf": "Rear naked choke", "seed_path": {"start": "back-control", "move_type": "submission", "end": "rear-naked-choke"}, "art": "judo", "name": "Hadaka-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Duck under", "seed_path": {"start": "clinch", "move_type": "back-take", "end": "back-control"}, "art": "wrestling", "name": "Duck under", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Body lock takedown", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Body lock", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Body lock takedown", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Bear hug", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Inside trip", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Inside trip", "class": "trip", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Inside trip", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "O-uchi-gari", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": "Major inner reap; related inside trip family"}, {"seed_leaf": "Inside trip", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Ko-uchi-gari", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Outside trip", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Outside trip", "class": "trip", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Outside trip", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "O-soto-gari", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Outside trip", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Ko-soto-gari", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Lateral drop", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Lateral drop", "class": "throw", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Suplex", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Suplex", "class": "throw", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Suplex", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Ura-nage", "class": "ma-sutemi-waza", "source": "kodokan-wikipedia", "note": "Related rear throw / arch family"}, {"seed_leaf": "Armbar from closed guard", "seed_path": {"start": "closed-guard", "move_type": "submission", "end": "armbar"}, "art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Cross collar choke", "seed_path": {"start": "closed-guard", "move_type": "submission", "end": "cross-collar-choke"}, "art": "judo", "name": "Nami-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Cross collar choke", "seed_path": {"start": "closed-guard", "move_type": "submission", "end": "cross-collar-choke"}, "art": "judo", "name": "Gyaku-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Cross collar choke", "seed_path": {"start": "closed-guard", "move_type": "submission", "end": "cross-collar-choke"}, "art": "judo", "name": "Kata-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Kimura from closed guard", "seed_path": {"start": "closed-guard", "move_type": "submission", "end": "kimura"}, "art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": "Gyaku ude-garami family"}, {"seed_leaf": "Triangle choke", "seed_path": {"start": "closed-guard", "move_type": "submission", "end": "triangle"}, "art": "judo", "name": "Sankaku-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Upa escape", "seed_path": {"start": "mount", "move_type": "escape", "end": "half-guard"}, "art": "wrestling", "name": "Bridge", "class": "escape", "source": "folkstyle-wikibooks", "note": null}, {"seed_leaf": "Armbar from mount", "seed_path": {"start": "mount", "move_type": "submission", "end": "armbar"}, "art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Cross collar choke from mount", "seed_path": {"start": "mount", "move_type": "submission", "end": "cross-collar-choke"}, "art": "judo", "name": "Nami-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Cross collar choke from mount", "seed_path": {"start": "mount", "move_type": "submission", "end": "cross-collar-choke"}, "art": "judo", "name": "Gyaku-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Ezekiel choke", "seed_path": {"start": "mount", "move_type": "submission", "end": "ezekiel"}, "art": "judo", "name": "Sode-guruma-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "S-mount armbar", "seed_path": {"start": "s-mount", "move_type": "submission", "end": "armbar"}, "art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Americana", "seed_path": {"start": "side-control", "move_type": "submission", "end": "americana"}, "art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Kimura from side control", "seed_path": {"start": "side-control", "move_type": "submission", "end": "kimura"}, "art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Standing arm drag", "seed_path": {"start": "standing", "move_type": "back-take", "end": "back-control"}, "art": "wrestling", "name": "Arm drag", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Duck under", "seed_path": {"start": "standing", "move_type": "back-take", "end": "back-control"}, "art": "wrestling", "name": "Duck under", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Sprawl", "seed_path": {"start": "standing", "move_type": "escape", "end": "standing"}, "art": "wrestling", "name": "Sprawl", "class": "defense", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Snap down", "seed_path": {"start": "standing", "move_type": "takedown", "end": "front-headlock"}, "art": "wrestling", "name": "Snapdown", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Body lock takedown", "seed_path": {"start": "standing", "move_type": "takedown", "end": "mount"}, "art": "wrestling", "name": "Body lock", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Body lock takedown", "seed_path": {"start": "standing", "move_type": "takedown", "end": "mount"}, "art": "wrestling", "name": "Bear hug", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Double leg takedown", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Double leg", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Double leg takedown", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Morote-gari", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Kodokan two-hand reap; often the double-leg correspondence"}, {"seed_leaf": "Double leg takedown", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Sukui-nage", "class": "te-waza", "source": "wrestling-takedown-wikipedia", "note": "When the opponent is lifted or scooped"}, {"seed_leaf": "Single leg takedown", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Single leg", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Single leg takedown", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Kuchiki-taoshi", "class": "te-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Ankle pick", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Ankle pick", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Ankle pick", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Kibisu-gaeshi", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Heel trip / one-hand reversal"}, {"seed_leaf": "High crotch", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "High crotch", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "High crotch", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Sukui-nage", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Related scoop / high-crotch lift family"}, {"seed_leaf": "Osoto gari", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "O-soto-gari", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Osoto gari", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "wrestling", "name": "Outside trip", "class": "trip", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Seoi nage", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "Seoi-nage", "class": "te-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Seoi nage", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "Ippon-seoi-nage", "class": "te-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Uchi mata", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "Uchi-mata", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "O goshi", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "O-goshi", "class": "koshi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Fireman's carry", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "wrestling", "name": "Fireman's carry", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Fireman's carry", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "Kata-guruma", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Shoulder wheel; related fireman's / carry family"}, {"seed_leaf": "Knee tap", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "wrestling", "name": "Knee tap", "class": "trip", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Tai otoshi", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "Tai-otoshi", "class": "te-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Harai goshi", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "Harai-goshi", "class": "koshi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "De ashi barai", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "De-ashi-harai", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "De ashi barai", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "wrestling", "name": "Foot sweep", "class": "trip", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "O uchi gari", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "O-uchi-gari", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "O uchi gari", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "wrestling", "name": "Inside trip", "class": "trip", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Granby roll", "seed_path": {"start": "turtle", "move_type": "escape", "end": "closed-guard"}, "art": "wrestling", "name": "Granby / hip heist family", "class": "escape", "source": "folkstyle-wikibooks", "note": null}, {"seed_leaf": "Sit-out", "seed_path": {"start": "turtle", "move_type": "escape", "end": "closed-guard"}, "art": "wrestling", "name": "Sit-out", "class": "escape", "source": "folkstyle-wikibooks", "note": null}, {"seed_leaf": "Stand-up escape", "seed_path": {"start": "turtle", "move_type": "escape", "end": "standing"}, "art": "wrestling", "name": "Stand-up", "class": "escape", "source": "folkstyle-wikibooks", "note": null}, {"seed_leaf": "Switch reversal", "seed_path": {"start": "turtle", "move_type": "escape", "end": "standing"}, "art": "wrestling", "name": "Switch", "class": "reversal", "source": "folkstyle-wikibooks", "note": null}, {"seed_leaf": "Tight waist far ankle breakdown", "seed_path": {"start": "turtle", "move_type": "transition", "end": "side-control"}, "art": "wrestling", "name": "Tight waist, far ankle", "class": "breakdown", "source": "folkstyle-wikibooks", "note": null}, {"seed_node": "standing", "seed_kind": "starting_position", "art": "wrestling", "name": "Neutral", "class": null, "source": "folkstyle-wikibooks", "note": null}, {"seed_node": "clinch", "seed_kind": "starting_position", "art": "wrestling", "name": "Tie-up / clinch", "class": null, "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_node": "clinch", "seed_kind": "starting_position", "art": "judo", "name": "Kumikata / clinch", "class": null, "source": "kodokan-wikipedia", "note": null}, {"seed_node": "front-headlock", "seed_kind": "starting_position", "art": "wrestling", "name": "Front headlock", "class": null, "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_node": "side-control", "seed_kind": "starting_position", "art": "judo", "name": "Yoko-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_node": "kesa-gatame", "seed_kind": "starting_position", "art": "judo", "name": "Kesa-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_node": "north-south", "seed_kind": "starting_position", "art": "judo", "name": "Kami-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia", "note": "Upper four-quarter; north-south is the common BJJ name"}, {"seed_node": "mount", "seed_kind": "starting_position", "art": "judo", "name": "Tate-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_node": "turtle", "seed_kind": "starting_position", "art": "wrestling", "name": "Referee's position (bottom)", "class": null, "source": "folkstyle-wikibooks", "note": null}, {"seed_node": "turtle", "seed_kind": "starting_position", "art": "wrestling", "name": "All fours / turtle", "class": null, "source": "folkstyle-wikibooks", "note": null}]};
   </script>
@@ -783,7 +802,8 @@
 
     return {
       load, dispatch, issues, visibleStarts, visibleMoveTypes, visibleEnds, visibleLeaves,
-      selectedPath, labelOf, byId, endRef, identityLabel, relations, exportSeed
+      selectedPath, labelOf, byId, endRef, identityLabel, relations, exportSeed,
+      pathVisible, leafVisible
     };
   })();
 
@@ -891,10 +911,38 @@
     toast._t = setTimeout(() => t.classList.remove("show"), 2400);
   }
 
+  let forceScope = "sample";
+  let forcePos = {};
+  let forceRaf = 0;
+
   function go(action) {
     state = Tree.dispatch(state, action);
     render();
     toast(state.lastChange);
+  }
+
+  function selectPath(p) {
+    state = Tree.dispatch(state, { type: "SELECT_START", id: p.start });
+    state = Tree.dispatch(state, { type: "SELECT_MOVE_TYPE", id: p.move_type });
+    state = Tree.dispatch(state, { type: "SELECT_END", id: p.end });
+    render();
+    toast(state.lastChange);
+  }
+
+  function showTip(ev, title, lines) {
+    const t = document.getElementById("hover-tip");
+    t.replaceChildren();
+    t.append(el("strong", {}, [title]));
+    (lines || []).forEach((line) => t.append(el("div", { class: "muted" }, [line])));
+    t.hidden = false;
+    const x = Math.min(ev.clientX + 14, window.innerWidth - 280);
+    const y = Math.min(ev.clientY + 14, window.innerHeight - 120);
+    t.style.left = x + "px";
+    t.style.top = y + "px";
+  }
+  function hideTip() {
+    const t = document.getElementById("hover-tip");
+    if (t) t.hidden = true;
   }
 
   function ask(title, value) {
@@ -931,43 +979,556 @@
     return n;
   }
 
-  function layoutIdentities(state) {
-    const cols = FAMILY_ORDER.concat(["submission"]);
-    const buckets = {};
-    cols.forEach((c) => { buckets[c] = []; });
-    state.seed.positions.forEach((p) => {
-      const fam = cols.includes(p.family) ? p.family : "standing";
-      buckets[fam].push(p);
+  function familyKey(pos) {
+    const fam = (pos && pos.family) || "other";
+    return FAMILY_ORDER.includes(fam) ? fam : "other";
+  }
+
+  function pathWeight(state, p) {
+    const vis = (p.leaves || []).filter((l) => Tree.leafVisible(state, l));
+    return Math.max(1, vis.length);
+  }
+
+  function visiblePathList(state) {
+    return state.seed.paths.filter((p) => Tree.pathVisible(state, p));
+  }
+
+  function layoutSankey(state) {
+    const width = 1480;
+    const height = 860;
+    const nodeW = 18;
+    const colX = [210, 731, 1252];
+    const headerH = 16;
+    const groupGap = 12;
+    const nodeGap = 2;
+    const top = 38;
+    const bottom = 16;
+    const paths = visiblePathList(state);
+    const wOf = (p) => pathWeight(state, p);
+
+    const startVal = {};
+    const mtVal = {};
+    const endVal = {};
+    paths.forEach((p) => {
+      const w = wOf(p);
+      startVal[p.start] = (startVal[p.start] || 0) + w;
+      mtVal[p.move_type] = (mtVal[p.move_type] || 0) + w;
+      endVal[p.end] = (endVal[p.end] || 0) + w;
     });
-    buckets.submission = state.seed.submissions.slice();
-    cols.forEach((c) => buckets[c].sort((a, b) => a.label.localeCompare(b.label)));
-    const width = 1360;
-    const height = 540;
-    const left = 70;
-    const right = 70;
-    const top = 36;
-    const bottom = 28;
-    const nodes = {};
-    cols.forEach((col, i) => {
-      const list = buckets[col];
-      const x = left + (cols.length === 1 ? 0 : i * (width - left - right) / (cols.length - 1));
-      list.forEach((n, j) => {
-        const y = list.length === 1 ? height / 2 : top + j * ((height - top - bottom) / Math.max(1, list.length - 1));
-        nodes[n.id] = {
-          id: n.id,
-          label: n.label,
-          kind: col === "submission" ? "submission" : "position",
-          family: col === "submission" ? "submission" : (n.family || "other"),
-          x, y
-        };
+
+    function posNode(p) {
+      return {
+        id: p.id,
+        label: p.label,
+        family: familyKey(p),
+        kind: "position",
+        value: 0
+      };
+    }
+
+    const startGroups = FAMILY_ORDER.concat(["other"]).map((fam) => ({
+      key: fam,
+      label: fam.replace(/-/g, " "),
+      nodes: state.seed.positions.filter((p) => familyKey(p) === fam).sort((a, b) => a.label.localeCompare(b.label)).map((p) => {
+        const n = posNode(p);
+        n.col = "start";
+        n.value = startVal[p.id] || 0;
+        n.key = "start:" + p.id;
+        return n;
+      })
+    })).filter((g) => g.nodes.length);
+
+    const mtGroup = {
+      key: "move",
+      label: "type of move",
+      nodes: state.seed.move_types.map((m) => ({
+        id: m.id,
+        key: "mt:" + m.id,
+        label: m.label,
+        family: "move",
+        kind: "move_type",
+        col: "mt",
+        value: mtVal[m.id] || 0
+      }))
+    };
+
+    const endPosGroups = FAMILY_ORDER.concat(["other"]).map((fam) => ({
+      key: "end-" + fam,
+      label: fam.replace(/-/g, " "),
+      nodes: state.seed.positions.filter((p) => familyKey(p) === fam).sort((a, b) => a.label.localeCompare(b.label)).map((p) => {
+        const n = posNode(p);
+        n.col = "end";
+        n.value = endVal[p.id] || 0;
+        n.key = "end:" + p.id;
+        return n;
+      })
+    })).filter((g) => g.nodes.length);
+
+    const subGroup = {
+      key: "submission",
+      label: "submission",
+      nodes: state.seed.submissions.slice().sort((a, b) => a.label.localeCompare(b.label)).map((s) => ({
+        id: s.id,
+        key: "sub:" + s.id,
+        label: s.label,
+        family: "submission",
+        kind: "submission",
+        col: "end",
+        value: endVal[s.id] || 0
+      }))
+    };
+
+    const columns = [
+      { title: "Starting position", x: colX[0], groups: startGroups },
+      { title: "Type of move", x: colX[1], groups: [mtGroup] },
+      { title: "Ending position", x: colX[2], groups: endPosGroups.concat([subGroup]) }
+    ];
+
+    const allNodes = [];
+    columns.forEach((col) => col.groups.forEach((g) => g.nodes.forEach((n) => allNodes.push(n))));
+    const totalValue = Math.max(1, allNodes.reduce((n, x) => n + x.value, 0) / 3);
+    const groupCount = columns.reduce((n, c) => n + c.groups.length, 0) / 3;
+    const nodeCount = allNodes.length / 3;
+    const usable = height - top - bottom - groupCount * (headerH + groupGap) - Math.max(0, nodeCount - 1) * nodeGap;
+    const scale = Math.max(0.35, usable / Math.max(1, totalValue));
+
+    columns.forEach((col) => {
+      let y = top;
+      col.groups.forEach((g) => {
+        g.y = y;
+        y += headerH;
+        g.nodes.forEach((n) => {
+          n.x = col.x;
+          n.y0 = y;
+          n.h = Math.max(11, n.value * scale);
+          n.y1 = n.y0 + n.h;
+          n.y = (n.y0 + n.y1) / 2;
+          y = n.y1 + nodeGap;
+        });
+        y += groupGap;
       });
     });
-    return { nodes, width, height, cols };
+
+    const nodeByKey = {};
+    allNodes.forEach((n) => { nodeByKey[n.key] = n; });
+
+    const hop1 = {};
+    const hop2 = {};
+    paths.forEach((p) => {
+      const w = wOf(p);
+      const k1 = p.start + ">" + p.move_type;
+      const k2 = p.move_type + ">" + p.end;
+      (hop1[k1] ||= { start: p.start, move_type: p.move_type, weight: 0, paths: [] });
+      hop1[k1].weight += w;
+      hop1[k1].paths.push(p);
+      (hop2[k2] ||= { move_type: p.move_type, end: p.end, weight: 0, paths: [] });
+      hop2[k2].weight += w;
+      hop2[k2].paths.push(p);
+    });
+
+    function ports(links, fromKey, toKey) {
+      const outAcc = {};
+      const inAcc = {};
+      const list = Object.values(links).sort((a, b) => {
+        const na = nodeByKey[fromKey(a)];
+        const nb = nodeByKey[fromKey(b)];
+        const ta = nodeByKey[toKey(a)];
+        const tb = nodeByKey[toKey(b)];
+        return ((na && na.y) || 0) - ((nb && nb.y) || 0) || ((ta && ta.y) || 0) - ((tb && tb.y) || 0);
+      });
+      list.forEach((lnk) => {
+        const s = nodeByKey[fromKey(lnk)];
+        const t = nodeByKey[toKey(lnk)];
+        if (!s || !t) return;
+        const sh = (lnk.weight / Math.max(s.value, 1)) * s.h;
+        const th = (lnk.weight / Math.max(t.value, 1)) * t.h;
+        outAcc[s.key] = outAcc[s.key] || 0;
+        inAcc[t.key] = inAcc[t.key] || 0;
+        lnk.sy0 = s.y0 + outAcc[s.key];
+        lnk.sy1 = lnk.sy0 + sh;
+        lnk.ty0 = t.y0 + inAcc[t.key];
+        lnk.ty1 = lnk.ty0 + th;
+        outAcc[s.key] += sh;
+        inAcc[t.key] += th;
+        lnk.source = s;
+        lnk.target = t;
+      });
+      return list.filter((l) => l.source && l.target);
+    }
+
+    const links1 = ports(hop1, (l) => "start:" + l.start, (l) => "mt:" + l.move_type);
+    const links2 = ports(hop2, (l) => "mt:" + l.move_type, (l) => {
+      const end = Tree.endRef(state.seed, l.end);
+      return (end && end.kind === "submission" ? "sub:" : "end:") + l.end;
+    });
+
+    return { width, height, nodeW, columns, links1, links2, nodeByKey, scale, paths };
+  }
+
+  function ribbon(x0, y0, y1, x1, y2, y3) {
+    const mid = (x0 + x1) / 2;
+    return "M " + x0 + " " + y0 +
+      " C " + mid + " " + y0 + ", " + mid + " " + y2 + ", " + x1 + " " + y2 +
+      " L " + x1 + " " + y3 +
+      " C " + mid + " " + y3 + ", " + mid + " " + y1 + ", " + x0 + " " + y1 + " Z";
+  }
+
+  function leafNames(state, paths) {
+    const names = [];
+    paths.forEach((p) => {
+      (p.leaves || []).forEach((l) => {
+        if (Tree.leafVisible(state, l)) names.push(l.name + " (" + l.ruleset + ")");
+      });
+    });
+    return names;
+  }
+
+  function wireHover(elNode, titleFn, linesFn) {
+    elNode.addEventListener("mousemove", (ev) => showTip(ev, titleFn(), linesFn()));
+    elNode.addEventListener("mouseleave", hideTip);
+  }
+
+  function renderSankey(state, layout) {
+    const svg = svgEl("svg", {
+      class: "sankey-svg",
+      viewBox: "0 0 " + layout.width + " " + layout.height,
+      role: "img"
+    });
+    const ribG = svgEl("g");
+    svg.appendChild(ribG);
+    const ribbons = [];
+    const nodeEls = [];
+    const focus = state.selected.identity || state.selected.start;
+    const mtSel = state.selected.moveType;
+    const endSel = state.selected.end;
+
+    function setHot(pred) {
+      ribbons.forEach((r) => r.setAttribute("opacity", pred(r._meta) ? "0.88" : "0.06"));
+      nodeEls.forEach((n) => n.setAttribute("opacity", pred(n._meta) ? "1" : "0.28"));
+    }
+    function clearHot() {
+      ribbons.forEach((r) => r.setAttribute("opacity", r._baseOp));
+      nodeEls.forEach((n) => n.setAttribute("opacity", "1"));
+    }
+
+    layout.columns.forEach((col) => {
+      const title = svgEl("text", {
+        x: String(col.x + layout.nodeW / 2), y: "22",
+        "text-anchor": "middle", fill: "#44403c",
+        "font-size": "13", "font-weight": "700", "font-family": "Segoe UI, sans-serif"
+      });
+      title.textContent = col.title;
+      svg.appendChild(title);
+      col.groups.forEach((g) => {
+        const gt = svgEl("text", {
+          x: String(col.x - 6), y: String(g.y + 12),
+          "text-anchor": "end", fill: "#78716c",
+          "font-size": "10", "letter-spacing": "0.06em",
+          "font-family": "Segoe UI, sans-serif"
+        });
+        gt.textContent = g.label.toUpperCase();
+        svg.appendChild(gt);
+        g.nodes.forEach((n) => {
+          const grp = svgEl("g", { style: "cursor:pointer" });
+          const fill = n.kind === "move_type"
+            ? (MOVE_COLOR[n.id] || "#57534e")
+            : (n.kind === "submission" ? "#0f172a" : (FAMILY_COLOR[n.family] || "#57534e"));
+          const on = (n.col === "start" && n.id === focus) ||
+            (n.col === "mt" && n.id === mtSel) ||
+            (n.col === "end" && n.id === endSel) ||
+            (n.col === "end" && n.id === focus);
+          const rect = svgEl("rect", {
+            x: String(n.x), y: String(n.y0), width: String(layout.nodeW), height: String(Math.max(1, n.h)),
+            rx: "3", fill, stroke: on ? "#ea580c" : "none", "stroke-width": on ? "2" : "0"
+          });
+          const labelX = n.col === "end" ? n.x + layout.nodeW + 6 : n.x - 6;
+          const anchor = n.col === "end" ? "start" : "end";
+          const lab = svgEl("text", {
+            x: String(labelX), y: String(n.y + 3),
+            "text-anchor": anchor, fill: "#1c1917",
+            "font-size": n.h < 13 ? "9" : "10",
+            "font-weight": on ? "700" : "500",
+            "font-family": "Segoe UI, sans-serif"
+          });
+          lab.textContent = n.label;
+          grp.appendChild(rect);
+          grp.appendChild(lab);
+          grp._meta = n;
+          nodeEls.push(grp);
+          const names = leafNames(state, visiblePathList(state).filter((p) => {
+            if (n.col === "start") return p.start === n.id;
+            if (n.col === "mt") return p.move_type === n.id;
+            return p.end === n.id;
+          }));
+          wireHover(grp, () => n.label, () => [
+            n.kind === "move_type" ? "Type of move" : (n.kind === "submission" ? "Submission (ending only)" : ("Position · " + n.family.replace(/-/g, " "))),
+            n.value + " named-move weight",
+            names.slice(0, 8).join(" · ") || "No named-move leaf in this filter"
+          ]);
+          grp.addEventListener("mouseenter", () => setHot((m) => {
+            if (m.source) return m.source.key === n.key || m.target.key === n.key;
+            return m.key === n.key;
+          }));
+          grp.addEventListener("mouseleave", clearHot);
+          grp.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            hideTip();
+            if (n.col === "start") go({ type: "SELECT_START", id: n.id });
+            else if (n.col === "mt") go({ type: "SELECT_MOVE_TYPE", id: n.id });
+            else go({ type: "SELECT_END", id: n.id });
+          });
+          svg.appendChild(grp);
+        });
+      });
+    });
+
+    function addRibbons(list, hop) {
+      list.forEach((lnk) => {
+        const x0 = lnk.source.x + layout.nodeW;
+        const x1 = lnk.target.x;
+        const path = svgEl("path", {
+          d: ribbon(x0, lnk.sy0, lnk.sy1, x1, lnk.ty0, lnk.ty1),
+          fill: MOVE_COLOR[lnk.move_type] || "#a8a29e",
+          stroke: "none",
+          style: "cursor:pointer"
+        });
+        const chosen = lnk.paths.some((p) => {
+          const sel = Tree.selectedPath(state);
+          return sel && sel.start === p.start && sel.move_type === p.move_type && sel.end === p.end;
+        });
+        path._baseOp = chosen ? "0.9" : "0.32";
+        path.setAttribute("opacity", path._baseOp);
+        path._meta = lnk;
+        ribbons.push(path);
+        const names = leafNames(state, lnk.paths);
+        const src = lnk.source.label;
+        const tgt = lnk.target.label;
+        wireHover(path, () => src + " → " + tgt, () => [
+          hop + " · " + lnk.weight + " named-move weight",
+          names.slice(0, 10).join(" · ") || "No named-move leaf"
+        ]);
+        path.addEventListener("mouseenter", () => setHot((m) => {
+          if (m.kind) {
+            return m.key === lnk.source.key || m.key === lnk.target.key;
+          }
+          return m === lnk || (m.start === lnk.start && m.move_type === lnk.move_type) ||
+            (m.move_type === lnk.move_type && m.end === lnk.end);
+        }));
+        path.addEventListener("mouseleave", clearHot);
+        path.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          hideTip();
+          if (lnk.paths.length === 1) selectPath(lnk.paths[0]);
+          else if (lnk.start) {
+            state = Tree.dispatch(state, { type: "SELECT_START", id: lnk.start });
+            state = Tree.dispatch(state, { type: "SELECT_MOVE_TYPE", id: lnk.move_type });
+            render();
+            toast(state.lastChange);
+          } else {
+            state = Tree.dispatch(state, { type: "SELECT_MOVE_TYPE", id: lnk.move_type });
+            state = Tree.dispatch(state, { type: "SELECT_END", id: lnk.end });
+            render();
+            toast(state.lastChange);
+          }
+        });
+        ribG.appendChild(path);
+      });
+    }
+    addRibbons(layout.links1, "Start to type of move");
+    addRibbons(layout.links2, "Type of move to ending");
+    return svg;
+  }
+
+  function samplePaths(state) {
+    const paths = visiblePathList(state);
+    if (forceScope === "full") return paths;
+    const focus = state.selected.identity || state.selected.start || state.selected.end;
+    if (focus) return paths.filter((p) => p.start === focus || p.end === focus || p.move_type === focus);
+    const core = new Set(["closed-guard", "half-guard", "mount", "standing", "side-control", "back-control", "turtle"]);
+    return paths.filter((p) => core.has(p.start) || core.has(p.end));
+  }
+
+  function renderForce(state) {
+    if (forceRaf) cancelAnimationFrame(forceRaf);
+    const width = 1480;
+    const height = 560;
+    const svg = svgEl("svg", {
+      class: "force-svg",
+      viewBox: "0 0 " + width + " " + height,
+      role: "img"
+    });
+    const paths = samplePaths(state);
+    const nodeMap = {};
+    function addNode(id, kind, label, family) {
+      if (nodeMap[id]) return nodeMap[id];
+      const prev = forcePos[id];
+      const n = {
+        id, kind, label, family,
+        x: prev ? prev.x : width / 2 + (Math.random() - 0.5) * 280,
+        y: prev ? prev.y : height / 2 + (Math.random() - 0.5) * 180,
+        vx: 0, vy: 0
+      };
+      nodeMap[id] = n;
+      return n;
+    }
+    const links = [];
+    paths.forEach((p) => {
+      const start = Tree.byId(state.seed.positions, p.start);
+      const mt = Tree.byId(state.seed.move_types, p.move_type);
+      const end = Tree.endRef(state.seed, p.end);
+      if (!start || !mt || !end) return;
+      const ns = addNode("start:" + start.id, "start", start.label, familyKey(start));
+      const nm = addNode("mt:" + mt.id, "move", mt.label, "move");
+      const ne = addNode(
+        (end.kind === "submission" ? "sub:" : "end:") + end.id,
+        end.kind === "submission" ? "submission" : "end",
+        end.label,
+        end.kind === "submission" ? "submission" : familyKey(end)
+      );
+      links.push({ s: ns, t: nm, path: p, hop: 1 });
+      links.push({ s: nm, t: ne, path: p, hop: 2 });
+    });
+    const nodes = Object.values(nodeMap);
+    const linkG = svgEl("g");
+    const nodeG = svgEl("g");
+    svg.appendChild(linkG);
+    svg.appendChild(nodeG);
+    const lineEls = links.map((lnk) => {
+      const line = svgEl("line", {
+        stroke: MOVE_COLOR[lnk.path.move_type] || "#a8a29e",
+        "stroke-width": "1.4",
+        opacity: "0.45"
+      });
+      line.style.cursor = "pointer";
+      wireHover(line, () => lnk.s.label + " → " + lnk.t.label, () => {
+        const names = leafNames(state, [lnk.path]);
+        return [lnk.path.start + " → " + lnk.path.move_type + " → " + lnk.path.end, names.join(" · ") || ""];
+      });
+      line.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        hideTip();
+        selectPath(lnk.path);
+      });
+      linkG.appendChild(line);
+      lnk.el = line;
+      return line;
+    });
+    let dragging = null;
+    svg.addEventListener("mousemove", (ev) => {
+      if (!dragging) return;
+      dragging.fx = ev.offsetX;
+      dragging.fy = ev.offsetY;
+      dragging.x = dragging.fx;
+      dragging.y = dragging.fy;
+    });
+    svg.addEventListener("mouseup", () => {
+      if (dragging) { dragging.fx = dragging.fy = null; }
+      dragging = null;
+    });
+    const nodeEls = nodes.map((n) => {
+      const g = svgEl("g");
+      g.style.cursor = "pointer";
+      const fill = n.kind === "move"
+        ? (MOVE_COLOR[n.id.replace(/^mt:/, "")] || "#57534e")
+        : (n.kind === "submission" ? "#0f172a" : (FAMILY_COLOR[n.family] || "#57534e"));
+      let shape;
+      if (n.kind === "move") {
+        shape = svgEl("rect", { x: "-7", y: "-7", width: "14", height: "14", rx: "3", fill, stroke: "#fff", "stroke-width": "1.2" });
+      } else if (n.kind === "submission") {
+        shape = svgEl("polygon", { points: "0,-8 8,0 0,8 -8,0", fill, stroke: "#fff", "stroke-width": "1.2" });
+      } else if (n.kind === "end") {
+        shape = svgEl("circle", { r: "7", fill: "#fff", stroke: fill, "stroke-width": "3" });
+      } else {
+        shape = svgEl("circle", { r: "7", fill, stroke: "#fff", "stroke-width": "1.2" });
+      }
+      const lab = svgEl("text", {
+        x: "10", y: "3", fill: "#1c1917", "font-size": "10", "font-family": "Segoe UI, sans-serif"
+      });
+      lab.textContent = n.label;
+      g.appendChild(shape);
+      g.appendChild(lab);
+      const kindLabel = n.kind === "start" ? "Starting position" : n.kind === "end" ? "Ending position" : n.kind === "move" ? "Type of move" : "Submission";
+      wireHover(g, () => n.label, () => [kindLabel, n.family && n.family !== "move" ? n.family.replace(/-/g, " ") : ""]);
+      g.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        hideTip();
+        if (n.kind === "start") go({ type: "SELECT_START", id: n.id.slice(6) });
+        else if (n.kind === "move") go({ type: "SELECT_MOVE_TYPE", id: n.id.slice(3) });
+        else go({ type: "SELECT_END", id: n.id.replace(/^(end|sub):/, "") });
+      });
+      g.addEventListener("mousedown", (ev) => {
+        dragging = n;
+        n.fx = n.x;
+        n.fy = n.y;
+        ev.preventDefault();
+      });
+      nodeG.appendChild(g);
+      n.el = g;
+      return g;
+    });
+
+    function tick() {
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          let dx = nodes[j].x - nodes[i].x;
+          let dy = nodes[j].y - nodes[i].y;
+          let d2 = dx * dx + dy * dy || 1;
+          let d = Math.sqrt(d2);
+          let f = 1400 / d2;
+          let fx = (dx / d) * f;
+          let fy = (dy / d) * f;
+          nodes[i].vx -= fx;
+          nodes[i].vy -= fy;
+          nodes[j].vx += fx;
+          nodes[j].vy += fy;
+        }
+      }
+      links.forEach((lnk) => {
+        let dx = lnk.t.x - lnk.s.x;
+        let dy = lnk.t.y - lnk.s.y;
+        let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        let rest = 90;
+        let f = (dist - rest) * 0.012;
+        let fx = (dx / dist) * f;
+        let fy = (dy / dist) * f;
+        lnk.s.vx += fx;
+        lnk.s.vy += fy;
+        lnk.t.vx -= fx;
+        lnk.t.vy -= fy;
+      });
+      nodes.forEach((n) => {
+        n.vx += (width / 2 - n.x) * 0.004;
+        n.vy += (height / 2 - n.y) * 0.004;
+        if (n.kind === "start") n.vx += (width * 0.18 - n.x) * 0.01;
+        if (n.kind === "move") n.vx += (width * 0.5 - n.x) * 0.01;
+        if (n.kind === "end" || n.kind === "submission") n.vx += (width * 0.82 - n.x) * 0.01;
+        if (n.fx != null) { n.x = n.fx; n.y = n.fy; n.vx = 0; n.vy = 0; }
+        else {
+          n.vx *= 0.82;
+          n.vy *= 0.82;
+          n.x += n.vx;
+          n.y += n.vy;
+        }
+        n.x = Math.max(30, Math.min(width - 80, n.x));
+        n.y = Math.max(20, Math.min(height - 20, n.y));
+        forcePos[n.id] = { x: n.x, y: n.y };
+        n.el.setAttribute("transform", "translate(" + n.x + "," + n.y + ")");
+      });
+      links.forEach((lnk) => {
+        lnk.el.setAttribute("x1", lnk.s.x);
+        lnk.el.setAttribute("y1", lnk.s.y);
+        lnk.el.setAttribute("x2", lnk.t.x);
+        lnk.el.setAttribute("y2", lnk.t.y);
+      });
+      forceRaf = requestAnimationFrame(tick);
+    }
+    tick();
+    return { svg, count: nodes.length, pathCount: paths.length };
   }
 
   function renderPlot(state) {
     const wrap = el("section", { class: "panel plot-panel" }, [
-      el("h2", {}, ["Unique identities and their paths"])
+      el("h2", {}, ["Sankey · starting position → type of move → ending"])
     ]);
     const body = el("div", { class: "body" });
     const legend = el("div", { class: "legend" });
@@ -975,83 +1536,36 @@
       const mt = Tree.byId(state.seed.move_types, id);
       legend.append(el("span", {}, [el("i", { style: "background:" + color }), mt ? mt.label : id]));
     });
-    legend.append(el("span", {}, ["Circle = position · Diamond = submission. Click a node or a path."]));
+    legend.append(el("span", {}, ["Hover a ribbon or bar. Click to select that path."]));
     body.append(legend);
+    const layout = layoutSankey(state);
+    body.append(renderSankey(state, layout));
 
-    const layout = layoutIdentities(state);
-    const svg = svgEl("svg", {
-      class: "plot-svg",
-      viewBox: "0 0 " + layout.width + " " + layout.height,
-      role: "img"
-    });
-    layout.cols.forEach((col, i) => {
-      const x = 70 + i * (layout.width - 140) / (layout.cols.length - 1);
-      const t = svgEl("text", {
-        x: String(x), y: "18", "text-anchor": "middle",
-        fill: "#78716c", "font-size": "11", "font-family": "Segoe UI, sans-serif"
-      });
-      t.textContent = col.replace(/-/g, " ");
-      svg.appendChild(t);
-    });
+    const forceHead = el("h2", {}, ["Force-directed sample"]);
+    forceHead.style.marginTop = "1rem";
+    body.append(forceHead);
+    const forceTools = el("div", { class: "toolbar" }, [
+      el("button", {
+        class: forceScope === "sample" ? "primary" : "",
+        on: { click: () => { forceScope = "sample"; forcePos = {}; render(); } }
+      }, ["Sample around selection"]),
+      el("button", {
+        class: forceScope === "full" ? "primary" : "",
+        on: { click: () => { forceScope = "full"; forcePos = {}; render(); } }
+      }, ["Full graph"]),
+      el("span", { class: "xref" }, [
+        "Filled circle = starting position · Hollow circle = ending position · Square = type of move · Diamond = submission. Drag a node."
+      ])
+    ]);
+    body.append(forceTools);
+    const force = renderForce(state);
+    body.append(force.svg);
+    body.append(el("p", { class: "xref" }, [
+      force.pathCount + " paths · " + force.count + " nodes in this graph" +
+      (forceScope === "sample" ? " (sample). Select a position above to center the sample on it." : ".")
+    ]));
 
     const focus = state.selected.identity || state.selected.start;
-    const pathSel = Tree.selectedPath(state);
-
-    state.seed.paths.forEach((p) => {
-      const a = layout.nodes[p.start];
-      const b = layout.nodes[p.end];
-      if (!a || !b) return;
-      const hot = focus && (p.start === focus || p.end === focus);
-      const chosen = pathSel && pathSel.start === p.start && pathSel.move_type === p.move_type && pathSel.end === p.end;
-      const line = svgEl("path", {
-        d: "M " + a.x + " " + a.y + " C " + (a.x + 40) + " " + a.y + ", " + (b.x - 40) + " " + b.y + ", " + b.x + " " + b.y,
-        fill: "none",
-        stroke: MOVE_COLOR[p.move_type] || "#a8a29e",
-        "stroke-width": chosen ? "3.4" : (hot ? "2.2" : "1"),
-        opacity: chosen ? "1" : (hot ? "0.9" : (focus ? "0.06" : "0.18")),
-        "stroke-linecap": "round",
-        style: "cursor:pointer"
-      });
-      line.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        go({ type: "SELECT_START", id: p.start });
-        go({ type: "SELECT_MOVE_TYPE", id: p.move_type });
-        go({ type: "SELECT_END", id: p.end });
-      });
-      svg.appendChild(line);
-    });
-
-    Object.values(layout.nodes).forEach((n) => {
-      const g = svgEl("g", { style: "cursor:pointer" });
-      const on = n.id === focus;
-      const fill = n.kind === "submission" ? "#0f172a" : (FAMILY_COLOR[n.family] || "#57534e");
-      if (n.kind === "submission") {
-        const d = 9;
-        g.appendChild(svgEl("polygon", {
-          points: n.x + "," + (n.y - d) + " " + (n.x + d) + "," + n.y + " " + n.x + "," + (n.y + d) + " " + (n.x - d) + "," + n.y,
-          fill, stroke: on ? "#ea580c" : "#fff", "stroke-width": on ? "3" : "1.2"
-        }));
-      } else {
-        g.appendChild(svgEl("circle", {
-          cx: String(n.x), cy: String(n.y), r: on ? "8" : "6",
-          fill, stroke: on ? "#ea580c" : "#fff", "stroke-width": on ? "3" : "1.2"
-        }));
-      }
-      const label = svgEl("text", {
-        x: String(n.x + 10), y: String(n.y + 3),
-        fill: "#1c1917", "font-size": "10", "font-family": "Segoe UI, sans-serif",
-        "font-weight": on ? "700" : "500"
-      });
-      label.textContent = n.label;
-      g.appendChild(label);
-      g.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        go({ type: "SELECT_IDENTITY", id: n.id });
-      });
-      svg.appendChild(g);
-    });
-    body.append(svg);
-
     const rel = Tree.relations(state, focus);
     const ident = Tree.endRef(state.seed, focus);
     const relGrid = el("div", { class: "rel-grid" });
@@ -1064,11 +1578,7 @@
       const mt = Tree.byId(state.seed.move_types, p.move_type);
       outBox.append(el("button", {
         class: "row" + (state.selected.end === p.end && state.selected.moveType === p.move_type ? " on" : ""),
-        on: { click: () => {
-          go({ type: "SELECT_START", id: p.start });
-          go({ type: "SELECT_MOVE_TYPE", id: p.move_type });
-          go({ type: "SELECT_END", id: p.end });
-        } }
+        on: { click: () => selectPath(p) }
       }, [
         (mt ? mt.label : p.move_type) + " → " + (end ? end.label : p.end),
         el("span", { class: "count" }, [(end ? end.kind : "?") + " · " + (p.leaves || []).length])
@@ -1083,11 +1593,7 @@
       const mt = Tree.byId(state.seed.move_types, p.move_type);
       inBox.append(el("button", {
         class: "row" + (state.selected.start === p.start && state.selected.moveType === p.move_type ? " on" : ""),
-        on: { click: () => {
-          go({ type: "SELECT_START", id: p.start });
-          go({ type: "SELECT_MOVE_TYPE", id: p.move_type });
-          go({ type: "SELECT_END", id: p.end });
-        } }
+        on: { click: () => selectPath(p) }
       }, [
         (start ? start.label : p.start) + " → " + (mt ? mt.label : p.move_type),
         el("span", { class: "count" }, [String((p.leaves || []).length)])
