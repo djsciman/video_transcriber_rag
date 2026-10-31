@@ -252,7 +252,7 @@
     }
     .sankey-svg { height: 880px; cursor: grab; user-select: none; }
     .sankey-svg.grabbing { cursor: grabbing; }
-    .force-svg { height: 720px; }
+    .force-svg { height: 900px; }
     .plot-tools {
       display: flex;
       flex-wrap: wrap;
@@ -1700,8 +1700,8 @@
     const layers = buildJourneyLayers(state);
     const maxCol = layers.reduce((n, l) => Math.max(n, l.col || 0), 0);
     const nCols = Math.max(1, maxCol + 1);
-    const width = Math.max(1480, 320 * nCols + 240);
-    const height = 720;
+    const width = Math.max(nCols <= 1 ? 1680 : 1480, 360 * nCols + 280);
+    const height = nCols <= 1 ? 980 : 760;
     const svg = svgEl("svg", {
       class: "force-svg",
       viewBox: "0 0 " + width + " " + height,
@@ -1741,10 +1741,10 @@
       let x;
       let y;
       if (nCols <= 1) {
-        const famR = 200;
+        const famR = 268;
         const a = -Math.PI / 2 + (2 * Math.PI * i) / Math.max(1, fams.length);
         x = startCx + Math.cos(a) * famR;
-        y = startCy + Math.sin(a) * famR * 0.82;
+        y = startCy + Math.sin(a) * famR * 0.86;
       } else {
         x = startCx;
         y = 100 + (i + 0.5) * ((height - 140) / Math.max(1, fams.length));
@@ -1763,14 +1763,22 @@
         "stroke-width": "2"
       });
       svg.appendChild(ring);
+      const away = Math.atan2(c.y - startCy, c.x - startCx || 0.01);
+      const titleR = r + 22;
+      const tx = nCols <= 1 ? c.x + Math.cos(away) * titleR : c.x;
+      const ty = nCols <= 1 ? c.y + Math.sin(away) * titleR : (c.y - r - 14);
       const lab = svgEl("text", {
-        x: String(c.x), y: String(c.y - r - 6),
+        x: String(tx), y: String(ty),
         "text-anchor": "middle", fill: FAMILY_COLOR[f] || "#78716c",
         "font-size": "20", "font-weight": "700",
-        "font-family": "Segoe UI, sans-serif"
+        "font-family": "Segoe UI, sans-serif",
+        style: "paint-order:stroke;stroke:#fff;stroke-width:6px"
       });
       lab.textContent = f.replace(/-/g, " ");
       svg.appendChild(lab);
+      c.titleX = tx;
+      c.titleY = ty;
+      c.titleW = Math.max(28, f.replace(/-/g, " ").length * 10.1);
     });
 
     const nodeMap = {};
@@ -1870,8 +1878,129 @@
     const nodes = Object.values(nodeMap);
     const linkG = svgEl("g");
     const nodeG = svgEl("g");
+    const labelG = svgEl("g");
     svg.appendChild(linkG);
     svg.appendChild(nodeG);
+    svg.appendChild(labelG);
+
+    function estimateW(text) {
+      return Math.max(28, String(text || "").length * 10.1);
+    }
+    function labelBox(n) {
+      const w = n.labW || estimateW(n.label);
+      const h = 22;
+      let x = n.lx;
+      if (n.anchor === "end") x = n.lx - w;
+      if (n.anchor === "middle") x = n.lx - w / 2;
+      return { x, y: n.ly - 11, w, h };
+    }
+    function placeRadial(group, cx, cy, minR) {
+      group.forEach((n) => { n._ang = Math.atan2(n.y - cy, n.x - cx); });
+      const count = Math.max(1, group.length);
+      const r = minR + Math.max(0, count - 5) * 3;
+      group.forEach((n) => {
+        const a = n._ang;
+        n.lx = cx + Math.cos(a) * r;
+        n.ly = cy + Math.sin(a) * r;
+        n.anchor = Math.cos(a) > 0.25 ? "start" : (Math.cos(a) < -0.25 ? "end" : "middle");
+        n.labW = estimateW(n.label);
+      });
+    }
+    function relaxLabels(list) {
+      for (let iter = 0; iter < 18; iter++) {
+        for (let i = 0; i < list.length; i++) {
+          for (let j = i + 1; j < list.length; j++) {
+            const A = labelBox(list[i]);
+            const B = labelBox(list[j]);
+            const ox = Math.min(A.x + A.w, B.x + B.w) - Math.max(A.x, B.x);
+            const oy = Math.min(A.y + A.h, B.y + B.h) - Math.max(A.y, B.y);
+            if (ox > 0 && oy > 0) {
+              const dy = (list[j].ly - list[i].ly) || 1;
+              const sign = dy > 0 ? 1 : -1;
+              const push = oy / 2 + 1.6;
+              const freezeI = list[i].freeze;
+              const freezeJ = list[j].freeze;
+              if (!freezeI) {
+                list[i].ly -= sign * (freezeJ ? push * 2 : push);
+                const dx = (list[j].lx - list[i].lx) || 1;
+                const sx = dx > 0 ? 1 : -1;
+                list[i].lx -= sx * Math.min(6, ox * 0.25 + 1.2) * (freezeJ ? 2 : 1);
+              }
+              if (!freezeJ) {
+                list[j].ly += sign * (freezeI ? push * 2 : push);
+                const dx = (list[j].lx - list[i].lx) || 1;
+                const sx = dx > 0 ? 1 : -1;
+                list[j].lx += sx * Math.min(6, ox * 0.25 + 1.2) * (freezeI ? 2 : 1);
+              }
+            }
+          }
+        }
+      }
+      list.forEach((n) => {
+        if (n.freeze) return;
+        n.ly = Math.max(48, Math.min(height - 12, n.ly));
+        n.lx = Math.max(12, Math.min(width - 12, n.lx));
+      });
+    }
+    function layoutLeaders() {
+      const starts = nodes.filter((n) => n.kind === "start");
+      if (nCols <= 1) {
+        fams.forEach((f) => {
+          const group = starts.filter((n) => n.family === f);
+          const c = centroids[f];
+          const diskR = 28 + Math.sqrt(c.n) * 22;
+          placeRadial(group, c.x, c.y, diskR + 40);
+        });
+      } else {
+        fams.forEach((f) => {
+          const group = starts.filter((n) => n.family === f).sort((a, b) => a.y - b.y);
+          const c = centroids[f];
+          const diskR = 28 + Math.sqrt(c.n) * 22;
+          group.forEach((n, i) => {
+            n.anchor = "end";
+            n.labW = estimateW(n.label);
+            n.lx = Math.max(14, c.x - diskR - 20);
+            n.ly = c.y - ((group.length - 1) * 12) + i * 24;
+          });
+        });
+      }
+      const obstacles = fams.map((f) => {
+        const c = centroids[f];
+        return {
+          freeze: true,
+          lx: c.titleX,
+          ly: c.titleY,
+          labW: c.titleW,
+          anchor: "middle",
+          label: f
+        };
+      });
+      relaxLabels(starts.concat(obstacles));
+      const others = nodes.filter((n) => n.kind !== "start");
+      others.forEach((n) => {
+        n.labW = estimateW(n.label);
+        n.anchor = "start";
+        n.lx = n.x + (n.kind === "leaf" ? 30 : 26);
+        n.ly = n.y;
+      });
+      relaxLabels(others);
+    }
+    function paintLeader(n) {
+      if (!n.leader || n.lx == null) return;
+      const dx = n.lx - n.x;
+      const dy = n.ly - n.y;
+      const d = Math.sqrt(dx * dx + dy * dy) || 1;
+      const gap = 12;
+      const endGap = 6;
+      n.leader.setAttribute("x1", String(n.x + (dx / d) * gap));
+      n.leader.setAttribute("y1", String(n.y + (dy / d) * gap));
+      n.leader.setAttribute("x2", String(n.lx - (dx / d) * endGap));
+      n.leader.setAttribute("y2", String(n.ly - (dy / d) * endGap));
+      n.leader.setAttribute("opacity", d < 18 ? "0" : (n.dimmed ? "0.28" : "0.55"));
+      n.labEl.setAttribute("x", String(n.lx));
+      n.labEl.setAttribute("y", String(n.ly + 6));
+      n.labEl.setAttribute("text-anchor", n.anchor || "start");
+    }
     links.forEach((lnk) => {
       if (!lnk.s || !lnk.t) return;
       const line = svgEl("line", {
@@ -1916,28 +2045,35 @@
       } else {
         shape = svgEl("circle", { r: "10", fill, stroke, "stroke-width": n.chosen ? "3" : "1.2" });
       }
+      g.appendChild(shape);
+      const leader = svgEl("line", {
+        stroke: n.dimmed ? "#d6d3d1" : "#78716c",
+        "stroke-width": "1.1"
+      });
       const lab = svgEl("text", {
-        x: n.kind === "leaf" ? "20" : "14", y: "6",
         fill: n.dimmed ? "#a8a29e" : "#1c1917",
         "font-size": "20",
         "font-weight": n.chosen ? "700" : "500",
-        "font-family": "Segoe UI, sans-serif"
+        "font-family": "Segoe UI, sans-serif",
+        style: "paint-order:stroke;stroke:#fff;stroke-width:5px;cursor:pointer"
       });
       lab.textContent = n.label;
-      g.appendChild(shape);
-      g.appendChild(lab);
       const kindLabel = n.kind === "start" ? "Starting position" : n.kind === "end" ? "Ending position" : n.kind === "move" ? "Type of move" : n.kind === "leaf" ? "Named-move leaf" : "Submission";
-      wireHover(g, () => n.label, () => [
-        kindLabel,
-        n.kind === "leaf" ? (n.opt.ruleset + " · ends at " + n.opt.end) : "",
-        n.dimmed ? "Not selected" : (n.chosen ? "Selected" : "Click to pick"),
-        n.family && n.family !== "move" && n.family !== "leaf" ? n.family.replace(/-/g, " ") : ""
-      ]);
-      g.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        hideTip();
-        pickJourney(n.layerIndex, n.opt, n.chosen);
-      });
+      function bindPick(elNode) {
+        wireHover(elNode, () => n.label, () => [
+          kindLabel,
+          n.kind === "leaf" ? (n.opt.ruleset + " · ends at " + n.opt.end) : "",
+          n.dimmed ? "Not selected" : (n.chosen ? "Selected" : "Click to pick"),
+          n.family && n.family !== "move" && n.family !== "leaf" ? n.family.replace(/-/g, " ") : ""
+        ]);
+        elNode.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          hideTip();
+          pickJourney(n.layerIndex, n.opt, n.chosen);
+        });
+      }
+      bindPick(g);
+      bindPick(lab);
       g.addEventListener("mousedown", (ev) => {
         dragging = n;
         n.fx = n.x;
@@ -1945,7 +2081,11 @@
         ev.preventDefault();
       });
       nodeG.appendChild(g);
+      labelG.appendChild(leader);
+      labelG.appendChild(lab);
       n.el = g;
+      n.leader = leader;
+      n.labEl = lab;
     });
 
     function tick() {
@@ -1999,11 +2139,13 @@
           n.x += n.vx;
           n.y += n.vy;
         }
-        n.x = Math.max(36, Math.min(width - 120, n.x));
+        n.x = Math.max(36, Math.min(width - 36, n.x));
         n.y = Math.max(48, Math.min(height - 24, n.y));
         forcePos[n.id] = { x: n.x, y: n.y };
         n.el.setAttribute("transform", "translate(" + n.x + "," + n.y + ")");
       });
+      layoutLeaders();
+      nodes.forEach(paintLeader);
       links.forEach((lnk) => {
         if (!lnk.el || !lnk.s || !lnk.t) return;
         lnk.el.setAttribute("x1", lnk.s.x);
