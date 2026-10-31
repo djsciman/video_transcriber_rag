@@ -29,11 +29,11 @@ A titled time range inside a volume.
 _Avoid_: clip, section
 
 **Citation**:
-Names the instructor, the instructional, the volume, the chapter, and the movement. The words are the cleaned statement the coach has accepted. Each time the instructor shows a detail of that movement in the chapter has a timestamp and a playback link. The volume is the video. When the coach changes the move name in the cleaned statement, the movement name on the citation updates with that edit. The coach may remove an accepted citation from the curated store.
+A movement the coach may place on a lesson. A corpus citation names the instructor, the instructional, the volume, the chapter, and the movement; its words are the cleaned statement the coach has accepted; each showing in that chapter has a timestamp and a playback link; the volume is the video. A coach-authored citation is written by the coach from their own knowledge as a movement name and step bullets, with no instructional, volume, chapter, or playback link. Either kind may hold one optional link to an enrichment node after the coach accepts or corrects a placement; with no link it stays usable and appears under uncategorized in hierarchy browse. When the coach changes the move name on a corpus citation's cleaned statement, the movement name on that citation updates with that edit. The coach may remove an accepted citation from the curated store.
 _Avoid_: clip, quote
 
 **Cleaned statement**:
-One statement of a movement, written from the speech, keeping every spoken detail from each showing in the chapter, with names restored to the words the instructor said. A detail the instructor shows and does not say stays out, and the coach accepts the statement before the advisor may use the citation. The coach may correct those words before accept and after accept; after accept the curated store replaces the statement and keeps no earlier version.
+One statement of a movement, written from the speech, keeping every spoken detail from each showing in the chapter, with names restored to the words the instructor said. A detail the instructor shows and does not say stays out, and the coach accepts the statement before the advisor may use the citation. The coach may correct those words before accept and after accept; after accept the curated store replaces the statement and keeps no earlier version. Cleaned statements belong to corpus citations only.
 _Avoid_: transcript, quote
 
 **Playback link**:
@@ -49,11 +49,11 @@ The coach-only program this spec defines. It curates raw volumes and advises the
 _Avoid_: tool, chatbot, product
 
 **Curated store**:
-The records the advisor is allowed to read. A raw volume is not among them until it passes curation.
+The records kept on the coach's machine for advising and hand-build, including enrichment nodes. A raw volume is not among them until it passes curation.
 _Avoid_: database, knowledge graph, vector store
 
 **Advisor**:
-The part of the application that reads the curated store and advises the coach. It is given that store only, the coach uses the playback link to watch the video, and the coach determines the system.
+The part of the application that reads the curated store and advises the coach. It selects citations from that store, proposes enrichment-node placements for new citations, uses the playback link path for the coach to watch corpus video, and leaves the system to the coach.
 _Avoid_: chatbot, bot, model, language model
 
 **Gi**:
@@ -129,12 +129,16 @@ A sparring lesson that adds a condition on the move or the goal. It carries that
 _Avoid_: situational sparring
 
 **Custom lesson**:
-A lesson saved from a unit, or created in the Custom library, that the coach can pull into a unit through search or hierarchy browse under Custom.
+A lesson saved from a unit, or created in the Custom library, that the coach can pull into a unit through search or hierarchy browse under Custom. It does not hold an enrichment link; hierarchy shows it through the enrichment links on the citations it contains.
 _Avoid_: template, favorite, snippet
 
 **Enrichment**:
-Material from outside the corpus that fills hierarchy and search nodes the transcripts never name.
-_Avoid_: scrape, ontology import
+Finder nodes kept with the curated store so hierarchy browse and dimensional search include moves the transcripts never name. The tree starts from a one-time consensus seed from open public sources; the coach then adds, renames, moves, and deletes nodes on the live copy. Shared path levels are starting position, type of move, and ending position or submission; named-move leaves are gi-specific or no-gi-specific. Enrichment does not hold lesson fields.
+_Avoid_: scrape, ontology import, knowledge graph
+
+**Uncategorized**:
+The hierarchy-browse bucket for citations that have no enrichment-node link. Those citations stay usable on lessons.
+_Avoid_: unsorted, misc, other
 
 **Resistance**:
 A partner trying to stop the student. In a drill the partner job sets it. In sparring and in a game the round sets it.
