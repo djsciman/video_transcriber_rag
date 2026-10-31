@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": 1,
+    "version": 2,
     "assembled": "2026-10-31",
     "ticket": "https://github.com/djsciman/video_transcriber_rag/issues/25",
     "purpose": "Raw one-time consensus enrichment seed for hierarchy browse and dimensional search. Import as the starting tree; the coach edits the live copy afterward.",
@@ -18,15 +18,20 @@
       "Shared path levels apply to both rulesets. Only named-move leaves carry gi / no-gi / both.",
       "This seed is raw consensus material for prototype organization (#26), not a final product tree.",
       "seen_in on leaves records which consulted sources listed that name; absence does not mean the move is rare.",
-      "Uncategorized is a product browse bucket for citations with no node link; it is not a seed node."
+      "Uncategorized is a product browse bucket for citations with no node link; it is not a seed node.",
+      "cross_refs on leaves and some positions map BJJ finder names to judo and wrestling names from open sources.",
+      "crosswalk is a flat index of those mappings for prototype search and display."
     ],
     "counts": {
       "move_types": 7,
       "starting_positions": 36,
       "ending_positions_or_submissions": 55,
-      "paths": 100,
-      "named_move_leaves": 139
-    }
+      "paths": 102,
+      "named_move_leaves": 149,
+      "leaves_with_cross_refs": 45,
+      "crosswalk_entries": 75
+    },
+    "updated": "2026-10-31"
   },
   "sources": [
     {
@@ -66,6 +71,42 @@
       "license_url": null,
       "attribution": "Jiu-Jitsu Authority Grapplepedia (structure consulted; no wholesale copy)",
       "role": "Cross-check of ~35 core positions and move-type groupings for consensus coverage"
+    },
+    {
+      "id": "kodokan-wikipedia",
+      "title": "List of Kodokan judo techniques",
+      "url": "https://en.wikipedia.org/wiki/List_of_Kodokan_judo_techniques",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "attribution": "Wikipedia contributors, List of Kodokan judo techniques",
+      "role": "Official Kodokan nage-waza and katame-waza names for BJJ leaf crosswalk"
+    },
+    {
+      "id": "judo-techniques-wikipedia",
+      "title": "List of judo techniques",
+      "url": "https://en.wikipedia.org/wiki/List_of_judo_techniques",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "attribution": "Wikipedia contributors, List of judo techniques",
+      "role": "Te-waza / koshi-waza / ashi-waza classification cross-check"
+    },
+    {
+      "id": "wrestling-takedown-wikipedia",
+      "title": "Takedown (grappling)",
+      "url": "https://en.wikipedia.org/wiki/Takedown_(grappling)",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "attribution": "Wikipedia contributors, Takedown (grappling)",
+      "role": "Wrestling and shared grappling takedown names, including judo correspondences"
+    },
+    {
+      "id": "folkstyle-wikibooks",
+      "title": "Folkstyle Wrestling (Wikibooks)",
+      "url": "https://en.wikibooks.org/wiki/Folkstyle_Wrestling",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "attribution": "Wikibooks contributors, Folkstyle Wrestling",
+      "role": "Folkstyle positions (neutral, referee's position) and mat moves for crosswalk"
     }
   ],
   "license_notes": [
@@ -73,7 +114,10 @@
     "Wikipedia and Wikibooks text is CC BY-SA 4.0: share-alike applies to adapted text from those pages; this seed uses short common technique names as consensus labels rather than copying article prose.",
     "Grapplepedia was consulted for coverage consensus only. Do not treat this seed as a Grapplepedia dump; its site license is not an open reuse grant.",
     "BJJGraph (bjjgraph.org) is source-available noncommercial and was not copied into this seed.",
-    "The seed is finder-node labels only. It does not include lesson fields, instructional content, or video."
+    "The seed is finder-node labels only. It does not include lesson fields, instructional content, or video.",
+    "Kodokan judo and wrestling takedown pages on Wikipedia are CC BY-SA 4.0: short technique names used as cross-ref labels, not copied article prose.",
+    "Folkstyle Wrestling Wikibooks is CC BY-SA 3.0: position and move names used as cross-ref labels only.",
+    "Cross-refs link BJJ finder leaves to judo/wrestling names. They do not add a fourth path level or change gi/no-gi leaf rules."
   ],
   "move_types": [
     {
@@ -109,17 +153,43 @@
     {
       "id": "standing",
       "label": "Standing",
-      "family": "standing"
+      "family": "standing",
+      "cross_refs": [
+        {
+          "art": "wrestling",
+          "name": "Neutral",
+          "source": "folkstyle-wikibooks"
+        }
+      ]
     },
     {
       "id": "clinch",
       "label": "Clinch",
-      "family": "standing"
+      "family": "standing",
+      "cross_refs": [
+        {
+          "art": "wrestling",
+          "name": "Tie-up / clinch",
+          "source": "wrestling-takedown-wikipedia"
+        },
+        {
+          "art": "judo",
+          "name": "Kumikata / clinch",
+          "source": "kodokan-wikipedia"
+        }
+      ]
     },
     {
       "id": "front-headlock",
       "label": "Front headlock",
-      "family": "standing"
+      "family": "standing",
+      "cross_refs": [
+        {
+          "art": "wrestling",
+          "name": "Front headlock",
+          "source": "wrestling-takedown-wikipedia"
+        }
+      ]
     },
     {
       "id": "closed-guard",
@@ -253,7 +323,15 @@
     {
       "id": "side-control",
       "label": "Side control",
-      "family": "pin"
+      "family": "pin",
+      "cross_refs": [
+        {
+          "art": "judo",
+          "name": "Yoko-shiho-gatame",
+          "class": "osaekomi-waza",
+          "source": "kodokan-wikipedia"
+        }
+      ]
     },
     {
       "id": "kesa-gatame",
@@ -261,12 +339,29 @@
       "family": "pin",
       "aliases": [
         "Scarf hold"
+      ],
+      "cross_refs": [
+        {
+          "art": "judo",
+          "name": "Kesa-gatame",
+          "class": "osaekomi-waza",
+          "source": "kodokan-wikipedia"
+        }
       ]
     },
     {
       "id": "north-south",
       "label": "North-south",
-      "family": "pin"
+      "family": "pin",
+      "cross_refs": [
+        {
+          "art": "judo",
+          "name": "Kami-shiho-gatame",
+          "class": "osaekomi-waza",
+          "source": "kodokan-wikipedia",
+          "note": "Upper four-quarter; north-south is the common BJJ name"
+        }
+      ]
     },
     {
       "id": "knee-on-belly",
@@ -276,7 +371,15 @@
     {
       "id": "mount",
       "label": "Mount",
-      "family": "pin"
+      "family": "pin",
+      "cross_refs": [
+        {
+          "art": "judo",
+          "name": "Tate-shiho-gatame",
+          "class": "osaekomi-waza",
+          "source": "kodokan-wikipedia"
+        }
+      ]
     },
     {
       "id": "s-mount",
@@ -291,7 +394,19 @@
     {
       "id": "turtle",
       "label": "Turtle",
-      "family": "turtle"
+      "family": "turtle",
+      "cross_refs": [
+        {
+          "art": "wrestling",
+          "name": "Referee's position (bottom)",
+          "source": "folkstyle-wikibooks"
+        },
+        {
+          "art": "wrestling",
+          "name": "All fours / turtle",
+          "source": "folkstyle-wikibooks"
+        }
+      ]
     },
     {
       "id": "truck",
@@ -313,17 +428,43 @@
     {
       "id": "standing",
       "label": "Standing",
-      "kind": "position"
+      "kind": "position",
+      "cross_refs": [
+        {
+          "art": "wrestling",
+          "name": "Neutral",
+          "source": "folkstyle-wikibooks"
+        }
+      ]
     },
     {
       "id": "clinch",
       "label": "Clinch",
-      "kind": "position"
+      "kind": "position",
+      "cross_refs": [
+        {
+          "art": "wrestling",
+          "name": "Tie-up / clinch",
+          "source": "wrestling-takedown-wikipedia"
+        },
+        {
+          "art": "judo",
+          "name": "Kumikata / clinch",
+          "source": "kodokan-wikipedia"
+        }
+      ]
     },
     {
       "id": "front-headlock",
       "label": "Front headlock",
-      "kind": "position"
+      "kind": "position",
+      "cross_refs": [
+        {
+          "art": "wrestling",
+          "name": "Front headlock",
+          "source": "wrestling-takedown-wikipedia"
+        }
+      ]
     },
     {
       "id": "closed-guard",
@@ -403,17 +544,42 @@
     {
       "id": "side-control",
       "label": "Side control",
-      "kind": "position"
+      "kind": "position",
+      "cross_refs": [
+        {
+          "art": "judo",
+          "name": "Yoko-shiho-gatame",
+          "class": "osaekomi-waza",
+          "source": "kodokan-wikipedia"
+        }
+      ]
     },
     {
       "id": "kesa-gatame",
       "label": "Kesa gatame",
-      "kind": "position"
+      "kind": "position",
+      "cross_refs": [
+        {
+          "art": "judo",
+          "name": "Kesa-gatame",
+          "class": "osaekomi-waza",
+          "source": "kodokan-wikipedia"
+        }
+      ]
     },
     {
       "id": "north-south",
       "label": "North-south",
-      "kind": "position"
+      "kind": "position",
+      "cross_refs": [
+        {
+          "art": "judo",
+          "name": "Kami-shiho-gatame",
+          "class": "osaekomi-waza",
+          "source": "kodokan-wikipedia",
+          "note": "Upper four-quarter; north-south is the common BJJ name"
+        }
+      ]
     },
     {
       "id": "knee-on-belly",
@@ -423,7 +589,15 @@
     {
       "id": "mount",
       "label": "Mount",
-      "kind": "position"
+      "kind": "position",
+      "cross_refs": [
+        {
+          "art": "judo",
+          "name": "Tate-shiho-gatame",
+          "class": "osaekomi-waza",
+          "source": "kodokan-wikipedia"
+        }
+      ]
     },
     {
       "id": "s-mount",
@@ -438,7 +612,19 @@
     {
       "id": "turtle",
       "label": "Turtle",
-      "kind": "position"
+      "kind": "position",
+      "cross_refs": [
+        {
+          "art": "wrestling",
+          "name": "Referee's position (bottom)",
+          "source": "folkstyle-wikibooks"
+        },
+        {
+          "art": "wrestling",
+          "name": "All fours / turtle",
+          "source": "folkstyle-wikibooks"
+        }
+      ]
     },
     {
       "id": "truck",
@@ -458,7 +644,15 @@
     {
       "id": "rear-naked-choke",
       "label": "Rear naked choke",
-      "kind": "submission"
+      "kind": "submission",
+      "cross_refs": [
+        {
+          "art": "judo",
+          "name": "Hadaka-jime",
+          "class": "shime-waza",
+          "source": "kodokan-wikipedia"
+        }
+      ]
     },
     {
       "id": "guillotine",
@@ -483,22 +677,54 @@
     {
       "id": "triangle",
       "label": "Triangle choke",
-      "kind": "submission"
+      "kind": "submission",
+      "cross_refs": [
+        {
+          "art": "judo",
+          "name": "Sankaku-jime",
+          "class": "shime-waza",
+          "source": "kodokan-wikipedia"
+        }
+      ]
     },
     {
       "id": "armbar",
       "label": "Armbar",
-      "kind": "submission"
+      "kind": "submission",
+      "cross_refs": [
+        {
+          "art": "judo",
+          "name": "Ude-hishigi-juji-gatame",
+          "class": "kansetsu-waza",
+          "source": "kodokan-wikipedia"
+        }
+      ]
     },
     {
       "id": "kimura",
       "label": "Kimura",
-      "kind": "submission"
+      "kind": "submission",
+      "cross_refs": [
+        {
+          "art": "judo",
+          "name": "Ude-garami",
+          "class": "kansetsu-waza",
+          "source": "kodokan-wikipedia"
+        }
+      ]
     },
     {
       "id": "americana",
       "label": "Americana",
-      "kind": "submission"
+      "kind": "submission",
+      "cross_refs": [
+        {
+          "art": "judo",
+          "name": "Ude-garami",
+          "class": "kansetsu-waza",
+          "source": "kodokan-wikipedia"
+        }
+      ]
     },
     {
       "id": "omoplata",
@@ -508,7 +734,15 @@
     {
       "id": "ezekiel",
       "label": "Ezekiel choke",
-      "kind": "submission"
+      "kind": "submission",
+      "cross_refs": [
+        {
+          "art": "judo",
+          "name": "Sode-guruma-jime",
+          "class": "shime-waza",
+          "source": "kodokan-wikipedia"
+        }
+      ]
     },
     {
       "id": "north-south-choke",
@@ -518,7 +752,27 @@
     {
       "id": "cross-collar-choke",
       "label": "Cross collar choke",
-      "kind": "submission"
+      "kind": "submission",
+      "cross_refs": [
+        {
+          "art": "judo",
+          "name": "Nami-juji-jime",
+          "class": "shime-waza",
+          "source": "kodokan-wikipedia"
+        },
+        {
+          "art": "judo",
+          "name": "Gyaku-juji-jime",
+          "class": "shime-waza",
+          "source": "kodokan-wikipedia"
+        },
+        {
+          "art": "judo",
+          "name": "Kata-juji-jime",
+          "class": "shime-waza",
+          "source": "kodokan-wikipedia"
+        }
+      ]
     },
     {
       "id": "bow-and-arrow",
@@ -596,7 +850,16 @@
           "name": "Chair sit escape",
           "ruleset": "both",
           "seen_in": [
+            "folkstyle-wikibooks",
             "grapplepedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Stand-up escape family",
+              "class": "escape",
+              "source": "folkstyle-wikibooks"
+            }
           ]
         }
       ]
@@ -610,7 +873,16 @@
           "name": "Armbar from back control",
           "ruleset": "both",
           "seen_in": [
-            "grapplepedia"
+            "grapplepedia",
+            "kodokan-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Ude-hishigi-juji-gatame",
+              "class": "kansetsu-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         }
       ]
@@ -624,8 +896,18 @@
           "name": "Bow and arrow choke",
           "ruleset": "gi",
           "seen_in": [
-            "wikipedia",
-            "grapplepedia"
+            "grapplepedia",
+            "kodokan-wikipedia",
+            "wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Okuri-eri-jime",
+              "class": "shime-waza",
+              "source": "kodokan-wikipedia",
+              "note": "Related sliding-lapel / back choke family"
+            }
           ]
         }
       ]
@@ -643,9 +925,18 @@
             "Hadaka jime"
           ],
           "seen_in": [
-            "wikipedia",
+            "bjj-data",
             "grapplepedia",
-            "bjj-data"
+            "kodokan-wikipedia",
+            "wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Hadaka-jime",
+              "class": "shime-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         }
       ]
@@ -726,7 +1017,16 @@
           "name": "Duck under",
           "ruleset": "both",
           "seen_in": [
-            "grapplepedia"
+            "grapplepedia",
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Duck under",
+              "class": "takedown",
+              "source": "wrestling-takedown-wikipedia"
+            }
           ]
         }
       ]
@@ -740,21 +1040,118 @@
           "name": "Body lock takedown",
           "ruleset": "both",
           "seen_in": [
-            "grapplepedia"
+            "grapplepedia",
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Body lock",
+              "class": "takedown",
+              "source": "wrestling-takedown-wikipedia"
+            },
+            {
+              "art": "wrestling",
+              "name": "Bear hug",
+              "class": "takedown",
+              "source": "wrestling-takedown-wikipedia"
+            }
           ]
         },
         {
           "name": "Inside trip",
           "ruleset": "both",
           "seen_in": [
-            "wikipedia"
+            "kodokan-wikipedia",
+            "wikipedia",
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Inside trip",
+              "class": "trip",
+              "source": "wrestling-takedown-wikipedia"
+            },
+            {
+              "art": "judo",
+              "name": "O-uchi-gari",
+              "class": "ashi-waza",
+              "source": "kodokan-wikipedia",
+              "note": "Major inner reap; related inside trip family"
+            },
+            {
+              "art": "judo",
+              "name": "Ko-uchi-gari",
+              "class": "ashi-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         },
         {
           "name": "Outside trip",
           "ruleset": "both",
           "seen_in": [
-            "wikipedia"
+            "kodokan-wikipedia",
+            "wikipedia",
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Outside trip",
+              "class": "trip",
+              "source": "wrestling-takedown-wikipedia"
+            },
+            {
+              "art": "judo",
+              "name": "O-soto-gari",
+              "class": "ashi-waza",
+              "source": "kodokan-wikipedia"
+            },
+            {
+              "art": "judo",
+              "name": "Ko-soto-gari",
+              "class": "ashi-waza",
+              "source": "kodokan-wikipedia"
+            }
+          ]
+        },
+        {
+          "name": "Lateral drop",
+          "ruleset": "both",
+          "seen_in": [
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Lateral drop",
+              "class": "throw",
+              "source": "wrestling-takedown-wikipedia"
+            }
+          ]
+        },
+        {
+          "name": "Suplex",
+          "ruleset": "both",
+          "seen_in": [
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Suplex",
+              "class": "throw",
+              "source": "wrestling-takedown-wikipedia"
+            },
+            {
+              "art": "judo",
+              "name": "Ura-nage",
+              "class": "ma-sutemi-waza",
+              "source": "kodokan-wikipedia",
+              "note": "Related rear throw / arch family"
+            }
           ]
         }
       ]
@@ -797,8 +1194,17 @@
           "name": "Armbar from closed guard",
           "ruleset": "both",
           "seen_in": [
-            "wikipedia",
-            "grapplepedia"
+            "grapplepedia",
+            "kodokan-wikipedia",
+            "wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Ude-hishigi-juji-gatame",
+              "class": "kansetsu-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         }
       ]
@@ -812,8 +1218,29 @@
           "name": "Cross collar choke",
           "ruleset": "gi",
           "seen_in": [
-            "wikipedia",
-            "grapplepedia"
+            "grapplepedia",
+            "kodokan-wikipedia",
+            "wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Nami-juji-jime",
+              "class": "shime-waza",
+              "source": "kodokan-wikipedia"
+            },
+            {
+              "art": "judo",
+              "name": "Gyaku-juji-jime",
+              "class": "shime-waza",
+              "source": "kodokan-wikipedia"
+            },
+            {
+              "art": "judo",
+              "name": "Kata-juji-jime",
+              "class": "shime-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         }
       ]
@@ -827,8 +1254,18 @@
           "name": "Kimura from closed guard",
           "ruleset": "both",
           "seen_in": [
-            "wikipedia",
-            "grapplepedia"
+            "grapplepedia",
+            "kodokan-wikipedia",
+            "wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Ude-garami",
+              "class": "kansetsu-waza",
+              "source": "kodokan-wikipedia",
+              "note": "Gyaku ude-garami family"
+            }
           ]
         }
       ]
@@ -858,9 +1295,18 @@
           "name": "Triangle choke",
           "ruleset": "both",
           "seen_in": [
-            "wikipedia",
+            "bjj-data",
             "grapplepedia",
-            "bjj-data"
+            "kodokan-wikipedia",
+            "wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Sankaku-jime",
+              "class": "shime-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         }
       ]
@@ -1437,8 +1883,17 @@
             "Bridge and roll"
           ],
           "seen_in": [
-            "wikipedia",
-            "grapplepedia"
+            "folkstyle-wikibooks",
+            "grapplepedia",
+            "wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Bridge",
+              "class": "escape",
+              "source": "folkstyle-wikibooks"
+            }
           ]
         },
         {
@@ -1463,8 +1918,17 @@
           "name": "Armbar from mount",
           "ruleset": "both",
           "seen_in": [
-            "wikipedia",
-            "grapplepedia"
+            "grapplepedia",
+            "kodokan-wikipedia",
+            "wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Ude-hishigi-juji-gatame",
+              "class": "kansetsu-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         }
       ]
@@ -1478,7 +1942,22 @@
           "name": "Cross collar choke from mount",
           "ruleset": "gi",
           "seen_in": [
+            "kodokan-wikipedia",
             "wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Nami-juji-jime",
+              "class": "shime-waza",
+              "source": "kodokan-wikipedia"
+            },
+            {
+              "art": "judo",
+              "name": "Gyaku-juji-jime",
+              "class": "shime-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         }
       ]
@@ -1495,8 +1974,17 @@
             "Sode guruma jime"
           ],
           "seen_in": [
-            "wikipedia",
-            "grapplepedia"
+            "grapplepedia",
+            "kodokan-wikipedia",
+            "wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Sode-guruma-jime",
+              "class": "shime-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         }
       ]
@@ -1716,7 +2204,16 @@
           "name": "S-mount armbar",
           "ruleset": "both",
           "seen_in": [
-            "grapplepedia"
+            "grapplepedia",
+            "kodokan-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Ude-hishigi-juji-gatame",
+              "class": "kansetsu-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         }
       ]
@@ -1836,8 +2333,17 @@
             "Ude garami"
           ],
           "seen_in": [
-            "wikipedia",
-            "grapplepedia"
+            "grapplepedia",
+            "kodokan-wikipedia",
+            "wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Ude-garami",
+              "class": "kansetsu-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         }
       ]
@@ -1866,7 +2372,16 @@
           "name": "Kimura from side control",
           "ruleset": "both",
           "seen_in": [
+            "kodokan-wikipedia",
             "wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Ude-garami",
+              "class": "kansetsu-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         }
       ]
@@ -2001,15 +2516,33 @@
           "name": "Standing arm drag",
           "ruleset": "both",
           "seen_in": [
-            "grapplepedia"
+            "grapplepedia",
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Arm drag",
+              "class": "takedown",
+              "source": "wrestling-takedown-wikipedia"
+            }
           ]
         },
         {
           "name": "Duck under",
           "ruleset": "both",
           "seen_in": [
+            "grapplepedia",
             "wikipedia",
-            "grapplepedia"
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Duck under",
+              "class": "takedown",
+              "source": "wrestling-takedown-wikipedia"
+            }
           ]
         }
       ]
@@ -2023,8 +2556,17 @@
           "name": "Sprawl",
           "ruleset": "both",
           "seen_in": [
+            "grapplepedia",
             "wikipedia",
-            "grapplepedia"
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Sprawl",
+              "class": "defense",
+              "source": "wrestling-takedown-wikipedia"
+            }
           ]
         }
       ]
@@ -2052,8 +2594,17 @@
           "name": "Snap down",
           "ruleset": "both",
           "seen_in": [
+            "grapplepedia",
             "wikipedia",
-            "grapplepedia"
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Snapdown",
+              "class": "takedown",
+              "source": "wrestling-takedown-wikipedia"
+            }
           ]
         }
       ]
@@ -2067,8 +2618,23 @@
           "name": "Body lock takedown",
           "ruleset": "both",
           "seen_in": [
+            "grapplepedia",
             "wikipedia",
-            "grapplepedia"
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Body lock",
+              "class": "takedown",
+              "source": "wrestling-takedown-wikipedia"
+            },
+            {
+              "art": "wrestling",
+              "name": "Bear hug",
+              "class": "takedown",
+              "source": "wrestling-takedown-wikipedia"
+            }
           ]
         }
       ]
@@ -2082,24 +2648,103 @@
           "name": "Double leg takedown",
           "ruleset": "both",
           "seen_in": [
+            "grapplepedia",
+            "kodokan-wikipedia",
             "wikipedia",
-            "grapplepedia"
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Double leg",
+              "class": "takedown",
+              "source": "wrestling-takedown-wikipedia"
+            },
+            {
+              "art": "judo",
+              "name": "Morote-gari",
+              "class": "te-waza",
+              "source": "kodokan-wikipedia",
+              "note": "Kodokan two-hand reap; often the double-leg correspondence"
+            },
+            {
+              "art": "judo",
+              "name": "Sukui-nage",
+              "class": "te-waza",
+              "source": "wrestling-takedown-wikipedia",
+              "note": "When the opponent is lifted or scooped"
+            }
           ]
         },
         {
           "name": "Single leg takedown",
           "ruleset": "both",
           "seen_in": [
+            "grapplepedia",
+            "kodokan-wikipedia",
             "wikipedia",
-            "grapplepedia"
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Single leg",
+              "class": "takedown",
+              "source": "wrestling-takedown-wikipedia"
+            },
+            {
+              "art": "judo",
+              "name": "Kuchiki-taoshi",
+              "class": "te-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         },
         {
           "name": "Ankle pick",
           "ruleset": "both",
           "seen_in": [
+            "grapplepedia",
+            "kodokan-wikipedia",
             "wikipedia",
-            "grapplepedia"
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Ankle pick",
+              "class": "takedown",
+              "source": "wrestling-takedown-wikipedia"
+            },
+            {
+              "art": "judo",
+              "name": "Kibisu-gaeshi",
+              "class": "te-waza",
+              "source": "kodokan-wikipedia",
+              "note": "Heel trip / one-hand reversal"
+            }
+          ]
+        },
+        {
+          "name": "High crotch",
+          "ruleset": "both",
+          "seen_in": [
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "High crotch",
+              "class": "takedown",
+              "source": "wrestling-takedown-wikipedia"
+            },
+            {
+              "art": "judo",
+              "name": "Sukui-nage",
+              "class": "te-waza",
+              "source": "kodokan-wikipedia",
+              "note": "Related scoop / high-crotch lift family"
+            }
           ]
         }
       ]
@@ -2116,43 +2761,202 @@
             "Outside trip"
           ],
           "seen_in": [
+            "grapplepedia",
+            "kodokan-wikipedia",
             "wikipedia",
-            "grapplepedia"
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "O-soto-gari",
+              "class": "ashi-waza",
+              "source": "kodokan-wikipedia"
+            },
+            {
+              "art": "wrestling",
+              "name": "Outside trip",
+              "class": "trip",
+              "source": "wrestling-takedown-wikipedia"
+            }
           ]
         },
         {
           "name": "Seoi nage",
           "ruleset": "both",
           "seen_in": [
-            "grapplepedia"
+            "grapplepedia",
+            "kodokan-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Seoi-nage",
+              "class": "te-waza",
+              "source": "kodokan-wikipedia"
+            },
+            {
+              "art": "judo",
+              "name": "Ippon-seoi-nage",
+              "class": "te-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         },
         {
           "name": "Uchi mata",
           "ruleset": "both",
           "seen_in": [
-            "grapplepedia"
+            "grapplepedia",
+            "kodokan-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Uchi-mata",
+              "class": "ashi-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         },
         {
           "name": "O goshi",
           "ruleset": "both",
           "seen_in": [
-            "grapplepedia"
+            "grapplepedia",
+            "kodokan-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "O-goshi",
+              "class": "koshi-waza",
+              "source": "kodokan-wikipedia"
+            }
           ]
         },
         {
           "name": "Fireman's carry",
           "ruleset": "both",
           "seen_in": [
-            "wikipedia"
+            "kodokan-wikipedia",
+            "wikipedia",
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Fireman's carry",
+              "class": "takedown",
+              "source": "wrestling-takedown-wikipedia"
+            },
+            {
+              "art": "judo",
+              "name": "Kata-guruma",
+              "class": "te-waza",
+              "source": "kodokan-wikipedia",
+              "note": "Shoulder wheel; related fireman's / carry family"
+            }
           ]
         },
         {
           "name": "Knee tap",
           "ruleset": "both",
           "seen_in": [
-            "wikipedia"
+            "wikipedia",
+            "wrestling-takedown-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Knee tap",
+              "class": "trip",
+              "source": "wrestling-takedown-wikipedia"
+            }
+          ]
+        },
+        {
+          "name": "Tai otoshi",
+          "ruleset": "both",
+          "aliases": [
+            "Body drop"
+          ],
+          "seen_in": [
+            "kodokan-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Tai-otoshi",
+              "class": "te-waza",
+              "source": "kodokan-wikipedia"
+            }
+          ]
+        },
+        {
+          "name": "Harai goshi",
+          "ruleset": "both",
+          "aliases": [
+            "Sweeping hip throw"
+          ],
+          "seen_in": [
+            "kodokan-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "Harai-goshi",
+              "class": "koshi-waza",
+              "source": "kodokan-wikipedia"
+            }
+          ]
+        },
+        {
+          "name": "De ashi barai",
+          "ruleset": "both",
+          "aliases": [
+            "Advanced foot sweep"
+          ],
+          "seen_in": [
+            "kodokan-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "De-ashi-harai",
+              "class": "ashi-waza",
+              "source": "kodokan-wikipedia"
+            },
+            {
+              "art": "wrestling",
+              "name": "Foot sweep",
+              "class": "trip",
+              "source": "wrestling-takedown-wikipedia"
+            }
+          ]
+        },
+        {
+          "name": "O uchi gari",
+          "ruleset": "both",
+          "aliases": [
+            "Major inner reap"
+          ],
+          "seen_in": [
+            "kodokan-wikipedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "judo",
+              "name": "O-uchi-gari",
+              "class": "ashi-waza",
+              "source": "kodokan-wikipedia"
+            },
+            {
+              "art": "wrestling",
+              "name": "Inside trip",
+              "class": "trip",
+              "source": "wrestling-takedown-wikipedia"
+            }
           ]
         }
       ]
@@ -2238,14 +3042,69 @@
           "name": "Granby roll",
           "ruleset": "both",
           "seen_in": [
+            "folkstyle-wikibooks",
             "grapplepedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Granby / hip heist family",
+              "class": "escape",
+              "source": "folkstyle-wikibooks"
+            }
           ]
         },
         {
           "name": "Sit-out",
           "ruleset": "both",
           "seen_in": [
+            "folkstyle-wikibooks",
             "grapplepedia"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Sit-out",
+              "class": "escape",
+              "source": "folkstyle-wikibooks"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "start": "turtle",
+      "move_type": "escape",
+      "end": "standing",
+      "leaves": [
+        {
+          "name": "Stand-up escape",
+          "ruleset": "both",
+          "seen_in": [
+            "folkstyle-wikibooks"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Stand-up",
+              "class": "escape",
+              "source": "folkstyle-wikibooks"
+            }
+          ]
+        },
+        {
+          "name": "Switch reversal",
+          "ruleset": "both",
+          "seen_in": [
+            "folkstyle-wikibooks"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Switch",
+              "class": "reversal",
+              "source": "folkstyle-wikibooks"
+            }
           ]
         }
       ]
@@ -2275,6 +3134,28 @@
           "ruleset": "both",
           "seen_in": [
             "grapplepedia"
+          ]
+        }
+      ]
+    },
+    {
+      "start": "turtle",
+      "move_type": "transition",
+      "end": "side-control",
+      "leaves": [
+        {
+          "name": "Tight waist far ankle breakdown",
+          "ruleset": "both",
+          "seen_in": [
+            "folkstyle-wikibooks"
+          ],
+          "cross_refs": [
+            {
+              "art": "wrestling",
+              "name": "Tight waist, far ankle",
+              "class": "breakdown",
+              "source": "folkstyle-wikibooks"
+            }
           ]
         }
       ]
@@ -2355,6 +3236,943 @@
           ]
         }
       ]
+    }
+  ],
+  "crosswalk": [
+    {
+      "seed_leaf": "Chair sit escape",
+      "seed_path": {
+        "start": "back-control",
+        "move_type": "escape",
+        "end": "turtle"
+      },
+      "art": "wrestling",
+      "name": "Stand-up escape family",
+      "class": "escape",
+      "source": "folkstyle-wikibooks",
+      "note": null
+    },
+    {
+      "seed_leaf": "Armbar from back control",
+      "seed_path": {
+        "start": "back-control",
+        "move_type": "submission",
+        "end": "armbar"
+      },
+      "art": "judo",
+      "name": "Ude-hishigi-juji-gatame",
+      "class": "kansetsu-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Bow and arrow choke",
+      "seed_path": {
+        "start": "back-control",
+        "move_type": "submission",
+        "end": "bow-and-arrow"
+      },
+      "art": "judo",
+      "name": "Okuri-eri-jime",
+      "class": "shime-waza",
+      "source": "kodokan-wikipedia",
+      "note": "Related sliding-lapel / back choke family"
+    },
+    {
+      "seed_leaf": "Rear naked choke",
+      "seed_path": {
+        "start": "back-control",
+        "move_type": "submission",
+        "end": "rear-naked-choke"
+      },
+      "art": "judo",
+      "name": "Hadaka-jime",
+      "class": "shime-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Duck under",
+      "seed_path": {
+        "start": "clinch",
+        "move_type": "back-take",
+        "end": "back-control"
+      },
+      "art": "wrestling",
+      "name": "Duck under",
+      "class": "takedown",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Body lock takedown",
+      "seed_path": {
+        "start": "clinch",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "wrestling",
+      "name": "Body lock",
+      "class": "takedown",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Body lock takedown",
+      "seed_path": {
+        "start": "clinch",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "wrestling",
+      "name": "Bear hug",
+      "class": "takedown",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Inside trip",
+      "seed_path": {
+        "start": "clinch",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "wrestling",
+      "name": "Inside trip",
+      "class": "trip",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Inside trip",
+      "seed_path": {
+        "start": "clinch",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "judo",
+      "name": "O-uchi-gari",
+      "class": "ashi-waza",
+      "source": "kodokan-wikipedia",
+      "note": "Major inner reap; related inside trip family"
+    },
+    {
+      "seed_leaf": "Inside trip",
+      "seed_path": {
+        "start": "clinch",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "judo",
+      "name": "Ko-uchi-gari",
+      "class": "ashi-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Outside trip",
+      "seed_path": {
+        "start": "clinch",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "wrestling",
+      "name": "Outside trip",
+      "class": "trip",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Outside trip",
+      "seed_path": {
+        "start": "clinch",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "judo",
+      "name": "O-soto-gari",
+      "class": "ashi-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Outside trip",
+      "seed_path": {
+        "start": "clinch",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "judo",
+      "name": "Ko-soto-gari",
+      "class": "ashi-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Lateral drop",
+      "seed_path": {
+        "start": "clinch",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "wrestling",
+      "name": "Lateral drop",
+      "class": "throw",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Suplex",
+      "seed_path": {
+        "start": "clinch",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "wrestling",
+      "name": "Suplex",
+      "class": "throw",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Suplex",
+      "seed_path": {
+        "start": "clinch",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "judo",
+      "name": "Ura-nage",
+      "class": "ma-sutemi-waza",
+      "source": "kodokan-wikipedia",
+      "note": "Related rear throw / arch family"
+    },
+    {
+      "seed_leaf": "Armbar from closed guard",
+      "seed_path": {
+        "start": "closed-guard",
+        "move_type": "submission",
+        "end": "armbar"
+      },
+      "art": "judo",
+      "name": "Ude-hishigi-juji-gatame",
+      "class": "kansetsu-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Cross collar choke",
+      "seed_path": {
+        "start": "closed-guard",
+        "move_type": "submission",
+        "end": "cross-collar-choke"
+      },
+      "art": "judo",
+      "name": "Nami-juji-jime",
+      "class": "shime-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Cross collar choke",
+      "seed_path": {
+        "start": "closed-guard",
+        "move_type": "submission",
+        "end": "cross-collar-choke"
+      },
+      "art": "judo",
+      "name": "Gyaku-juji-jime",
+      "class": "shime-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Cross collar choke",
+      "seed_path": {
+        "start": "closed-guard",
+        "move_type": "submission",
+        "end": "cross-collar-choke"
+      },
+      "art": "judo",
+      "name": "Kata-juji-jime",
+      "class": "shime-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Kimura from closed guard",
+      "seed_path": {
+        "start": "closed-guard",
+        "move_type": "submission",
+        "end": "kimura"
+      },
+      "art": "judo",
+      "name": "Ude-garami",
+      "class": "kansetsu-waza",
+      "source": "kodokan-wikipedia",
+      "note": "Gyaku ude-garami family"
+    },
+    {
+      "seed_leaf": "Triangle choke",
+      "seed_path": {
+        "start": "closed-guard",
+        "move_type": "submission",
+        "end": "triangle"
+      },
+      "art": "judo",
+      "name": "Sankaku-jime",
+      "class": "shime-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Upa escape",
+      "seed_path": {
+        "start": "mount",
+        "move_type": "escape",
+        "end": "half-guard"
+      },
+      "art": "wrestling",
+      "name": "Bridge",
+      "class": "escape",
+      "source": "folkstyle-wikibooks",
+      "note": null
+    },
+    {
+      "seed_leaf": "Armbar from mount",
+      "seed_path": {
+        "start": "mount",
+        "move_type": "submission",
+        "end": "armbar"
+      },
+      "art": "judo",
+      "name": "Ude-hishigi-juji-gatame",
+      "class": "kansetsu-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Cross collar choke from mount",
+      "seed_path": {
+        "start": "mount",
+        "move_type": "submission",
+        "end": "cross-collar-choke"
+      },
+      "art": "judo",
+      "name": "Nami-juji-jime",
+      "class": "shime-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Cross collar choke from mount",
+      "seed_path": {
+        "start": "mount",
+        "move_type": "submission",
+        "end": "cross-collar-choke"
+      },
+      "art": "judo",
+      "name": "Gyaku-juji-jime",
+      "class": "shime-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Ezekiel choke",
+      "seed_path": {
+        "start": "mount",
+        "move_type": "submission",
+        "end": "ezekiel"
+      },
+      "art": "judo",
+      "name": "Sode-guruma-jime",
+      "class": "shime-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "S-mount armbar",
+      "seed_path": {
+        "start": "s-mount",
+        "move_type": "submission",
+        "end": "armbar"
+      },
+      "art": "judo",
+      "name": "Ude-hishigi-juji-gatame",
+      "class": "kansetsu-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Americana",
+      "seed_path": {
+        "start": "side-control",
+        "move_type": "submission",
+        "end": "americana"
+      },
+      "art": "judo",
+      "name": "Ude-garami",
+      "class": "kansetsu-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Kimura from side control",
+      "seed_path": {
+        "start": "side-control",
+        "move_type": "submission",
+        "end": "kimura"
+      },
+      "art": "judo",
+      "name": "Ude-garami",
+      "class": "kansetsu-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Standing arm drag",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "back-take",
+        "end": "back-control"
+      },
+      "art": "wrestling",
+      "name": "Arm drag",
+      "class": "takedown",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Duck under",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "back-take",
+        "end": "back-control"
+      },
+      "art": "wrestling",
+      "name": "Duck under",
+      "class": "takedown",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Sprawl",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "escape",
+        "end": "standing"
+      },
+      "art": "wrestling",
+      "name": "Sprawl",
+      "class": "defense",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Snap down",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "front-headlock"
+      },
+      "art": "wrestling",
+      "name": "Snapdown",
+      "class": "takedown",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Body lock takedown",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "mount"
+      },
+      "art": "wrestling",
+      "name": "Body lock",
+      "class": "takedown",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Body lock takedown",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "mount"
+      },
+      "art": "wrestling",
+      "name": "Bear hug",
+      "class": "takedown",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Double leg takedown",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "wrestling",
+      "name": "Double leg",
+      "class": "takedown",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Double leg takedown",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "judo",
+      "name": "Morote-gari",
+      "class": "te-waza",
+      "source": "kodokan-wikipedia",
+      "note": "Kodokan two-hand reap; often the double-leg correspondence"
+    },
+    {
+      "seed_leaf": "Double leg takedown",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "judo",
+      "name": "Sukui-nage",
+      "class": "te-waza",
+      "source": "wrestling-takedown-wikipedia",
+      "note": "When the opponent is lifted or scooped"
+    },
+    {
+      "seed_leaf": "Single leg takedown",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "wrestling",
+      "name": "Single leg",
+      "class": "takedown",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Single leg takedown",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "judo",
+      "name": "Kuchiki-taoshi",
+      "class": "te-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Ankle pick",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "wrestling",
+      "name": "Ankle pick",
+      "class": "takedown",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Ankle pick",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "judo",
+      "name": "Kibisu-gaeshi",
+      "class": "te-waza",
+      "source": "kodokan-wikipedia",
+      "note": "Heel trip / one-hand reversal"
+    },
+    {
+      "seed_leaf": "High crotch",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "wrestling",
+      "name": "High crotch",
+      "class": "takedown",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "High crotch",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "side-control"
+      },
+      "art": "judo",
+      "name": "Sukui-nage",
+      "class": "te-waza",
+      "source": "kodokan-wikipedia",
+      "note": "Related scoop / high-crotch lift family"
+    },
+    {
+      "seed_leaf": "Osoto gari",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "turtle"
+      },
+      "art": "judo",
+      "name": "O-soto-gari",
+      "class": "ashi-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Osoto gari",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "turtle"
+      },
+      "art": "wrestling",
+      "name": "Outside trip",
+      "class": "trip",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Seoi nage",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "turtle"
+      },
+      "art": "judo",
+      "name": "Seoi-nage",
+      "class": "te-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Seoi nage",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "turtle"
+      },
+      "art": "judo",
+      "name": "Ippon-seoi-nage",
+      "class": "te-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Uchi mata",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "turtle"
+      },
+      "art": "judo",
+      "name": "Uchi-mata",
+      "class": "ashi-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "O goshi",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "turtle"
+      },
+      "art": "judo",
+      "name": "O-goshi",
+      "class": "koshi-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Fireman's carry",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "turtle"
+      },
+      "art": "wrestling",
+      "name": "Fireman's carry",
+      "class": "takedown",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Fireman's carry",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "turtle"
+      },
+      "art": "judo",
+      "name": "Kata-guruma",
+      "class": "te-waza",
+      "source": "kodokan-wikipedia",
+      "note": "Shoulder wheel; related fireman's / carry family"
+    },
+    {
+      "seed_leaf": "Knee tap",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "turtle"
+      },
+      "art": "wrestling",
+      "name": "Knee tap",
+      "class": "trip",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Tai otoshi",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "turtle"
+      },
+      "art": "judo",
+      "name": "Tai-otoshi",
+      "class": "te-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Harai goshi",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "turtle"
+      },
+      "art": "judo",
+      "name": "Harai-goshi",
+      "class": "koshi-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "De ashi barai",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "turtle"
+      },
+      "art": "judo",
+      "name": "De-ashi-harai",
+      "class": "ashi-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "De ashi barai",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "turtle"
+      },
+      "art": "wrestling",
+      "name": "Foot sweep",
+      "class": "trip",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "O uchi gari",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "turtle"
+      },
+      "art": "judo",
+      "name": "O-uchi-gari",
+      "class": "ashi-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "O uchi gari",
+      "seed_path": {
+        "start": "standing",
+        "move_type": "takedown",
+        "end": "turtle"
+      },
+      "art": "wrestling",
+      "name": "Inside trip",
+      "class": "trip",
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_leaf": "Granby roll",
+      "seed_path": {
+        "start": "turtle",
+        "move_type": "escape",
+        "end": "closed-guard"
+      },
+      "art": "wrestling",
+      "name": "Granby / hip heist family",
+      "class": "escape",
+      "source": "folkstyle-wikibooks",
+      "note": null
+    },
+    {
+      "seed_leaf": "Sit-out",
+      "seed_path": {
+        "start": "turtle",
+        "move_type": "escape",
+        "end": "closed-guard"
+      },
+      "art": "wrestling",
+      "name": "Sit-out",
+      "class": "escape",
+      "source": "folkstyle-wikibooks",
+      "note": null
+    },
+    {
+      "seed_leaf": "Stand-up escape",
+      "seed_path": {
+        "start": "turtle",
+        "move_type": "escape",
+        "end": "standing"
+      },
+      "art": "wrestling",
+      "name": "Stand-up",
+      "class": "escape",
+      "source": "folkstyle-wikibooks",
+      "note": null
+    },
+    {
+      "seed_leaf": "Switch reversal",
+      "seed_path": {
+        "start": "turtle",
+        "move_type": "escape",
+        "end": "standing"
+      },
+      "art": "wrestling",
+      "name": "Switch",
+      "class": "reversal",
+      "source": "folkstyle-wikibooks",
+      "note": null
+    },
+    {
+      "seed_leaf": "Tight waist far ankle breakdown",
+      "seed_path": {
+        "start": "turtle",
+        "move_type": "transition",
+        "end": "side-control"
+      },
+      "art": "wrestling",
+      "name": "Tight waist, far ankle",
+      "class": "breakdown",
+      "source": "folkstyle-wikibooks",
+      "note": null
+    },
+    {
+      "seed_node": "standing",
+      "seed_kind": "starting_position",
+      "art": "wrestling",
+      "name": "Neutral",
+      "class": null,
+      "source": "folkstyle-wikibooks",
+      "note": null
+    },
+    {
+      "seed_node": "clinch",
+      "seed_kind": "starting_position",
+      "art": "wrestling",
+      "name": "Tie-up / clinch",
+      "class": null,
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_node": "clinch",
+      "seed_kind": "starting_position",
+      "art": "judo",
+      "name": "Kumikata / clinch",
+      "class": null,
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_node": "front-headlock",
+      "seed_kind": "starting_position",
+      "art": "wrestling",
+      "name": "Front headlock",
+      "class": null,
+      "source": "wrestling-takedown-wikipedia",
+      "note": null
+    },
+    {
+      "seed_node": "side-control",
+      "seed_kind": "starting_position",
+      "art": "judo",
+      "name": "Yoko-shiho-gatame",
+      "class": "osaekomi-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_node": "kesa-gatame",
+      "seed_kind": "starting_position",
+      "art": "judo",
+      "name": "Kesa-gatame",
+      "class": "osaekomi-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_node": "north-south",
+      "seed_kind": "starting_position",
+      "art": "judo",
+      "name": "Kami-shiho-gatame",
+      "class": "osaekomi-waza",
+      "source": "kodokan-wikipedia",
+      "note": "Upper four-quarter; north-south is the common BJJ name"
+    },
+    {
+      "seed_node": "mount",
+      "seed_kind": "starting_position",
+      "art": "judo",
+      "name": "Tate-shiho-gatame",
+      "class": "osaekomi-waza",
+      "source": "kodokan-wikipedia",
+      "note": null
+    },
+    {
+      "seed_node": "turtle",
+      "seed_kind": "starting_position",
+      "art": "wrestling",
+      "name": "Referee's position (bottom)",
+      "class": null,
+      "source": "folkstyle-wikibooks",
+      "note": null
+    },
+    {
+      "seed_node": "turtle",
+      "seed_kind": "starting_position",
+      "art": "wrestling",
+      "name": "All fours / turtle",
+      "class": null,
+      "source": "folkstyle-wikibooks",
+      "note": null
     }
   ]
 }
