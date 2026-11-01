@@ -239,20 +239,30 @@
     .changed { background: #fef3c7; }
     .plot-panel { margin-top: .9rem; }
     .plot-panel .body { padding: 0 .55rem .7rem; }
-    .sankey-svg, .force-svg {
+    .force-svg, .er-svg {
       width: 100%;
       background: #fff;
       display: block;
     }
-    .sankey-wrap, .force-wrap {
+    .force-wrap, .er-wrap {
       background: #fff;
       border: 1px solid var(--line);
       border-radius: 10px;
       overflow: hidden;
     }
-    .sankey-svg { height: 880px; cursor: grab; user-select: none; }
-    .sankey-svg.grabbing { cursor: grabbing; }
     .force-svg { height: 900px; }
+    .er-svg { height: 640px; }
+    .er-detail {
+      margin-top: .55rem;
+      padding: .7rem .8rem;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+    .er-detail h3 { margin: 0 0 .25rem; font-size: 1.05rem; }
+    .er-detail p { margin: .25rem 0 0; }
+    .er-ask { color: var(--accent); font-weight: 650; }
+    .er-detail h3 { font-family: var(--serif); }
     .plot-tools {
       display: flex;
       flex-wrap: wrap;
@@ -330,6 +340,7 @@
       vertical-align: -1px;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 </head>
 <body>
   <div class="banner">
@@ -341,9 +352,8 @@
     <h1>Starting finder tree</h1>
     <p class="meta">
       One position record is used as a start and as an end. Submissions are endings only.
-      The Sankey groups starting positions and endings by family, then by the specific position.
-      Grab the background to pan; Recenter restores the view. The trail along the top follows the force-graph picks.
-      After a type of move is picked, that square becomes the named-move leaves and the endings they land on.
+      The entity diagram asks which of those names are records, which are only fields, and which are activities the coach performs.
+      The force-directed journey is a workflow for sketching a sequence the coach could pack into a unit.
     </p>
   </header>
   <div class="question">
@@ -351,8 +361,8 @@
       <summary>Question this prototype answers</summary>
       <p>
         Does this starting tree of finder nodes look right to import as the live copy the coach then edits?
-        An ending position is the same identity as that starting position. The plot shows those unique identities and the paths that join them.
-        Use the walkthroughs and the editor to rename, add, move, or delete, then say what should change before import.
+        Which names are entities (a catalog record, or an activity such as a sequence or a citation) and which are only attributes of those records?
+        Click the entity diagram, walk a sequence in the force graph, then say what should change before import.
       </p>
     </details>
   </div>
@@ -843,6 +853,210 @@
     };
   })();
 
+  const Domain = (() => {
+    const concepts = [
+      {
+        id: "position",
+        label: "Position",
+        shape: "entity",
+        nature: "reference",
+        summary: "One finder record. A path may use it as a start or as an end. Those are roles, not two entities.",
+        attrs: ["label", "family", "aliases", "cross_refs"],
+        countKey: "positions"
+      },
+      {
+        id: "move_type",
+        label: "Type of move",
+        shape: "entity",
+        nature: "reference",
+        summary: "Catalog of how a path leaves a position: takedown, sweep, pass, escape, submission, transition, back take.",
+        attrs: ["label"],
+        countKey: "move_types"
+      },
+      {
+        id: "submission",
+        label: "Submission",
+        shape: "entity",
+        nature: "reference",
+        summary: "Finder record that occupies the end of a path only. It is not a position.",
+        attrs: ["label", "aliases", "cross_refs"],
+        countKey: "submissions"
+      },
+      {
+        id: "named_move",
+        label: "Named move",
+        shape: "entity",
+        nature: "reference",
+        summary: "A specific named movement on a path, such as Hip bump sweep. The seed stores it as a leaf on the path. The same name can sit on more than one path.",
+        attrs: ["name", "ruleset", "aliases", "cross_refs", "seen_in"],
+        countKey: "leaves",
+        ask: "Should a named move be its own identity, or only a leaf hanging off a path?"
+      },
+      {
+        id: "path",
+        label: "Path",
+        shape: "relationship",
+        nature: "reference",
+        summary: "The allowed hop: one position as start, one type of move, one ending (a position or a submission). Named-move leaves hang on this hop.",
+        attrs: ["start role", "end role"],
+        countKey: "paths",
+        ask: "Is a path a catalog entity the coach edits, or only the relationship between those records?"
+      },
+      {
+        id: "sequence",
+        label: "Sequence",
+        shape: "entity",
+        nature: "activity",
+        summary: "An ordered chain of hops the coach is assembling in the force-directed journey. A workflow toward a unit, not a finder node in the seed.",
+        attrs: ["ordered hops", "chosen named moves"],
+        countKey: "sequence",
+        ask: "Does a sequence become a stored record on a unit, or stay a working sketch that later places citations on lessons?"
+      },
+      {
+        id: "citation",
+        label: "Citation",
+        shape: "entity",
+        nature: "activity",
+        summary: "A recorded teaching of a movement. It may hold one optional link to an enrichment node (path plus named move). With no link it stays usable under uncategorized.",
+        attrs: ["movement name", "optional node link"],
+        countKey: "citations"
+      },
+      {
+        id: "unit",
+        label: "Unit",
+        shape: "entity",
+        nature: "activity",
+        summary: "The classes that teach one system. Enrichment does not hold lesson fields. A sequence is a candidate packing of hops the coach may turn into lessons.",
+        attrs: ["system paragraph", "classes"],
+        countKey: "none"
+      },
+      {
+        id: "family",
+        label: "Family",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "position",
+        summary: "Grouping on a position: standing, guard, leg entanglement, passing, pin, turtle, back. Not its own finder node.",
+        ask: "Should family stay an attribute, or become a parent entity that positions belong to?"
+      },
+      {
+        id: "start_role",
+        label: "Start (role)",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "path",
+        summary: "How a path uses a position. Starting position is this role, not a second list of records."
+      },
+      {
+        id: "end_role",
+        label: "End (role)",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "path",
+        summary: "How a path uses a position or a submission. Ending position is this role."
+      },
+      {
+        id: "ruleset",
+        label: "Ruleset",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "named_move",
+        summary: "gi, no-gi, or both. Lives on the named-move leaf. Positions and types of move are shared across rulesets."
+      },
+      {
+        id: "aliases",
+        label: "Aliases",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "named_move",
+        summary: "Other names for the same record. Also appear on some positions and submissions."
+      },
+      {
+        id: "cross_ref",
+        label: "Cross-ref",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "named_move",
+        summary: "A judo or wrestling name on the same finder record. Not a fourth path level."
+      },
+      {
+        id: "uncategorized",
+        label: "Uncategorized",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "citation",
+        summary: "Browse bucket when a citation has no enrichment-node link. Not a seed node."
+      }
+    ];
+
+    const edges = [
+      { from: "family", to: "position", label: "of" },
+      { from: "start_role", to: "path", label: "on" },
+      { from: "end_role", to: "path", label: "on" },
+      { from: "path", to: "position", label: "start: 1" },
+      { from: "path", to: "position", label: "end: 0..1" },
+      { from: "path", to: "submission", label: "end: 0..1" },
+      { from: "path", to: "move_type", label: "1" },
+      { from: "path", to: "named_move", label: "1..n leaves" },
+      { from: "ruleset", to: "named_move", label: "of" },
+      { from: "aliases", to: "named_move", label: "of" },
+      { from: "cross_ref", to: "named_move", label: "of" },
+      { from: "sequence", to: "path", label: "ordered hops" },
+      { from: "sequence", to: "named_move", label: "chosen leaf" },
+      { from: "sequence", to: "unit", label: "candidate for" },
+      { from: "citation", to: "named_move", label: "optional link" },
+      { from: "uncategorized", to: "citation", label: "when unlinked" }
+    ];
+
+    const layout = {
+      family: { x: 120, y: 90 },
+      start_role: { x: 120, y: 180 },
+      end_role: { x: 120, y: 255 },
+      ruleset: { x: 120, y: 355 },
+      aliases: { x: 120, y: 430 },
+      cross_ref: { x: 120, y: 505 },
+      uncategorized: { x: 120, y: 580 },
+      position: { x: 430, y: 130 },
+      move_type: { x: 430, y: 270 },
+      submission: { x: 430, y: 410 },
+      path: { x: 780, y: 250 },
+      named_move: { x: 780, y: 470 },
+      sequence: { x: 1140, y: 150 },
+      citation: { x: 1140, y: 340 },
+      unit: { x: 1140, y: 520 }
+    };
+
+    function byId(id) {
+      return concepts.find((c) => c.id === id);
+    }
+
+    function counts(state) {
+      const s = state.seed;
+      const leafN = s.paths.reduce((n, p) => n + (p.leaves || []).length, 0);
+      return {
+        positions: s.positions.length,
+        submissions: s.submissions.length,
+        move_types: s.move_types.length,
+        paths: s.paths.length,
+        leaves: leafN,
+        citations: state.citations.length,
+        sequence: forceJourney.length,
+        none: null
+      };
+    }
+
+    function neighbors(id) {
+      const ids = { [id]: true };
+      edges.forEach((e) => {
+        if (e.from === id) ids[e.to] = true;
+        if (e.to === id) ids[e.from] = true;
+      });
+      return ids;
+    }
+
+    return { concepts, edges, layout, byId, counts, neighbors };
+  })();
+
   const SCENARIOS = [
     {
       id: "happy",
@@ -950,39 +1164,6 @@
   let forceJourney = [];
   let forcePos = {};
   let forceRaf = 0;
-  let sankeyView = { x: 0, y: 0 };
-  let sankeyPanDrag = null;
-  let sankeySvgEl = null;
-  let sankeyLayoutSize = { w: 1900, h: 1100 };
-
-  window.addEventListener("mousemove", (ev) => {
-    if (!sankeyPanDrag || !sankeySvgEl) return;
-    const rect = sankeySvgEl.getBoundingClientRect();
-    const sx = sankeyLayoutSize.w / Math.max(1, rect.width);
-    const sy = sankeyLayoutSize.h / Math.max(1, rect.height);
-    sankeyView.x = sankeyPanDrag.vx - (ev.clientX - sankeyPanDrag.x) * sx;
-    sankeyView.y = sankeyPanDrag.vy - (ev.clientY - sankeyPanDrag.y) * sy;
-    applySankeyView();
-  });
-  window.addEventListener("mouseup", () => {
-    sankeyPanDrag = null;
-    if (sankeySvgEl) sankeySvgEl.classList.remove("grabbing");
-  });
-
-  function applySankeyView() {
-    if (!sankeySvgEl) return;
-    sankeySvgEl.setAttribute(
-      "viewBox",
-      sankeyView.x + " " + sankeyView.y + " " + sankeyLayoutSize.w + " " + sankeyLayoutSize.h
-    );
-  }
-
-  function recenterSankey() {
-    sankeyView = { x: 0, y: 0 };
-    applySankeyView();
-    toast("Sankey recentered.");
-  }
-
   function go(action) {
     state = Tree.dispatch(state, action);
     render();
@@ -1052,407 +1233,13 @@
     return FAMILY_ORDER.includes(fam) ? fam : "other";
   }
 
-  function pathWeight(state, p) {
-    const vis = (p.leaves || []).filter((l) => Tree.leafVisible(state, l));
-    return Math.max(1, vis.length);
-  }
-
   function visiblePathList(state) {
     return state.seed.paths.filter((p) => Tree.pathVisible(state, p));
-  }
-
-  function layoutSankey(state) {
-    const width = 1900;
-    const height = 1100;
-    const nodeW = 18;
-    const colX = [340, 950, 1560];
-    const headerH = 34;
-    const groupGap = 18;
-    const nodeGap = 4;
-    const top = 64;
-    const bottom = 24;
-    const paths = visiblePathList(state);
-    const wOf = (p) => pathWeight(state, p);
-
-    const startVal = {};
-    const mtVal = {};
-    const endVal = {};
-    paths.forEach((p) => {
-      const w = wOf(p);
-      startVal[p.start] = (startVal[p.start] || 0) + w;
-      mtVal[p.move_type] = (mtVal[p.move_type] || 0) + w;
-      endVal[p.end] = (endVal[p.end] || 0) + w;
-    });
-
-    function posNode(p) {
-      return {
-        id: p.id,
-        label: p.label,
-        family: familyKey(p),
-        kind: "position",
-        value: 0
-      };
-    }
-
-    const startGroups = FAMILY_ORDER.concat(["other"]).map((fam) => ({
-      key: fam,
-      label: fam.replace(/-/g, " "),
-      nodes: state.seed.positions.filter((p) => familyKey(p) === fam).sort((a, b) => a.label.localeCompare(b.label)).map((p) => {
-        const n = posNode(p);
-        n.col = "start";
-        n.value = startVal[p.id] || 0;
-        n.key = "start:" + p.id;
-        return n;
-      })
-    })).filter((g) => g.nodes.length);
-
-    const mtGroup = {
-      key: "move",
-      label: "type of move",
-      nodes: state.seed.move_types.map((m) => ({
-        id: m.id,
-        key: "mt:" + m.id,
-        label: m.label,
-        family: "move",
-        kind: "move_type",
-        col: "mt",
-        value: mtVal[m.id] || 0
-      }))
-    };
-
-    const endPosGroups = FAMILY_ORDER.concat(["other"]).map((fam) => ({
-      key: "end-" + fam,
-      label: fam.replace(/-/g, " "),
-      nodes: state.seed.positions.filter((p) => familyKey(p) === fam).sort((a, b) => a.label.localeCompare(b.label)).map((p) => {
-        const n = posNode(p);
-        n.col = "end";
-        n.value = endVal[p.id] || 0;
-        n.key = "end:" + p.id;
-        return n;
-      })
-    })).filter((g) => g.nodes.length);
-
-    const subGroup = {
-      key: "submission",
-      label: "submission",
-      nodes: state.seed.submissions.slice().sort((a, b) => a.label.localeCompare(b.label)).map((s) => ({
-        id: s.id,
-        key: "sub:" + s.id,
-        label: s.label,
-        family: "submission",
-        kind: "submission",
-        col: "end",
-        value: endVal[s.id] || 0
-      }))
-    };
-
-    const columns = [
-      { title: "Starting position", x: colX[0], groups: startGroups },
-      { title: "Type of move", x: colX[1], groups: [mtGroup] },
-      { title: "Ending position", x: colX[2], groups: endPosGroups.concat([subGroup]) }
-    ];
-
-    const allNodes = [];
-    columns.forEach((col) => col.groups.forEach((g) => g.nodes.forEach((n) => allNodes.push(n))));
-    const totalValue = Math.max(1, allNodes.reduce((n, x) => n + x.value, 0) / 3);
-    const groupCount = columns.reduce((n, c) => n + c.groups.length, 0) / 3;
-    const nodeCount = allNodes.length / 3;
-    const usable = height - top - bottom - groupCount * (headerH + groupGap) - Math.max(0, nodeCount - 1) * nodeGap;
-    const scale = Math.max(0.35, usable / Math.max(1, totalValue));
-
-    columns.forEach((col) => {
-      let y = top;
-      col.groups.forEach((g) => {
-        g.y = y;
-        y += headerH;
-        g.nodes.forEach((n) => {
-          n.x = col.x;
-          n.y0 = y;
-          n.h = Math.max(22, n.value * scale);
-          n.y1 = n.y0 + n.h;
-          n.y = (n.y0 + n.y1) / 2;
-          y = n.y1 + nodeGap;
-        });
-        y += groupGap;
-      });
-    });
-
-    const nodeByKey = {};
-    allNodes.forEach((n) => { nodeByKey[n.key] = n; });
-
-    const hop1 = {};
-    const hop2 = {};
-    paths.forEach((p) => {
-      const w = wOf(p);
-      const k1 = p.start + ">" + p.move_type;
-      const k2 = p.move_type + ">" + p.end;
-      (hop1[k1] ||= { start: p.start, move_type: p.move_type, weight: 0, paths: [] });
-      hop1[k1].weight += w;
-      hop1[k1].paths.push(p);
-      (hop2[k2] ||= { move_type: p.move_type, end: p.end, weight: 0, paths: [] });
-      hop2[k2].weight += w;
-      hop2[k2].paths.push(p);
-    });
-
-    function ports(links, fromKey, toKey) {
-      const outAcc = {};
-      const inAcc = {};
-      const list = Object.values(links).sort((a, b) => {
-        const na = nodeByKey[fromKey(a)];
-        const nb = nodeByKey[fromKey(b)];
-        const ta = nodeByKey[toKey(a)];
-        const tb = nodeByKey[toKey(b)];
-        return ((na && na.y) || 0) - ((nb && nb.y) || 0) || ((ta && ta.y) || 0) - ((tb && tb.y) || 0);
-      });
-      list.forEach((lnk) => {
-        const s = nodeByKey[fromKey(lnk)];
-        const t = nodeByKey[toKey(lnk)];
-        if (!s || !t) return;
-        const sh = (lnk.weight / Math.max(s.value, 1)) * s.h;
-        const th = (lnk.weight / Math.max(t.value, 1)) * t.h;
-        outAcc[s.key] = outAcc[s.key] || 0;
-        inAcc[t.key] = inAcc[t.key] || 0;
-        lnk.sy0 = s.y0 + outAcc[s.key];
-        lnk.sy1 = lnk.sy0 + sh;
-        lnk.ty0 = t.y0 + inAcc[t.key];
-        lnk.ty1 = lnk.ty0 + th;
-        outAcc[s.key] += sh;
-        inAcc[t.key] += th;
-        lnk.source = s;
-        lnk.target = t;
-      });
-      return list.filter((l) => l.source && l.target);
-    }
-
-    const links1 = ports(hop1, (l) => "start:" + l.start, (l) => "mt:" + l.move_type);
-    const links2 = ports(hop2, (l) => "mt:" + l.move_type, (l) => {
-      const end = Tree.endRef(state.seed, l.end);
-      return (end && end.kind === "submission" ? "sub:" : "end:") + l.end;
-    });
-
-    return { width, height, nodeW, columns, links1, links2, nodeByKey, scale, paths };
-  }
-
-  function ribbon(x0, y0, y1, x1, y2, y3) {
-    const mid = (x0 + x1) / 2;
-    return "M " + x0 + " " + y0 +
-      " C " + mid + " " + y0 + ", " + mid + " " + y2 + ", " + x1 + " " + y2 +
-      " L " + x1 + " " + y3 +
-      " C " + mid + " " + y3 + ", " + mid + " " + y1 + ", " + x0 + " " + y1 + " Z";
-  }
-
-  function leafNames(state, paths) {
-    const names = [];
-    paths.forEach((p) => {
-      (p.leaves || []).forEach((l) => {
-        if (Tree.leafVisible(state, l)) names.push(l.name + " (" + l.ruleset + ")");
-      });
-    });
-    return names;
   }
 
   function wireHover(elNode, titleFn, linesFn) {
     elNode.addEventListener("mousemove", (ev) => showTip(ev, titleFn(), linesFn()));
     elNode.addEventListener("mouseleave", hideTip);
-  }
-
-  function renderSankey(state, layout) {
-    sankeyLayoutSize = { w: layout.width, h: layout.height };
-    const svg = svgEl("svg", {
-      class: "sankey-svg",
-      viewBox: sankeyView.x + " " + sankeyView.y + " " + layout.width + " " + layout.height,
-      role: "img"
-    });
-    sankeySvgEl = svg;
-    const bg = svgEl("rect", {
-      x: "-4000", y: "-4000", width: "10000", height: "8000",
-      fill: "#fff"
-    });
-    function startPan(ev) {
-      if (ev.button != null && ev.button !== 0) return;
-      sankeyPanDrag = { x: ev.clientX, y: ev.clientY, vx: sankeyView.x, vy: sankeyView.y };
-      svg.classList.add("grabbing");
-      ev.preventDefault();
-    }
-    bg.addEventListener("mousedown", startPan);
-    svg.addEventListener("mousedown", (ev) => {
-      if (ev.target === svg || ev.target === bg) startPan(ev);
-    });
-    svg.appendChild(bg);
-    const ribG = svgEl("g");
-    svg.appendChild(ribG);
-    const ribbons = [];
-    const nodeEls = [];
-    const focus = state.selected.identity || state.selected.start;
-    const mtSel = state.selected.moveType;
-    const endSel = state.selected.end;
-    const hasSel = !!(state.selected.start || state.selected.moveType || state.selected.end);
-
-    function pathTouchesSelection(p) {
-      if (!hasSel) return false;
-      if (state.selected.start && p.start !== state.selected.start) return false;
-      if (state.selected.moveType && p.move_type !== state.selected.moveType) return false;
-      if (state.selected.end && p.end !== state.selected.end) return false;
-      return true;
-    }
-    function ribbonRelated(lnk) {
-      return (lnk.paths || []).some(pathTouchesSelection);
-    }
-    function nodeRelated(n) {
-      if (!hasSel) return true;
-      if (n.col === "start") {
-        if (state.selected.start) return n.id === state.selected.start;
-        return (n.value > 0) && layout.links1.some((l) => l.start === n.id && ribbonRelated(l));
-      }
-      if (n.col === "mt") {
-        if (state.selected.moveType) return n.id === state.selected.moveType;
-        return layout.links1.some((l) => l.move_type === n.id && ribbonRelated(l)) ||
-          layout.links2.some((l) => l.move_type === n.id && ribbonRelated(l));
-      }
-      if (state.selected.end) return n.id === state.selected.end;
-      return layout.links2.some((l) => l.end === n.id && ribbonRelated(l));
-    }
-    function selectionPred(m) {
-      if (m.source) return ribbonRelated(m);
-      return nodeRelated(m);
-    }
-
-    function setHot(pred) {
-      ribbons.forEach((r) => r.setAttribute("opacity", pred(r._meta) ? "0.9" : "0.06"));
-      nodeEls.forEach((n) => n.setAttribute("opacity", pred(n._meta) ? "1" : "0.28"));
-    }
-    function applySelectionHot() {
-      if (!hasSel) {
-        ribbons.forEach((r) => r.setAttribute("opacity", r._baseOp));
-        nodeEls.forEach((n) => n.setAttribute("opacity", "1"));
-        return;
-      }
-      setHot(selectionPred);
-    }
-
-    layout.columns.forEach((col) => {
-      const title = svgEl("text", {
-        x: String(col.x + layout.nodeW / 2), y: "36",
-        "text-anchor": "middle", fill: "#44403c",
-        "font-size": "26", "font-weight": "700", "font-family": "Segoe UI, sans-serif"
-      });
-      title.textContent = col.title;
-      svg.appendChild(title);
-      col.groups.forEach((g) => {
-        const gt = svgEl("text", {
-          x: String(col.x - 6), y: String(g.y + 22),
-          "text-anchor": "end", fill: "#78716c",
-          "font-size": "20", "letter-spacing": "0.06em",
-          "font-family": "Segoe UI, sans-serif"
-        });
-        gt.textContent = g.label.toUpperCase();
-        svg.appendChild(gt);
-        g.nodes.forEach((n) => {
-          const grp = svgEl("g", { style: "cursor:pointer" });
-          const fill = n.kind === "move_type"
-            ? (MOVE_COLOR[n.id] || "#57534e")
-            : (n.kind === "submission" ? "#0f172a" : (FAMILY_COLOR[n.family] || "#57534e"));
-          const on = (n.col === "start" && n.id === focus) ||
-            (n.col === "mt" && n.id === mtSel) ||
-            (n.col === "end" && n.id === endSel) ||
-            (n.col === "end" && n.id === focus);
-          const rect = svgEl("rect", {
-            x: String(n.x), y: String(n.y0), width: String(layout.nodeW), height: String(Math.max(1, n.h)),
-            rx: "3", fill, stroke: on ? "#ea580c" : "none", "stroke-width": on ? "2" : "0"
-          });
-          const labelX = n.col === "end" ? n.x + layout.nodeW + 6 : n.x - 6;
-          const anchor = n.col === "end" ? "start" : "end";
-          const lab = svgEl("text", {
-            x: String(labelX), y: String(n.y + 6),
-            "text-anchor": anchor, fill: "#1c1917",
-            "font-size": n.h < 24 ? "18" : "20",
-            "font-weight": on ? "700" : "500",
-            "font-family": "Segoe UI, sans-serif"
-          });
-          lab.textContent = n.label;
-          grp.appendChild(rect);
-          grp.appendChild(lab);
-          grp._meta = n;
-          nodeEls.push(grp);
-          const names = leafNames(state, visiblePathList(state).filter((p) => {
-            if (n.col === "start") return p.start === n.id;
-            if (n.col === "mt") return p.move_type === n.id;
-            return p.end === n.id;
-          }));
-          wireHover(grp, () => n.label, () => [
-            n.kind === "move_type" ? "Type of move" : (n.kind === "submission" ? "Submission (ending only)" : ("Position · " + n.family.replace(/-/g, " "))),
-            n.value + " named-move weight",
-            names.slice(0, 8).join(" · ") || "No named-move leaf in this filter"
-          ]);
-          grp.addEventListener("mouseenter", () => setHot((m) => {
-            if (m.source) return m.source.key === n.key || m.target.key === n.key;
-            return m.key === n.key;
-          }));
-          grp.addEventListener("mouseleave", applySelectionHot);
-          grp.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            hideTip();
-            if (n.col === "start") go({ type: "SELECT_START", id: n.id });
-            else if (n.col === "mt") go({ type: "SELECT_MOVE_TYPE", id: n.id });
-            else go({ type: "SELECT_END", id: n.id });
-          });
-          svg.appendChild(grp);
-        });
-      });
-    });
-
-    function addRibbons(list, hop) {
-      list.forEach((lnk) => {
-        const x0 = lnk.source.x + layout.nodeW;
-        const x1 = lnk.target.x;
-        const path = svgEl("path", {
-          d: ribbon(x0, lnk.sy0, lnk.sy1, x1, lnk.ty0, lnk.ty1),
-          fill: MOVE_COLOR[lnk.move_type] || "#a8a29e",
-          stroke: "none",
-          style: "cursor:pointer"
-        });
-        path._baseOp = ribbonRelated(lnk) ? "0.9" : "0.32";
-        path.setAttribute("opacity", path._baseOp);
-        path._meta = lnk;
-        ribbons.push(path);
-        const names = leafNames(state, lnk.paths);
-        const src = lnk.source.label;
-        const tgt = lnk.target.label;
-        wireHover(path, () => src + " → " + tgt, () => [
-          hop + " · " + lnk.weight + " named-move weight",
-          names.slice(0, 10).join(" · ") || "No named-move leaf"
-        ]);
-        path.addEventListener("mouseenter", () => setHot((m) => {
-          if (m.kind) {
-            return m.key === lnk.source.key || m.key === lnk.target.key;
-          }
-          return m === lnk || (m.start === lnk.start && m.move_type === lnk.move_type) ||
-            (m.move_type === lnk.move_type && m.end === lnk.end);
-        }));
-        path.addEventListener("mouseleave", applySelectionHot);
-        path.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          hideTip();
-          if (lnk.paths.length === 1) selectPath(lnk.paths[0]);
-          else if (lnk.start) {
-            state = Tree.dispatch(state, { type: "SELECT_START", id: lnk.start });
-            state = Tree.dispatch(state, { type: "SELECT_MOVE_TYPE", id: lnk.move_type });
-            render();
-            toast(state.lastChange);
-          } else {
-            state = Tree.dispatch(state, { type: "SELECT_MOVE_TYPE", id: lnk.move_type });
-            state = Tree.dispatch(state, { type: "SELECT_END", id: lnk.end });
-            render();
-            toast(state.lastChange);
-          }
-        });
-        ribG.appendChild(path);
-      });
-    }
-    addRibbons(layout.links1, "Start to type of move");
-    addRibbons(layout.links2, "Type of move to ending");
-    applySelectionHot();
-    return svg;
   }
 
   function buildJourneyLayers(state) {
@@ -2159,9 +1946,196 @@
     return { svg, layers, count: nodes.length, width };
   }
 
+  let erFocus = "path";
+
+  function renderEr(state) {
+    const wrap = el("section", { class: "panel plot-panel" }, [
+      el("h2", {}, ["Entity relationship · what is a record, what is only a field"])
+    ]);
+    const body = el("div", { class: "body" });
+    body.append(el("div", { class: "legend" }, [
+      el("span", {}, [el("i", { style: "background:#1e3a8a" }), "Reference entity (catalog)"]),
+      el("span", {}, [el("i", { style: "background:#c2410c" }), "Activity entity (something that happens)"]),
+      el("span", {}, [el("i", { style: "background:#7c3aed" }), "Relationship"]),
+      el("span", {}, [el("i", { style: "background:#a8a29e" }), "Attribute of an entity"])
+    ]));
+    body.append(el("p", { class: "xref" }, [
+      "Click a box. The panel below says whether it is a reference, an activity, or only an attribute. Dotted ovals are fields. Diamonds are relationships. This is a proposed model for feedback, not a lock."
+    ]));
+    const mount = el("div", { class: "er-wrap" });
+    body.append(mount);
+    const counts = Domain.counts(state);
+    const focus = Domain.byId(erFocus) || Domain.byId("path");
+    const detail = el("div", { class: "er-detail" });
+    function fillDetail(c) {
+      detail.replaceChildren();
+      if (!c) return;
+      const n = c.countKey ? counts[c.countKey] : null;
+      detail.append(el("h3", {}, [c.label]));
+      detail.append(el("p", {}, [
+        (c.nature === "attribute" ? "Attribute" : (c.nature === "activity" ? "Activity entity" : (c.shape === "relationship" ? "Relationship" : "Reference entity")))
+        + (c.owner ? " of " + (Domain.byId(c.owner) || {}).label : "")
+        + (n != null ? " · seed count " + n : "")
+      ]));
+      detail.append(el("p", {}, [c.summary]));
+      if (c.attrs && c.attrs.length) {
+        detail.append(el("p", { class: "xref" }, ["Fields: " + c.attrs.join(", ")]));
+      }
+      if (c.ask) detail.append(el("p", { class: "er-ask" }, [c.ask]));
+    }
+    fillDetail(focus);
+    body.append(detail);
+    wrap.append(body);
+
+    const width = 1360;
+    const height = 640;
+    if (typeof d3 === "undefined") {
+      mount.append(el("p", { class: "xref" }, ["D3 did not load. Open this file while online, or allow cdn.jsdelivr.net."]));
+      return wrap;
+    }
+    const svg = d3.select(mount)
+      .append("svg")
+      .attr("class", "er-svg")
+      .attr("viewBox", "0 0 " + width + " " + height)
+      .attr("role", "img");
+
+    const hot = Domain.neighbors(erFocus);
+    const nodes = Domain.concepts.map((c) => Object.assign({}, c, Domain.layout[c.id]));
+    const nodeBy = {};
+    nodes.forEach((n) => { nodeBy[n.id] = n; });
+    const links = Domain.edges.map((e) => ({
+      from: e.from,
+      to: e.to,
+      label: e.label,
+      s: nodeBy[e.from],
+      t: nodeBy[e.to]
+    })).filter((e) => e.s && e.t);
+
+    svg.append("g").attr("class", "er-cols").selectAll("text")
+      .data([
+        { x: 120, t: "Attribute" },
+        { x: 430, t: "Reference entity" },
+        { x: 780, t: "Relationship" },
+        { x: 1140, t: "Activity entity" }
+      ])
+      .join("text")
+      .attr("x", (d) => d.x)
+      .attr("y", 28)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#78716c")
+      .attr("font-size", 16)
+      .attr("font-weight", 650)
+      .attr("font-family", "Segoe UI, sans-serif")
+      .text((d) => d.t);
+
+    const linkG = svg.append("g");
+    linkG.selectAll("line")
+      .data(links)
+      .join("line")
+      .attr("x1", (d) => d.s.x)
+      .attr("y1", (d) => d.s.y)
+      .attr("x2", (d) => d.t.x)
+      .attr("y2", (d) => d.t.y)
+      .attr("stroke", (d) => (hot[d.from] && hot[d.to] ? "#57534e" : "#d6d3d1"))
+      .attr("stroke-width", (d) => (hot[d.from] && hot[d.to] ? 2 : 1))
+      .attr("opacity", (d) => (hot[d.from] && hot[d.to] ? 0.85 : 0.35));
+
+    linkG.selectAll("text")
+      .data(links)
+      .join("text")
+      .attr("x", (d) => (d.s.x + d.t.x) / 2)
+      .attr("y", (d) => (d.s.y + d.t.y) / 2 - 6)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#78716c")
+      .attr("font-size", 11)
+      .attr("font-family", "Segoe UI, sans-serif")
+      .attr("opacity", (d) => (hot[d.from] && hot[d.to] ? 1 : 0.35))
+      .text((d) => d.label);
+
+    const g = svg.append("g")
+      .selectAll("g")
+      .data(nodes)
+      .join("g")
+      .attr("transform", (d) => "translate(" + d.x + "," + d.y + ")")
+      .attr("opacity", (d) => (hot[d.id] ? 1 : 0.28))
+      .style("cursor", "pointer")
+      .on("click", (ev, d) => {
+        ev.stopPropagation();
+        erFocus = d.id;
+        render();
+      })
+      .on("mouseenter", (ev, d) => {
+        showTip(ev, d.label, [
+          d.nature === "attribute" ? "Attribute" : (d.nature === "activity" ? "Activity entity" : (d.shape === "relationship" ? "Relationship" : "Reference entity")),
+          d.summary
+        ]);
+      })
+      .on("mouseleave", hideTip);
+
+    g.each(function (d) {
+      const sel = d3.select(this);
+      const on = d.id === erFocus;
+      if (d.shape === "attribute") {
+        sel.append("ellipse")
+          .attr("rx", 78)
+          .attr("ry", 28)
+          .attr("fill", "#fafaf9")
+          .attr("stroke", on ? "#ea580c" : "#a8a29e")
+          .attr("stroke-width", on ? 3 : 1.4)
+          .attr("stroke-dasharray", "5 4");
+      } else if (d.shape === "relationship") {
+        sel.append("polygon")
+          .attr("points", "0,-48 92,0 0,48 -92,0")
+          .attr("fill", "#ede9fe")
+          .attr("stroke", on ? "#ea580c" : "#7c3aed")
+          .attr("stroke-width", on ? 3 : 2);
+      } else if (d.nature === "activity") {
+        sel.append("rect")
+          .attr("x", -100)
+          .attr("y", -36)
+          .attr("width", 200)
+          .attr("height", 72)
+          .attr("rx", 6)
+          .attr("fill", "#ffedd5")
+          .attr("stroke", on ? "#ea580c" : "#c2410c")
+          .attr("stroke-width", on ? 3 : 2);
+      } else {
+        sel.append("rect")
+          .attr("x", -100)
+          .attr("y", -36)
+          .attr("width", 200)
+          .attr("height", 72)
+          .attr("rx", 6)
+          .attr("fill", "#dbeafe")
+          .attr("stroke", on ? "#ea580c" : "#1e3a8a")
+          .attr("stroke-width", on ? 3 : 2);
+      }
+      sel.append("text")
+        .attr("y", d.shape === "attribute" ? 5 : -6)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#1c1917")
+        .attr("font-size", 16)
+        .attr("font-weight", 700)
+        .attr("font-family", "Segoe UI, sans-serif")
+        .text(d.label);
+      if (d.shape !== "attribute") {
+        const n = d.countKey ? counts[d.countKey] : null;
+        sel.append("text")
+          .attr("y", 16)
+          .attr("text-anchor", "middle")
+          .attr("fill", "#57534e")
+          .attr("font-size", 12)
+          .attr("font-family", "Segoe UI, sans-serif")
+          .text((d.nature === "activity" ? "activity" : (d.shape === "relationship" ? "relationship" : "reference")) + (n != null ? " · " + n : ""));
+      }
+    });
+
+    return wrap;
+  }
+
   function renderPlot(state) {
     const wrap = el("section", { class: "panel plot-panel" }, [
-      el("h2", {}, ["Sankey · starting position → type of move → ending"])
+      el("h2", {}, ["Force-directed journey · sequence for a unit"])
     ]);
     const body = el("div", { class: "body" });
     const force = renderForce(state);
@@ -2171,22 +2145,11 @@
       const mt = Tree.byId(state.seed.move_types, id);
       legend.append(el("span", {}, [el("i", { style: "background:" + color }), mt ? mt.label : id]));
     });
-    legend.append(el("span", {}, ["Hover a ribbon or bar to preview its lines. Click to keep those lines lit."]));
+    legend.append(el("span", {}, ["Pick hops to sketch a sequence the coach could pack into a unit."]));
     body.append(legend);
-    const sankeyTools = el("div", { class: "plot-tools" }, [
-      el("button", {
-        class: "primary",
-        type: "button",
-        on: { click: recenterSankey }
-      }, ["Recenter Sankey"]),
-      el("span", { class: "xref" }, ["Grab the white background and drag to pan. Labels sit outside the bars, so pan if a name is clipped."])
-    ]);
-    body.append(sankeyTools);
-    const layout = layoutSankey(state);
-    body.append(el("div", { class: "sankey-wrap" }, [renderSankey(state, layout)]));
 
-    const forceHead = el("h2", {}, ["Force-directed journey"]);
-    forceHead.style.marginTop = "1rem";
+    const forceHead = el("h2", {}, ["Walk a path"]);
+    forceHead.style.marginTop = "0.35rem";
     body.append(forceHead);
     const forceTools = el("div", { class: "toolbar" }, [
       el("button", {
@@ -2525,6 +2488,7 @@
     ]);
 
     root.append(issuePills);
+    root.append(renderEr(state));
     root.append(renderPlot(state));
     root.append(el("div", { class: "layout" }, [startCol, mtCol, endCol, leafCol]));
     root.append(editor);
