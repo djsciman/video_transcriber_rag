@@ -22,6 +22,10 @@
       --spar-soft: #ffe4e6;
       --game: #5b21b6;
       --game-soft: #ede9fe;
+      --sys: #0f766e;
+      --sys-soft: #ccfbf1;
+      --move: #1d4ed8;
+      --move-soft: #dbeafe;
       --shadow: 0 1px 2px rgba(28,25,23,.06), 0 8px 24px rgba(28,25,23,.06);
       --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
       --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -66,7 +70,7 @@
     header.page .meta {
       color: var(--muted);
       font-size: .95rem;
-      max-width: 70ch;
+      max-width: 72ch;
     }
     .question {
       max-width: 1100px;
@@ -81,7 +85,8 @@
       box-shadow: var(--shadow);
     }
     .question summary { cursor: pointer; font-weight: 600; }
-    .question p { margin: .6rem 0 0; color: var(--muted); font-size: .92rem; max-width: 72ch; }
+    .question p { margin: .6rem 0 0; color: var(--muted); font-size: .92rem; max-width: 74ch; }
+    .question ul { margin: .4rem 0 0; padding-left: 1.2rem; color: var(--muted); font-size: .92rem; }
     #app { max-width: 1100px; margin: 1rem auto; padding: 0 1.25rem; }
     .pill {
       display: inline-flex;
@@ -101,6 +106,8 @@
     .pill-spar { background: var(--spar-soft); color: var(--spar); }
     .pill-game { background: var(--game-soft); color: var(--game); }
     .pill-glue { background: #ffedd5; color: #9a3412; }
+    .pill-sys { background: var(--sys-soft); color: var(--sys); }
+    .pill-move { background: var(--move-soft); color: var(--move); }
     a.play {
       color: var(--accent);
       text-decoration: underline;
@@ -171,7 +178,6 @@
       font-size: .72rem;
     }
 
-    /* Shared unit chrome */
     .unit-top {
       background: var(--paper);
       border: 1px solid var(--line);
@@ -216,8 +222,19 @@
       max-width: 78ch;
     }
     .success strong { color: var(--ink); }
+    .target {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .35rem;
+      align-items: center;
+      font-size: .85rem;
+    }
+    .target .path {
+      color: var(--muted);
+      font-size: .78rem;
+    }
+    .members { color: var(--muted); font-size: .8rem; }
 
-    /* A — meeting cards */
     .A .classes { display: flex; flex-direction: column; gap: 1rem; }
     .A .class-card {
       background: var(--paper);
@@ -281,7 +298,7 @@
       display: block;
       margin-bottom: .2rem;
     }
-    .A .cite {
+    .cite {
       margin-top: .55rem;
       padding: .55rem .7rem;
       background: #fff;
@@ -289,9 +306,8 @@
       border-radius: 8px;
       font-size: .88rem;
     }
-    .A .cite .meta { color: var(--muted); font-size: .8rem; margin: .15rem 0 .3rem; }
+    .cite .meta { color: var(--muted); font-size: .8rem; margin: .15rem 0 .3rem; }
 
-    /* B — spine with cut rails */
     .B .spine {
       background: var(--paper);
       border: 1px solid var(--line);
@@ -342,7 +358,6 @@
     .B .body { font-size: .9rem; max-width: 70ch; }
     .B .meta { color: var(--muted); font-size: .8rem; }
 
-    /* C — run sheet */
     .C .sheet {
       background: #fff;
       border: 2px solid #1c1917;
@@ -400,6 +415,27 @@
       border-top: 1px dashed #a8a29e;
       padding-top: .55rem;
     }
+
+    .record {
+      max-width: 1100px;
+      margin: 1rem auto 0;
+      padding: 0 1.25rem 2rem;
+    }
+    .record details {
+      background: #1c1917;
+      color: #e7e5e4;
+      border-radius: 12px;
+      padding: .85rem 1rem;
+    }
+    .record summary { cursor: pointer; font-weight: 650; color: #fafaf9; }
+    .record pre {
+      margin: .7rem 0 0;
+      white-space: pre-wrap;
+      font-family: var(--mono);
+      font-size: .78rem;
+      line-height: 1.45;
+      color: #d6d3d1;
+    }
   </style>
 </head>
 <body>
@@ -414,26 +450,37 @@
     <h1>How should a unit read as a plan the coach can run?</h1>
     <p class="meta">
       Same topic as the sample analysis: <strong>gi half guard</strong>.
-      Assumed system: Danaher tight waist is home after the underhook; the trilemma opens far-leg come-up, roll-through, and back takes.
-      Partner jobs use the sit-up / underhook-switch path as predictable resistance.
+      Topic system (coach words): tight waist is home after the underhook; the trilemma opens far-leg come-up, roll-through, and back takes.
+      Catalog system: those three named moves as one dilemma.
+      Partner jobs use the sit-up / underhook-switch path as resistance. Giles citations stay off the lessons.
       Flip A / B / C and say which shape the spec should require (or mix pieces).
     </p>
   </header>
 
   <div class="question">
-    <details>
+    <details open>
       <summary>What this prototype is checking</summary>
       <p>
         After the coach determines the system, Build returns a unit: one coach paragraph, classes with purpose lines,
-        and ordered lessons (technique + glued drill, sparring with scenario, game with condition).
-        Citations already carry instructor move names, step bullets, and playback links.
-        React to the <em>shape</em> of the plan, not to whether every citation is final.
-        Success watch from the sparring ticket: one positional round; by eye, none / some / most / all attempted, and completed or came close against a better partner.
+        and ordered lessons. Each lesson connects to exactly one named move or exactly one catalog system, and the coach
+        chooses which citations of that target to use. Technique and its following drill stay glued. React to the
+        <em>shape</em> of the plan, not to whether every citation is final.
       </p>
+      <ul>
+        <li>Should a run plan show the named-move or system target on every lesson?</li>
+        <li>Should chosen citations appear on drills, sparring, and games, or only on technique?</li>
+        <li>Which layout (or mix) should the spec require?</li>
+      </ul>
     </details>
   </div>
 
   <div id="app"></div>
+  <div class="record">
+    <details>
+      <summary>Unit record (full state after this Build)</summary>
+      <pre id="record"></pre>
+    </details>
+  </div>
   <div class="toast" id="toast"></div>
   <div class="switcher" role="toolbar" aria-label="Prototype layout switcher">
     <button type="button" id="prev" aria-label="Previous layout">←</button>
@@ -443,9 +490,144 @@
 
   <script>
 (function () {
+  /* Portable unit model: topic, catalog targets, classes, lessons. Page is throwaway. */
+
   const TOPIC = { name: "half guard", ruleset: "gi", label: "gi half guard" };
 
-  const SYSTEM =
+  const NAMED_MOVES = {
+    "knee-lever": {
+      id: "knee-lever",
+      label: "Knee lever",
+      start: "Half guard",
+      startSide: "bottom",
+      moveType: "transition",
+      end: "Half guard",
+      endSide: "bottom"
+    },
+    "tight-waist": {
+      id: "tight-waist",
+      label: "Tight waist",
+      start: "Half guard",
+      startSide: "bottom",
+      moveType: "transition",
+      end: "Half guard",
+      endSide: "bottom"
+    },
+    "far-leg-come-up": {
+      id: "far-leg-come-up",
+      label: "Far-leg come-up",
+      start: "Half guard",
+      startSide: "bottom",
+      moveType: "sweep",
+      end: "Side control",
+      endSide: "top"
+    },
+    "roll-through": {
+      id: "roll-through",
+      label: "Roll-through sweep",
+      start: "Half guard",
+      startSide: "bottom",
+      moveType: "sweep",
+      end: "Side control",
+      endSide: "top"
+    },
+    "back-take-tight-waist": {
+      id: "back-take-tight-waist",
+      label: "Back take from tight waist",
+      start: "Half guard",
+      startSide: "bottom",
+      moveType: "back take",
+      end: "Back control",
+      endSide: "top"
+    }
+  };
+
+  const SYSTEMS = {
+    "tight-waist-trilemma": {
+      id: "tight-waist-trilemma",
+      label: "Tight waist trilemma",
+      members: ["far-leg-come-up", "roll-through", "back-take-tight-waist"]
+    }
+  };
+
+  const CITATIONS = {
+    "jd-get-uh": {
+      id: "jd-get-uh",
+      namedMove: "knee-lever",
+      instructor: "John Danaher",
+      instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
+      volume: "Underhooks and Roll Through Sweep",
+      chapter: "Getting to Underhooks",
+      movement: "Knee Lever - Get the underhook from half guard bottom",
+      videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
+      start: "0:05",
+      steps: [
+        { you: "inside foot", action: "place next to", against: "their inside knee" },
+        { you: "inside toes", action: "cross and pinch around", against: "their inside hip" },
+        { you: "inside hand", action: "put into", against: "their inside armpit" },
+        { you: "knees", action: "pinch together around the inside connection", against: null },
+        { you: "hips", action: "lift slightly and rotate toward the outside", against: null },
+        { you: "their hands", action: "force them to base on", against: "the mat" },
+        { you: "inside arm", action: "turn into an underhook under", against: "their inside arm" }
+      ]
+    },
+    "jd-tight-waist": {
+      id: "jd-tight-waist",
+      namedMove: "tight-waist",
+      instructor: "John Danaher",
+      instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
+      volume: "Underhooks and Roll Through Sweep",
+      chapter: "Winning From Underhooks - The Tight Waist Series",
+      movement: "Tight Waist Series - Winning from underhooks",
+      videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
+      start: "7:41",
+      steps: [
+        { you: "inside arm", action: "wrap the tight waist around", against: "their waist" },
+        { you: "outside arm", action: "block", against: "their outside arm" },
+        { you: "body", action: "get off the flat back onto the outside hip", against: null },
+        { you: "outside hand or elbow", action: "post up so they cannot flatten you", against: "the mat" },
+        { you: "head", action: "keep the inside position against", against: "their torso" },
+        { you: "inside leg", action: "keep the hook while the hips stay mobile under", against: "their inside leg" }
+      ]
+    },
+    "jd-trilemma": {
+      id: "jd-trilemma",
+      namedMove: "roll-through",
+      instructor: "John Danaher",
+      instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
+      volume: "Underhooks and Roll Through Sweep",
+      chapter: "Fundamental Reason Why the Tight Waist Series is Most effective half guar position - The Trilemma",
+      movement: "The Trilemma - Tight Waist Series",
+      videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
+      start: "15:24",
+      steps: [
+        { you: "inside arm + inside leg", action: "hold tight waist and hook as the home system", against: "their waist and inside leg" },
+        { you: "outside base hand", action: "come up and capture", against: "their outside ankle or knee" },
+        { you: "whole body", action: "roll through toward the outside when that path is blocked", against: "their center of gravity" },
+        { you: "inside arm and head", action: "take the back when they defend the roll", against: "their back" }
+      ]
+    },
+    "jd-roll": {
+      id: "jd-roll",
+      namedMove: "roll-through",
+      instructor: "John Danaher",
+      instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
+      volume: "Underhooks and Roll Through Sweep",
+      chapter: "Roll Through Sweeps",
+      movement: "Roll Through Sweeps - From tight waist",
+      videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
+      start: "22:25",
+      steps: [
+        { you: "inside knee block + inside tight waist", action: "get under", against: "their center of gravity" },
+        { you: "inside hand", action: "reach for the inside grip on", against: "their outside knee or pant grip" },
+        { you: "head", action: "keep the inside position against", against: "their torso" },
+        { you: "whole body", action: "roll them through toward the outside", against: "their posted base" },
+        { you: "pant grip", action: "lock their outside leg when the whizzer is strong", against: "their outside pant leg" }
+      ]
+    }
+  };
+
+  const TOPIC_SYSTEM =
     "Tight waist is home after the underhook. The trilemma opens three paths from that home: come up to capture their far leg, roll through, and take the back. A partner who sits up to switch for the underhook and hunts overhead or modified X is the resistance the drills answer.";
 
   const UNIT_PARAGRAPH =
@@ -454,79 +636,10 @@
   const SUCCESS =
     "Positional round from half guard bottom, free play inside gi rules. Coach read by eye: how many attempted the topic, and how many completed it or came close against a better partner (none / some / most / all).";
 
-  function cite(c) {
-    return {
-      instructor: c.instructor,
-      instructional: c.instructional,
-      volume: c.volume,
-      chapter: c.chapter,
-      movement: c.movement,
-      videoFile: c.videoFile,
-      start: c.start,
-      steps: c.steps
-    };
-  }
-
-  const C = {
-    underhook: cite({
-      instructor: "John Danaher",
-      instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
-      volume: "S01E04 - Underhooks and Roll Through Sweep",
-      chapter: "Knee Lever",
-      movement: "Knee Lever - Get the underhook from half guard bottom",
-      videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
-      start: "12:40",
-      steps: [
-        { you: "inside knee", action: "lever under", against: "their far thigh" },
-        { you: "inside arm", action: "turn into an underhook under", against: "their inside arm" },
-        { you: "outside arm", action: "block the crossface from", against: "their outside arm" }
-      ]
-    }),
-    tightWaist: cite({
-      instructor: "John Danaher",
-      instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
-      volume: "S01E04 - Underhooks and Roll Through Sweep",
-      chapter: "Tight Waist Series",
-      movement: "Tight Waist Series - Winning from underhooks",
-      videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
-      start: "24:05",
-      steps: [
-        { you: "inside arm", action: "wrap the tight waist around", against: "their waist" },
-        { you: "inside hook", action: "keep the half guard locked on", against: "their inside leg" },
-        { you: "head and chest", action: "stay glued to the near hip so the waist stays home", against: null }
-      ]
-    }),
-    trilemma: cite({
-      instructor: "John Danaher",
-      instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
-      volume: "S01E04 - Underhooks and Roll Through Sweep",
-      chapter: "The Trilemma",
-      movement: "The Trilemma - Tight Waist Series",
-      videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
-      start: "31:20",
-      steps: [
-        { you: "inside arm + inside leg", action: "hold tight waist and hook as the home system", against: "their waist and inside leg" },
-        { you: "free hand and far knee", action: "threaten the far-leg come-up, the roll-through, and the back take so they cannot kill all three", against: null }
-      ]
-    }),
-    rollThrough: cite({
-      instructor: "John Danaher",
-      instructional: "Half Guard BJJ Fundamentals - Go Further Faster",
-      volume: "S01E04 - Underhooks and Roll Through Sweep",
-      chapter: "Roll Through Sweeps",
-      movement: "Roll Through Sweeps - From tight waist",
-      videoFile: "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4",
-      start: "38:10",
-      steps: [
-        { you: "inside knee block + inside tight waist", action: "get under", against: "their center of gravity" },
-        { you: "outside hand", action: "lock the far pant or ankle and roll through", against: "their far leg" }
-      ]
-    })
-  };
-
   const UNIT = {
     topic: TOPIC,
-    system: SYSTEM,
+    topicSystem: TOPIC_SYSTEM,
+    catalogSystemId: "tight-waist-trilemma",
     paragraph: UNIT_PARAGRAPH,
     success: SUCCESS,
     classes: [
@@ -538,34 +651,42 @@
           {
             type: "technique",
             title: "Get the underhook",
-            citations: [C.underhook],
+            target: { kind: "named_move", id: "knee-lever" },
+            citations: ["jd-get-uh"],
             glue: "drill-1a"
           },
           {
             type: "drill",
             id: "drill-1a",
             title: "Underhook reps",
+            target: { kind: "named_move", id: "knee-lever" },
+            citations: ["jd-get-uh"],
             partnerJob:
               "Start cooperative: let them take the underhook and set tight waist. Then frame and crossface lightly so they must re-win the underhook. Later in the drill, sit up toward the shoulder and try an underhook switch; they must recover tight waist before anything else."
           },
           {
             type: "technique",
             title: "Tight waist as home",
-            citations: [C.tightWaist],
+            target: { kind: "named_move", id: "tight-waist" },
+            citations: ["jd-tight-waist"],
             glue: "drill-1b"
           },
           {
             type: "drill",
             id: "drill-1b",
             title: "Stay in tight waist",
+            target: { kind: "named_move", id: "tight-waist" },
+            citations: ["jd-tight-waist"],
             partnerJob:
               "Open harder than the first drill: from settled tight waist, the partner tries to kill the waist with a strong crossface and a sit-up switch. The student only restarts when tight waist is back. No sweeps yet."
           },
           {
             type: "sparring",
             title: "Positional rounds — half guard bottom",
+            target: { kind: "named_move", id: "tight-waist" },
+            citations: ["jd-tight-waist"],
             scenario:
-              "Start and restart in half guard bottom with the underhook available or just lost. Both may work anything gi allows inside that start. Coach watches attempts at underhook → tight waist, and completions or close ones against a better partner."
+              "Start and restart in half guard bottom with the underhook available or just lost. Both may work anything gi allows inside that start. Coach watches attempts at underhook to tight waist, and completions or close ones against a better partner."
           }
         ]
       },
@@ -577,32 +698,40 @@
           {
             type: "technique",
             title: "The trilemma",
-            citations: [C.trilemma],
+            target: { kind: "system", id: "tight-waist-trilemma" },
+            citations: ["jd-trilemma"],
             glue: "drill-2a"
           },
           {
             type: "drill",
             id: "drill-2a",
             title: "Trilemma threats",
+            target: { kind: "system", id: "tight-waist-trilemma" },
+            citations: ["jd-trilemma"],
             partnerJob:
               "Partner starts ready: strong crossface and an early sit-up to switch. Student must keep tight waist, show two of the three threats, and only finish the path the partner leaves open. Intensity rises each minute."
           },
           {
             type: "technique",
             title: "Roll through from tight waist",
-            citations: [C.rollThrough],
+            target: { kind: "named_move", id: "roll-through" },
+            citations: ["jd-roll"],
             glue: "drill-2b"
           },
           {
             type: "drill",
             id: "drill-2b",
             title: "Roll-through finishes",
+            target: { kind: "named_move", id: "roll-through" },
+            citations: ["jd-roll"],
             partnerJob:
               "Opens harder than class 1: partner sprawls the far leg and fights the pant grip. Student resets to tight waist on every failed roll. Near the end, partner may fully commit to the underhook-switch / overhead path; student answers by re-homing the waist before rolling."
           },
           {
             type: "game",
             title: "Game — end in the roll-through",
+            target: { kind: "named_move", id: "roll-through" },
+            citations: ["jd-roll"],
             condition:
               "Positional start in half guard bottom with tight waist available. Point only if the bottom player finishes the roll-through sweep. Top player scores by standing free or flattening the underhook for three seconds."
           }
@@ -616,12 +745,16 @@
           {
             type: "drill",
             title: "Cold open — home under fire",
+            target: { kind: "system", id: "tight-waist-trilemma" },
+            citations: ["jd-trilemma", "jd-roll"],
             partnerJob:
-              "No technique first. From half guard bottom, partner immediately sits up for the switch and hunts overhead or modified X. Student’s only job for two minutes is recover underhook and tight waist. Then open to any trilemma finish."
+              "No technique first. From half guard bottom, partner immediately sits up for the switch and hunts overhead or modified X. Student's only job for two minutes is recover underhook and tight waist. Then open to any trilemma finish."
           },
           {
             type: "sparring",
             title: "Unit success round",
+            target: { kind: "system", id: "tight-waist-trilemma" },
+            citations: ["jd-trilemma"],
             scenario:
               "One positional round from half guard bottom. Restart there when the round leaves that fight. Both free inside gi. Coach read: none / some / most / all attempted the topic; none / some / most / all completed or came close against a better partner."
           }
@@ -638,12 +771,6 @@
     toast._t = setTimeout(() => el.classList.remove("show"), 3200);
   }
 
-  function playLink(c) {
-    const href = "#play/" + encodeURIComponent(c.videoFile) + "@" + encodeURIComponent(c.start);
-    return '<a class="play" href="' + href + '" data-file="' + escapeAttr(c.videoFile) + '" data-start="' + escapeAttr(c.start) + '">' +
-      c.start + "</a>";
-  }
-
   function escapeAttr(s) {
     return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
   }
@@ -652,9 +779,39 @@
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  function citation(id) {
+    return CITATIONS[id];
+  }
+
+  function resolveTarget(target) {
+    if (target.kind === "system") {
+      const sys = SYSTEMS[target.id];
+      const members = sys.members.map(function (id) { return NAMED_MOVES[id].label; });
+      return {
+        kind: "system",
+        label: sys.label,
+        path: "defend one named move, give another",
+        members: members
+      };
+    }
+    const mv = NAMED_MOVES[target.id];
+    return {
+      kind: "named_move",
+      label: mv.label,
+      path: mv.start + " · " + mv.startSide + " -> " + mv.moveType + " -> " + mv.end + " · " + mv.endSide,
+      members: []
+    };
+  }
+
+  function playLink(c) {
+    const href = "#play/" + encodeURIComponent(c.videoFile) + "@" + encodeURIComponent(c.start);
+    return '<a class="play" href="' + href + '" data-file="' + escapeAttr(c.videoFile) + '" data-start="' + escapeAttr(c.start) + '">' +
+      c.start + "</a>";
+  }
+
   function stepsHtml(steps) {
     return '<ul class="steps">' + steps.map(function (s) {
-      const against = s.against ? ' <span class="opp">→ ' + escapeHtml(s.against) + "</span>" : "";
+      const against = s.against ? " -> " + escapeHtml(s.against) : "";
       return "<li><span class=\"you\">" + escapeHtml(s.you) + "</span> " + escapeHtml(s.action) + against + "</li>";
     }).join("") + "</ul>";
   }
@@ -668,9 +825,44 @@
       "</div>";
   }
 
+  function citationsHtml(ids) {
+    return ids.map(function (id) { return citeHtml(citation(id)); }).join("");
+  }
+
   function typePill(type) {
     const map = { technique: "pill-tech", drill: "pill-drill", sparring: "pill-spar", game: "pill-game" };
     return '<span class="pill ' + map[type] + '">' + type + "</span>";
+  }
+
+  function targetHtml(target) {
+    const t = resolveTarget(target);
+    const pill = t.kind === "system"
+      ? '<span class="pill pill-sys">system</span>'
+      : '<span class="pill pill-move">named move</span>';
+    const members = t.members.length
+      ? '<div class="members">Members: ' + escapeHtml(t.members.join(", ")) + "</div>"
+      : "";
+    return '<div class="target">' + pill + "<strong>" + escapeHtml(t.label) + "</strong>" +
+      '<span class="path">' + escapeHtml(t.path) + "</span></div>" + members;
+  }
+
+  function typeField(lesson) {
+    if (lesson.type === "drill") {
+      return '<div class="field"><span class="k">Partner job</span>' + escapeHtml(lesson.partnerJob) + "</div>";
+    }
+    if (lesson.type === "sparring") {
+      return '<div class="field"><span class="k">Scenario</span>' + escapeHtml(lesson.scenario) + "</div>";
+    }
+    if (lesson.type === "game") {
+      return '<div class="field"><span class="k">Condition</span>' + escapeHtml(lesson.condition) + "</div>";
+    }
+    return "";
+  }
+
+  function catalogSystemLine() {
+    const sys = SYSTEMS[UNIT.catalogSystemId];
+    const members = sys.members.map(function (id) { return NAMED_MOVES[id].label; }).join(", ");
+    return sys.label + " (" + members + ")";
   }
 
   function unitChrome() {
@@ -678,9 +870,12 @@
       '<div class="row">' +
       "<h2>" + escapeHtml(UNIT.topic.label) + "</h2>" +
       '<span class="pill pill-gi">' + escapeHtml(UNIT.topic.ruleset) + "</span>" +
+      '<span class="pill pill-sys">catalog system</span>' +
       '<span class="pill pill-proto">prototype</span>' +
       "</div>" +
-      '<div class="unit-para"><label>System (coach words)</label>' + escapeHtml(UNIT.system) + "</div>" +
+      '<div class="unit-para"><label>Topic system (coach words)</label>' + escapeHtml(UNIT.topicSystem) + "</div>" +
+      '<div class="unit-para" style="margin-top:.55rem"><label>Catalog system (dilemma)</label>' +
+      escapeHtml(catalogSystemLine()) + "</div>" +
       '<div class="unit-para" style="margin-top:.55rem"><label>Unit paragraph (Build prompt)</label>' + escapeHtml(UNIT.paragraph) + "</div>" +
       '<p class="success"><strong>Success watch:</strong> ' + escapeHtml(UNIT.success) + "</p>" +
       "</div>";
@@ -693,19 +888,9 @@
     if (lesson.glue) html += '<span class="pill pill-glue">+ drill glued</span>';
     if (glued) html += '<span class="pill pill-glue">follows technique</span>';
     html += "<strong>" + escapeHtml(lesson.title) + "</strong></div>";
-
-    if (lesson.type === "technique" && lesson.citations) {
-      html += lesson.citations.map(citeHtml).join("");
-    }
-    if (lesson.type === "drill") {
-      html += '<div class="field"><span class="k">Partner job</span>' + escapeHtml(lesson.partnerJob) + "</div>";
-    }
-    if (lesson.type === "sparring") {
-      html += '<div class="field"><span class="k">Scenario</span>' + escapeHtml(lesson.scenario) + "</div>";
-    }
-    if (lesson.type === "game") {
-      html += '<div class="field"><span class="k">Condition</span>' + escapeHtml(lesson.condition) + "</div>";
-    }
+    html += targetHtml(lesson.target);
+    html += typeField(lesson);
+    html += citationsHtml(lesson.citations);
     html += "</div>";
     return html;
   }
@@ -741,8 +926,9 @@
         if (isPair) {
           html += '<div class="block pair">';
           html += '<div class="typecol">' + typePill("technique") + typePill("drill") + '<span class="pill pill-glue">glued</span></div>';
-          html += "<div><h4>" + escapeHtml(lesson.title) + " → " + escapeHtml(next.title) + "</h4>";
-          if (lesson.citations) html += lesson.citations.map(citeHtml).join("");
+          html += "<div><h4>" + escapeHtml(lesson.title) + " -> " + escapeHtml(next.title) + "</h4>";
+          html += targetHtml(lesson.target);
+          html += citationsHtml(lesson.citations);
           html += '<div class="body" style="margin-top:.45rem"><span class="meta">Partner job</span><br>' +
             escapeHtml(next.partnerJob) + "</div></div></div>";
           i += 2;
@@ -750,6 +936,7 @@
           html += '<div class="block">';
           html += '<div class="typecol">' + typePill(lesson.type) + "</div>";
           html += "<div><h4>" + escapeHtml(lesson.title) + "</h4>";
+          html += targetHtml(lesson.target);
           if (lesson.type === "sparring") {
             html += '<div class="body"><span class="meta">Scenario</span><br>' + escapeHtml(lesson.scenario) + "</div>";
           } else if (lesson.type === "game") {
@@ -757,6 +944,7 @@
           } else if (lesson.type === "drill") {
             html += '<div class="body"><span class="meta">Partner job</span><br>' + escapeHtml(lesson.partnerJob) + "</div>";
           }
+          html += citationsHtml(lesson.citations);
           html += "</div></div>";
           i += 1;
         }
@@ -769,32 +957,38 @@
   function renderC() {
     let html = '<div class="C"><div class="sheet">';
     html += "<h2>Run sheet · " + escapeHtml(UNIT.topic.label) + "</h2>";
-    html += '<p class="sys"><strong>System:</strong> ' + escapeHtml(UNIT.system) + "</p>";
+    html += '<p class="sys"><strong>Topic system:</strong> ' + escapeHtml(UNIT.topicSystem) + "</p>";
+    html += '<p class="sys"><strong>Catalog system:</strong> ' + escapeHtml(catalogSystemLine()) + "</p>";
     html += '<p class="sys"><strong>Build paragraph:</strong> ' + escapeHtml(UNIT.paragraph) + "</p>";
     html += "<table><thead><tr>" +
-      '<th class="check">✓</th><th>Class</th><th>Lesson</th><th>Type</th><th>What to run</th><th>Playback</th>' +
+      '<th class="check">✓</th><th>Class</th><th>Lesson</th><th>Type</th><th>Target</th><th>What to run</th><th>Playback</th>' +
       "</tr></thead><tbody>";
     UNIT.classes.forEach(function (klass) {
-      html += '<tr class="class-row"><td colspan="6">' + escapeHtml(klass.title) +
+      html += '<tr class="class-row"><td colspan="7">' + escapeHtml(klass.title) +
         " — " + escapeHtml(klass.purpose) + "</td></tr>";
       klass.lessons.forEach(function (lesson) {
+        const t = resolveTarget(lesson.target);
         let what = "";
         let play = "—";
-        if (lesson.type === "technique" && lesson.citations) {
-          what = lesson.citations.map(function (c) {
+        if (lesson.citations && lesson.citations.length) {
+          what = lesson.citations.map(function (id) {
+            const c = citation(id);
             return escapeHtml(c.movement) + '<div class="tiny">' + escapeHtml(c.instructor) + " · " + escapeHtml(c.chapter) + "</div>";
           }).join("");
-          play = lesson.citations.map(playLink).join("<br>");
-        } else if (lesson.type === "drill") {
-          what = '<span class="tiny">Partner job</span><br>' + escapeHtml(lesson.partnerJob);
+          play = lesson.citations.map(function (id) { return playLink(citation(id)); }).join("<br>");
+        }
+        if (lesson.type === "drill") {
+          what += '<div class="tiny">Partner job</div>' + escapeHtml(lesson.partnerJob);
         } else if (lesson.type === "sparring") {
-          what = '<span class="tiny">Scenario</span><br>' + escapeHtml(lesson.scenario);
+          what += '<div class="tiny">Scenario</div>' + escapeHtml(lesson.scenario);
         } else if (lesson.type === "game") {
-          what = '<span class="tiny">Condition</span><br>' + escapeHtml(lesson.condition);
+          what += '<div class="tiny">Condition</div>' + escapeHtml(lesson.condition);
         }
         const glueNote = lesson.glue ? ' <span class="tiny">(+ drill)</span>' : "";
         html += "<tr><td class=\"check\">☐</td><td>" + escapeHtml(klass.title) + "</td><td>" +
           escapeHtml(lesson.title) + glueNote + "</td><td>" + escapeHtml(lesson.type) + "</td><td>" +
+          escapeHtml(t.kind === "system" ? "system · " + t.label : t.label) +
+          '<div class="tiny">' + escapeHtml(t.path) + "</div></td><td>" +
           what + "</td><td>" + play + "</td></tr>";
       });
     });
@@ -802,6 +996,35 @@
     html += '<p class="foot"><strong>Success watch:</strong> ' + escapeHtml(UNIT.success) + "</p>";
     html += "</div></div>";
     return html;
+  }
+
+  function recordText() {
+    const lines = [];
+    lines.push("Topic: " + UNIT.topic.label);
+    lines.push("Topic system (coach words): " + UNIT.topicSystem);
+    lines.push("Catalog system: " + catalogSystemLine());
+    lines.push("Unit paragraph: " + UNIT.paragraph);
+    lines.push("Success watch: " + UNIT.success);
+    UNIT.classes.forEach(function (klass) {
+      lines.push("");
+      lines.push(klass.title + " — purpose: " + klass.purpose);
+      klass.lessons.forEach(function (lesson, idx) {
+        const t = resolveTarget(lesson.target);
+        const cites = lesson.citations.map(function (id) {
+          const c = citation(id);
+          return c.movement + " @ " + c.start;
+        }).join("; ");
+        let extra = "";
+        if (lesson.partnerJob) extra = " | partner job: " + lesson.partnerJob;
+        if (lesson.scenario) extra = " | scenario: " + lesson.scenario;
+        if (lesson.condition) extra = " | condition: " + lesson.condition;
+        const glue = lesson.glue ? " | glued to following drill" : "";
+        lines.push("  " + (idx + 1) + ". " + lesson.type + " · " + lesson.title +
+          " | " + t.kind + " · " + t.label + glue +
+          " | citations: " + cites + extra);
+      });
+    });
+    return lines.join("\n");
   }
 
   const VARIANTS = [
@@ -829,6 +1052,7 @@
     document.getElementById("app").innerHTML = variant.render();
     document.getElementById("switch-label").innerHTML =
       key + " (" + variant.name + ")<span>arrow keys or buttons</span>";
+    document.getElementById("record").textContent = recordText();
     document.body.dataset.variant = key;
   }
 
