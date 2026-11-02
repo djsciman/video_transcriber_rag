@@ -1059,6 +1059,8 @@ window.addEventListener("error", function (ev) {
     dragging: null,
     moved: false,
     suppressEmptyClick: false,
+    replaceMoveId: null,
+    pendingEdit: null,
     forceRaf: 0
   };
 
@@ -1132,6 +1134,7 @@ window.addEventListener("error", function (ev) {
       const m = NAMED_MOVES[sel.id];
       html += "<h2>" + escapeHtml(m.label) + "</h2>";
       html += '<p class="hint">' + escapeHtml(DesignModel.pathLabel(sel.id)) + "</p>";
+      html += '<p class="hint">Pick another named move to replace this mark.</p>';
       html += "<h3>Named move</h3>";
       const available = state.occupancy ? DesignModel.movesAt(state.start, state.occupancy) : [sel.id];
       available.forEach(function (id) {
@@ -1518,15 +1521,24 @@ window.addEventListener("error", function (ev) {
     if (!moves.length) emptyHint(panel, "No named move for that path.");
     moves.forEach(function (mid) {
       panel.appendChild(pickBtn(NAMED_MOVES[mid].label, false, function () {
+        const replacing = (w.fromNode && w.fromNode.kind === "move" && w.fromNode.moveId)
+          || (ui.selected && ui.selected.kind === "move" && ui.selected.id)
+          || ui.replaceMoveId;
         const typeId = "type:" + NAMED_MOVES[mid].moveType;
         const typePos = ui.markPos[typeId];
-        const pos = typePos || (w.fromNode ? placeNear(w.fromNode.id, 1) : at);
+        const fromPos = replacing ? ui.markPos["move:" + replacing] : null;
+        const pos = fromPos || typePos || (w.fromNode ? placeNear(w.fromNode.id, 1) : at);
         rememberPos("move:" + mid, pos.x, pos.y);
         if (typePos) delete ui.markPos[typeId];
         ui.draft = null;
         ui.wizard.active = false;
         closeMenu();
-        apply({ type: "ADD_NAMED_MOVE", id: mid });
+        if (replacing && replacing !== mid) {
+          apply({ type: "REPLACE_NAMED_MOVE", from: replacing, to: mid });
+        } else {
+          apply({ type: "ADD_NAMED_MOVE", id: mid });
+        }
+        ui.replaceMoveId = null;
       }));
     });
   }
@@ -1943,6 +1955,10 @@ window.addEventListener("error", function (ev) {
         } else {
           appendMarkShape(g, n, n.fill || "#1d4ed8", on ? "#1c1917" : "#1c1917", on ? 3 : 1.5);
         }
+        g.appendChild(svgEl("circle", {
+          cx: String(n.x), cy: String(n.y), r: String(n.r + 18),
+          fill: "transparent", stroke: "none", "pointer-events": "all"
+        }));
         g.addEventListener("pointerdown", function (e) { onMarkDown(e, n); });
         g.addEventListener("click", function (e) { onMarkClick(e, n); });
         g.addEventListener("dblclick", function (e) { onMarkDbl(e, n); });
@@ -1954,6 +1970,7 @@ window.addEventListener("error", function (ev) {
     function selectNode(n) {
       if (n.kind === "draft") {
         ui.selected = null;
+        ui.replaceMoveId = null;
         return;
       }
       if (n.kind === "start") ui.selected = { kind: "start", id: state.start };
@@ -1961,6 +1978,37 @@ window.addEventListener("error", function (ev) {
       else if (n.kind === "type") ui.selected = { kind: "type", id: n.id.slice(5) };
       else if (n.kind === "move") ui.selected = { kind: "move", id: n.moveId };
       else if (n.kind === "system") ui.selected = { kind: "system", id: n.sysId };
+      ui.replaceMoveId = n.kind === "move" ? n.moveId : null;
+    }
+
+    function nodeById(id) {
+      for (let i = 0; i < nodes.length; i++) if (nodes[i].id === id) return nodes[i];
+      return null;
+    }
+
+    function hitMarkAt(e) {
+      let el = e.target;
+      while (el && el !== svg && el !== wrap) {
+        const id = el.getAttribute && el.getAttribute("data-mark");
+        if (id) {
+          const n = nodeById(id);
+          if (n) return n;
+        }
+        el = el.parentNode;
+      }
+      let p;
+      try { p = worldPoint(svg, e.clientX, e.clientY); } catch (err) { return null; }
+      let best = null;
+      let bestD = 1e9;
+      nodes.forEach(function (n) {
+        const d = Math.sqrt((p.x - n.x) * (p.x - n.x) + (p.y - n.y) * (p.y - n.y));
+        if (d < n.r + 22 && d < bestD) { best = n; bestD = d; }
+        if (n.lx != null && n.ly != null) {
+          const ld = Math.sqrt((p.x - n.lx) * (p.x - n.lx) + (p.y - n.ly) * (p.y - n.ly));
+          if (ld < 28 && ld < bestD) { best = n; bestD = ld; }
+        }
+      });
+      return best;
     }
 
     function onMarkDown(e, n) {
@@ -2020,7 +2068,7 @@ window.addEventListener("error", function (ev) {
       ui.draft = null;
       closeMenu();
       selectNode(n);
-      setTimeout(function () { paint(); }, 0);
+      paint();
     }
     function onMarkClick(e, n) {
       e.stopPropagation();
@@ -2037,41 +2085,72 @@ window.addEventListener("error", function (ev) {
       paint();
     }
 
-    function emptyCanvasClick(e) {
-      if (ui.moved || ui.panning || ui.suppressEmptyClick || ui.dragging) return;
-      if (e.target.closest && e.target.closest(".graph-toolbar")) return;
-      if (e.target.closest && e.target.closest(".sidebar-dock")) return;
-      if (e.target.closest && e.target.closest("[data-mark]")) return;
-      if (e.target.closest && e.target.closest(".catalog-flyout")) return;
-      if (e.target.closest && e.target.closest(".legend")) return;
-      if (e.target.closest && e.target.closest(".mark-menu")) return;
+    function stageClick(e) {
+      if (e.target.closest && (
+        e.target.closest(".graph-toolbar") ||
+        e.target.closest(".sidebar-dock") ||
+        e.target.closest(".catalog-flyout") ||
+        e.target.closest(".legend") ||
+        e.target.closest(".mark-menu")
+      )) return;
+      if (ui.moved || ui.panning) {
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+      }
+      const hit = ui.pendingEdit || hitMarkAt(e);
+      ui.pendingEdit = null;
+      if (hit && hit.kind !== "draft") {
+        e.stopPropagation();
+        e.preventDefault();
+        ui.suppressEmptyClick = true;
+        editMark(hit);
+        return;
+      }
+      if (ui.suppressEmptyClick || ui.dragging) {
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+      }
       e.stopPropagation();
       closeMarkMenu();
       let p = { x: width * 0.45, y: height * 0.45 };
-      try {
-        p = worldPoint(svg, e.clientX, e.clientY);
-      } catch (err) {}
+      try { p = worldPoint(svg, e.clientX, e.clientY); } catch (err) {}
       ui.pendingAt = p;
       ui.draft = { x: p.x, y: p.y };
       ui.selected = null;
+      ui.replaceMoveId = null;
       startWizard(null);
       paint();
     }
-    wrap.addEventListener("click", emptyCanvasClick);
+    wrap.addEventListener("click", stageClick, true);
     wrap.addEventListener("contextmenu", function (e) { e.preventDefault(); });
     svg.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 
     svg.addEventListener("pointerdown", function (e) {
-      if (e.button !== 2) return;
-      if (e.target.closest && e.target.closest("[data-mark]")) return;
-      e.preventDefault();
+      const hit = hitMarkAt(e);
+      if (e.button === 2) {
+        if (hit) return;
+        e.preventDefault();
+        closeMarkMenu();
+        ui.panning = true;
+        ui.moved = false;
+        wrap.classList.add("panning");
+        ui.panFrom = { x: e.clientX, y: e.clientY, px: ui.pan.x, py: ui.pan.y };
+        try { svg.setPointerCapture(e.pointerId); } catch (err) {}
+        return;
+      }
+      if (e.button !== 0) return;
+      if (!hit) return;
+      e.stopPropagation();
+      closeMenu();
       closeMarkMenu();
-      ui.panning = true;
+      ui.suppressEmptyClick = true;
+      ui.dragging = hit;
       ui.moved = false;
-      wrap.classList.add("panning");
-      ui.panFrom = { x: e.clientX, y: e.clientY, px: ui.pan.x, py: ui.pan.y };
+      hit.pinned = true;
       try { svg.setPointerCapture(e.pointerId); } catch (err) {}
-    });
+    }, true);
     svg.addEventListener("pointermove", function (e) {
       if (ui.panning && ui.panFrom) {
         const a = svgPoint(svg, ui.panFrom.x, ui.panFrom.y);
@@ -2098,11 +2177,15 @@ window.addEventListener("error", function (ev) {
       ui.dragging = null;
       ui.panning = false;
       wrap.classList.remove("panning");
-      if (n && !moved && e.button === 0) editMark(n);
+      if (n && !moved && e.button === 0) {
+        ui.pendingEdit = n;
+        ui.suppressEmptyClick = true;
+      }
       setTimeout(function () {
         ui.moved = false;
         ui.suppressEmptyClick = false;
-      }, 0);
+        ui.pendingEdit = null;
+      }, 120);
     });
 
     ui.redrawGraph = paintGraph;
@@ -2399,12 +2482,16 @@ window.addEventListener("error", function (ev) {
       ui.zoom = 1;
       ui.wizard = null;
       ui.draft = null;
+      ui.replaceMoveId = null;
+      ui.pendingEdit = null;
     }
     if (action.type === "LOAD_SAMPLE") {
       ui.markPos = {};
       ui.selected = null;
       ui.wizard = null;
       ui.draft = null;
+      ui.replaceMoveId = null;
+      ui.pendingEdit = null;
       ui.pan = { x: 0, y: 0 };
       ui.zoom = 1;
     }
