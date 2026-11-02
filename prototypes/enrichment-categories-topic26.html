@@ -251,7 +251,7 @@
       overflow: hidden;
     }
     .force-svg { height: 900px; }
-    .er-svg { height: 740px; }
+    .er-svg { height: 760px; }
     .setup-pairs {
       display: flex;
       flex-wrap: wrap;
@@ -367,6 +367,7 @@
       Catalog records are reused: Position, Type of move, Submission, Named move, System, Citation, Lesson type.
       Activity records use that catalog: Unit, Class, Lesson.
       A lesson connects to a named move or to a system. Lessons are then sequenced into classes and a unit. The unit has no direct link to a system.
+      Top, bottom, or neutral is how the learning student occupies a position. A sweep from closed guard bottom lands mount top, so escape is not the next type of move.
     </p>
   </header>
   <div class="question">
@@ -873,7 +874,7 @@
         label: "Position",
         shape: "entity",
         nature: "reference",
-        summary: "Catalog of where a named move is applied from or goes to. One record. Start and end are roles on the named move.",
+        summary: "Catalog of where a named move is applied from or goes to. One record. Start and end are roles on the named move. Top, bottom, or neutral is how the student occupies this record, not a second Closed guard.",
         attrs: ["label", "family", "aliases", "cross_refs"],
         countKey: "positions"
       },
@@ -900,8 +901,8 @@
         label: "Named move",
         shape: "entity",
         nature: "reference",
-        summary: "One catalog movement, such as Hip bump sweep. It consists of a start position, a type of move, and an end (a position or a submission). Citations belong here. A lesson may connect here. Systems group two or more of these.",
-        attrs: ["name", "start", "type of move", "end", "ruleset", "aliases", "cross_refs"],
+        summary: "One catalog movement, such as Hip bump sweep. It consists of a start position plus top/bottom/neutral, a type of move, and an end occupancy (a position plus top/bottom/neutral, or a submission). Citations belong here.",
+        attrs: ["name", "start", "start side", "type of move", "end", "end side", "ruleset", "aliases", "cross_refs"],
         countKey: "leaves"
       },
       {
@@ -991,6 +992,14 @@
         summary: "The position or submission the named move goes to. A role on the named move."
       },
       {
+        id: "orientation",
+        label: "Top / Bottom / Neutral",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "named_move",
+        summary: "How the learning student occupies the start position and the end position. Closed guard bottom plus a sweep lands mount top. Escape is a bottom type of move, so it is off after that landing."
+      },
+      {
         id: "ruleset",
         label: "Ruleset",
         shape: "attribute",
@@ -1028,6 +1037,7 @@
       { from: "family", to: "position", label: "of" },
       { from: "start_role", to: "named_move", label: "on" },
       { from: "end_role", to: "named_move", label: "on" },
+      { from: "orientation", to: "named_move", label: "start and end side" },
       { from: "named_move", to: "position", label: "start: 1" },
       { from: "named_move", to: "position", label: "end: 0..1" },
       { from: "named_move", to: "submission", label: "end: 0..1" },
@@ -1048,14 +1058,15 @@
     ];
 
     const layout = {
-      family: { x: 120, y: 90 },
-      start_role: { x: 120, y: 180 },
-      end_role: { x: 120, y: 255 },
-      ruleset: { x: 120, y: 355 },
-      aliases: { x: 120, y: 430 },
-      cross_ref: { x: 120, y: 505 },
-      uncategorized: { x: 120, y: 580 },
-      chosen_citations: { x: 120, y: 655 },
+      family: { x: 120, y: 80 },
+      start_role: { x: 120, y: 150 },
+      end_role: { x: 120, y: 220 },
+      orientation: { x: 120, y: 295 },
+      ruleset: { x: 120, y: 375 },
+      aliases: { x: 120, y: 450 },
+      cross_ref: { x: 120, y: 525 },
+      uncategorized: { x: 120, y: 600 },
+      chosen_citations: { x: 120, y: 675 },
       position: { x: 430, y: 100 },
       move_type: { x: 430, y: 250 },
       submission: { x: 430, y: 400 },
@@ -1204,6 +1215,8 @@
   }
 
   let forceStart = null;
+  let forceSide = null;
+  let forceTrail = [];
   let forceOpenMoves = [];
   let forceSetup = [];
   let forcePos = {};
@@ -1277,6 +1290,48 @@
     return FAMILY_ORDER.includes(fam) ? fam : "other";
   }
 
+  const SIDE_LABEL = { top: "Top", bottom: "Bottom", neutral: "Neutral" };
+  const SIDE_COLOR = { top: "#14532d", bottom: "#1e3a8a", neutral: "#57534e" };
+
+  function occupancyLabel(posId, side) {
+    const p = Tree.byId(state.seed.positions, posId) || Tree.endRef(state.seed, posId);
+    return (p ? p.label : posId) + " · " + (SIDE_LABEL[side] || side || "?");
+  }
+
+  function moveAllowed(moveType, side, family) {
+    if (!side) return true;
+    if (side === "top") return moveType !== "escape" && moveType !== "sweep";
+    if (side === "bottom") {
+      if (moveType === "pass" || moveType === "takedown") return false;
+      if (moveType === "escape" && family === "guard") return false;
+      return true;
+    }
+    if (side === "neutral") return moveType !== "sweep" && moveType !== "pass";
+    return true;
+  }
+
+  function landingSide(moveType, startSide, endRef) {
+    if (!endRef || endRef.kind === "submission") return null;
+    const fam = familyKey(endRef);
+    if (moveType === "sweep" || moveType === "pass" || moveType === "back-take") return "top";
+    if (moveType === "takedown") {
+      if (fam === "guard") return "bottom";
+      if (fam === "standing") return "neutral";
+      return "top";
+    }
+    if (moveType === "escape") {
+      if (fam === "standing") return "neutral";
+      return "bottom";
+    }
+    if (moveType === "transition") {
+      if (fam === "guard" || fam === "turtle" || fam === "leg-entanglement") return "bottom";
+      if (fam === "pin" || fam === "passing" || fam === "back") return "top";
+      if (fam === "standing") return "neutral";
+      return startSide;
+    }
+    return startSide;
+  }
+
   function visiblePathList(state) {
     return state.seed.paths.filter((p) => Tree.pathVisible(state, p));
   }
@@ -1307,13 +1362,31 @@
       selected: forceStart
     });
     if (!forceStart) return layers;
+    const startPos = Tree.byId(state.seed.positions, forceStart);
+    const startFam = familyKey(startPos);
+    layers.push({
+      kind: "side",
+      col: 1,
+      label: "Student is top, bottom, or neutral",
+      from: forceStart,
+      options: ["top", "bottom", "neutral"].map((id) => ({
+        id,
+        label: SIDE_LABEL[id],
+        kind: "side",
+        family: "side"
+      })),
+      selected: forceSide
+    });
+    if (!forceSide) return layers;
     const mtIds = [];
     paths.forEach((p) => {
-      if (p.start === forceStart && mtIds.indexOf(p.move_type) < 0) mtIds.push(p.move_type);
+      if (p.start !== forceStart) return;
+      if (!moveAllowed(p.move_type, forceSide, startFam)) return;
+      if (mtIds.indexOf(p.move_type) < 0) mtIds.push(p.move_type);
     });
     layers.push({
       kind: "move",
-      col: 1,
+      col: 2,
       label: "Type of move (open several)",
       from: forceStart,
       options: mtIds.map((id) => {
@@ -1343,7 +1416,7 @@
     if (leafOpts.length) {
       layers.push({
         kind: "leaf",
-        col: 1,
+        col: 2,
         label: "Named moves in this system",
         from: forceStart,
         options: leafOpts,
@@ -1356,19 +1429,22 @@
       if (seenEnd[leaf.end]) return;
       seenEnd[leaf.end] = true;
       const e = Tree.endRef(state.seed, leaf.end);
+      const land = landingSide(leaf.move, forceSide, e);
       endOpts.push({
         id: leaf.end,
-        label: e ? e.label : leaf.end,
+        label: (e ? e.label : leaf.end) + (e && e.kind === "submission" ? "" : (" · " + (SIDE_LABEL[land] || ""))),
         kind: e && e.kind === "submission" ? "submission" : "end",
         endKind: e ? e.kind : "position",
-        family: e && e.kind === "submission" ? "submission" : familyKey(e)
+        family: e && e.kind === "submission" ? "submission" : familyKey(e),
+        landSide: land,
+        fromMove: leaf.move
       });
     });
     if (endOpts.length) {
       layers.push({
         kind: "end",
-        col: 2,
-        label: "Where a success lands (failure stays in the start)",
+        col: 3,
+        label: "Where a success lands · click a position to continue from that side",
         from: forceStart,
         options: endOpts,
         selectedSet: endOpts.map((o) => o.id)
@@ -1379,16 +1455,35 @@
 
   function optionDimmed(layer, opt) {
     if (layer.kind === "start") return !!(layer.selected && layer.selected !== opt.id);
+    if (layer.kind === "side") return !!(layer.selected && layer.selected !== opt.id);
     if (layer.kind === "leaf") return !isChosen(layer, opt) && forceSetup.length > 0;
     return false;
   }
 
   function journeyCrumbs(layers) {
     const crumbs = [];
+    forceTrail.forEach((hop, hi) => {
+      crumbs.push({
+        i: 0,
+        layer: layers[0],
+        label: occupancyLabel(hop.start, hop.side),
+        kind: "trail",
+        opt: { kind: "trail", hopIndex: hi }
+      });
+      (hop.members || []).forEach((name) => {
+        crumbs.push({ i: 0, layer: layers[0], label: name, kind: "trail-leaf", opt: { kind: "trail-leaf" } });
+      });
+    });
     const startLayer = layers[0];
     if (startLayer && startLayer.selected) {
       const opt = startLayer.options.find((o) => o.id === startLayer.selected);
-      crumbs.push({ i: 0, layer: startLayer, label: opt ? opt.label : startLayer.selected, kind: "start", opt: opt });
+      crumbs.push({
+        i: 0,
+        layer: startLayer,
+        label: forceSide ? occupancyLabel(forceStart, forceSide) : (opt ? opt.label : startLayer.selected),
+        kind: "start",
+        opt: opt
+      });
     }
     forceSetup.forEach((s) => {
       const leafLayer = layers.find((l) => l.kind === "leaf");
@@ -1416,7 +1511,7 @@
     const crumbs = journeyCrumbs(layers);
     const bar = el("div", { class: "crumb-bar" });
     if (!crumbs.length) {
-      bar.append(el("span", { class: "empty" }, ["Pick a starting position, then add two or more named moves to the system."]));
+      bar.append(el("span", { class: "empty" }, ["Pick a starting position, then top / bottom / neutral for the student."]));
       return bar;
     }
     crumbs.forEach((c, idx) => {
@@ -1463,15 +1558,41 @@
   }
 
   function pickJourney(layerIndex, opt, reopen) {
+    if (opt.kind === "trail" || opt.kind === "trail-leaf") return;
     if (opt.kind === "start") {
       if (forceStart !== opt.id) {
         forceStart = opt.id;
+        forceSide = null;
+        forceTrail = [];
         forceOpenMoves = [];
         forceSetup = [];
         forcePos = {};
       }
-    } else if (opt.kind === "end" || opt.kind === "submission") {
-      toast("A success lands here. When they defend, the system stays in the start.");
+    } else if (opt.kind === "side") {
+      if (forceSide !== opt.id) {
+        forceSide = opt.id;
+        forceOpenMoves = [];
+        forceSetup = [];
+      }
+    } else if (opt.kind === "end") {
+      const nextSide = opt.landSide || landingSide(opt.fromMove, forceSide, Tree.endRef(state.seed, opt.id));
+      forceTrail.push({
+        start: forceStart,
+        side: forceSide,
+        members: forceSetup.map((s) => s.label || s.name)
+      });
+      forceStart = opt.id;
+      forceSide = nextSide;
+      forceOpenMoves = [];
+      forceSetup = [];
+      forcePos = {};
+      const layers = buildJourneyLayers(state);
+      syncTreeFromJourney(layers);
+      render();
+      toast("Now " + occupancyLabel(forceStart, forceSide) + ". Types of move match that side.");
+      return;
+    } else if (opt.kind === "submission") {
+      toast("A submission is an ending. The system stays in " + occupancyLabel(forceStart, forceSide) + " when they defend.");
       return;
     } else if (opt.kind === "move") {
       const i = forceOpenMoves.indexOf(opt.id);
@@ -1489,13 +1610,15 @@
     const trail = journeyTrail(layers);
     const msg = forceSetup.length >= 2
       ? (trail + ". Defend one, they give the next.")
-      : (trail || "Pick a starting position.");
+      : (forceSide ? (occupancyLabel(forceStart, forceSide) + (trail ? " · " + trail : "")) : (trail || "Pick a starting position."));
     render();
     toast(msg || state.lastChange);
   }
 
   function loadClosedGuardSetup() {
     forceStart = "closed-guard";
+    forceSide = "bottom";
+    forceTrail = [];
     forceOpenMoves = ["sweep", "submission"];
     forceSetup = [
       { id: "Hip bump sweep@mount", name: "Hip bump sweep", label: "Hip bump sweep", kind: "leaf", family: "leaf", end: "mount", ruleset: "both", move: "sweep" },
@@ -1614,6 +1737,10 @@
           ix = c.x + Math.cos(ang) * rr;
           iy = c.y + Math.sin(ang) * rr * 0.88;
         }
+        if (layer.kind === "side") {
+          ix = colX(layer.col);
+          iy = 180 + k * 120;
+        }
         if (layer.kind === "move") {
           ix = colX(layer.col) - 70;
           iy = 90 + (k + 0.5) * ((height - 140) / Math.max(1, layer.options.length));
@@ -1647,14 +1774,26 @@
       return nodeMap[i + ":" + opt.kind + ":" + opt.id];
     }
     const startChosen = startLayer.selected && nodeOf(0, startLayer.options.find((o) => o.id === startLayer.selected) || { kind: "start", id: startLayer.selected });
+    const sideLayer = layers.find((l) => l.kind === "side");
+    const sideIdx = sideLayer ? layers.indexOf(sideLayer) : -1;
+    const sideChosen = sideLayer && sideLayer.selected && nodeOf(sideIdx, sideLayer.options.find((o) => o.id === sideLayer.selected) || { kind: "side", id: sideLayer.selected });
     const moveLayer = layers.find((l) => l.kind === "move");
     const moveIdx = moveLayer ? layers.indexOf(moveLayer) : -1;
     layers.forEach((layer, i) => {
-      if (layer.kind === "move" && startChosen) {
+      if (layer.kind === "side" && startChosen) {
         layer.options.forEach((opt) => {
           const t = nodeOf(i, opt);
-          links.push({ s: startChosen, t, dimmed: false, move: opt.id });
+          links.push({ s: startChosen, t, dimmed: optionDimmed(layer, opt) });
         });
+      }
+      if (layer.kind === "move") {
+        const src = sideChosen || startChosen;
+        if (src) {
+          layer.options.forEach((opt) => {
+            const t = nodeOf(i, opt);
+            links.push({ s: src, t, dimmed: false, move: opt.id });
+          });
+        }
       }
       if (layer.kind === "leaf") {
         const endLayer = layers.find((l) => l.kind === "end");
@@ -1838,12 +1977,15 @@
       const liveFill = n.kind === "move"
         ? (MOVE_COLOR[n.opt.id] || "#57534e")
         : (n.kind === "leaf" ? (MOVE_COLOR[n.opt.move] || "#1e3a8a")
-          : (n.kind === "submission" ? "#0f172a" : (FAMILY_COLOR[n.family] || "#57534e")));
+          : (n.kind === "side" ? (SIDE_COLOR[n.opt.id] || "#57534e")
+            : (n.kind === "submission" ? "#0f172a" : (FAMILY_COLOR[n.family] || "#57534e"))));
       const fill = n.dimmed ? "#d6d3d1" : liveFill;
       const stroke = n.chosen ? "#ea580c" : (n.dimmed ? "#a8a29e" : "#fff");
       let shape;
       if (n.kind === "move") {
         shape = svgEl("rect", { x: "-10", y: "-10", width: "20", height: "20", rx: "4", fill, stroke, "stroke-width": n.chosen ? "3" : "1.2" });
+      } else if (n.kind === "side") {
+        shape = svgEl("rect", { x: "-18", y: "-12", width: "36", height: "24", rx: "6", fill, stroke, "stroke-width": n.chosen ? "3" : "1.2" });
       } else if (n.kind === "leaf") {
         shape = svgEl("rect", { x: "-16", y: "-9", width: "32", height: "18", rx: "9", fill, stroke, "stroke-width": n.chosen ? "3" : "1.2" });
       } else if (n.kind === "submission") {
@@ -1866,7 +2008,7 @@
         style: "paint-order:stroke;stroke:#fff;stroke-width:5px;cursor:pointer"
       });
       lab.textContent = n.label;
-      const kindLabel = n.kind === "start" ? "Starting position" : n.kind === "end" ? "Ending position" : n.kind === "move" ? "Type of move" : n.kind === "leaf" ? "Named-move leaf" : "Submission";
+      const kindLabel = n.kind === "start" ? "Starting position" : n.kind === "end" ? "Ending position" : n.kind === "move" ? "Type of move" : n.kind === "leaf" ? "Named-move leaf" : n.kind === "side" ? "Student occupancy" : "Submission";
       function bindPick(elNode) {
         wireHover(elNode, () => n.label, () => [
           kindLabel,
@@ -1875,7 +2017,11 @@
             ? (n.chosen ? "In this system. Click to drop." : "Click to add this named move to the system.")
             : (n.kind === "move"
               ? (n.chosen ? "Open. Click to close this type." : "Click to show named moves of this type.")
-              : (n.dimmed ? "Not selected" : (n.chosen ? "Selected" : "Click to pick"))),
+              : (n.kind === "side"
+                ? (n.chosen ? "Student is " + n.label.toLowerCase() + "." : "Click: the learning student is " + n.label.toLowerCase() + ".")
+                : (n.kind === "end"
+                  ? "Click to continue from this landing and side."
+                  : (n.dimmed ? "Not selected" : (n.chosen ? "Selected" : "Click to pick"))))),
           n.family && n.family !== "move" && n.family !== "leaf" ? n.family.replace(/-/g, " ") : ""
         ]);
         elNode.addEventListener("click", (ev) => {
@@ -1971,7 +2117,7 @@
     return { svg, layers, count: nodes.length, width };
   }
 
-  let erFocus = "lesson";
+  let erFocus = "orientation";
 
   function renderEr(state) {
     const wrap = el("section", { class: "panel plot-panel" }, [
@@ -1984,7 +2130,7 @@
       el("span", {}, [el("i", { style: "background:#a8a29e" }), "Attribute of an entity"])
     ]));
     body.append(el("p", { class: "xref" }, [
-      "Click a box. Blue is catalog. Orange is activity. A lesson connects to exactly one named move or exactly one system. Aliases live on named moves and on systems. Unit and Class only sequence lessons."
+      "Click a box. Blue is catalog. Orange is activity. A lesson connects to exactly one named move or exactly one system. Top / bottom / neutral is how the student occupies a position on a named move."
     ]));
     const mount = el("div", { class: "er-wrap" });
     body.append(mount);
@@ -2012,7 +2158,7 @@
     wrap.append(body);
 
     const width = 1360;
-    const height = 740;
+    const height = 760;
     if (typeof d3 === "undefined") {
       mount.append(el("p", { class: "xref" }, ["D3 did not load. Open this file while online, or allow cdn.jsdelivr.net."]));
       return wrap;
@@ -2179,18 +2325,18 @@
     const forceTools = el("div", { class: "toolbar" }, [
       el("button", {
         class: "primary",
-        on: { click: () => { forceStart = null; forceOpenMoves = []; forceSetup = []; forcePos = {}; render(); toast("System cleared. Pick a starting position."); } }
+        on: { click: () => { forceStart = null; forceSide = null; forceTrail = []; forceOpenMoves = []; forceSetup = []; forcePos = {}; render(); toast("System cleared. Pick a starting position."); } }
       }, ["Reset system"]),
       el("button", {
         on: { click: loadClosedGuardSetup }
       }, ["Load closed-guard trilemma"]),
       el("span", { class: "xref" }, [
-        "Pick a start, open types of move, then click two or more named moves. Those named moves are the system. A success lands on the ending; a defense stays in the start and gives the next named move."
+        "Pick a start, then top / bottom / neutral. Types of move follow that side. A sweep from closed guard bottom lands mount top; click Mount to continue with no Escape."
       ])
     ]);
     body.append(forceTools);
     body.append(el("p", { class: "xref" }, [
-      "Filled circle = starting position · Hollow circle = where a success lands · Rounded bar = named move · Square = type of move · Diamond = submission · Dashed orange = defend A gives B. Click a named move to add or drop it. Drag a node."
+      "Filled circle = starting position · Rounded box = top / bottom / neutral · Hollow circle = success landing (click to continue) · Rounded bar = named move · Square = type of move · Diamond = submission. Escape is off when the student is on top."
     ]));
     body.append(el("div", { class: "force-wrap" }, [force.svg]));
     body.append(el("p", { class: "xref" }, [
