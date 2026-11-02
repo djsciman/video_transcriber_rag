@@ -42,6 +42,7 @@
       line-height: 1.45;
       padding-bottom: 6.5rem;
     }
+    /* Three variants of the unit run plan, via ?variant= A|B|C. Draft/Read/Edit via ?mode=. */
     .banner {
       background: #1c1917;
       color: #fafaf9;
@@ -230,6 +231,73 @@
       margin-bottom: .25rem;
     }
     .success { margin-top: .6rem; font-size: .85rem; color: var(--muted); }
+    .mode-tabs { display: flex; gap: .35rem; flex-wrap: wrap; margin: .65rem 0 .15rem; }
+    .mode-tabs button {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      padding: .3rem .75rem;
+      cursor: pointer;
+      font-size: .82rem;
+    }
+    .mode-tabs button.on { background: #1c1917; color: #fff; border-color: #1c1917; }
+
+    .B-wrap {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    body[data-mode="draft"] .B-wrap { border-style: dashed; border-width: 2px; }
+    tr.cut-row td {
+      background: #1c1917;
+      color: #fafaf9;
+      border-color: #1c1917;
+      padding: .65rem .7rem;
+    }
+    tr.cut-row .purpose { color: #d6d3d1; font-size: .85rem; }
+    tr.cut-row .cut { padding: 0; background: transparent; cursor: default; gap: .5rem; }
+    body[data-mode="edit"] tr.cut-row .cut { cursor: grab; }
+
+    .C-split {
+      display: grid;
+      grid-template-columns: minmax(280px, 38%) 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+    @media (max-width: 860px) { .C-split { grid-template-columns: 1fr; } }
+    .C-list .class-card { margin-bottom: .75rem; }
+    .C-list button.lesson-row {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      padding: .65rem .8rem;
+      cursor: pointer;
+      font: inherit;
+      color: inherit;
+      appearance: none;
+      border-radius: 0;
+    }
+    .C-list button.lesson-row.on { outline: 2px solid #1c1917; outline-offset: -2px; }
+    .C-inspect {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 1rem 1.1rem;
+      min-height: 16rem;
+      position: sticky;
+      top: .6rem;
+    }
+    .C-inspect h3 { font-family: var(--serif); margin: 0 0 .35rem; }
+    .C-list button.lesson-row.technique { background: linear-gradient(90deg, var(--tech-soft), #fff 55%); }
+    .C-list button.lesson-row.drill { background: linear-gradient(90deg, var(--drill-soft), #fff 55%); }
+    .C-list button.lesson-row.sparring { background: linear-gradient(90deg, var(--spar-soft), #fff 55%); }
+    .C-list button.lesson-row.game { background: linear-gradient(90deg, var(--game-soft), #fff 55%); }
+    .C-list button.lesson-row.glued { box-shadow: inset 4px 0 0 #fb923c; }
 
     .class-card {
       background: var(--paper);
@@ -336,15 +404,15 @@
     <strong>PROTOTYPE · throwaway</strong>
     <span>Ticket <code>#10</code> · sample unit after the system</span>
     <span>Branch <code>prototype/sample-unit-topic10</code></span>
-    <span>Same table in Draft / Read / Edit</span>
+    <span>Three layouts · Draft / Read / Edit on each</span>
   </div>
 
   <header class="page">
     <h1>How should a unit read as a plan the coach can run?</h1>
     <p class="meta">
-      One compact run sheet for <strong>gi half guard</strong>. Draft is the Build proposal.
-      Read is the plan the coach teaches from. Edit is the same sheet with packing and citation controls.
-      Technique rows spell out step bullets. A glued drill shows only the partner job.
+      Three proposed layouts for <strong>gi half guard</strong>, all on the same unit.
+      Draft / Read / Edit sit on the page. The bottom bar flips A / B / C.
+      Technique What to run shows step bullets. A glued drill shows only the partner job.
     </p>
   </header>
 
@@ -352,10 +420,14 @@
     <details open>
       <summary>What this prototype is checking</summary>
       <p>
-        Same surface, three modes. Class cards keep the unit organized. The What to run column uses
-        technique steps on a technique row and partner-job text on the following drill, with no repeat of those steps.
-        In Edit, the coach drags a class cut, adds or removes lessons, and chooses citations from the lesson's named move or system.
+        Same unit, three structures. Steal pieces. Draft is the Build proposal. Read is the teaching sheet.
+        Edit packs class cuts, adds or removes lessons, and chooses citations.
       </p>
+      <ul>
+        <li><strong>A Class cards</strong> — each class is a colored card with its own table (meeting-card organization + run-sheet columns).</li>
+        <li><strong>B Spine table</strong> — one clipboard table; dark class-cut rails sit in the row stream.</li>
+        <li><strong>C List + inspector</strong> — compact colored lesson list; What to run opens on the right for the selected lesson.</li>
+      </ul>
     </details>
   </div>
 
@@ -374,13 +446,10 @@
     </details>
   </div>
   <div class="toast" id="toast"></div>
-  <div class="switcher" role="toolbar" aria-label="Unit mode">
-    <button type="button" id="prev" aria-label="Previous mode">←</button>
-    <button type="button" data-mode="draft">Draft</button>
-    <button type="button" data-mode="read">Read</button>
-    <button type="button" data-mode="edit">Edit</button>
-    <div class="label" id="switch-label">Draft</div>
-    <button type="button" id="next" aria-label="Next mode">→</button>
+  <div class="switcher" role="toolbar" aria-label="Prototype layout switcher">
+    <button type="button" id="prev" aria-label="Previous layout">←</button>
+    <div class="label" id="switch-label">A</div>
+    <button type="button" id="next" aria-label="Next layout">→</button>
   </div>
 
   <script>
@@ -664,7 +733,13 @@
   ];
 
   let state = UnitModel.seed();
-  let ui = { picker: null, scene: 0, sceneStep: 0, dragFrom: null };
+  let ui = { picker: null, scene: 0, sceneStep: 0, dragFrom: null, selected: { ci: 0, li: 0 } };
+
+  const VARIANTS = [
+    { key: "A", name: "Class cards" },
+    { key: "B", name: "Spine table" },
+    { key: "C", name: "List + inspector" }
+  ];
 
   function toast(msg) {
     const el = document.getElementById("toast");
@@ -764,9 +839,21 @@
     return MODES.some(function (m) { return m.key === v; }) ? v : "draft";
   }
 
+  function currentVariant() {
+    const v = (new URLSearchParams(location.search).get("variant") || "A").toUpperCase();
+    return VARIANTS.some(function (x) { return x.key === v; }) ? v : "A";
+  }
+
   function setMode(key) {
     const url = new URL(location.href);
     url.searchParams.set("mode", key);
+    history.replaceState(null, "", url);
+    paint();
+  }
+
+  function setVariant(key) {
+    const url = new URL(location.href);
+    url.searchParams.set("variant", key);
     history.replaceState(null, "", url);
     paint();
   }
@@ -797,81 +884,186 @@
     return html;
   }
 
-  function render() {
+  function modeTabsHtml() {
+    const mode = currentMode();
+    return '<div class="mode-tabs">' + MODES.map(function (m) {
+      return '<button type="button" data-act="mode" data-mode="' + m.key + '" class="' + (mode === m.key ? "on" : "") + '">' +
+        m.name + "</button>";
+    }).join("") + "</div>";
+  }
+
+  function unitChrome() {
     const mode = currentMode();
     const modeMeta = MODES.find(function (m) { return m.key === mode; });
+    const variant = VARIANTS.find(function (v) { return v.key === currentVariant(); });
     let html = '<div class="unit-top"><div class="row">';
     html += "<h2>" + escapeHtml(state.topic.label) + "</h2>";
     html += '<span class="pill pill-gi">' + escapeHtml(state.topic.ruleset) + "</span>";
     html += '<span class="pill pill-' + mode + '">' + modeMeta.name + "</span>";
-    html += '<span class="pill pill-proto">prototype</span></div>';
+    html += '<span class="pill pill-proto">' + variant.key + " · " + variant.name + "</span></div>";
+    html += modeTabsHtml();
     html += '<div class="unit-para"><label>Topic system (coach words)</label>' + escapeHtml(state.topicSystem) + "</div>";
     html += '<div class="unit-para"><label>Catalog system</label>' + escapeHtml(catalogLine()) + "</div>";
     html += '<div class="unit-para"><label>Unit paragraph</label>' + escapeHtml(state.paragraph) + "</div>";
     html += '<p class="success"><strong>Success watch:</strong> ' + escapeHtml(state.success) + "</p></div>";
+    return html;
+  }
 
+  function cutInner(klass, ci, mode) {
+    let html = '<span class="n">CUT</span><h3>' + escapeHtml(klass.title) + "</h3>";
+    if (mode === "draft") html += '<span class="pill pill-draft">Build proposal</span>';
+    html += '<div class="purpose">' + escapeHtml(klass.purpose) + "</div>";
+    if (mode === "edit") {
+      html += '<div class="cut-btns">';
+      html += '<button type="button" data-act="cut-up" data-class="' + ci + '">Cut up</button>';
+      html += '<button type="button" data-act="cut-down" data-class="' + ci + '">Cut down</button>';
+      html += "</div>";
+    }
+    return html;
+  }
+
+  function addBarHtml(ci) {
+    let html = '<div class="add-bar">Add:';
+    html += '<button type="button" data-act="add" data-class="' + ci + '" data-type="technique">Technique + drill</button>';
+    html += '<button type="button" data-act="add" data-class="' + ci + '" data-type="drill">Drill</button>';
+    html += '<button type="button" data-act="add" data-class="' + ci + '" data-type="sparring">Sparring</button>';
+    html += '<button type="button" data-act="add" data-class="' + ci + '" data-type="game">Game</button>';
+    html += '<select data-target-for="' + ci + '">';
+    TARGETS.forEach(function (t) {
+      const label = t.kind === "system" ? "system · " + SYSTEMS[t.id].label : NAMED_MOVES[t.id].label;
+      html += '<option value="' + t.kind + ":" + t.id + '">' + escapeHtml(label) + "</option>";
+    });
+    html += "</select></div>";
+    return html;
+  }
+
+  function lessonTitleCell(lesson, glued) {
+    let html = "<strong>" + escapeHtml(lesson.title) + "</strong>";
+    if (lesson.glue) html += ' <span class="pill pill-glue">+ drill</span>';
+    if (glued) html += ' <span class="pill pill-glue">follows technique</span>';
+    return html;
+  }
+
+  function typePill(type) {
+    return '<span class="pill pill-' + (type === "sparring" ? "spar" : type) + '">' + type + "</span>";
+  }
+
+  function editCite(ci, li, lesson, mode) {
+    if (mode !== "edit") return "";
+    let html = '<div style="margin-top:.35rem"><button type="button" class="icon-btn" data-act="cites" data-class="' + ci + '" data-lesson="' + li + '">Choose citations</button></div>';
+    if (ui.picker && ui.picker.ci === ci && ui.picker.li === li) html += pickerHtml(ci, li, lesson);
+    return html;
+  }
+
+  function tableHead(mode) {
+    let html = "<thead><tr>";
+    if (mode === "read") html += '<th class="check">✓</th>';
+    if (mode === "edit") html += "<th></th>";
+    html += "<th>Lesson</th><th>Type</th><th>Target</th><th>What to run</th><th>Playback</th></tr></thead>";
+    return html;
+  }
+
+  function lessonRow(klass, ci, li, mode) {
+    const lesson = klass.lessons[li];
+    const prev = klass.lessons[li - 1];
+    const glued = !!(prev && prev.glue && lesson.type === "drill");
+    let html = '<tr class="' + lesson.type + (glued || lesson.glue ? " glued" : "") + '">';
+    if (mode === "read") html += '<td class="check"><input type="checkbox" aria-label="Ran ' + escapeAttr(lesson.title) + '"></td>';
+    if (mode === "edit") {
+      html += '<td><button type="button" class="icon-btn warn" data-act="remove" data-class="' + ci + '" data-lesson="' + li + '">Remove</button></td>';
+    }
+    html += "<td>" + lessonTitleCell(lesson, glued) + "</td>";
+    html += "<td>" + typePill(lesson.type) + "</td>";
+    html += '<td class="target">' + targetHtml(lesson.target) + "</td>";
+    html += "<td>" + whatToRun(lesson, prev) + editCite(ci, li, lesson, mode) + "</td>";
+    html += "<td>" + playbackCell(lesson, prev) + "</td></tr>";
+    return html;
+  }
+
+  function renderA() {
+    const mode = currentMode();
+    let html = unitChrome();
     state.classes.forEach(function (klass, ci) {
       html += '<section class="class-card" data-class="' + ci + '">';
       html += '<div class="cut" draggable="' + (mode === "edit" ? "true" : "false") + '" data-class="' + ci + '">';
-      html += '<span class="n">CUT</span><h3>' + escapeHtml(klass.title) + "</h3>";
-      if (mode === "draft") html += '<span class="pill pill-draft">Build proposal</span>';
-      html += '<div class="purpose">' + escapeHtml(klass.purpose) + "</div>";
-      if (mode === "edit") {
-        html += '<div class="cut-btns">';
-        html += '<button type="button" data-act="cut-up" data-class="' + ci + '">Cut up</button>';
-        html += '<button type="button" data-act="cut-down" data-class="' + ci + '">Cut down</button>';
-        html += "</div>";
-      }
-      html += "</div>";
-      if (mode === "edit") {
-        html += '<div class="add-bar">Add:';
-        html += '<button type="button" data-act="add" data-class="' + ci + '" data-type="technique">Technique + drill</button>';
-        html += '<button type="button" data-act="add" data-class="' + ci + '" data-type="drill">Drill</button>';
-        html += '<button type="button" data-act="add" data-class="' + ci + '" data-type="sparring">Sparring</button>';
-        html += '<button type="button" data-act="add" data-class="' + ci + '" data-type="game">Game</button>';
-        html += '<select data-target-for="' + ci + '">';
-        TARGETS.forEach(function (t) {
-          const label = t.kind === "system" ? "system · " + SYSTEMS[t.id].label : NAMED_MOVES[t.id].label;
-          html += '<option value="' + t.kind + ":" + t.id + '">' + escapeHtml(label) + "</option>";
-        });
-        html += "</select></div>";
-      }
-      html += '<table class="sheet"><thead><tr>';
-      if (mode === "read") html += '<th class="check">✓</th>';
-      if (mode === "edit") html += "<th></th>";
-      html += "<th>Lesson</th><th>Type</th><th>Target</th><th>What to run</th><th>Playback</th>";
-      html += "</tr></thead><tbody>";
-      klass.lessons.forEach(function (lesson, li) {
-        const prev = klass.lessons[li - 1];
-        const glued = !!(prev && prev.glue && lesson.type === "drill");
-        html += '<tr class="' + lesson.type + (glued || lesson.glue ? " glued" : "") + '">';
-        if (mode === "read") html += '<td class="check"><input type="checkbox" aria-label="Ran ' + escapeAttr(lesson.title) + '"></td>';
-        if (mode === "edit") {
-          html += '<td><button type="button" class="icon-btn warn" data-act="remove" data-class="' + ci + '" data-lesson="' + li + '">Remove</button></td>';
-        }
-        html += "<td><strong>" + escapeHtml(lesson.title) + "</strong>";
-        if (lesson.glue) html += ' <span class="pill pill-glue">+ drill</span>';
-        if (glued) html += ' <span class="pill pill-glue">follows technique</span>';
-        html += "</td>";
-        html += '<td><span class="pill pill-' + (lesson.type === "sparring" ? "spar" : lesson.type) + '">' + lesson.type + "</span></td>";
-        html += '<td class="target">' + targetHtml(lesson.target) + "</td>";
-        html += "<td>" + whatToRun(lesson, prev);
-        if (mode === "edit") {
-          html += '<div style="margin-top:.35rem"><button type="button" class="icon-btn" data-act="cites" data-class="' + ci + '" data-lesson="' + li + '">Choose citations</button></div>';
-          if (ui.picker && ui.picker.ci === ci && ui.picker.li === li) html += pickerHtml(ci, li, lesson);
-        }
-        html += "</td>";
-        html += "<td>" + playbackCell(lesson, prev) + "</td>";
-        html += "</tr>";
-      });
+      html += cutInner(klass, ci, mode) + "</div>";
+      if (mode === "edit") html += addBarHtml(ci);
+      html += '<table class="sheet">' + tableHead(mode) + "<tbody>";
+      klass.lessons.forEach(function (_lesson, li) { html += lessonRow(klass, ci, li, mode); });
       html += "</tbody></table></section>";
     });
     html += '<p class="foot"><strong>Success watch:</strong> ' + escapeHtml(state.success) + "</p>";
     return html;
   }
 
+  function renderB() {
+    const mode = currentMode();
+    const cols = 5 + (mode === "read" || mode === "edit" ? 1 : 0);
+    let html = unitChrome() + '<div class="B-wrap"><table class="sheet">' + tableHead(mode) + "<tbody>";
+    state.classes.forEach(function (klass, ci) {
+      html += '<tr class="cut-row"><td colspan="' + cols + '">';
+      html += '<div class="cut" draggable="' + (mode === "edit" ? "true" : "false") + '" data-class="' + ci + '">';
+      html += cutInner(klass, ci, mode) + "</div>";
+      if (mode === "edit") html += addBarHtml(ci);
+      html += "</td></tr>";
+      klass.lessons.forEach(function (_lesson, li) { html += lessonRow(klass, ci, li, mode); });
+    });
+    html += "</tbody></table></div>";
+    html += '<p class="foot"><strong>Success watch:</strong> ' + escapeHtml(state.success) + "</p>";
+    return html;
+  }
+
+  function clampSelected() {
+    if (!state.classes.length) { ui.selected = { ci: 0, li: 0 }; return; }
+    if (ui.selected.ci >= state.classes.length) ui.selected.ci = state.classes.length - 1;
+    const lessons = state.classes[ui.selected.ci].lessons;
+    if (ui.selected.li >= lessons.length) ui.selected.li = Math.max(0, lessons.length - 1);
+  }
+
+  function renderC() {
+    const mode = currentMode();
+    clampSelected();
+    const sci = ui.selected.ci;
+    const sli = ui.selected.li;
+    const klass = state.classes[sci];
+    const lesson = klass.lessons[sli];
+    const prev = klass.lessons[sli - 1];
+    let html = unitChrome() + '<div class="C-split"><div class="C-list">';
+    state.classes.forEach(function (k, ci) {
+      html += '<section class="class-card" data-class="' + ci + '">';
+      html += '<div class="cut" draggable="' + (mode === "edit" ? "true" : "false") + '" data-class="' + ci + '">';
+      html += cutInner(k, ci, mode) + "</div>";
+      if (mode === "edit") html += addBarHtml(ci);
+      k.lessons.forEach(function (L, li) {
+        const glued = !!(k.lessons[li - 1] && k.lessons[li - 1].glue && L.type === "drill");
+        const on = ci === sci && li === sli ? " on" : "";
+        html += '<button type="button" class="lesson-row ' + L.type + (glued || L.glue ? " glued" : "") + on +
+          '" data-act="select" data-class="' + ci + '" data-lesson="' + li + '">';
+        if (mode === "read") html += '<input type="checkbox" aria-label="Ran ' + escapeAttr(L.title) + '"> ';
+        html += typePill(L.type) + " " + lessonTitleCell(L, glued);
+        html += '<div class="tiny">' + escapeHtml(resolveTarget(L.target).label) + "</div>";
+        html += "</button>";
+      });
+      html += "</section>";
+    });
+    html += '</div><aside class="C-inspect">';
+    html += "<h3>" + escapeHtml(lesson.title) + "</h3>";
+    html += typePill(lesson.type) + " ";
+    html += targetHtml(lesson.target);
+    html += '<div style="margin-top:.7rem">' + whatToRun(lesson, prev) + "</div>";
+    html += '<div style="margin-top:.55rem"><span class="tiny">Playback</span><div>' + playbackCell(lesson, prev) + "</div></div>";
+    if (mode === "edit") {
+      html += editCite(sci, sli, lesson, mode);
+      html += '<div style="margin-top:.55rem"><button type="button" class="icon-btn warn" data-act="remove" data-class="' + sci + '" data-lesson="' + sli + '">Remove this lesson</button></div>';
+    }
+    html += "</aside></div>";
+    html += '<p class="foot"><strong>Success watch:</strong> ' + escapeHtml(state.success) + "</p>";
+    return html;
+  }
+
   function recordText() {
     const lines = [];
+    lines.push("Layout: " + currentVariant());
     lines.push("Mode: " + currentMode());
     lines.push("Last change: " + state.lastChange);
     lines.push("Topic: " + state.topic.label);
@@ -942,15 +1134,15 @@
 
   function paint() {
     const mode = currentMode();
+    const variant = currentVariant();
     document.body.dataset.mode = mode;
-    document.getElementById("app").innerHTML = render();
+    document.body.dataset.variant = variant;
+    const renderers = { A: renderA, B: renderB, C: renderC };
+    document.getElementById("app").innerHTML = renderers[variant]();
     document.getElementById("record").textContent = recordText();
     document.getElementById("changed").textContent = state.lastChange;
-    const meta = MODES.find(function (m) { return m.key === mode; });
-    document.getElementById("switch-label").innerHTML = meta.name + "<span>" + meta.hint + "</span>";
-    document.querySelectorAll(".switcher [data-mode]").forEach(function (btn) {
-      btn.classList.toggle("on", btn.getAttribute("data-mode") === mode);
-    });
+    const meta = VARIANTS.find(function (v) { return v.key === variant; });
+    document.getElementById("switch-label").innerHTML = meta.key + " (" + meta.name + ")<span>arrow keys cycle layouts</span>";
     paintScenes();
   }
 
@@ -973,11 +1165,19 @@
     const act = btn.getAttribute("data-act");
     const ci = Number(btn.getAttribute("data-class"));
     const li = Number(btn.getAttribute("data-lesson"));
+    if (act === "mode") { setMode(btn.getAttribute("data-mode")); return; }
+    if (act === "select") {
+      ui.selected = { ci: ci, li: li };
+      ui.picker = null;
+      paint();
+      return;
+    }
     if (act === "cut-up") dispatch({ type: "MOVE_CUT", classIndex: ci, dir: -1 });
     if (act === "cut-down") dispatch({ type: "MOVE_CUT", classIndex: ci, dir: 1 });
     if (act === "remove") dispatch({ type: "REMOVE_LESSON", classIndex: ci, lessonIndex: li });
     if (act === "cites") {
       ui.picker = { ci: ci, li: li };
+      ui.selected = { ci: ci, li: li };
       paint();
     }
     if (act === "add") {
@@ -1029,13 +1229,10 @@
 
   document.getElementById("prev").addEventListener("click", function () { cycle(-1); });
   document.getElementById("next").addEventListener("click", function () { cycle(1); });
-  document.querySelectorAll(".switcher [data-mode]").forEach(function (btn) {
-    btn.addEventListener("click", function () { setMode(btn.getAttribute("data-mode")); });
-  });
   function cycle(delta) {
-    const keys = MODES.map(function (m) { return m.key; });
-    const i = keys.indexOf(currentMode());
-    setMode(keys[(i + delta + keys.length) % keys.length]);
+    const keys = VARIANTS.map(function (v) { return v.key; });
+    const i = keys.indexOf(currentVariant());
+    setVariant(keys[(i + delta + keys.length) % keys.length]);
   }
   document.addEventListener("keydown", function (e) {
     const t = e.target;
