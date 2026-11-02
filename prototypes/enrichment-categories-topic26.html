@@ -909,8 +909,8 @@
         label: "System",
         shape: "entity",
         nature: "reference",
-        summary: "Two or more named moves used together to create a dilemma. When the partner defends one, they give another. A lesson may connect here. The unit never links here directly.",
-        attrs: ["member named moves"],
+        summary: "Two or more named moves used together to create a dilemma. When the partner defends one, they give another. A lesson may connect here. The unit never links here directly. Aliases are other names for the same system.",
+        attrs: ["member named moves", "aliases"],
         countKey: "systems"
       },
       {
@@ -954,8 +954,8 @@
         label: "Lesson",
         shape: "entity",
         nature: "activity",
-        summary: "Activity: what is actually being worked on in a class. It connects to one named move or to one system. That is where catalog enters the unit. The coach then sequences lessons into classes.",
-        attrs: ["lesson type", "named move or system", "chosen citations", "partner job or scenario or condition"],
+        summary: "Activity: what is actually being worked on in a class. It connects to exactly one named move or exactly one system. Catalog enters the unit here. The coach sequences lessons into classes.",
+        attrs: ["lesson type", "named move xor system", "chosen citations", "partner job or scenario or condition"],
         countKey: "none"
       },
       {
@@ -1004,7 +1004,7 @@
         shape: "attribute",
         nature: "attribute",
         owner: "named_move",
-        summary: "Other names for the same record. Also appear on some positions and submissions."
+        summary: "Other names for the same catalog record. Lives on named moves, systems, and some positions and submissions."
       },
       {
         id: "cross_ref",
@@ -1034,6 +1034,7 @@
       { from: "named_move", to: "move_type", label: "1" },
       { from: "ruleset", to: "named_move", label: "of" },
       { from: "aliases", to: "named_move", label: "of" },
+      { from: "aliases", to: "system", label: "of" },
       { from: "cross_ref", to: "named_move", label: "of" },
       { from: "system", to: "named_move", label: "2..n members" },
       { from: "citation", to: "named_move", label: "0..n per move" },
@@ -1041,8 +1042,8 @@
       { from: "unit", to: "class", label: "sequences 1..n" },
       { from: "class", to: "lesson", label: "sequences 1..n" },
       { from: "lesson", to: "lesson_type", label: "1" },
-      { from: "lesson", to: "named_move", label: "0..1" },
-      { from: "lesson", to: "system", label: "0..1" },
+      { from: "lesson", to: "named_move", label: "xor 0..1" },
+      { from: "lesson", to: "system", label: "xor 0..1" },
       { from: "chosen_citations", to: "lesson", label: "of" }
     ];
 
@@ -1983,7 +1984,7 @@
       el("span", {}, [el("i", { style: "background:#a8a29e" }), "Attribute of an entity"])
     ]));
     body.append(el("p", { class: "xref" }, [
-      "Click a box. Blue is catalog. Orange is activity. Catalog enters at Lesson: a named move or a system. Unit and Class only sequence those lessons."
+      "Click a box. Blue is catalog. Orange is activity. A lesson connects to exactly one named move or exactly one system. Aliases live on named moves and on systems. Unit and Class only sequence lessons."
     ]));
     const mount = el("div", { class: "er-wrap" });
     body.append(mount);
