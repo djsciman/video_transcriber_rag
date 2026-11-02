@@ -263,6 +263,12 @@
       cursor: pointer;
     }
     .catalog-flyout button.pick:hover { background: #f5f5f4; }
+    .catalog-flyout button.pick.on {
+      background: #1c1917;
+      color: #fff;
+      border-color: #1c1917;
+    }
+    .map-stage.panning { cursor: grabbing; }
     .add-select {
       font: inherit;
       font-size: .85rem;
@@ -485,7 +491,7 @@
         Steal pieces from A / B / C. The right-hand panel is the hand-off Build would receive.
       </p>
       <ul>
-        <li><strong>A Force map</strong> — full-width graph. Click empty space for the catalog. A mark appears as you answer. Click a mark to edit in the sidebar. Double-click a mark to add another through type of move, then named move or system. Drag marks; they resist overlap. Labels never overlap.</li>
+        <li><strong>A Force map</strong> — full-width graph. Add walks family → position → occupancy → type of move → end position → named move. Right-drag pans. Recenter and Reset marks sit in the toolbar.</li>
         <li><strong>B Hub and ring</strong> — Half guard is the hub. Home transitions sit on it. System members sit on the dilemma ring.</li>
         <li><strong>C Catalog tray</strong> — left is the catalog at this occupancy. Right is what is on the design. Click to move a named move or pin a system.</li>
       </ul>
@@ -521,6 +527,12 @@ window.addEventListener("error", function (ev) {
 });
 (function () {
   const TOPIC = { name: "half guard", ruleset: "gi", label: "gi half guard" };
+
+  const FAMILIES = {
+    guard: { id: "guard", label: "Guard" },
+    pin: { id: "pin", label: "Pin" },
+    back: { id: "back", label: "Back" }
+  };
 
   const POSITIONS = {
     "half-guard": { id: "half-guard", label: "Half guard", family: "guard" },
@@ -790,6 +802,9 @@ window.addEventListener("error", function (ev) {
     selected: null,
     labelSize: 16,
     menu: null,
+    wizard: null,
+    pan: { x: 0, y: 0 },
+    panning: false,
     dragging: null,
     moved: false,
     forceRaf: 0
@@ -933,10 +948,10 @@ window.addEventListener("error", function (ev) {
     return { x: origin.x + 140 * Math.cos(a), y: origin.y + 90 * Math.sin(a) };
   }
 
-  function pickBtn(label, onPick) {
+  function pickBtn(label, isOn, onPick) {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "pick";
+    b.className = "pick" + (isOn ? " on" : "");
     b.textContent = label;
     b.addEventListener("click", function (e) {
       e.preventDefault();
@@ -946,101 +961,161 @@ window.addEventListener("error", function (ev) {
     return b;
   }
 
-  function fillCatalog(panel, fromNode) {
+  function section(panel, title) {
+    const h = document.createElement("h4");
+    h.textContent = title;
+    panel.appendChild(h);
+  }
+
+  function emptyHint(panel, text) {
+    const p = document.createElement("p");
+    p.className = "hint";
+    p.textContent = text;
+    panel.appendChild(p);
+  }
+
+  function matchingMoves(w) {
+    return Object.keys(NAMED_MOVES).filter(function (id) {
+      const m = NAMED_MOVES[id];
+      if (w.position && m.start !== w.position) return false;
+      if (w.occupancy && m.startSide !== w.occupancy) return false;
+      if (w.moveType && m.moveType !== w.moveType) return false;
+      if (w.moveType === "submission") return true;
+      if (w.end && m.end !== w.end) return false;
+      return true;
+    });
+  }
+
+  function startWizard(fromNode) {
+    const w = {
+      active: true,
+      fromNode: fromNode || null,
+      family: null,
+      position: null,
+      occupancy: null,
+      moveType: null,
+      end: null
+    };
+    if (fromNode && state.occupancy) {
+      w.family = POSITIONS[state.start].family;
+      w.position = state.start;
+      w.occupancy = state.occupancy;
+    }
+    ui.wizard = w;
+    return w;
+  }
+
+  function wizardApply(action) {
+    ui.wizard.active = true;
+    apply(action);
+  }
+
+  function fillCatalog(panel) {
+    const w = ui.wizard || startWizard(null);
     panel.innerHTML = "";
     const h = document.createElement("h3");
-    h.textContent = fromNode ? "Add from this mark" : "Add to the map";
+    h.textContent = w.fromNode ? "Add from this mark" : "Add to the map";
     panel.appendChild(h);
     const at = ui.pendingAt || { x: 480, y: 280 };
 
-    if (!fromNode) {
-      const hOcc = document.createElement("h4");
-      hOcc.textContent = "Occupancy";
-      panel.appendChild(hOcc);
-      ["bottom", "top", "neutral"].forEach(function (side) {
-        panel.appendChild(pickBtn(side, function () {
-          rememberPos("pos:" + state.start, at.x, at.y);
-          ui.selected = { kind: "start", id: state.start };
-          closeMenu();
-          apply({ type: "SET_OCCUPANCY", occupancy: side });
-        }));
-      });
-    }
-
-    const hType = document.createElement("h4");
-    hType.textContent = "Type of move";
-    panel.appendChild(hType);
-    const typeIds = state.occupancy ? DesignModel.typesAt(state.occupancy) : Object.keys(MOVE_TYPES);
-    typeIds.forEach(function (tid) {
-      panel.appendChild(pickBtn(MOVE_TYPES[tid].label, function () {
-        rememberPos("type:" + tid, at.x, at.y);
-        ui.selected = { kind: "type", id: tid };
-        closeMenu();
-        apply({ type: "OPEN_MOVE_TYPE", id: tid });
+    section(panel, "Family");
+    Object.keys(FAMILIES).filter(function (fid) {
+      return fid === "guard";
+    }).forEach(function (fid) {
+      panel.appendChild(pickBtn(FAMILIES[fid].label, w.family === fid, function () {
+        w.family = fid;
+        w.position = null;
+        w.occupancy = null;
+        w.moveType = null;
+        w.end = null;
+        fillCatalog(panel);
       }));
     });
+    if (!w.family) return;
 
-    const hMove = document.createElement("h4");
-    hMove.textContent = "Named move";
-    panel.appendChild(hMove);
-    const available = state.occupancy
-      ? DesignModel.movesAt(state.start, state.occupancy)
-      : Object.keys(NAMED_MOVES);
-    available.forEach(function (mid) {
-      panel.appendChild(pickBtn(NAMED_MOVES[mid].label, function () {
-        const pos = fromNode ? placeNear(fromNode.id, 1) : at;
+    section(panel, "Position");
+    const startPositions = w.family === "guard" ? ["half-guard"] : [];
+    startPositions.forEach(function (pid) {
+      panel.appendChild(pickBtn(POSITIONS[pid].label, w.position === pid, function () {
+        w.position = pid;
+        w.occupancy = null;
+        w.moveType = null;
+        w.end = null;
+        fillCatalog(panel);
+      }));
+    });
+    if (!w.position) return;
+
+    section(panel, "Occupancy");
+    ["bottom", "top", "neutral"].forEach(function (side) {
+      panel.appendChild(pickBtn(side, w.occupancy === side, function () {
+        w.occupancy = side;
+        w.moveType = null;
+        w.end = null;
+        rememberPos("pos:" + w.position, at.x, at.y);
+        ui.selected = { kind: "start", id: w.position };
+        wizardApply({ type: "SET_OCCUPANCY", occupancy: side });
+      }));
+    });
+    if (!w.occupancy) return;
+
+    section(panel, "Type of move");
+    DesignModel.typesAt(w.occupancy).forEach(function (tid) {
+      panel.appendChild(pickBtn(MOVE_TYPES[tid].label, w.moveType === tid, function () {
+        w.moveType = tid;
+        w.end = null;
+        rememberPos("type:" + tid, at.x + 80, at.y);
+        ui.selected = { kind: "type", id: tid };
+        wizardApply({ type: "OPEN_MOVE_TYPE", id: tid });
+      }));
+    });
+    if (!w.moveType) return;
+
+    if (w.moveType !== "submission") {
+      section(panel, "End position");
+      const ends = [];
+      matchingMoves(w).forEach(function (id) {
+        const end = NAMED_MOVES[id].end;
+        if (ends.indexOf(end) < 0) ends.push(end);
+      });
+      if (!ends.length) emptyHint(panel, "No named moves on this path yet.");
+      ends.forEach(function (pid) {
+        panel.appendChild(pickBtn(POSITIONS[pid].label, w.end === pid, function () {
+          w.end = pid;
+          rememberPos("pos:" + pid, at.x + 220, at.y);
+          fillCatalog(panel);
+        }));
+      });
+      if (!w.end) return;
+    }
+
+    section(panel, "Named move");
+    const moves = matchingMoves(w);
+    if (!moves.length) emptyHint(panel, "No named move for that path.");
+    moves.forEach(function (mid) {
+      panel.appendChild(pickBtn(NAMED_MOVES[mid].label, false, function () {
+        const pos = w.fromNode ? placeNear(w.fromNode.id, 1) : at;
         rememberPos("move:" + mid, pos.x, pos.y);
         ui.selected = { kind: "move", id: mid };
+        ui.wizard.active = false;
         closeMenu();
         apply({ type: "ADD_NAMED_MOVE", id: mid });
       }));
     });
-    if (!available.length) {
-      const p = document.createElement("p");
-      p.className = "hint";
-      p.textContent = "None at this occupancy.";
-      panel.appendChild(p);
-    }
-
-    const hSys = document.createElement("h4");
-    hSys.textContent = "System";
-    panel.appendChild(hSys);
-    Object.keys(SYSTEMS).forEach(function (sid) {
-      panel.appendChild(pickBtn(SYSTEMS[sid].label, function () {
-        const pos = fromNode ? placeNear(fromNode.id, 1) : at;
-        rememberPos("sys:" + sid, pos.x, pos.y);
-        SYSTEMS[sid].members.forEach(function (mid, i) {
-          if (!ui.markPos["move:" + mid]) rememberPos("move:" + mid, pos.x + 90 * Math.cos(i), pos.y + 70 * Math.sin(i));
-        });
-        ui.selected = { kind: "system", id: sid };
-        closeMenu();
-        apply({ type: "ADD_SYSTEM", id: sid });
-      }));
-    });
-
-    if (!fromNode) {
-      const hWords = document.createElement("h4");
-      hWords.textContent = "This topic";
-      panel.appendChild(hWords);
-      panel.appendChild(pickBtn("How this topic is taught", function () {
-        ui.selected = { kind: "words", id: "words" };
-        closeMenu();
-        paint();
-      }));
-    }
   }
 
   function openCatalogMenu(clientX, clientY, fromNode) {
     try {
       const host = document.querySelector(".map-stage");
       if (!host) return;
+      if (!ui.wizard || !ui.wizard.active) startWizard(fromNode);
       let panel = host.querySelector(".catalog-flyout");
       if (!panel) {
         panel = document.createElement("div");
         panel.className = "catalog-flyout";
         host.appendChild(panel);
       }
-      fillCatalog(panel, fromNode);
+      fillCatalog(panel);
       panel.hidden = false;
       ui.menu = panel;
       setTimeout(function () {
@@ -1057,7 +1132,8 @@ window.addEventListener("error", function (ev) {
 
   function dismissMenu(e) {
     if (ui.menu && ui.menu.contains(e.target)) return;
-    if (e.target.closest && e.target.closest("[data-add], .add-select")) return;
+    if (e.target.closest && e.target.closest("[data-add]")) return;
+    if (ui.wizard) ui.wizard.active = false;
     closeMenu();
   }
 
@@ -1123,67 +1199,34 @@ window.addEventListener("error", function (ev) {
     const tools = document.createElement("div");
     tools.className = "graph-toolbar";
     tools.innerHTML = "<button type=\"button\" class=\"icon-btn primary\" data-add=\"1\">Add to the map</button>";
-    const addSel = document.createElement("select");
-    addSel.className = "add-select";
-    addSel.innerHTML = "<option value=\"\">Add to the map…</option>";
-    (function buildSelect() {
-      const og1 = document.createElement("optgroup");
-      og1.label = "Occupancy";
-      ["bottom", "top", "neutral"].forEach(function (side) {
-        const o = document.createElement("option");
-        o.value = "occ:" + side;
-        o.textContent = side;
-        og1.appendChild(o);
-      });
-      addSel.appendChild(og1);
-      const og2 = document.createElement("optgroup");
-      og2.label = "Named move";
-      Object.keys(NAMED_MOVES).forEach(function (id) {
-        const o = document.createElement("option");
-        o.value = "move:" + id;
-        o.textContent = NAMED_MOVES[id].label;
-        og2.appendChild(o);
-      });
-      addSel.appendChild(og2);
-      const og3 = document.createElement("optgroup");
-      og3.label = "System";
-      Object.keys(SYSTEMS).forEach(function (id) {
-        const o = document.createElement("option");
-        o.value = "sys:" + id;
-        o.textContent = SYSTEMS[id].label;
-        og3.appendChild(o);
-      });
-      addSel.appendChild(og3);
-    })();
-    addSel.addEventListener("change", function () {
-      const v = addSel.value;
-      addSel.selectedIndex = 0;
-      if (!v) return;
-      const at = { x: width * 0.45, y: height * 0.45 };
-      ui.pendingAt = at;
-      const parts = v.split(":");
-      if (parts[0] === "occ") {
-        rememberPos("pos:" + state.start, at.x, at.y);
-        ui.selected = { kind: "start", id: state.start };
-        apply({ type: "SET_OCCUPANCY", occupancy: parts[1] });
-      } else if (parts[0] === "move") {
-        rememberPos("move:" + parts[1], at.x, at.y);
-        ui.selected = { kind: "move", id: parts[1] };
-        apply({ type: "ADD_NAMED_MOVE", id: parts[1] });
-      } else if (parts[0] === "sys") {
-        rememberPos("sys:" + parts[1], at.x, at.y);
-        ui.selected = { kind: "system", id: parts[1] };
-        apply({ type: "ADD_SYSTEM", id: parts[1] });
-      }
+    const recenterBtn = document.createElement("button");
+    recenterBtn.type = "button";
+    recenterBtn.className = "icon-btn";
+    recenterBtn.textContent = "Recenter";
+    recenterBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      ui.pan = { x: 0, y: 0 };
+      if (ui.applyPan) ui.applyPan();
     });
-    tools.appendChild(addSel);
+    tools.appendChild(recenterBtn);
+    const resetMarksBtn = document.createElement("button");
+    resetMarksBtn.type = "button";
+    resetMarksBtn.className = "icon-btn";
+    resetMarksBtn.textContent = "Reset marks";
+    resetMarksBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      ui.markPos = {};
+      ui.pan = { x: 0, y: 0 };
+      paint();
+    });
+    tools.appendChild(resetMarksBtn);
     tools.insertAdjacentHTML("beforeend", "<label>Label size</label><span class=\"size-btns row\"></span>");
     tools.querySelector("[data-add]").addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
       ui.pendingAt = { x: width * 0.45, y: height * 0.45 };
-      if (ui.menu && !ui.menu.hidden) closeMenu();
-      else openCatalogMenu(e.clientX, e.clientY, null);
+      startWizard(null);
+      openCatalogMenu(e.clientX, e.clientY, null);
     });
     const sizes = [12, 16, 20];
     const sizeHost = tools.querySelector(".size-btns");
@@ -1305,17 +1348,24 @@ window.addEventListener("error", function (ev) {
       });
     });
 
+    const world = svgEl("g");
     const linkG = svgEl("g");
     const nodeG = svgEl("g");
     const labelG = svgEl("g");
-    svg.appendChild(linkG);
-    svg.appendChild(nodeG);
-    svg.appendChild(labelG);
+    world.appendChild(linkG);
+    world.appendChild(nodeG);
+    world.appendChild(labelG);
+    svg.appendChild(world);
+    function applyPan() {
+      world.setAttribute("transform", "translate(" + ui.pan.x + " " + ui.pan.y + ")");
+    }
+    ui.applyPan = applyPan;
+    applyPan();
 
     if (!nodes.length) {
       const hint = document.createElement("div");
       hint.className = "graph-empty";
-      hint.innerHTML = "<span>Click empty space. Choose occupancy, a type of move, a named move, or a system. The mark appears as you answer.</span>";
+      hint.innerHTML = "<span>Add to the map. Family, then position, occupancy, type of move, end position, named move. Right-drag pans.</span>";
       wrap.appendChild(hint);
     }
 
@@ -1329,10 +1379,7 @@ window.addEventListener("error", function (ev) {
     }
 
     function paintGraph() {
-      nodes.forEach(function (n) {
-        n.x = Math.max(n.r + 8, Math.min(width - n.r - 8, n.x));
-        n.y = Math.max(n.r + 8, Math.min(height - n.r - 8, n.y));
-      });
+      applyPan();
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const a = nodes[i], b = nodes[j];
@@ -1434,6 +1481,7 @@ window.addEventListener("error", function (ev) {
     }
 
     function onMarkDown(e, n) {
+      if (e.button === 2) return;
       e.stopPropagation();
       e.preventDefault();
       closeMenu();
@@ -1456,29 +1504,55 @@ window.addEventListener("error", function (ev) {
       selectNode(n);
       paintGraph();
       showDock();
+      startWizard(n);
       openCatalogMenu(e.clientX, e.clientY, n);
     }
 
     function emptyCanvasClick(e) {
-      if (ui.moved) return;
+      if (ui.moved || ui.panning) return;
       if (e.target.closest && e.target.closest(".graph-toolbar")) return;
       if (e.target.closest && e.target.closest(".sidebar-dock")) return;
       if (e.target.closest && e.target.closest("[data-mark]")) return;
       if (e.target.closest && e.target.closest(".catalog-flyout")) return;
       e.stopPropagation();
       let p = { x: width * 0.45, y: height * 0.45 };
-      try { p = svgPoint(svg, e.clientX, e.clientY); } catch (err) {}
+      try {
+        const s = svgPoint(svg, e.clientX, e.clientY);
+        p = { x: s.x - ui.pan.x, y: s.y - ui.pan.y };
+      } catch (err) {}
       ui.pendingAt = p;
       ui.selected = null;
       showDock();
+      startWizard(null);
       openCatalogMenu(e.clientX, e.clientY, null);
     }
     wrap.addEventListener("click", emptyCanvasClick);
     svg.addEventListener("click", emptyCanvasClick);
+    wrap.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+    svg.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 
+    svg.addEventListener("pointerdown", function (e) {
+      if (e.button !== 2) return;
+      e.preventDefault();
+      ui.panning = true;
+      ui.moved = false;
+      wrap.classList.add("panning");
+      ui.panFrom = { x: e.clientX, y: e.clientY, px: ui.pan.x, py: ui.pan.y };
+      try { svg.setPointerCapture(e.pointerId); } catch (err) {}
+    });
     svg.addEventListener("pointermove", function (e) {
+      if (ui.panning && ui.panFrom) {
+        const a = svgPoint(svg, ui.panFrom.x, ui.panFrom.y);
+        const b = svgPoint(svg, e.clientX, e.clientY);
+        ui.pan.x = ui.panFrom.px + (b.x - a.x);
+        ui.pan.y = ui.panFrom.py + (b.y - a.y);
+        if (Math.abs(b.x - a.x) + Math.abs(b.y - a.y) > 3) ui.moved = true;
+        applyPan();
+        return;
+      }
       if (!ui.dragging) return;
-      const p = svgPoint(svg, e.clientX, e.clientY);
+      const s = svgPoint(svg, e.clientX, e.clientY);
+      const p = { x: s.x - ui.pan.x, y: s.y - ui.pan.y };
       const n = ui.dragging;
       if (Math.abs(p.x - n.x) + Math.abs(p.y - n.y) > 3) ui.moved = true;
       n.x = p.x;
@@ -1489,6 +1563,8 @@ window.addEventListener("error", function (ev) {
     });
     svg.addEventListener("pointerup", function () {
       ui.dragging = null;
+      ui.panning = false;
+      wrap.classList.remove("panning");
       setTimeout(function () { ui.moved = false; }, 0);
     });
 
@@ -1697,6 +1773,7 @@ window.addEventListener("error", function (ev) {
   function paint() {
     const variant = currentVariant();
     document.body.dataset.variant = variant;
+    const resumeWizard = ui.wizard && ui.wizard.active;
     closeMenu();
     if (ui.forceRaf) cancelAnimationFrame(ui.forceRaf);
     const app = document.getElementById("app");
@@ -1714,6 +1791,10 @@ window.addEventListener("error", function (ev) {
       layout.appendChild(hand);
       app.appendChild(layout);
       showDock();
+      if (resumeWizard) {
+        ui.wizard.active = true;
+        openCatalogMenu(null, null, ui.wizard.fromNode);
+      }
     } else {
       layout.className = "layout";
       layout.insertAdjacentHTML("beforeend", palette());
@@ -1735,10 +1816,14 @@ window.addEventListener("error", function (ev) {
     if (action.type === "RESET") {
       ui.markPos = {};
       ui.selected = null;
+      ui.pan = { x: 0, y: 0 };
+      ui.wizard = null;
     }
     if (action.type === "LOAD_SAMPLE") {
       ui.markPos = {};
       ui.selected = { kind: "system", id: "tight-waist-trilemma" };
+      ui.wizard = null;
+      ui.pan = { x: 0, y: 0 };
     }
     if (action.type === "SET_OCCUPANCY" && state.occupancy && state.occupancy !== action.occupancy) {
       ui.markPos = {};
