@@ -227,53 +227,57 @@
       max-width: 28rem;
       pointer-events: none;
     }
-    .graph-menu {
-      position: fixed;
-      z-index: 200;
-      background: #fffcf6;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      min-width: 15.5rem;
-      padding: .25rem 0;
-      box-shadow: var(--shadow);
-    }
-    .graph-menu .mi {
-      position: relative;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: .75rem;
-      padding: .42rem .8rem;
-      cursor: pointer;
-      font-size: .88rem;
-      background: transparent;
-      border: 0;
-      width: 100%;
-      text-align: left;
-      font-family: inherit;
-      color: inherit;
-    }
-    .graph-menu .mi:hover, .graph-menu .mi:focus { background: #f5f5f4; }
-    .graph-menu .mi .caret { color: var(--muted); }
-    .graph-menu .sub {
-      display: none;
+    .catalog-flyout {
       position: absolute;
-      left: 100%;
-      top: -4px;
-      min-width: 15rem;
+      top: 3.1rem;
+      left: .7rem;
+      z-index: 30;
+      width: min(26rem, calc(100% - 1.4rem));
+      max-height: min(28rem, 70%);
+      overflow: auto;
       background: #fffcf6;
-      border: 1px solid var(--line);
+      border: 2px solid #1c1917;
       border-radius: 10px;
-      padding: .25rem 0;
+      padding: .65rem .75rem .8rem;
       box-shadow: var(--shadow);
     }
-    .graph-menu .mi:hover > .sub, .graph-menu .mi:focus-within > .sub, .graph-menu .mi.open > .sub { display: block; }
-    .graph-menu .head {
-      padding: .35rem .8rem .2rem;
+    .catalog-flyout[hidden] { display: none !important; }
+    .catalog-flyout h3 { margin: 0 0 .45rem; font-size: .95rem; font-family: var(--serif); }
+    .catalog-flyout h4 {
+      margin: .65rem 0 .25rem;
       font-size: .7rem;
       letter-spacing: .04em;
       text-transform: uppercase;
       color: var(--muted);
+    }
+    .catalog-flyout button.pick {
+      display: block;
+      width: 100%;
+      text-align: left;
+      margin: 0 0 .3rem;
+      padding: .4rem .55rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      font: inherit;
+      cursor: pointer;
+    }
+    .catalog-flyout button.pick:hover { background: #f5f5f4; }
+    .add-select {
+      font: inherit;
+      font-size: .85rem;
+      padding: .28rem .45rem;
+      border-radius: 8px;
+      border: 1px solid #1c1917;
+      background: #fff;
+      max-width: 18rem;
+    }
+    #js-error {
+      display: none;
+      background: #9f1239;
+      color: #fff;
+      padding: .5rem 1.25rem;
+      font-size: .85rem;
     }
     .layout-a .handoff-wide { margin-top: .85rem; }
     .legend {
@@ -452,6 +456,7 @@
   </style>
 </head>
 <body>
+  <div id="js-error"></div>
   <div class="banner box-proto">
     <strong>PROTOTYPE · throwaway</strong>
     <span>Ticket <code>#28</code> · design a unit on the mental map</span>
@@ -508,6 +513,12 @@
   </div>
 
   <script>
+window.addEventListener("error", function (ev) {
+  var el = document.getElementById("js-error");
+  if (!el) return;
+  el.style.display = "block";
+  el.textContent = "JS error: " + ev.message + " @" + (ev.lineno || "?");
+});
 (function () {
   const TOPIC = { name: "half guard", ruleset: "gi", label: "gi half guard" };
 
@@ -785,13 +796,11 @@
   };
 
   function closeMenu() {
-    if (ui.menu && ui.menu.parentNode) ui.menu.parentNode.removeChild(ui.menu);
-    ui.menu = null;
-    document.removeEventListener("pointerdown", dismissMenu, true);
-    if (ui.armDismiss) {
-      document.removeEventListener("pointerup", ui.armDismiss, true);
-      ui.armDismiss = null;
+    if (ui.menu) {
+      ui.menu.hidden = true;
     }
+    ui.menu = null;
+    document.removeEventListener("click", dismissMenu, true);
   }
 
   function currentVariant() {
@@ -924,117 +933,61 @@
     return { x: origin.x + 140 * Math.cos(a), y: origin.y + 90 * Math.sin(a) };
   }
 
-  function menuItem(label, hasSub, onPick) {
-    const b = document.createElement("div");
-    b.className = "mi" + (hasSub ? " has-sub" : "");
-    b.setAttribute("role", "menuitem");
-    const text = document.createElement("span");
-    text.textContent = label;
-    b.appendChild(text);
-    if (hasSub) {
-      const caret = document.createElement("span");
-      caret.className = "caret";
-      caret.textContent = "▸";
-      b.appendChild(caret);
-    }
-    b.addEventListener("pointerdown", function (e) {
+  function pickBtn(label, onPick) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "pick";
+    b.textContent = label;
+    b.addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
-      if (hasSub) {
-        const was = b.classList.contains("open");
-        if (b.parentNode) {
-          [].forEach.call(b.parentNode.children, function (el) { el.classList.remove("open"); });
-        }
-        if (!was) b.classList.add("open");
-        return;
-      }
-      if (onPick) onPick();
+      onPick();
     });
     return b;
   }
 
-  function submenu() {
-    const s = document.createElement("div");
-    s.className = "sub";
-    return s;
-  }
-
-  function openCatalogMenu(clientX, clientY, fromNode) {
-    closeMenu();
-    const menu = document.createElement("div");
-    menu.className = "graph-menu box-final";
-    menu.style.left = Math.max(8, Math.min(clientX || 24, window.innerWidth - 280)) + "px";
-    menu.style.top = Math.max(8, Math.min(clientY || 24, window.innerHeight - 240)) + "px";
-    const head = document.createElement("div");
-    head.className = "head";
-    head.textContent = fromNode ? "Add from this mark" : "Add to the map";
-    menu.appendChild(head);
-
+  function fillCatalog(panel, fromNode) {
+    panel.innerHTML = "";
+    const h = document.createElement("h3");
+    h.textContent = fromNode ? "Add from this mark" : "Add to the map";
+    panel.appendChild(h);
     const at = ui.pendingAt || { x: 480, y: 280 };
 
     if (!fromNode) {
-      const occ = menuItem("Occupancy", true);
-      const occSub = submenu();
+      const hOcc = document.createElement("h4");
+      hOcc.textContent = "Occupancy";
+      panel.appendChild(hOcc);
       ["bottom", "top", "neutral"].forEach(function (side) {
-        occSub.appendChild(menuItem(side, false, function () {
+        panel.appendChild(pickBtn(side, function () {
           rememberPos("pos:" + state.start, at.x, at.y);
           ui.selected = { kind: "start", id: state.start };
           closeMenu();
           apply({ type: "SET_OCCUPANCY", occupancy: side });
         }));
       });
-      occ.appendChild(occSub);
-      menu.appendChild(occ);
     }
 
-    const typeItem = menuItem("Type of move", true);
-    const typeSub = submenu();
+    const hType = document.createElement("h4");
+    hType.textContent = "Type of move";
+    panel.appendChild(hType);
     const typeIds = state.occupancy ? DesignModel.typesAt(state.occupancy) : Object.keys(MOVE_TYPES);
     typeIds.forEach(function (tid) {
-      const moves = Object.keys(NAMED_MOVES).filter(function (id) {
-        const m = NAMED_MOVES[id];
-        return m.moveType === tid && (!state.occupancy || (m.start === state.start && m.startSide === state.occupancy));
-      });
-      const row = menuItem(MOVE_TYPES[tid].label, true);
-      const moveSub = submenu();
-      if (!fromNode) {
-        moveSub.appendChild(menuItem("Place " + MOVE_TYPES[tid].label + " mark", false, function () {
-          if (!state.occupancy && MOVE_TYPES[tid].sides.length === 1) {
-            rememberPos("pos:" + state.start, at.x - 120, at.y);
-          }
-          rememberPos("type:" + tid, at.x, at.y);
-          ui.selected = { kind: "type", id: tid };
-          closeMenu();
-          apply({ type: "OPEN_MOVE_TYPE", id: tid });
-        }));
-      }
-      moves.forEach(function (mid) {
-        moveSub.appendChild(menuItem(NAMED_MOVES[mid].label, false, function () {
-          const pos = fromNode ? placeNear(fromNode.id, 1) : at;
-          rememberPos("move:" + mid, pos.x, pos.y);
-          ui.selected = { kind: "move", id: mid };
-          closeMenu();
-          apply({ type: "ADD_NAMED_MOVE", id: mid });
-        }));
-      });
-      if (!moves.length) {
-        const empty = menuItem("No named moves", false);
-        empty.disabled = true;
-        moveSub.appendChild(empty);
-      }
-      row.appendChild(moveSub);
-      typeSub.appendChild(row);
+      panel.appendChild(pickBtn(MOVE_TYPES[tid].label, function () {
+        rememberPos("type:" + tid, at.x, at.y);
+        ui.selected = { kind: "type", id: tid };
+        closeMenu();
+        apply({ type: "OPEN_MOVE_TYPE", id: tid });
+      }));
     });
-    typeItem.appendChild(typeSub);
-    menu.appendChild(typeItem);
 
-    const nm = menuItem("Named move", true);
-    const nmSub = submenu();
+    const hMove = document.createElement("h4");
+    hMove.textContent = "Named move";
+    panel.appendChild(hMove);
     const available = state.occupancy
       ? DesignModel.movesAt(state.start, state.occupancy)
       : Object.keys(NAMED_MOVES);
     available.forEach(function (mid) {
-      nmSub.appendChild(menuItem(NAMED_MOVES[mid].label, false, function () {
+      panel.appendChild(pickBtn(NAMED_MOVES[mid].label, function () {
         const pos = fromNode ? placeNear(fromNode.id, 1) : at;
         rememberPos("move:" + mid, pos.x, pos.y);
         ui.selected = { kind: "move", id: mid };
@@ -1043,17 +996,17 @@
       }));
     });
     if (!available.length) {
-      const empty = menuItem("None at this occupancy", false);
-      empty.disabled = true;
-      nmSub.appendChild(empty);
+      const p = document.createElement("p");
+      p.className = "hint";
+      p.textContent = "None at this occupancy.";
+      panel.appendChild(p);
     }
-    nm.appendChild(nmSub);
-    menu.appendChild(nm);
 
-    const sysItem = menuItem("System", true);
-    const sysSub = submenu();
+    const hSys = document.createElement("h4");
+    hSys.textContent = "System";
+    panel.appendChild(hSys);
     Object.keys(SYSTEMS).forEach(function (sid) {
-      sysSub.appendChild(menuItem(SYSTEMS[sid].label, false, function () {
+      panel.appendChild(pickBtn(SYSTEMS[sid].label, function () {
         const pos = fromNode ? placeNear(fromNode.id, 1) : at;
         rememberPos("sys:" + sid, pos.x, pos.y);
         SYSTEMS[sid].members.forEach(function (mid, i) {
@@ -1064,29 +1017,47 @@
         apply({ type: "ADD_SYSTEM", id: sid });
       }));
     });
-    sysItem.appendChild(sysSub);
-    menu.appendChild(sysItem);
 
     if (!fromNode) {
-      menu.appendChild(menuItem("How this topic is taught", false, function () {
+      const hWords = document.createElement("h4");
+      hWords.textContent = "This topic";
+      panel.appendChild(hWords);
+      panel.appendChild(pickBtn("How this topic is taught", function () {
         ui.selected = { kind: "words", id: "words" };
         closeMenu();
         paint();
       }));
     }
+  }
 
-    document.body.appendChild(menu);
-    ui.menu = menu;
-    ui.armDismiss = function () {
-      document.removeEventListener("pointerup", ui.armDismiss, true);
-      ui.armDismiss = null;
-      document.addEventListener("pointerdown", dismissMenu, true);
-    };
-    document.addEventListener("pointerup", ui.armDismiss, true);
+  function openCatalogMenu(clientX, clientY, fromNode) {
+    try {
+      const host = document.querySelector(".map-stage");
+      if (!host) return;
+      let panel = host.querySelector(".catalog-flyout");
+      if (!panel) {
+        panel = document.createElement("div");
+        panel.className = "catalog-flyout";
+        host.appendChild(panel);
+      }
+      fillCatalog(panel, fromNode);
+      panel.hidden = false;
+      ui.menu = panel;
+      setTimeout(function () {
+        document.addEventListener("click", dismissMenu, true);
+      }, 0);
+    } catch (err) {
+      const el = document.getElementById("js-error");
+      if (el) {
+        el.style.display = "block";
+        el.textContent = "Menu error: " + err.message;
+      }
+    }
   }
 
   function dismissMenu(e) {
     if (ui.menu && ui.menu.contains(e.target)) return;
+    if (e.target.closest && e.target.closest("[data-add], .add-select")) return;
     closeMenu();
   }
 
@@ -1151,13 +1122,68 @@
     const height = Math.max(560, Math.floor(window.innerHeight * 0.62));
     const tools = document.createElement("div");
     tools.className = "graph-toolbar";
-    tools.innerHTML = "<button type=\"button\" class=\"icon-btn primary\" data-add=\"1\">Add to the map</button><label>Label size</label><span class=\"size-btns row\"></span>";
-    tools.querySelector("[data-add]").addEventListener("pointerdown", function (e) {
+    tools.innerHTML = "<button type=\"button\" class=\"icon-btn primary\" data-add=\"1\">Add to the map</button>";
+    const addSel = document.createElement("select");
+    addSel.className = "add-select";
+    addSel.innerHTML = "<option value=\"\">Add to the map…</option>";
+    (function buildSelect() {
+      const og1 = document.createElement("optgroup");
+      og1.label = "Occupancy";
+      ["bottom", "top", "neutral"].forEach(function (side) {
+        const o = document.createElement("option");
+        o.value = "occ:" + side;
+        o.textContent = side;
+        og1.appendChild(o);
+      });
+      addSel.appendChild(og1);
+      const og2 = document.createElement("optgroup");
+      og2.label = "Named move";
+      Object.keys(NAMED_MOVES).forEach(function (id) {
+        const o = document.createElement("option");
+        o.value = "move:" + id;
+        o.textContent = NAMED_MOVES[id].label;
+        og2.appendChild(o);
+      });
+      addSel.appendChild(og2);
+      const og3 = document.createElement("optgroup");
+      og3.label = "System";
+      Object.keys(SYSTEMS).forEach(function (id) {
+        const o = document.createElement("option");
+        o.value = "sys:" + id;
+        o.textContent = SYSTEMS[id].label;
+        og3.appendChild(o);
+      });
+      addSel.appendChild(og3);
+    })();
+    addSel.addEventListener("change", function () {
+      const v = addSel.value;
+      addSel.selectedIndex = 0;
+      if (!v) return;
+      const at = { x: width * 0.45, y: height * 0.45 };
+      ui.pendingAt = at;
+      const parts = v.split(":");
+      if (parts[0] === "occ") {
+        rememberPos("pos:" + state.start, at.x, at.y);
+        ui.selected = { kind: "start", id: state.start };
+        apply({ type: "SET_OCCUPANCY", occupancy: parts[1] });
+      } else if (parts[0] === "move") {
+        rememberPos("move:" + parts[1], at.x, at.y);
+        ui.selected = { kind: "move", id: parts[1] };
+        apply({ type: "ADD_NAMED_MOVE", id: parts[1] });
+      } else if (parts[0] === "sys") {
+        rememberPos("sys:" + parts[1], at.x, at.y);
+        ui.selected = { kind: "system", id: parts[1] };
+        apply({ type: "ADD_SYSTEM", id: parts[1] });
+      }
+    });
+    tools.appendChild(addSel);
+    tools.insertAdjacentHTML("beforeend", "<label>Label size</label><span class=\"size-btns row\"></span>");
+    tools.querySelector("[data-add]").addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
-      const r = e.currentTarget.getBoundingClientRect();
       ui.pendingAt = { x: width * 0.45, y: height * 0.45 };
-      openCatalogMenu(r.left, r.bottom + 6, null);
+      if (ui.menu && !ui.menu.hidden) closeMenu();
+      else openCatalogMenu(e.clientX, e.clientY, null);
     });
     const sizes = [12, 16, 20];
     const sizeHost = tools.querySelector(".size-btns");
@@ -1435,12 +1461,10 @@
 
     function emptyCanvasClick(e) {
       if (ui.moved) return;
-      if (ui.menu) return;
       if (e.target.closest && e.target.closest(".graph-toolbar")) return;
       if (e.target.closest && e.target.closest(".sidebar-dock")) return;
       if (e.target.closest && e.target.closest("[data-mark]")) return;
-      if (e.target.closest && e.target.closest(".graph-menu")) return;
-      e.preventDefault();
+      if (e.target.closest && e.target.closest(".catalog-flyout")) return;
       e.stopPropagation();
       let p = { x: width * 0.45, y: height * 0.45 };
       try { p = svgPoint(svg, e.clientX, e.clientY); } catch (err) {}
@@ -1449,7 +1473,8 @@
       showDock();
       openCatalogMenu(e.clientX, e.clientY, null);
     }
-    wrap.addEventListener("pointerdown", emptyCanvasClick, true);
+    wrap.addEventListener("click", emptyCanvasClick);
+    svg.addEventListener("click", emptyCanvasClick);
 
     svg.addEventListener("pointermove", function (e) {
       if (!ui.dragging) return;
