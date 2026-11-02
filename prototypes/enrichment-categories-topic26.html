@@ -251,7 +251,20 @@
       overflow: hidden;
     }
     .force-svg { height: 900px; }
-    .er-svg { height: 640px; }
+    .er-svg { height: 720px; }
+    .setup-pairs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .35rem;
+      margin: .45rem 0 .2rem;
+    }
+    .setup-pairs .pair {
+      background: #ffedd5;
+      border: 1px solid #fdba74;
+      border-radius: 999px;
+      padding: .12rem .55rem;
+      font-size: .78rem;
+    }
     .er-detail {
       margin-top: .55rem;
       padding: .7rem .8rem;
@@ -353,7 +366,7 @@
     <p class="meta">
       One position record is used as a start and as an end. Submissions are endings only.
       The entity diagram asks which of those names are records, which are only fields, and which are activities the coach performs.
-      The force-directed journey is a workflow for sketching a sequence the coach could pack into a unit.
+      A sequence is a setup of complementary named moves: when the partner defends A, they give B. Teaching order is a field on that setup, not the fighting graph.
     </p>
   </header>
   <div class="question">
@@ -362,7 +375,7 @@
       <p>
         Does this starting tree of finder nodes look right to import as the live copy the coach then edits?
         Which names are entities (a catalog record, or an activity such as a sequence or a citation) and which are only attributes of those records?
-        Click the entity diagram, walk a sequence in the force graph, then say what should change before import.
+        A sequence is a complementary setup, not a one-way chain. Click the entity diagram, load the closed-guard sample, add or drop named moves, then say what should change before import.
       </p>
     </details>
   </div>
@@ -907,10 +920,20 @@
         label: "Sequence",
         shape: "entity",
         nature: "activity",
-        summary: "An ordered chain of hops the coach is assembling in the force-directed journey. A workflow toward a unit, not a finder node in the seed.",
-        attrs: ["ordered hops", "chosen named moves"],
+        summary: "A coach-authored setup of complementary named moves that share a start. When the partner defends one, they give another. Linear last-move chains fail against a good opponent. Not a finder node in the seed.",
+        attrs: ["shared start", "member named moves", "teaching order"],
         countKey: "sequence",
-        ask: "Does a sequence become a stored record on a unit, or stay a working sketch that later places citations on lessons?"
+        ask: "Is a sequence this complementary setup (dilemma or trilemma), with teaching order only as a field?"
+      },
+      {
+        id: "complement",
+        label: "Complement",
+        shape: "relationship",
+        nature: "reference",
+        summary: "Directed pair inside a sequence: defending named move A gives named move B. The coach authors these pairs. A two-move setup is a dilemma; three is a trilemma.",
+        attrs: ["defend A", "gives B"],
+        countKey: "complements",
+        ask: "Does the coach store each defend-A-gives-B pair, rather than treating every pair of members as complementary?"
       },
       {
         id: "citation",
@@ -926,9 +949,17 @@
         label: "Unit",
         shape: "entity",
         nature: "activity",
-        summary: "The classes that teach one system. Enrichment does not hold lesson fields. A sequence is a candidate packing of hops the coach may turn into lessons.",
+        summary: "The classes that teach one system. Enrichment does not hold lesson fields. A sequence is a candidate packing of a complementary setup the coach may turn into lessons.",
         attrs: ["system paragraph", "classes"],
         countKey: "none"
+      },
+      {
+        id: "teaching_order",
+        label: "Teaching order",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "sequence",
+        summary: "Optional order for how the complementary named moves are taught in class. Fighting goes back and forth; this field only sequences the lessons."
       },
       {
         id: "family",
@@ -1001,9 +1032,13 @@
       { from: "ruleset", to: "named_move", label: "of" },
       { from: "aliases", to: "named_move", label: "of" },
       { from: "cross_ref", to: "named_move", label: "of" },
-      { from: "sequence", to: "path", label: "ordered hops" },
-      { from: "sequence", to: "named_move", label: "chosen leaf" },
-      { from: "sequence", to: "unit", label: "candidate for" },
+      { from: "teaching_order", to: "sequence", label: "of" },
+      { from: "sequence", to: "position", label: "shared start" },
+      { from: "sequence", to: "named_move", label: "members 2..n" },
+      { from: "sequence", to: "complement", label: "holds" },
+      { from: "sequence", to: "path", label: "uses hops" },
+      { from: "sequence", to: "unit", label: "packs into" },
+      { from: "complement", to: "named_move", label: "defend A gives B" },
       { from: "citation", to: "named_move", label: "optional link" },
       { from: "uncategorized", to: "citation", label: "when unlinked" }
     ];
@@ -1016,14 +1051,16 @@
       aliases: { x: 120, y: 430 },
       cross_ref: { x: 120, y: 505 },
       uncategorized: { x: 120, y: 580 },
+      teaching_order: { x: 120, y: 655 },
       position: { x: 430, y: 130 },
       move_type: { x: 430, y: 270 },
       submission: { x: 430, y: 410 },
-      path: { x: 780, y: 250 },
-      named_move: { x: 780, y: 470 },
-      sequence: { x: 1140, y: 150 },
+      complement: { x: 780, y: 110 },
+      path: { x: 780, y: 300 },
+      named_move: { x: 780, y: 500 },
+      sequence: { x: 1140, y: 110 },
       citation: { x: 1140, y: 340 },
-      unit: { x: 1140, y: 520 }
+      unit: { x: 1140, y: 530 }
     };
 
     function byId(id) {
@@ -1040,7 +1077,8 @@
         paths: s.paths.length,
         leaves: leafN,
         citations: state.citations.length,
-        sequence: forceJourney.length,
+        sequence: forceSetup.length,
+        complements: forceSetup.length > 1 ? forceSetup.length : 0,
         none: null
       };
     }
@@ -1061,7 +1099,7 @@
     {
       id: "happy",
       name: "Hip bump path",
-      blurb: "A complete path with a linked citation. Watch Closed guard → Sweep → Mount → Hip bump sweep.",
+      blurb: "A complete path with a linked citation. Watch Closed guard → Sweep → Mount → Hip bump sweep. Load the closed-guard trilemma on the journey to see hip bump sit with kimura and triangle.",
       steps: [
         { label: "Clear search", action: { type: "SEARCH", query: "" } },
         { label: "Show both rulesets", action: { type: "FILTER_RULESET", ruleset: "all" } },
@@ -1161,7 +1199,9 @@
     toast._t = setTimeout(() => t.classList.remove("show"), 2400);
   }
 
-  let forceJourney = [];
+  let forceStart = null;
+  let forceOpenMoves = [];
+  let forceSetup = [];
   let forcePos = {};
   let forceRaf = 0;
   function go(action) {
@@ -1242,17 +1282,17 @@
     elNode.addEventListener("mouseleave", hideTip);
   }
 
+  function isChosen(layer, opt) {
+    if (layer.selectedSet) return layer.selectedSet.indexOf(opt.id) >= 0;
+    return layer.selected === opt.id;
+  }
+
   function buildJourneyLayers(state) {
     const paths = visiblePathList(state);
     const layers = [];
-    let ji = 0;
-    let col = 0;
-    const startPick = forceJourney[0] && forceJourney[0].kind === "start" ? forceJourney[0].id : null;
     layers.push({
       kind: "start",
       col: 0,
-      prefixLen: 0,
-      jLen: 1,
       label: "Starting position",
       options: state.seed.positions.map((p) => ({
         id: p.id,
@@ -1260,163 +1300,130 @@
         kind: "start",
         family: familyKey(p)
       })),
-      selected: startPick
+      selected: forceStart
     });
-    ji = startPick ? 1 : 0;
-    let hopFrom = startPick;
-    while (hopFrom) {
-      const mtIds = [];
-      paths.forEach((p) => {
-        if (p.start === hopFrom && mtIds.indexOf(p.move_type) < 0) mtIds.push(p.move_type);
-      });
-      const mtPick = forceJourney[ji] && forceJourney[ji].kind === "move" ? forceJourney[ji].id : null;
-      const mtOpts = mtIds.map((id) => {
+    if (!forceStart) return layers;
+    const mtIds = [];
+    paths.forEach((p) => {
+      if (p.start === forceStart && mtIds.indexOf(p.move_type) < 0) mtIds.push(p.move_type);
+    });
+    layers.push({
+      kind: "move",
+      col: 1,
+      label: "Type of move (open several)",
+      from: forceStart,
+      options: mtIds.map((id) => {
         const m = Tree.byId(state.seed.move_types, id);
         return { id, label: m ? m.label : id, kind: "move", family: "move" };
-      });
-      layers.push({
-        kind: "move",
-        col: col + 1,
-        prefixLen: ji,
-        jLen: mtPick ? ji + 1 : ji,
-        label: "Type of move",
-        from: hopFrom,
-        options: mtPick ? mtOpts.filter((o) => o.id !== mtPick) : mtOpts,
-        selected: mtPick,
-        selectedLabel: mtPick ? ((Tree.byId(state.seed.move_types, mtPick) || {}).label || mtPick) : null
-      });
-      if (!mtPick) break;
-      ji += 1;
-      const leafPrefix = ji;
-      let leafPick = null;
-      if (forceJourney[ji] && forceJourney[ji].kind === "leaf") {
-        leafPick = forceJourney[ji].id;
-        ji += 1;
-      }
-      const endPrefix = ji;
-      let endPick = null;
-      if (forceJourney[ji] && forceJourney[ji].kind === "end") {
-        endPick = forceJourney[ji].id;
-        ji += 1;
-      }
-      const leafOpts = [];
-      paths.forEach((p) => {
-        if (p.start !== hopFrom || p.move_type !== mtPick) return;
-        (p.leaves || []).forEach((l) => {
-          if (!Tree.leafVisible(state, l)) return;
-          leafOpts.push({
-            id: l.name + "@" + p.end,
-            name: l.name,
-            label: l.name,
-            kind: "leaf",
-            family: "leaf",
-            end: p.end,
-            ruleset: l.ruleset,
-            move: mtPick
-          });
+      }),
+      selectedSet: forceOpenMoves.slice()
+    });
+    const leafOpts = [];
+    paths.forEach((p) => {
+      if (p.start !== forceStart) return;
+      if (forceOpenMoves.indexOf(p.move_type) < 0) return;
+      (p.leaves || []).forEach((l) => {
+        if (!Tree.leafVisible(state, l)) return;
+        leafOpts.push({
+          id: l.name + "@" + p.end,
+          name: l.name,
+          label: l.name,
+          kind: "leaf",
+          family: "leaf",
+          end: p.end,
+          ruleset: l.ruleset,
+          move: p.move_type
         });
       });
-      const seen = {};
-      const endOpts = [];
-      leafOpts.forEach((leaf) => {
-        if (seen[leaf.end]) return;
-        seen[leaf.end] = true;
-        const e = Tree.endRef(state.seed, leaf.end);
-        endOpts.push({
-          id: leaf.end,
-          label: e ? e.label : leaf.end,
-          kind: e && e.kind === "submission" ? "submission" : "end",
-          endKind: e ? e.kind : "position",
-          family: e && e.kind === "submission" ? "submission" : familyKey(e)
-        });
-      });
+    });
+    if (leafOpts.length) {
       layers.push({
         kind: "leaf",
-        col: col + 1,
-        prefixLen: leafPrefix,
-        jLen: leafPick ? leafPrefix + 1 : leafPrefix,
-        label: "Named-move leaves",
-        from: hopFrom,
-        move: mtPick,
+        col: 1,
+        label: "Named moves in this setup",
+        from: forceStart,
         options: leafOpts,
-        selected: leafPick
+        selectedSet: forceSetup.map((s) => s.id)
       });
+    }
+    const seenEnd = {};
+    const endOpts = [];
+    (forceSetup.length ? forceSetup : []).forEach((leaf) => {
+      if (seenEnd[leaf.end]) return;
+      seenEnd[leaf.end] = true;
+      const e = Tree.endRef(state.seed, leaf.end);
+      endOpts.push({
+        id: leaf.end,
+        label: e ? e.label : leaf.end,
+        kind: e && e.kind === "submission" ? "submission" : "end",
+        endKind: e ? e.kind : "position",
+        family: e && e.kind === "submission" ? "submission" : familyKey(e)
+      });
+    });
+    if (endOpts.length) {
       layers.push({
         kind: "end",
-        col: col + 2,
-        prefixLen: endPrefix,
-        jLen: endPick ? endPrefix + 1 : endPrefix,
-        label: "Ending position or submission",
-        from: hopFrom,
-        move: mtPick,
+        col: 2,
+        label: "Where a success lands (failure stays in the start)",
+        from: forceStart,
         options: endOpts,
-        selected: endPick
+        selectedSet: endOpts.map((o) => o.id)
       });
-      if (!endPick) break;
-      const picked = endOpts.find((o) => o.id === endPick);
-      if (!picked || picked.endKind === "submission") break;
-      hopFrom = endPick;
-      col += 2;
     }
     return layers;
   }
 
-  function optionDimmed(layer, opt, layers) {
-    if (layer.kind === "leaf") {
-      if (layer.selected && layer.selected !== opt.id) return true;
-      const endLayer = layers.find((l) => l.kind === "end" && l.from === layer.from && l.move === layer.move);
-      if (endLayer && endLayer.selected && opt.end !== endLayer.selected) return true;
-      return false;
-    }
-    if (layer.kind === "end") {
-      if (layer.selected && layer.selected !== opt.id) return true;
-      const leafLayer = layers.find((l) => l.kind === "leaf" && l.from === layer.from && l.move === layer.move);
-      if (leafLayer && leafLayer.selected) {
-        const leaf = leafLayer.options.find((o) => o.id === leafLayer.selected);
-        if (leaf && leaf.end !== opt.id) return true;
-      }
-      return false;
-    }
-    if (layer.kind === "move" && layer.selected) return true;
-    return !!(layer.selected && layer.selected !== opt.id);
+  function optionDimmed(layer, opt) {
+    if (layer.kind === "start") return !!(layer.selected && layer.selected !== opt.id);
+    if (layer.kind === "leaf") return !isChosen(layer, opt) && forceSetup.length > 0;
+    return false;
   }
 
   function journeyCrumbs(layers) {
     const crumbs = [];
-    layers.forEach((layer, i) => {
-      if (layer.kind === "move" && layer.selected) {
-        crumbs.push({ i, layer, label: layer.selectedLabel || layer.selected, kind: "move" });
-      } else if (layer.selected) {
-        const opt = layer.options.find((o) => o.id === layer.selected);
-        crumbs.push({ i, layer, label: opt ? opt.label : layer.selected, kind: layer.kind });
-      }
+    const startLayer = layers[0];
+    if (startLayer && startLayer.selected) {
+      const opt = startLayer.options.find((o) => o.id === startLayer.selected);
+      crumbs.push({ i: 0, layer: startLayer, label: opt ? opt.label : startLayer.selected, kind: "start", opt: opt });
+    }
+    forceSetup.forEach((s) => {
+      const leafLayer = layers.find((l) => l.kind === "leaf");
+      crumbs.push({
+        i: leafLayer ? layers.indexOf(leafLayer) : 0,
+        layer: leafLayer || startLayer,
+        label: s.label || s.name,
+        kind: "leaf",
+        opt: s
+      });
     });
     return crumbs;
   }
 
   function journeyTrail(layers) {
-    return journeyCrumbs(layers).map((c) => c.label).join(" → ");
+    const crumbs = journeyCrumbs(layers);
+    if (!crumbs.length) return "";
+    const start = crumbs[0] && crumbs[0].kind === "start" ? crumbs[0].label : "";
+    const members = crumbs.filter((c) => c.kind === "leaf").map((c) => c.label);
+    if (!members.length) return start;
+    return start + " · " + members.join(" / ");
   }
 
   function renderCrumbBar(layers) {
     const crumbs = journeyCrumbs(layers);
     const bar = el("div", { class: "crumb-bar" });
     if (!crumbs.length) {
-      bar.append(el("span", { class: "empty" }, ["Pick a starting position to begin the trail."]));
+      bar.append(el("span", { class: "empty" }, ["Pick a starting position, then add complementary named moves to the setup."]));
       return bar;
     }
     crumbs.forEach((c, idx) => {
-      if (idx) bar.append(el("span", { class: "sep" }, ["→"]));
+      if (idx) bar.append(el("span", { class: "sep" }, [c.kind === "leaf" && crumbs[idx - 1].kind === "leaf" ? "/" : "·"]));
       bar.append(el("button", {
         class: "crumb",
         type: "button",
-        title: "Jump back to this step",
+        title: c.kind === "leaf" ? "Drop this named move from the setup" : "Keep this start",
         on: {
           click: () => {
-            const opt = c.kind === "move"
-              ? { id: c.layer.selected, kind: "move", label: c.layer.selectedLabel }
-              : (c.layer.options.find((o) => o.id === c.layer.selected) || { id: c.layer.selected, kind: c.kind });
-            pickJourney(c.i, opt, true);
+            pickJourney(c.i, c.opt || { id: c.layer.selected, kind: c.kind }, true);
           }
         }
       }, [c.label]));
@@ -1424,62 +1431,78 @@
     return bar;
   }
 
-  function syncTreeFromJourney(layers) {
-    let startId = null;
-    let moveId = null;
-    let endId = null;
-    let leafName = null;
-    layers.forEach((layer) => {
-      if (layer.kind === "start" && layer.selected) {
-        startId = layer.selected;
-        moveId = null;
-        endId = null;
-        leafName = null;
-      } else if (layer.kind === "move" && layer.selected) {
-        startId = layer.from;
-        moveId = layer.selected;
-        endId = null;
-        leafName = null;
-      } else if (layer.kind === "leaf" && layer.selected) {
-        const leaf = layer.options.find((o) => o.id === layer.selected);
-        leafName = leaf ? leaf.name : null;
-        if (leaf) endId = leaf.end;
-      } else if (layer.kind === "end" && layer.selected) {
-        startId = layer.from;
-        moveId = layer.move;
-        endId = layer.selected;
-      }
+  function renderSetupPairs() {
+    const wrap = el("div", { class: "setup-pairs" });
+    if (forceSetup.length < 2) {
+      wrap.append(el("span", { class: "xref" }, [
+        forceSetup.length === 1
+          ? "Add a second named move. Defending the first should give the second."
+          : "Open types of move, then click two or three named moves that complement each other."
+      ]));
+      return wrap;
+    }
+    forceSetup.forEach((a, i) => {
+      const b = forceSetup[(i + 1) % forceSetup.length];
+      wrap.append(el("span", { class: "pair" }, [
+        "Defend " + (a.label || a.name) + " → " + (b.label || b.name)
+      ]));
     });
-    if (startId) state = Tree.dispatch(state, { type: "SELECT_START", id: startId });
-    if (moveId) state = Tree.dispatch(state, { type: "SELECT_MOVE_TYPE", id: moveId });
-    if (endId) state = Tree.dispatch(state, { type: "SELECT_END", id: endId });
-    if (leafName) state = Tree.dispatch(state, { type: "SELECT_LEAF", name: leafName });
+    return wrap;
+  }
+
+  function syncTreeFromJourney(layers) {
+    if (forceStart) state = Tree.dispatch(state, { type: "SELECT_START", id: forceStart });
+    const last = forceSetup[forceSetup.length - 1];
+    if (last && last.move) state = Tree.dispatch(state, { type: "SELECT_MOVE_TYPE", id: last.move });
+    if (last && last.end) state = Tree.dispatch(state, { type: "SELECT_END", id: last.end });
+    if (last && last.name) state = Tree.dispatch(state, { type: "SELECT_LEAF", name: last.name });
   }
 
   function pickJourney(layerIndex, opt, reopen) {
-    const layersNow = buildJourneyLayers(state);
-    const layer = layersNow[layerIndex];
-    const prefix = layer ? layer.prefixLen : 0;
-    if (reopen) forceJourney = forceJourney.slice(0, prefix + 1);
-    else {
-      forceJourney = forceJourney.slice(0, prefix);
-      forceJourney.push({
-        kind: opt.kind === "submission" ? "end" : opt.kind,
-        id: opt.id,
-        name: opt.name,
-        end: opt.end,
-        endKind: opt.endKind
-      });
+    if (opt.kind === "start") {
+      if (forceStart !== opt.id) {
+        forceStart = opt.id;
+        forceOpenMoves = [];
+        forceSetup = [];
+        forcePos = {};
+      }
+    } else if (opt.kind === "end" || opt.kind === "submission") {
+      toast("A success lands here. When they defend, the setup stays in the start.");
+      return;
+    } else if (opt.kind === "move") {
+      const i = forceOpenMoves.indexOf(opt.id);
+      if (i >= 0) {
+        forceOpenMoves.splice(i, 1);
+        forceSetup = forceSetup.filter((s) => s.move !== opt.id);
+      } else forceOpenMoves.push(opt.id);
+    } else if (opt.kind === "leaf") {
+      const i = forceSetup.findIndex((s) => s.id === opt.id);
+      if (i >= 0) forceSetup.splice(i, 1);
+      else forceSetup.push(opt);
     }
     const layers = buildJourneyLayers(state);
     syncTreeFromJourney(layers);
     const trail = journeyTrail(layers);
-    const last = layers[layers.length - 1];
-    const msg = last && last.kind === "end" && last.selected && (last.options.find((o) => o.id === last.selected) || {}).endKind === "submission"
-      ? (trail + ". Submission is an ending only.")
-      : (trail || "Journey reset.");
+    const msg = forceSetup.length >= 2
+      ? (trail + ". Defend one, they give the next.")
+      : (trail || "Pick a starting position.");
     render();
     toast(msg || state.lastChange);
+  }
+
+  function loadClosedGuardSetup() {
+    forceStart = "closed-guard";
+    forceOpenMoves = ["sweep", "submission"];
+    forceSetup = [
+      { id: "Hip bump sweep@mount", name: "Hip bump sweep", label: "Hip bump sweep", kind: "leaf", family: "leaf", end: "mount", ruleset: "both", move: "sweep" },
+      { id: "Kimura from closed guard@kimura", name: "Kimura from closed guard", label: "Kimura from closed guard", kind: "leaf", family: "leaf", end: "kimura", ruleset: "both", move: "submission" },
+      { id: "Triangle choke@triangle", name: "Triangle choke", label: "Triangle choke", kind: "leaf", family: "leaf", end: "triangle", ruleset: "both", move: "submission" }
+    ];
+    forcePos = {};
+    const layers = buildJourneyLayers(state);
+    syncTreeFromJourney(layers);
+    render();
+    toast("Closed guard trilemma: hip bump, kimura, triangle. Defend one, they give another.");
   }
 
   function renderForce(state) {
@@ -1503,8 +1526,8 @@
       if (titled[layer.col]) return;
       titled[layer.col] = true;
       const sibling = layers.find((l) => l.col === layer.col && l.kind === "leaf");
-      const label = sibling && sibling.options.length
-        ? (layer.kind === "leaf" || layer.kind === "move" ? "Type of move → named moves" : layer.label)
+      const label = sibling && sibling.options.length && (layer.kind === "leaf" || layer.kind === "move")
+        ? "Types of move and named moves in the setup"
         : layer.label;
       const t = svgEl("text", {
         x: String(colX(layer.col)), y: "32",
@@ -1574,8 +1597,8 @@
       layer.options.forEach((opt, k) => {
         const nid = i + ":" + opt.kind + ":" + opt.id;
         const prev = forcePos[nid];
-        const dimmed = optionDimmed(layer, opt, layers);
-        const chosen = layer.selected === opt.id;
+        const dimmed = optionDimmed(layer, opt);
+        const chosen = isChosen(layer, opt);
         let ix = colX(layer.col);
         let iy = 80 + (k + 0.5) * ((height - 110) / Math.max(1, layer.options.length));
         if (layer.kind === "start" && centroids[opt.family]) {
@@ -1587,12 +1610,12 @@
           ix = c.x + Math.cos(ang) * rr;
           iy = c.y + Math.sin(ang) * rr * 0.88;
         }
-        if (layer.kind === "move" && layer.selected) {
-          ix = colX(layer.col) - 54;
-          iy = 78 + (k + 0.5) * 38;
+        if (layer.kind === "move") {
+          ix = colX(layer.col) - 70;
+          iy = 90 + (k + 0.5) * ((height - 140) / Math.max(1, layer.options.length));
         }
         if (layer.kind === "leaf") {
-          ix = colX(layer.col) + 18;
+          ix = colX(layer.col) + 36;
           iy = 96 + (k + 0.5) * ((height - 150) / Math.max(1, layer.options.length));
         }
         const n = {
@@ -1620,45 +1643,36 @@
       return nodeMap[i + ":" + opt.kind + ":" + opt.id];
     }
     const startChosen = startLayer.selected && nodeOf(0, startLayer.options.find((o) => o.id === startLayer.selected) || { kind: "start", id: startLayer.selected });
+    const moveLayer = layers.find((l) => l.kind === "move");
+    const moveIdx = moveLayer ? layers.indexOf(moveLayer) : -1;
     layers.forEach((layer, i) => {
-      if (layer.kind === "move") {
-        const src = layers.slice(0, i).reverse().find((l) => (l.kind === "start" || l.kind === "end") && l.selected);
-        let srcNode = null;
-        if (src && src.kind === "start") srcNode = startChosen;
-        if (src && src.kind === "end") {
-          const si = layers.indexOf(src);
-          const opt = src.options.find((o) => o.id === src.selected);
-          srcNode = opt ? nodeOf(si, opt) : null;
-        }
-        if (srcNode) {
-          layer.options.forEach((opt) => {
-            const t = nodeOf(i, opt);
-            links.push({ s: srcNode, t, dimmed: true, move: opt.id });
-          });
-        }
+      if (layer.kind === "move" && startChosen) {
+        layer.options.forEach((opt) => {
+          const t = nodeOf(i, opt);
+          links.push({ s: startChosen, t, dimmed: false, move: opt.id });
+        });
       }
       if (layer.kind === "leaf") {
-        const src = startChosen && layer.from === startLayer.selected ? startChosen : null;
-        let srcNode = src;
-        if (!srcNode) {
-          const prevEnd = layers.slice(0, i).reverse().find((l) => l.kind === "end" && l.selected === layer.from);
-          if (prevEnd) {
-            const si = layers.indexOf(prevEnd);
-            const opt = prevEnd.options.find((o) => o.id === prevEnd.selected);
-            srcNode = opt ? nodeOf(si, opt) : null;
-          }
-        }
-        const endLayer = layers.find((l) => l.kind === "end" && l.from === layer.from && l.move === layer.move);
+        const endLayer = layers.find((l) => l.kind === "end");
         const ei = endLayer ? layers.indexOf(endLayer) : -1;
         layer.options.forEach((opt) => {
           const leafN = nodeOf(i, opt);
-          if (srcNode) links.push({ s: srcNode, t: leafN, dimmed: optionDimmed(layer, opt, layers), move: layer.move });
-          if (endLayer) {
+          const mtOpt = moveLayer && moveLayer.options.find((o) => o.id === opt.move);
+          const mtN = mtOpt && moveIdx >= 0 ? nodeOf(moveIdx, mtOpt) : startChosen;
+          if (mtN) links.push({ s: mtN, t: leafN, dimmed: optionDimmed(layer, opt), move: opt.move });
+          if (endLayer && isChosen(layer, opt)) {
             const endOpt = endLayer.options.find((o) => o.id === opt.end);
             const endN = endOpt ? nodeOf(ei, endOpt) : null;
-            if (endN) links.push({ s: leafN, t: endN, dimmed: optionDimmed(layer, opt, layers) || optionDimmed(endLayer, endOpt, layers), move: layer.move });
+            if (endN) links.push({ s: leafN, t: endN, dimmed: false, move: opt.move });
           }
         });
+        const chosenLeaves = layer.options.map((opt) => nodeOf(i, opt)).filter((n) => n && n.chosen);
+        if (chosenLeaves.length >= 2) {
+          chosenLeaves.forEach((s, idx) => {
+            const t = chosenLeaves[(idx + 1) % chosenLeaves.length];
+            links.push({ s, t, complement: true, dimmed: false });
+          });
+        }
       }
     });
 
@@ -1791,11 +1805,14 @@
     links.forEach((lnk) => {
       if (!lnk.s || !lnk.t) return;
       const line = svgEl("line", {
-        stroke: lnk.dimmed ? "#d6d3d1" : (MOVE_COLOR[lnk.move] || "#a8a29e"),
-        "stroke-width": lnk.t.chosen || !lnk.t.dimmed ? "2.4" : "1.2",
-        opacity: lnk.dimmed ? "0.22" : "0.75"
+        stroke: lnk.complement ? "#ea580c" : (lnk.dimmed ? "#d6d3d1" : (MOVE_COLOR[lnk.move] || "#a8a29e")),
+        "stroke-width": lnk.complement ? "2.8" : (lnk.t.chosen || !lnk.t.dimmed ? "2.4" : "1.2"),
+        opacity: lnk.complement ? "0.95" : (lnk.dimmed ? "0.22" : "0.75"),
+        "stroke-dasharray": lnk.complement ? "8 5" : "none"
       });
-      wireHover(line, () => lnk.s.label + " → " + lnk.t.label, () => []);
+      wireHover(line, () => lnk.complement
+        ? ("Defend " + lnk.s.label + " gives " + lnk.t.label)
+        : (lnk.s.label + " → " + lnk.t.label), () => []);
       linkG.appendChild(line);
       lnk.el = line;
     });
@@ -1850,7 +1867,11 @@
         wireHover(elNode, () => n.label, () => [
           kindLabel,
           n.kind === "leaf" ? (n.opt.ruleset + " · ends at " + n.opt.end) : "",
-          n.dimmed ? "Not selected" : (n.chosen ? "Selected" : "Click to pick"),
+          n.kind === "leaf"
+            ? (n.chosen ? "In the setup. Click to drop." : "Click to add as a complement.")
+            : (n.kind === "move"
+              ? (n.chosen ? "Open. Click to close this type." : "Click to show named moves of this type.")
+              : (n.dimmed ? "Not selected" : (n.chosen ? "Selected" : "Click to pick"))),
           n.family && n.family !== "move" && n.family !== "leaf" ? n.family.replace(/-/g, " ") : ""
         ]);
         elNode.addEventListener("click", (ev) => {
@@ -1898,7 +1919,7 @@
         let dx = lnk.t.x - lnk.s.x;
         let dy = lnk.t.y - lnk.s.y;
         let dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        let rest = lnk.s.kind === "leaf" || lnk.t.kind === "leaf" ? 88 : 140;
+        let rest = lnk.complement ? 170 : (lnk.s.kind === "leaf" || lnk.t.kind === "leaf" ? 88 : 140);
         let f = (dist - rest) * 0.014;
         let fx = (dx / dist) * f;
         let fy = (dy / dist) * f;
@@ -1946,7 +1967,7 @@
     return { svg, layers, count: nodes.length, width };
   }
 
-  let erFocus = "path";
+  let erFocus = "sequence";
 
   function renderEr(state) {
     const wrap = el("section", { class: "panel plot-panel" }, [
@@ -1988,7 +2009,7 @@
     wrap.append(body);
 
     const width = 1360;
-    const height = 640;
+    const height = 720;
     if (typeof d3 === "undefined") {
       mount.append(el("p", { class: "xref" }, ["D3 did not load. Open this file while online, or allow cdn.jsdelivr.net."]));
       return wrap;
@@ -2135,41 +2156,42 @@
 
   function renderPlot(state) {
     const wrap = el("section", { class: "panel plot-panel" }, [
-      el("h2", {}, ["Force-directed journey · sequence for a unit"])
+      el("h2", {}, ["Force-directed journey · complementary setup for a unit"])
     ]);
     const body = el("div", { class: "body" });
     const force = renderForce(state);
     body.append(renderCrumbBar(force.layers));
+    body.append(renderSetupPairs());
     const legend = el("div", { class: "legend" });
     Object.entries(MOVE_COLOR).forEach(([id, color]) => {
       const mt = Tree.byId(state.seed.move_types, id);
       legend.append(el("span", {}, [el("i", { style: "background:" + color }), mt ? mt.label : id]));
     });
-    legend.append(el("span", {}, ["Pick hops to sketch a sequence the coach could pack into a unit."]));
+    legend.append(el("span", {}, ["Dashed orange: defend A gives B. Pick several named moves that complement each other."]));
     body.append(legend);
 
-    const forceHead = el("h2", {}, ["Walk a path"]);
+    const forceHead = el("h2", {}, ["Build a complementary setup"]);
     forceHead.style.marginTop = "0.35rem";
     body.append(forceHead);
     const forceTools = el("div", { class: "toolbar" }, [
       el("button", {
         class: "primary",
-        on: { click: () => { forceJourney = []; forcePos = {}; render(); toast("Journey reset. Pick a starting position."); } }
-      }, ["Reset journey"]),
+        on: { click: () => { forceStart = null; forceOpenMoves = []; forceSetup = []; forcePos = {}; render(); toast("Setup cleared. Pick a starting position."); } }
+      }, ["Reset setup"]),
+      el("button", {
+        on: { click: loadClosedGuardSetup }
+      }, ["Load closed-guard trilemma"]),
       el("span", { class: "xref" }, [
-        "Starting positions sit in family clusters. Pick a type of move and that square becomes the named-move leaves plus the endings they land on."
+        "Pick a start, open more than one type of move, then click named moves that work together. A success lands on the ending; a defense stays in the start and gives the next named move."
       ])
     ]);
     body.append(forceTools);
     body.append(el("p", { class: "xref" }, [
-      "Filled circle = starting position · Hollow circle = ending position · Rounded bar = named-move leaf · Square = type of move · Diamond = submission. Click to pick. Click a crumb or a grey node to change that step. Drag a node."
+      "Filled circle = starting position · Hollow circle = where a success lands · Rounded bar = named move · Square = type of move · Diamond = submission · Dashed orange = defend A gives B. Click a named move to add or drop it. Drag a node."
     ]));
     body.append(el("div", { class: "force-wrap" }, [force.svg]));
-    const last = force.layers[force.layers.length - 1];
-    const emptyNext = last && last.selected && last.kind === "end" && last.options.some((o) => o.id === last.selected && o.endKind === "submission");
     body.append(el("p", { class: "xref" }, [
-      force.layers.length + " layers · " + force.count + " nodes" +
-      (emptyNext ? ". Submission is an ending only, so the journey stops." : ".")
+      force.layers.length + " layers · " + force.count + " nodes · " + forceSetup.length + " named moves in the setup."
     ]));
 
     const focus = state.selected.identity || state.selected.start;
