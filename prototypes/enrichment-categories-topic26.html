@@ -251,7 +251,7 @@
       overflow: hidden;
     }
     .force-svg { height: 900px; }
-    .er-svg { height: 700px; }
+    .er-svg { height: 740px; }
     .setup-pairs {
       display: flex;
       flex-wrap: wrap;
@@ -366,7 +366,7 @@
     <p class="meta">
       Catalog records are reused: Position, Type of move, Submission, Named move, System, Citation, Lesson type.
       Activity records use that catalog: Unit, Class, Lesson.
-      A named move is the start, the type of move, and the end (a position or a submission). A system is two or more named moves that create a dilemma.
+      A named move is the start, the type of move, and the end. A lesson points at a named move. Citations of that named move are the pool the coach chooses from while building the lesson.
     </p>
   </header>
   <div class="question">
@@ -900,7 +900,7 @@
         label: "Named move",
         shape: "entity",
         nature: "reference",
-        summary: "One catalog movement, such as Hip bump sweep. It consists of a start position, a type of move, and an end (a position or a submission). Citations link here. Systems group two or more of these.",
+        summary: "One catalog movement, such as Hip bump sweep. It consists of a start position, a type of move, and an end (a position or a submission). Citations belong here. A lesson points here. Systems group two or more of these.",
         attrs: ["name", "start", "type of move", "end", "ruleset", "aliases", "cross_refs"],
         countKey: "leaves"
       },
@@ -919,7 +919,7 @@
         label: "Citation",
         shape: "entity",
         nature: "reference",
-        summary: "A catalog teaching of a named move: instructor, instructional, volume, chapter, timestamp. Many citations can link to one named move. With no named-move link it stays usable under uncategorized.",
+        summary: "A catalog teaching that belongs to a named move: instructor, instructional, volume, chapter, timestamp. Many citations can belong to one named move. When the coach builds a lesson on that named move, these citations are the pool they choose from.",
         attrs: ["instructor", "instructional", "volume", "chapter", "timestamp", "cleaned statement"],
         countKey: "citations"
       },
@@ -955,9 +955,17 @@
         label: "Lesson",
         shape: "entity",
         nature: "activity",
-        summary: "Activity: what is actually being worked on in a class. It has a lesson type. A technique lesson places citations (which already point at named moves).",
-        attrs: ["lesson type", "citations or partner job or scenario or condition"],
+        summary: "Activity: what is actually being worked on in a class. It points at one named move. Citations of that named move are offered while building; the coach chooses which to use in the instruction.",
+        attrs: ["lesson type", "named move", "chosen citations", "partner job or scenario or condition"],
         countKey: "none"
+      },
+      {
+        id: "chosen_citations",
+        label: "Chosen citations",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "lesson",
+        summary: "Which of the named move's citations the coach uses in this lesson. The lesson's identity is the named move. This field is the subset they leverage for instruction."
       },
       {
         id: "family",
@@ -1013,7 +1021,7 @@
         shape: "attribute",
         nature: "attribute",
         owner: "citation",
-        summary: "Browse bucket when a citation has no named-move link. Not a catalog node."
+        summary: "Browse bucket when a citation has no named-move link. It is not offered on a lesson until it belongs to a named move."
       }
     ];
 
@@ -1035,7 +1043,8 @@
       { from: "unit", to: "class", label: "1..n" },
       { from: "class", to: "lesson", label: "1..n" },
       { from: "lesson", to: "lesson_type", label: "1" },
-      { from: "lesson", to: "citation", label: "technique places" }
+      { from: "lesson", to: "named_move", label: "works" },
+      { from: "chosen_citations", to: "lesson", label: "of" }
     ];
 
     const layout = {
@@ -1046,6 +1055,7 @@
       aliases: { x: 120, y: 430 },
       cross_ref: { x: 120, y: 505 },
       uncategorized: { x: 120, y: 580 },
+      chosen_citations: { x: 120, y: 655 },
       position: { x: 430, y: 100 },
       move_type: { x: 430, y: 250 },
       submission: { x: 430, y: 400 },
@@ -1961,7 +1971,7 @@
     return { svg, layers, count: nodes.length, width };
   }
 
-  let erFocus = "named_move";
+  let erFocus = "lesson";
 
   function renderEr(state) {
     const wrap = el("section", { class: "panel plot-panel" }, [
@@ -1974,7 +1984,7 @@
       el("span", {}, [el("i", { style: "background:#a8a29e" }), "Attribute of an entity"])
     ]));
     body.append(el("p", { class: "xref" }, [
-      "Click a box. Blue is catalog (reused). Orange is activity (a unit, class, or lesson you are building). Dotted ovals are fields. A named move holds the start, the type, and the end. A system holds the dilemma."
+      "Click a box. Blue is catalog (reused). Orange is activity (a unit, class, or lesson you are building). Dotted ovals are fields. A lesson points at a named move. Citations belong to the named move; the coach chooses which to use in that lesson."
     ]));
     const mount = el("div", { class: "er-wrap" });
     body.append(mount);
@@ -2002,7 +2012,7 @@
     wrap.append(body);
 
     const width = 1360;
-    const height = 700;
+    const height = 740;
     if (typeof d3 === "undefined") {
       mount.append(el("p", { class: "xref" }, ["D3 did not load. Open this file while online, or allow cdn.jsdelivr.net."]));
       return wrap;
