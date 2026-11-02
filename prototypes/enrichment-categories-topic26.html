@@ -1,0 +1,2701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PROTOTYPE — Enrichment categories from the seed · topic 26</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --paper: #fffcf6;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #d6d3d1;
+      --accent: #9a3412;
+      --ok: #14532d;
+      --ok-soft: #dcfce7;
+      --warn: #9a3412;
+      --warn-soft: #ffedd5;
+      --bad: #9f1239;
+      --bad-soft: #ffe4e6;
+      --gi: #1e3a8a;
+      --gi-soft: #dbeafe;
+      --nogi: #5b21b6;
+      --nogi-soft: #ede9fe;
+      --both: #14532d;
+      --both-soft: #dcfce7;
+      --shadow: 0 1px 2px rgba(28,25,23,.06), 0 8px 24px rgba(28,25,23,.06);
+      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #fde68a55, transparent 60%),
+        radial-gradient(900px 500px at 100% 0%, #bbf7d055, transparent 55%),
+        var(--bg);
+      line-height: 1.45;
+      padding-bottom: 2rem;
+    }
+    .banner {
+      background: #1c1917;
+      color: #fafaf9;
+      padding: .65rem 1.25rem;
+      font-size: .85rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: baseline;
+    }
+    .banner strong { color: #86efac; }
+    .banner code { font-family: var(--mono); font-size: .8rem; color: #e7e5e4; }
+    header.page, .question, #app {
+      max-width: 1400px;
+      margin: 1.1rem auto 0;
+      padding: 0 1.25rem;
+    }
+    header.page h1 {
+      font-family: var(--serif);
+      font-weight: 600;
+      font-size: 1.7rem;
+      margin: 0 0 .35rem;
+      letter-spacing: -.02em;
+    }
+    header.page .meta { color: var(--muted); max-width: 78ch; }
+    .question details {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .75rem 1rem;
+      box-shadow: var(--shadow);
+    }
+    .question summary { cursor: pointer; font-weight: 600; }
+    .question p { margin: .55rem 0 0; color: var(--muted); font-size: .92rem; max-width: 80ch; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: .12rem .5rem;
+      font-size: .7rem;
+      font-weight: 650;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+    .pill-gi { background: var(--gi-soft); color: var(--gi); }
+    .pill-nogi { background: var(--nogi-soft); color: var(--nogi); }
+    .pill-both { background: var(--both-soft); color: var(--both); }
+    .pill-warn { background: var(--warn-soft); color: var(--warn); }
+    .pill-bad { background: var(--bad-soft); color: var(--bad); }
+    .pill-ok { background: var(--ok-soft); color: var(--ok); }
+    .pill-proto { background: #e7e5e4; color: #44403c; }
+    .issues {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      margin: .9rem 0;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 1.1fr 1.2fr;
+      gap: .7rem;
+    }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    .col, .panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      min-height: 12rem;
+    }
+    .col h2, .panel h2 {
+      font-size: .78rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0;
+      padding: .7rem .85rem .4rem;
+    }
+    .col .body, .panel .body { padding: 0 .55rem .7rem; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      padding: 0 .85rem .65rem;
+      align-items: center;
+    }
+    input[type="search"], input[type="text"], select {
+      font: inherit;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: .35rem .55rem;
+      background: #fff;
+    }
+    input[type="search"] { flex: 1; min-width: 10rem; }
+    button {
+      font: inherit;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 8px;
+      padding: .32rem .6rem;
+      cursor: pointer;
+    }
+    button:hover { background: #fafaf9; }
+    button.primary { background: #1c1917; color: #fafaf9; border-color: #1c1917; }
+    button.danger { color: var(--bad); border-color: #fecdd3; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .family {
+      font-size: .68rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: .45rem .3rem .15rem;
+    }
+    .row {
+      width: 100%;
+      text-align: left;
+      border: 0;
+      background: transparent;
+      border-radius: 8px;
+      padding: .38rem .45rem;
+      display: flex;
+      justify-content: space-between;
+      gap: .5rem;
+      align-items: baseline;
+    }
+    .row:hover { background: #f5f5f4; }
+    .row.on { background: #ffedd5; }
+    .row .count { color: var(--muted); font-size: .78rem; font-family: var(--mono); }
+    .row .miss { color: var(--bad); font-size: .75rem; }
+    .leaf {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .5rem .6rem;
+      margin: .35rem 0;
+      background: #fff;
+    }
+    .leaf.on { outline: 2px solid #fb923c; }
+    .leaf .name { font-weight: 650; }
+    .xref { color: var(--muted); font-size: .8rem; margin: .2rem 0 0; }
+    .uncat {
+      margin-top: .9rem;
+    }
+    .cite {
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+      padding: .55rem .7rem;
+      margin: .4rem 0;
+      background: #fff;
+    }
+    .cite.linked { border-style: solid; }
+    .split {
+      display: grid;
+      grid-template-columns: 1.4fr .9fr;
+      gap: .7rem;
+      margin-top: .9rem;
+    }
+    @media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
+    .state {
+      font-family: var(--mono);
+      font-size: .78rem;
+      white-space: pre-wrap;
+      background: #1c1917;
+      color: #e7e5e4;
+      border-radius: 10px;
+      padding: .8rem;
+      margin: 0;
+      max-height: 22rem;
+      overflow: auto;
+    }
+    .tabs { display: flex; flex-wrap: wrap; gap: .3rem; padding: 0 .85rem .5rem; }
+    .tabs button.on { background: #1c1917; color: #fff; border-color: #1c1917; }
+    .steps { margin: 0; padding: 0 .85rem .85rem 1.4rem; }
+    .steps li { margin: .35rem 0; }
+    .steps button { margin-left: .35rem; }
+    .toast {
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      max-width: 28rem;
+      background: #1c1917;
+      color: #fafaf9;
+      padding: .75rem 1rem;
+      border-radius: 10px;
+      font-size: .82rem;
+      box-shadow: var(--shadow);
+      display: none;
+      z-index: 40;
+      white-space: pre-wrap;
+    }
+    .toast.show { display: block; }
+    .changed { background: #fef3c7; }
+    .plot-panel { margin-top: .9rem; }
+    .plot-panel .body { padding: 0 .55rem .7rem; }
+    .force-svg, .er-svg {
+      width: 100%;
+      background: #fff;
+      display: block;
+    }
+    .force-wrap, .er-wrap {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .force-svg { height: 900px; }
+    .er-svg { height: 760px; }
+    .setup-pairs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .35rem;
+      margin: .45rem 0 .2rem;
+    }
+    .setup-pairs .pair {
+      background: #ffedd5;
+      border: 1px solid #fdba74;
+      border-radius: 999px;
+      padding: .12rem .55rem;
+      font-size: .78rem;
+    }
+    .er-detail {
+      margin-top: .55rem;
+      padding: .7rem .8rem;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+    .er-detail h3 { margin: 0 0 .25rem; font-size: 1.05rem; }
+    .er-detail p { margin: .25rem 0 0; }
+    .er-ask { color: var(--accent); font-weight: 650; }
+    .er-detail h3 { font-family: var(--serif); }
+    .plot-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      align-items: center;
+      padding: .15rem 0 .55rem;
+    }
+    .crumb-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      align-items: center;
+      padding: .65rem .2rem .85rem;
+      font-size: 1.05rem;
+      position: sticky;
+      top: 0;
+      background: var(--paper);
+      z-index: 6;
+    }
+    .crumb-bar button.crumb {
+      border: 0;
+      background: #1c1917;
+      color: #fafaf9;
+      border-radius: 999px;
+      padding: .28rem .75rem;
+      font-weight: 650;
+    }
+    .crumb-bar button.crumb:hover { background: #44403c; }
+    .crumb-bar .sep { color: var(--muted); font-weight: 650; }
+    .crumb-bar .empty { color: var(--muted); }
+    .hover-tip {
+      position: fixed;
+      z-index: 80;
+      max-width: 22rem;
+      background: #1c1917;
+      color: #fafaf9;
+      padding: .55rem .7rem;
+      border-radius: 8px;
+      font-size: .8rem;
+      line-height: 1.35;
+      pointer-events: none;
+      box-shadow: var(--shadow);
+    }
+    .hover-tip[hidden] { display: none; }
+    .hover-tip strong { display: block; margin-bottom: .2rem; }
+    .hover-tip .muted { color: #a8a29e; font-size: .75rem; }
+    .rel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .6rem;
+      margin-top: .55rem;
+    }
+    @media (max-width: 800px) { .rel-grid { grid-template-columns: 1fr; } }
+    .rel-grid h3 {
+      font-size: .78rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 .3rem;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .45rem 1rem;
+      font-size: .78rem;
+      color: var(--muted);
+      padding: .35rem .2rem .55rem;
+    }
+    .legend i {
+      display: inline-block;
+      width: .7rem;
+      height: .7rem;
+      border-radius: 99px;
+      margin-right: .3rem;
+      vertical-align: -1px;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+</head>
+<body>
+  <div class="banner">
+    <strong>PROTOTYPE · throwaway</strong>
+    <span>Issue 26 · Visualize and organize enrichment categories from the seed</span>
+    <code>prototypes/enrichment-categories-topic26.html</code>
+  </div>
+  <header class="page">
+    <h1>Starting finder tree</h1>
+    <p class="meta">
+      Catalog records are reused: Position, Type of move, Submission, Named move, System, Citation, Lesson type.
+      Activity records use that catalog: Unit, Class, Lesson.
+      A lesson connects to a named move or to a system. Lessons are then sequenced into classes and a unit. The unit has no direct link to a system.
+      Top, bottom, or neutral sits on the named move and on the type of move. Escape is a bottom type, on a pin or control. A sweep from closed guard bottom lands mount top, so escape is off.
+    </p>
+  </header>
+  <div class="question">
+    <details open>
+      <summary>Question this prototype answers</summary>
+      <p>
+        The catalog/activity domain is accepted. Remaining: does this starting tree of finder nodes look right to import as the live copy the coach then edits?
+        Click the entity diagram. Walk Closed guard · bottom on the force graph. Say what should change on the tree itself.
+      </p>
+    </details>
+  </div>
+  <div id="app"></div>
+  <div class="toast" id="toast"></div>
+  <div class="hover-tip" id="hover-tip" hidden></div>
+  <script>
+  const SEED = {"meta": {"version": 2, "assembled": "2026-10-31", "ticket": "https://github.com/djsciman/video_transcriber_rag/issues/25", "purpose": "Raw one-time consensus enrichment seed for hierarchy browse and dimensional search. Import as the starting tree; the coach edits the live copy afterward.", "path_levels": ["starting_position", "move_type", "ending_position_or_submission"], "leaf_ruleset_values": ["gi", "no-gi", "both"], "notes": ["Shared path levels apply to both rulesets. Only named-move leaves carry gi / no-gi / both.", "This seed is raw consensus material for prototype organization (#26), not a final product tree.", "seen_in on leaves records which consulted sources listed that name; absence does not mean the move is rare.", "Uncategorized is a product browse bucket for citations with no node link; it is not a seed node.", "cross_refs on leaves and some positions map BJJ finder names to judo and wrestling names from open sources.", "crosswalk is a flat index of those mappings for prototype search and display."], "counts": {"move_types": 7, "starting_positions": 36, "ending_positions_or_submissions": 55, "paths": 102, "named_move_leaves": 149, "leaves_with_cross_refs": 45, "crosswalk_entries": 75}, "updated": "2026-10-31"}, "sources": [{"id": "bjj-data", "title": "bjj-data taxonomy.json (positions and submissions vocabulary)", "url": "https://github.com/grapple-flows/bjj-data", "version": "v0.1.0", "license": "CC BY 4.0", "license_url": "https://creativecommons.org/licenses/by/4.0/", "attribution": "Data from bjj-data by Grapple Flows (https://grappleflows.com)", "local_copy": "reference/bjj-data-taxonomy-v0.1.0.json", "role": "Primary open vocabulary of position and submission labels and aliases"}, {"id": "wikipedia", "title": "List of Brazilian jiu-jitsu techniques", "url": "https://en.wikipedia.org/wiki/List_of_Brazilian_jiu-jitsu_techniques", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0/", "attribution": "Wikipedia contributors, List of Brazilian jiu-jitsu techniques", "role": "Technique type categories and common named moves"}, {"id": "wikibooks", "title": "Brazilian Jiu Jitsu: Positional and Technical Guide", "url": "https://en.wikibooks.org/wiki/Brazilian_Jiu_Jitsu:_Positional_and_Technical_Guide", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0/", "attribution": "Wikibooks contributors, Brazilian Jiu Jitsu: Positional and Technical Guide", "role": "Position family outline (pins, guards, submissions)"}, {"id": "grapplepedia", "title": "Grapplepedia position and technique map", "url": "https://jiujitsuauthority.com/grapplepedia/", "license": "All rights reserved (consulted; names rewritten as consensus labels)", "license_url": null, "attribution": "Jiu-Jitsu Authority Grapplepedia (structure consulted; no wholesale copy)", "role": "Cross-check of ~35 core positions and move-type groupings for consensus coverage"}, {"id": "kodokan-wikipedia", "title": "List of Kodokan judo techniques", "url": "https://en.wikipedia.org/wiki/List_of_Kodokan_judo_techniques", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0/", "attribution": "Wikipedia contributors, List of Kodokan judo techniques", "role": "Official Kodokan nage-waza and katame-waza names for BJJ leaf crosswalk"}, {"id": "judo-techniques-wikipedia", "title": "List of judo techniques", "url": "https://en.wikipedia.org/wiki/List_of_judo_techniques", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0/", "attribution": "Wikipedia contributors, List of judo techniques", "role": "Te-waza / koshi-waza / ashi-waza classification cross-check"}, {"id": "wrestling-takedown-wikipedia", "title": "Takedown (grappling)", "url": "https://en.wikipedia.org/wiki/Takedown_(grappling)", "license": "CC BY-SA 4.0", "license_url": "https://creativecommons.org/licenses/by-sa/4.0/", "attribution": "Wikipedia contributors, Takedown (grappling)", "role": "Wrestling and shared grappling takedown names, including judo correspondences"}, {"id": "folkstyle-wikibooks", "title": "Folkstyle Wrestling (Wikibooks)", "url": "https://en.wikibooks.org/wiki/Folkstyle_Wrestling", "license": "CC BY-SA 3.0", "license_url": "https://creativecommons.org/licenses/by-sa/3.0/", "attribution": "Wikibooks contributors, Folkstyle Wrestling", "role": "Folkstyle positions (neutral, referee's position) and mat moves for crosswalk"}], "license_notes": ["bjj-data data is CC BY 4.0: keep attribution when redistributing the reference file or derived vocabulary labels.", "Wikipedia and Wikibooks text is CC BY-SA 4.0: share-alike applies to adapted text from those pages; this seed uses short common technique names as consensus labels rather than copying article prose.", "Grapplepedia was consulted for coverage consensus only. Do not treat this seed as a Grapplepedia dump; its site license is not an open reuse grant.", "BJJGraph (bjjgraph.org) is source-available noncommercial and was not copied into this seed.", "The seed is finder-node labels only. It does not include lesson fields, instructional content, or video.", "Kodokan judo and wrestling takedown pages on Wikipedia are CC BY-SA 4.0: short technique names used as cross-ref labels, not copied article prose.", "Folkstyle Wrestling Wikibooks is CC BY-SA 3.0: position and move names used as cross-ref labels only.", "Cross-refs link BJJ finder leaves to judo/wrestling names. They do not add a fourth path level or change gi/no-gi leaf rules."], "move_types": [{"id": "takedown", "label": "Takedown"}, {"id": "sweep", "label": "Sweep"}, {"id": "pass", "label": "Pass"}, {"id": "escape", "label": "Escape"}, {"id": "submission", "label": "Submission"}, {"id": "transition", "label": "Transition"}, {"id": "back-take", "label": "Back take"}], "starting_positions": [{"id": "standing", "label": "Standing", "family": "standing", "cross_refs": [{"art": "wrestling", "name": "Neutral", "source": "folkstyle-wikibooks"}]}, {"id": "clinch", "label": "Clinch", "family": "standing", "cross_refs": [{"art": "wrestling", "name": "Tie-up / clinch", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Kumikata / clinch", "source": "kodokan-wikipedia"}]}, {"id": "front-headlock", "label": "Front headlock", "family": "standing", "cross_refs": [{"art": "wrestling", "name": "Front headlock", "source": "wrestling-takedown-wikipedia"}]}, {"id": "closed-guard", "label": "Closed guard", "family": "guard"}, {"id": "open-guard", "label": "Open guard", "family": "guard"}, {"id": "half-guard", "label": "Half guard", "family": "guard"}, {"id": "deep-half-guard", "label": "Deep half guard", "family": "guard"}, {"id": "z-guard", "label": "Z-guard", "family": "guard", "aliases": ["Knee shield", "93 guard"]}, {"id": "butterfly-guard", "label": "Butterfly guard", "family": "guard"}, {"id": "de-la-riva", "label": "De La Riva", "family": "guard", "aliases": ["DLR"]}, {"id": "reverse-de-la-riva", "label": "Reverse De La Riva", "family": "guard", "aliases": ["RDLR"]}, {"id": "spider-guard", "label": "Spider guard", "family": "guard"}, {"id": "lasso-guard", "label": "Lasso guard", "family": "guard"}, {"id": "collar-sleeve", "label": "Collar sleeve", "family": "guard"}, {"id": "x-guard", "label": "X-guard", "family": "guard"}, {"id": "single-leg-x", "label": "Single-leg X", "family": "leg-entanglement", "aliases": ["SLX", "Ashi garami"]}, {"id": "k-guard", "label": "K-guard", "family": "guard"}, {"id": "rubber-guard", "label": "Rubber guard", "family": "guard"}, {"id": "worm-guard", "label": "Worm guard", "family": "guard"}, {"id": "shin-to-shin", "label": "Shin-to-shin", "family": "guard"}, {"id": "fifty-fifty", "label": "50/50", "family": "leg-entanglement"}, {"id": "saddle", "label": "Saddle", "family": "leg-entanglement", "aliases": ["Honey hole", "411", "Inside sankaku"]}, {"id": "outside-ashi", "label": "Outside ashi", "family": "leg-entanglement"}, {"id": "headquarters", "label": "Headquarters", "family": "passing"}, {"id": "leg-drag-position", "label": "Leg drag position", "family": "passing"}, {"id": "side-control", "label": "Side control", "family": "pin", "cross_refs": [{"art": "judo", "name": "Yoko-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia"}]}, {"id": "kesa-gatame", "label": "Kesa gatame", "family": "pin", "aliases": ["Scarf hold"], "cross_refs": [{"art": "judo", "name": "Kesa-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia"}]}, {"id": "north-south", "label": "North-south", "family": "pin", "cross_refs": [{"art": "judo", "name": "Kami-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia", "note": "Upper four-quarter; north-south is the common BJJ name"}]}, {"id": "knee-on-belly", "label": "Knee on belly", "family": "pin"}, {"id": "mount", "label": "Mount", "family": "pin", "cross_refs": [{"art": "judo", "name": "Tate-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia"}]}, {"id": "s-mount", "label": "S-mount", "family": "pin"}, {"id": "technical-mount", "label": "Technical mount", "family": "pin"}, {"id": "turtle", "label": "Turtle", "family": "turtle", "cross_refs": [{"art": "wrestling", "name": "Referee's position (bottom)", "source": "folkstyle-wikibooks"}, {"art": "wrestling", "name": "All fours / turtle", "source": "folkstyle-wikibooks"}]}, {"id": "truck", "label": "Truck", "family": "leg-entanglement"}, {"id": "back-control", "label": "Back control", "family": "back"}, {"id": "crucifix", "label": "Crucifix", "family": "back"}], "ending_positions_or_submissions": [{"id": "standing", "label": "Standing", "kind": "position", "cross_refs": [{"art": "wrestling", "name": "Neutral", "source": "folkstyle-wikibooks"}]}, {"id": "clinch", "label": "Clinch", "kind": "position", "cross_refs": [{"art": "wrestling", "name": "Tie-up / clinch", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Kumikata / clinch", "source": "kodokan-wikipedia"}]}, {"id": "front-headlock", "label": "Front headlock", "kind": "position", "cross_refs": [{"art": "wrestling", "name": "Front headlock", "source": "wrestling-takedown-wikipedia"}]}, {"id": "closed-guard", "label": "Closed guard", "kind": "position"}, {"id": "open-guard", "label": "Open guard", "kind": "position"}, {"id": "half-guard", "label": "Half guard", "kind": "position"}, {"id": "deep-half-guard", "label": "Deep half guard", "kind": "position"}, {"id": "butterfly-guard", "label": "Butterfly guard", "kind": "position"}, {"id": "de-la-riva", "label": "De La Riva", "kind": "position"}, {"id": "reverse-de-la-riva", "label": "Reverse De La Riva", "kind": "position"}, {"id": "x-guard", "label": "X-guard", "kind": "position"}, {"id": "single-leg-x", "label": "Single-leg X", "kind": "position"}, {"id": "k-guard", "label": "K-guard", "kind": "position"}, {"id": "saddle", "label": "Saddle", "kind": "position"}, {"id": "fifty-fifty", "label": "50/50", "kind": "position"}, {"id": "outside-ashi", "label": "Outside ashi", "kind": "position"}, {"id": "headquarters", "label": "Headquarters", "kind": "position"}, {"id": "leg-drag-position", "label": "Leg drag position", "kind": "position"}, {"id": "side-control", "label": "Side control", "kind": "position", "cross_refs": [{"art": "judo", "name": "Yoko-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia"}]}, {"id": "kesa-gatame", "label": "Kesa gatame", "kind": "position", "cross_refs": [{"art": "judo", "name": "Kesa-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia"}]}, {"id": "north-south", "label": "North-south", "kind": "position", "cross_refs": [{"art": "judo", "name": "Kami-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia", "note": "Upper four-quarter; north-south is the common BJJ name"}]}, {"id": "knee-on-belly", "label": "Knee on belly", "kind": "position"}, {"id": "mount", "label": "Mount", "kind": "position", "cross_refs": [{"art": "judo", "name": "Tate-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia"}]}, {"id": "s-mount", "label": "S-mount", "kind": "position"}, {"id": "technical-mount", "label": "Technical mount", "kind": "position"}, {"id": "turtle", "label": "Turtle", "kind": "position", "cross_refs": [{"art": "wrestling", "name": "Referee's position (bottom)", "source": "folkstyle-wikibooks"}, {"art": "wrestling", "name": "All fours / turtle", "source": "folkstyle-wikibooks"}]}, {"id": "truck", "label": "Truck", "kind": "position"}, {"id": "back-control", "label": "Back control", "kind": "position"}, {"id": "crucifix", "label": "Crucifix", "kind": "position"}, {"id": "rear-naked-choke", "label": "Rear naked choke", "kind": "submission", "cross_refs": [{"art": "judo", "name": "Hadaka-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}, {"id": "guillotine", "label": "Guillotine", "kind": "submission"}, {"id": "darce", "label": "D'Arce choke", "kind": "submission"}, {"id": "anaconda", "label": "Anaconda choke", "kind": "submission"}, {"id": "arm-triangle", "label": "Arm triangle", "kind": "submission"}, {"id": "triangle", "label": "Triangle choke", "kind": "submission", "cross_refs": [{"art": "judo", "name": "Sankaku-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}, {"id": "armbar", "label": "Armbar", "kind": "submission", "cross_refs": [{"art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}, {"id": "kimura", "label": "Kimura", "kind": "submission", "cross_refs": [{"art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}, {"id": "americana", "label": "Americana", "kind": "submission", "cross_refs": [{"art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}, {"id": "omoplata", "label": "Omoplata", "kind": "submission"}, {"id": "ezekiel", "label": "Ezekiel choke", "kind": "submission", "cross_refs": [{"art": "judo", "name": "Sode-guruma-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}, {"id": "north-south-choke", "label": "North-south choke", "kind": "submission"}, {"id": "cross-collar-choke", "label": "Cross collar choke", "kind": "submission", "cross_refs": [{"art": "judo", "name": "Nami-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}, {"art": "judo", "name": "Gyaku-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}, {"art": "judo", "name": "Kata-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}, {"id": "bow-and-arrow", "label": "Bow and arrow choke", "kind": "submission"}, {"id": "loop-choke", "label": "Loop choke", "kind": "submission"}, {"id": "clock-choke", "label": "Clock choke", "kind": "submission"}, {"id": "baseball-bat-choke", "label": "Baseball bat choke", "kind": "submission"}, {"id": "paper-cutter", "label": "Paper cutter choke", "kind": "submission"}, {"id": "gogoplata", "label": "Gogoplata", "kind": "submission"}, {"id": "straight-ankle-lock", "label": "Straight ankle lock", "kind": "submission"}, {"id": "heel-hook", "label": "Heel hook", "kind": "submission"}, {"id": "toe-hold", "label": "Toe hold", "kind": "submission"}, {"id": "kneebar", "label": "Kneebar", "kind": "submission"}, {"id": "calf-slicer", "label": "Calf slicer", "kind": "submission"}, {"id": "twister", "label": "Twister", "kind": "submission"}, {"id": "wrist-lock", "label": "Wrist lock", "kind": "submission"}], "paths": [{"start": "back-control", "move_type": "escape", "end": "turtle", "leaves": [{"name": "Chair sit escape", "ruleset": "both", "seen_in": ["folkstyle-wikibooks", "grapplepedia"], "cross_refs": [{"art": "wrestling", "name": "Stand-up escape family", "class": "escape", "source": "folkstyle-wikibooks"}]}]}, {"start": "back-control", "move_type": "submission", "end": "armbar", "leaves": [{"name": "Armbar from back control", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "back-control", "move_type": "submission", "end": "bow-and-arrow", "leaves": [{"name": "Bow and arrow choke", "ruleset": "gi", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Okuri-eri-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": "Related sliding-lapel / back choke family"}]}]}, {"start": "back-control", "move_type": "submission", "end": "rear-naked-choke", "leaves": [{"name": "Rear naked choke", "ruleset": "both", "aliases": ["Mata leão", "Hadaka jime"], "seen_in": ["bjj-data", "grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Hadaka-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "butterfly-guard", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Arm drag from butterfly", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "butterfly-guard", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Float and smash pass", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Body lock pass", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "butterfly-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Butterfly sweep", "ruleset": "both", "aliases": ["Hook sweep"], "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "butterfly-guard", "move_type": "transition", "end": "x-guard", "leaves": [{"name": "X-guard entry", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "clinch", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Duck under", "ruleset": "both", "seen_in": ["grapplepedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Duck under", "class": "takedown", "source": "wrestling-takedown-wikipedia"}]}]}, {"start": "clinch", "move_type": "takedown", "end": "side-control", "leaves": [{"name": "Body lock takedown", "ruleset": "both", "seen_in": ["grapplepedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Body lock", "class": "takedown", "source": "wrestling-takedown-wikipedia"}, {"art": "wrestling", "name": "Bear hug", "class": "takedown", "source": "wrestling-takedown-wikipedia"}]}, {"name": "Inside trip", "ruleset": "both", "seen_in": ["kodokan-wikipedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Inside trip", "class": "trip", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "O-uchi-gari", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": "Major inner reap; related inside trip family"}, {"art": "judo", "name": "Ko-uchi-gari", "class": "ashi-waza", "source": "kodokan-wikipedia"}]}, {"name": "Outside trip", "ruleset": "both", "seen_in": ["kodokan-wikipedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Outside trip", "class": "trip", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "O-soto-gari", "class": "ashi-waza", "source": "kodokan-wikipedia"}, {"art": "judo", "name": "Ko-soto-gari", "class": "ashi-waza", "source": "kodokan-wikipedia"}]}, {"name": "Lateral drop", "ruleset": "both", "seen_in": ["wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Lateral drop", "class": "throw", "source": "wrestling-takedown-wikipedia"}]}, {"name": "Suplex", "ruleset": "both", "seen_in": ["wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Suplex", "class": "throw", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Ura-nage", "class": "ma-sutemi-waza", "source": "kodokan-wikipedia", "note": "Related rear throw / arch family"}]}]}, {"start": "closed-guard", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Standing guard break", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Knee-in-tailbone break", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Double forearm wedge break", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "closed-guard", "move_type": "submission", "end": "armbar", "leaves": [{"name": "Armbar from closed guard", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "closed-guard", "move_type": "submission", "end": "cross-collar-choke", "leaves": [{"name": "Cross collar choke", "ruleset": "gi", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Nami-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}, {"art": "judo", "name": "Gyaku-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}, {"art": "judo", "name": "Kata-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "closed-guard", "move_type": "submission", "end": "kimura", "leaves": [{"name": "Kimura from closed guard", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": "Gyaku ude-garami family"}]}]}, {"start": "closed-guard", "move_type": "submission", "end": "omoplata", "leaves": [{"name": "Omoplata", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia", "bjj-data"]}]}, {"start": "closed-guard", "move_type": "submission", "end": "triangle", "leaves": [{"name": "Triangle choke", "ruleset": "both", "seen_in": ["bjj-data", "grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Sankaku-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "closed-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Hip bump sweep", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Scissor sweep", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Flower sweep", "ruleset": "both", "aliases": ["Pendulum sweep"], "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Lumberjack sweep", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Waiter sweep", "ruleset": "both", "aliases": ["Muscle sweep"], "seen_in": ["wikipedia"]}]}, {"start": "closed-guard", "move_type": "sweep", "end": "side-control", "leaves": [{"name": "Omoplata sweep", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Balloon sweep", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "closed-guard", "move_type": "transition", "end": "rubber-guard", "leaves": [{"name": "Mission control entry", "ruleset": "no-gi", "seen_in": ["grapplepedia"]}]}, {"start": "closed-guard", "move_type": "transition", "end": "worm-guard", "leaves": [{"name": "Worm guard entry", "ruleset": "gi", "seen_in": ["grapplepedia"]}]}, {"start": "collar-sleeve", "move_type": "submission", "end": "triangle", "leaves": [{"name": "Collar-sleeve triangle", "ruleset": "gi", "seen_in": ["bjj-data"]}]}, {"start": "crucifix", "move_type": "submission", "end": "rear-naked-choke", "leaves": [{"name": "Crucifix choke", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "de-la-riva", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Berimbolo", "ruleset": "both", "seen_in": ["grapplepedia", "bjj-data"]}]}, {"start": "de-la-riva", "move_type": "escape", "end": "side-control", "leaves": [{"name": "Backstep vs De La Riva", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Knee cut through hook", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "de-la-riva", "move_type": "sweep", "end": "mount", "leaves": [{"name": "De La Riva sweep", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "deep-half-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Waiter sweep", "ruleset": "both", "seen_in": ["grapplepedia"]}, {"name": "Electric chair", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "fifty-fifty", "move_type": "submission", "end": "heel-hook", "leaves": [{"name": "Inside heel hook from 50/50", "ruleset": "no-gi", "seen_in": ["grapplepedia", "bjj-data"]}]}, {"start": "front-headlock", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Front headlock go-behind", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "front-headlock", "move_type": "escape", "end": "standing", "leaves": [{"name": "Front headlock escape", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "front-headlock", "move_type": "submission", "end": "anaconda", "leaves": [{"name": "Anaconda choke", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "front-headlock", "move_type": "submission", "end": "darce", "leaves": [{"name": "D'Arce choke", "ruleset": "both", "aliases": ["Brabo choke"], "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "front-headlock", "move_type": "submission", "end": "guillotine", "leaves": [{"name": "Guillotine choke", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia", "bjj-data"]}, {"name": "Peruvian necktie", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Japanese necktie", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "half-guard", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Back take from half guard", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "half-guard", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Crossface and underhook pass", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Knee slice pass", "ruleset": "both", "aliases": ["Knee cut pass"], "seen_in": ["wikipedia"]}, {"name": "Backstep pass", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "half-guard", "move_type": "sweep", "end": "side-control", "leaves": [{"name": "Old school sweep", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "John Wayne sweep", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "half-guard", "move_type": "transition", "end": "deep-half-guard", "leaves": [{"name": "Deep half entry", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "half-guard", "move_type": "transition", "end": "z-guard", "leaves": [{"name": "Knee shield entry", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "headquarters", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Knee cut pass", "ruleset": "both", "aliases": ["Knee slice"], "seen_in": ["grapplepedia"]}, {"name": "Long step pass", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "k-guard", "move_type": "transition", "end": "saddle", "leaves": [{"name": "K-guard roll to saddle", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "kesa-gatame", "move_type": "escape", "end": "half-guard", "leaves": [{"name": "Kesa gatame escape", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "knee-on-belly", "move_type": "escape", "end": "half-guard", "leaves": [{"name": "Knee on belly escape", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "knee-on-belly", "move_type": "submission", "end": "baseball-bat-choke", "leaves": [{"name": "Baseball bat choke", "ruleset": "gi", "seen_in": ["grapplepedia"]}]}, {"start": "lasso-guard", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Strip sleeve and backstep", "ruleset": "gi", "seen_in": ["wikipedia"]}, {"name": "Step over lasso smash pass", "ruleset": "gi", "seen_in": ["wikipedia"]}]}, {"start": "lasso-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Lasso sweep", "ruleset": "gi", "seen_in": ["grapplepedia"]}]}, {"start": "leg-drag-position", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Back take from leg drag", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "leg-drag-position", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Leg drag finish to side control", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "mount", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Gift wrap to back", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "mount", "move_type": "escape", "end": "half-guard", "leaves": [{"name": "Upa escape", "ruleset": "both", "aliases": ["Bridge and roll"], "seen_in": ["folkstyle-wikibooks", "grapplepedia", "wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Bridge", "class": "escape", "source": "folkstyle-wikibooks"}]}, {"name": "Elbow-knee escape", "ruleset": "both", "aliases": ["Shrimp escape"], "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "mount", "move_type": "submission", "end": "armbar", "leaves": [{"name": "Armbar from mount", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "mount", "move_type": "submission", "end": "cross-collar-choke", "leaves": [{"name": "Cross collar choke from mount", "ruleset": "gi", "seen_in": ["kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Nami-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}, {"art": "judo", "name": "Gyaku-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "mount", "move_type": "submission", "end": "ezekiel", "leaves": [{"name": "Ezekiel choke", "ruleset": "both", "aliases": ["Sode guruma jime"], "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Sode-guruma-jime", "class": "shime-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "mount", "move_type": "transition", "end": "s-mount", "leaves": [{"name": "Climb to S-mount", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "mount", "move_type": "transition", "end": "technical-mount", "leaves": [{"name": "Follow to technical mount", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "north-south", "move_type": "submission", "end": "north-south-choke", "leaves": [{"name": "North-south choke", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "open-guard", "move_type": "pass", "end": "leg-drag-position", "leaves": [{"name": "Leg drag", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia", "bjj-data"]}]}, {"start": "open-guard", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Toreando pass", "ruleset": "both", "aliases": ["Bullfighter pass"], "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Over-under pass", "ruleset": "both", "seen_in": ["grapplepedia"]}, {"name": "Double under pass", "ruleset": "both", "seen_in": ["grapplepedia"]}, {"name": "Body lock pass", "ruleset": "both", "seen_in": ["grapplepedia"]}, {"name": "X-pass", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Shin pin pass", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "open-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Tripod sweep", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}, {"name": "Sickle sweep", "ruleset": "both", "seen_in": ["grapplepedia"]}, {"name": "Heel grab sweep", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Tomahawk sweep", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "outside-ashi", "move_type": "submission", "end": "heel-hook", "leaves": [{"name": "Outside heel hook", "ruleset": "no-gi", "seen_in": ["grapplepedia", "bjj-data"]}]}, {"start": "reverse-de-la-riva", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Kiss of the dragon", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "reverse-de-la-riva", "move_type": "transition", "end": "single-leg-x", "leaves": [{"name": "RDLR to single-leg X", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "rubber-guard", "move_type": "submission", "end": "gogoplata", "leaves": [{"name": "Gogoplata", "ruleset": "no-gi", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "s-mount", "move_type": "submission", "end": "armbar", "leaves": [{"name": "S-mount armbar", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "saddle", "move_type": "escape", "end": "half-guard", "leaves": [{"name": "Saddle escape", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "saddle", "move_type": "submission", "end": "heel-hook", "leaves": [{"name": "Inside heel hook from the saddle", "ruleset": "no-gi", "seen_in": ["grapplepedia", "bjj-data"]}]}, {"start": "saddle", "move_type": "submission", "end": "kneebar", "leaves": [{"name": "Kneebar", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia", "bjj-data"]}]}, {"start": "saddle", "move_type": "submission", "end": "toe-hold", "leaves": [{"name": "Toe hold", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "shin-to-shin", "move_type": "transition", "end": "single-leg-x", "leaves": [{"name": "Shin-to-shin to single-leg X", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "side-control", "move_type": "escape", "end": "closed-guard", "leaves": [{"name": "Elbow escape to guard", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "side-control", "move_type": "escape", "end": "half-guard", "leaves": [{"name": "Frames and shrimp escape", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "side-control", "move_type": "submission", "end": "americana", "leaves": [{"name": "Americana", "ruleset": "both", "aliases": ["Keylock", "Ude garami"], "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "side-control", "move_type": "submission", "end": "arm-triangle", "leaves": [{"name": "Arm triangle choke", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "side-control", "move_type": "submission", "end": "kimura", "leaves": [{"name": "Kimura from side control", "ruleset": "both", "seen_in": ["kodokan-wikipedia", "wikipedia"], "cross_refs": [{"art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia"}]}]}, {"start": "side-control", "move_type": "submission", "end": "paper-cutter", "leaves": [{"name": "Paper cutter choke", "ruleset": "gi", "seen_in": ["grapplepedia"]}]}, {"start": "side-control", "move_type": "transition", "end": "knee-on-belly", "leaves": [{"name": "Knee on belly transition", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "side-control", "move_type": "transition", "end": "mount", "leaves": [{"name": "Knee slide to mount", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "side-control", "move_type": "transition", "end": "north-south", "leaves": [{"name": "Move to north-south", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "single-leg-x", "move_type": "submission", "end": "straight-ankle-lock", "leaves": [{"name": "Straight ankle lock", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia", "bjj-data"]}]}, {"start": "single-leg-x", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Single-leg X sweep", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "spider-guard", "move_type": "pass", "end": "side-control", "leaves": [{"name": "Posture and elbow peel", "ruleset": "gi", "seen_in": ["wikipedia"]}, {"name": "C-scoop arm escape", "ruleset": "gi", "seen_in": ["wikipedia"]}]}, {"start": "spider-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Spider guard sweep", "ruleset": "gi", "seen_in": ["grapplepedia"]}]}, {"start": "standing", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Standing arm drag", "ruleset": "both", "seen_in": ["grapplepedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Arm drag", "class": "takedown", "source": "wrestling-takedown-wikipedia"}]}, {"name": "Duck under", "ruleset": "both", "seen_in": ["grapplepedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Duck under", "class": "takedown", "source": "wrestling-takedown-wikipedia"}]}]}, {"start": "standing", "move_type": "escape", "end": "standing", "leaves": [{"name": "Sprawl", "ruleset": "both", "seen_in": ["grapplepedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Sprawl", "class": "defense", "source": "wrestling-takedown-wikipedia"}]}]}, {"start": "standing", "move_type": "takedown", "end": "closed-guard", "leaves": [{"name": "Guard pull", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "standing", "move_type": "takedown", "end": "front-headlock", "leaves": [{"name": "Snap down", "ruleset": "both", "seen_in": ["grapplepedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Snapdown", "class": "takedown", "source": "wrestling-takedown-wikipedia"}]}]}, {"start": "standing", "move_type": "takedown", "end": "mount", "leaves": [{"name": "Body lock takedown", "ruleset": "both", "seen_in": ["grapplepedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Body lock", "class": "takedown", "source": "wrestling-takedown-wikipedia"}, {"art": "wrestling", "name": "Bear hug", "class": "takedown", "source": "wrestling-takedown-wikipedia"}]}]}, {"start": "standing", "move_type": "takedown", "end": "side-control", "leaves": [{"name": "Double leg takedown", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Double leg", "class": "takedown", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Morote-gari", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Kodokan two-hand reap; often the double-leg correspondence"}, {"art": "judo", "name": "Sukui-nage", "class": "te-waza", "source": "wrestling-takedown-wikipedia", "note": "When the opponent is lifted or scooped"}]}, {"name": "Single leg takedown", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Single leg", "class": "takedown", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Kuchiki-taoshi", "class": "te-waza", "source": "kodokan-wikipedia"}]}, {"name": "Ankle pick", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Ankle pick", "class": "takedown", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Kibisu-gaeshi", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Heel trip / one-hand reversal"}]}, {"name": "High crotch", "ruleset": "both", "seen_in": ["wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "High crotch", "class": "takedown", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Sukui-nage", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Related scoop / high-crotch lift family"}]}]}, {"start": "standing", "move_type": "takedown", "end": "turtle", "leaves": [{"name": "Osoto gari", "ruleset": "both", "aliases": ["Outside trip"], "seen_in": ["grapplepedia", "kodokan-wikipedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "judo", "name": "O-soto-gari", "class": "ashi-waza", "source": "kodokan-wikipedia"}, {"art": "wrestling", "name": "Outside trip", "class": "trip", "source": "wrestling-takedown-wikipedia"}]}, {"name": "Seoi nage", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "Seoi-nage", "class": "te-waza", "source": "kodokan-wikipedia"}, {"art": "judo", "name": "Ippon-seoi-nage", "class": "te-waza", "source": "kodokan-wikipedia"}]}, {"name": "Uchi mata", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "Uchi-mata", "class": "ashi-waza", "source": "kodokan-wikipedia"}]}, {"name": "O goshi", "ruleset": "both", "seen_in": ["grapplepedia", "kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "O-goshi", "class": "koshi-waza", "source": "kodokan-wikipedia"}]}, {"name": "Fireman's carry", "ruleset": "both", "seen_in": ["kodokan-wikipedia", "wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Fireman's carry", "class": "takedown", "source": "wrestling-takedown-wikipedia"}, {"art": "judo", "name": "Kata-guruma", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Shoulder wheel; related fireman's / carry family"}]}, {"name": "Knee tap", "ruleset": "both", "seen_in": ["wikipedia", "wrestling-takedown-wikipedia"], "cross_refs": [{"art": "wrestling", "name": "Knee tap", "class": "trip", "source": "wrestling-takedown-wikipedia"}]}, {"name": "Tai otoshi", "ruleset": "both", "aliases": ["Body drop"], "seen_in": ["kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "Tai-otoshi", "class": "te-waza", "source": "kodokan-wikipedia"}]}, {"name": "Harai goshi", "ruleset": "both", "aliases": ["Sweeping hip throw"], "seen_in": ["kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "Harai-goshi", "class": "koshi-waza", "source": "kodokan-wikipedia"}]}, {"name": "De ashi barai", "ruleset": "both", "aliases": ["Advanced foot sweep"], "seen_in": ["kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "De-ashi-harai", "class": "ashi-waza", "source": "kodokan-wikipedia"}, {"art": "wrestling", "name": "Foot sweep", "class": "trip", "source": "wrestling-takedown-wikipedia"}]}, {"name": "O uchi gari", "ruleset": "both", "aliases": ["Major inner reap"], "seen_in": ["kodokan-wikipedia"], "cross_refs": [{"art": "judo", "name": "O-uchi-gari", "class": "ashi-waza", "source": "kodokan-wikipedia"}, {"art": "wrestling", "name": "Inside trip", "class": "trip", "source": "wrestling-takedown-wikipedia"}]}]}, {"start": "standing", "move_type": "transition", "end": "single-leg-x", "leaves": [{"name": "Imanari roll", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "technical-mount", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Back take from technical mount", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "truck", "move_type": "submission", "end": "calf-slicer", "leaves": [{"name": "Calf slicer", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "truck", "move_type": "submission", "end": "twister", "leaves": [{"name": "Twister", "ruleset": "both", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "turtle", "move_type": "back-take", "end": "back-control", "leaves": [{"name": "Back take from turtle", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "turtle", "move_type": "escape", "end": "closed-guard", "leaves": [{"name": "Granby roll", "ruleset": "both", "seen_in": ["folkstyle-wikibooks", "grapplepedia"], "cross_refs": [{"art": "wrestling", "name": "Granby / hip heist family", "class": "escape", "source": "folkstyle-wikibooks"}]}, {"name": "Sit-out", "ruleset": "both", "seen_in": ["folkstyle-wikibooks", "grapplepedia"], "cross_refs": [{"art": "wrestling", "name": "Sit-out", "class": "escape", "source": "folkstyle-wikibooks"}]}]}, {"start": "turtle", "move_type": "escape", "end": "standing", "leaves": [{"name": "Stand-up escape", "ruleset": "both", "seen_in": ["folkstyle-wikibooks"], "cross_refs": [{"art": "wrestling", "name": "Stand-up", "class": "escape", "source": "folkstyle-wikibooks"}]}, {"name": "Switch reversal", "ruleset": "both", "seen_in": ["folkstyle-wikibooks"], "cross_refs": [{"art": "wrestling", "name": "Switch", "class": "reversal", "source": "folkstyle-wikibooks"}]}]}, {"start": "turtle", "move_type": "submission", "end": "clock-choke", "leaves": [{"name": "Clock choke", "ruleset": "gi", "seen_in": ["wikipedia", "grapplepedia"]}]}, {"start": "turtle", "move_type": "transition", "end": "crucifix", "leaves": [{"name": "Crucifix entry", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "turtle", "move_type": "transition", "end": "side-control", "leaves": [{"name": "Tight waist far ankle breakdown", "ruleset": "both", "seen_in": ["folkstyle-wikibooks"], "cross_refs": [{"art": "wrestling", "name": "Tight waist, far ankle", "class": "breakdown", "source": "folkstyle-wikibooks"}]}]}, {"start": "turtle", "move_type": "transition", "end": "truck", "leaves": [{"name": "Truck entry", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "worm-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "Worm guard sweep", "ruleset": "gi", "seen_in": ["grapplepedia"]}]}, {"start": "x-guard", "move_type": "escape", "end": "side-control", "leaves": [{"name": "Kick out leg", "ruleset": "both", "seen_in": ["wikipedia"]}, {"name": "Backstep and knee twist", "ruleset": "both", "seen_in": ["wikipedia"]}]}, {"start": "x-guard", "move_type": "sweep", "end": "mount", "leaves": [{"name": "X-guard sweep", "ruleset": "both", "seen_in": ["grapplepedia"]}]}, {"start": "z-guard", "move_type": "transition", "end": "k-guard", "leaves": [{"name": "K-guard entry", "ruleset": "both", "seen_in": ["grapplepedia"]}]}], "crosswalk": [{"seed_leaf": "Chair sit escape", "seed_path": {"start": "back-control", "move_type": "escape", "end": "turtle"}, "art": "wrestling", "name": "Stand-up escape family", "class": "escape", "source": "folkstyle-wikibooks", "note": null}, {"seed_leaf": "Armbar from back control", "seed_path": {"start": "back-control", "move_type": "submission", "end": "armbar"}, "art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Bow and arrow choke", "seed_path": {"start": "back-control", "move_type": "submission", "end": "bow-and-arrow"}, "art": "judo", "name": "Okuri-eri-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": "Related sliding-lapel / back choke family"}, {"seed_leaf": "Rear naked choke", "seed_path": {"start": "back-control", "move_type": "submission", "end": "rear-naked-choke"}, "art": "judo", "name": "Hadaka-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Duck under", "seed_path": {"start": "clinch", "move_type": "back-take", "end": "back-control"}, "art": "wrestling", "name": "Duck under", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Body lock takedown", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Body lock", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Body lock takedown", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Bear hug", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Inside trip", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Inside trip", "class": "trip", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Inside trip", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "O-uchi-gari", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": "Major inner reap; related inside trip family"}, {"seed_leaf": "Inside trip", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Ko-uchi-gari", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Outside trip", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Outside trip", "class": "trip", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Outside trip", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "O-soto-gari", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Outside trip", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Ko-soto-gari", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Lateral drop", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Lateral drop", "class": "throw", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Suplex", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Suplex", "class": "throw", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Suplex", "seed_path": {"start": "clinch", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Ura-nage", "class": "ma-sutemi-waza", "source": "kodokan-wikipedia", "note": "Related rear throw / arch family"}, {"seed_leaf": "Armbar from closed guard", "seed_path": {"start": "closed-guard", "move_type": "submission", "end": "armbar"}, "art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Cross collar choke", "seed_path": {"start": "closed-guard", "move_type": "submission", "end": "cross-collar-choke"}, "art": "judo", "name": "Nami-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Cross collar choke", "seed_path": {"start": "closed-guard", "move_type": "submission", "end": "cross-collar-choke"}, "art": "judo", "name": "Gyaku-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Cross collar choke", "seed_path": {"start": "closed-guard", "move_type": "submission", "end": "cross-collar-choke"}, "art": "judo", "name": "Kata-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Kimura from closed guard", "seed_path": {"start": "closed-guard", "move_type": "submission", "end": "kimura"}, "art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": "Gyaku ude-garami family"}, {"seed_leaf": "Triangle choke", "seed_path": {"start": "closed-guard", "move_type": "submission", "end": "triangle"}, "art": "judo", "name": "Sankaku-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Upa escape", "seed_path": {"start": "mount", "move_type": "escape", "end": "half-guard"}, "art": "wrestling", "name": "Bridge", "class": "escape", "source": "folkstyle-wikibooks", "note": null}, {"seed_leaf": "Armbar from mount", "seed_path": {"start": "mount", "move_type": "submission", "end": "armbar"}, "art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Cross collar choke from mount", "seed_path": {"start": "mount", "move_type": "submission", "end": "cross-collar-choke"}, "art": "judo", "name": "Nami-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Cross collar choke from mount", "seed_path": {"start": "mount", "move_type": "submission", "end": "cross-collar-choke"}, "art": "judo", "name": "Gyaku-juji-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Ezekiel choke", "seed_path": {"start": "mount", "move_type": "submission", "end": "ezekiel"}, "art": "judo", "name": "Sode-guruma-jime", "class": "shime-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "S-mount armbar", "seed_path": {"start": "s-mount", "move_type": "submission", "end": "armbar"}, "art": "judo", "name": "Ude-hishigi-juji-gatame", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Americana", "seed_path": {"start": "side-control", "move_type": "submission", "end": "americana"}, "art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Kimura from side control", "seed_path": {"start": "side-control", "move_type": "submission", "end": "kimura"}, "art": "judo", "name": "Ude-garami", "class": "kansetsu-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Standing arm drag", "seed_path": {"start": "standing", "move_type": "back-take", "end": "back-control"}, "art": "wrestling", "name": "Arm drag", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Duck under", "seed_path": {"start": "standing", "move_type": "back-take", "end": "back-control"}, "art": "wrestling", "name": "Duck under", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Sprawl", "seed_path": {"start": "standing", "move_type": "escape", "end": "standing"}, "art": "wrestling", "name": "Sprawl", "class": "defense", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Snap down", "seed_path": {"start": "standing", "move_type": "takedown", "end": "front-headlock"}, "art": "wrestling", "name": "Snapdown", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Body lock takedown", "seed_path": {"start": "standing", "move_type": "takedown", "end": "mount"}, "art": "wrestling", "name": "Body lock", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Body lock takedown", "seed_path": {"start": "standing", "move_type": "takedown", "end": "mount"}, "art": "wrestling", "name": "Bear hug", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Double leg takedown", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Double leg", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Double leg takedown", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Morote-gari", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Kodokan two-hand reap; often the double-leg correspondence"}, {"seed_leaf": "Double leg takedown", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Sukui-nage", "class": "te-waza", "source": "wrestling-takedown-wikipedia", "note": "When the opponent is lifted or scooped"}, {"seed_leaf": "Single leg takedown", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Single leg", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Single leg takedown", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Kuchiki-taoshi", "class": "te-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Ankle pick", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "Ankle pick", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Ankle pick", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Kibisu-gaeshi", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Heel trip / one-hand reversal"}, {"seed_leaf": "High crotch", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "wrestling", "name": "High crotch", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "High crotch", "seed_path": {"start": "standing", "move_type": "takedown", "end": "side-control"}, "art": "judo", "name": "Sukui-nage", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Related scoop / high-crotch lift family"}, {"seed_leaf": "Osoto gari", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "O-soto-gari", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Osoto gari", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "wrestling", "name": "Outside trip", "class": "trip", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Seoi nage", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "Seoi-nage", "class": "te-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Seoi nage", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "Ippon-seoi-nage", "class": "te-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Uchi mata", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "Uchi-mata", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "O goshi", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "O-goshi", "class": "koshi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Fireman's carry", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "wrestling", "name": "Fireman's carry", "class": "takedown", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Fireman's carry", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "Kata-guruma", "class": "te-waza", "source": "kodokan-wikipedia", "note": "Shoulder wheel; related fireman's / carry family"}, {"seed_leaf": "Knee tap", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "wrestling", "name": "Knee tap", "class": "trip", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Tai otoshi", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "Tai-otoshi", "class": "te-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "Harai goshi", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "Harai-goshi", "class": "koshi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "De ashi barai", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "De-ashi-harai", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "De ashi barai", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "wrestling", "name": "Foot sweep", "class": "trip", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "O uchi gari", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "judo", "name": "O-uchi-gari", "class": "ashi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_leaf": "O uchi gari", "seed_path": {"start": "standing", "move_type": "takedown", "end": "turtle"}, "art": "wrestling", "name": "Inside trip", "class": "trip", "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_leaf": "Granby roll", "seed_path": {"start": "turtle", "move_type": "escape", "end": "closed-guard"}, "art": "wrestling", "name": "Granby / hip heist family", "class": "escape", "source": "folkstyle-wikibooks", "note": null}, {"seed_leaf": "Sit-out", "seed_path": {"start": "turtle", "move_type": "escape", "end": "closed-guard"}, "art": "wrestling", "name": "Sit-out", "class": "escape", "source": "folkstyle-wikibooks", "note": null}, {"seed_leaf": "Stand-up escape", "seed_path": {"start": "turtle", "move_type": "escape", "end": "standing"}, "art": "wrestling", "name": "Stand-up", "class": "escape", "source": "folkstyle-wikibooks", "note": null}, {"seed_leaf": "Switch reversal", "seed_path": {"start": "turtle", "move_type": "escape", "end": "standing"}, "art": "wrestling", "name": "Switch", "class": "reversal", "source": "folkstyle-wikibooks", "note": null}, {"seed_leaf": "Tight waist far ankle breakdown", "seed_path": {"start": "turtle", "move_type": "transition", "end": "side-control"}, "art": "wrestling", "name": "Tight waist, far ankle", "class": "breakdown", "source": "folkstyle-wikibooks", "note": null}, {"seed_node": "standing", "seed_kind": "starting_position", "art": "wrestling", "name": "Neutral", "class": null, "source": "folkstyle-wikibooks", "note": null}, {"seed_node": "clinch", "seed_kind": "starting_position", "art": "wrestling", "name": "Tie-up / clinch", "class": null, "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_node": "clinch", "seed_kind": "starting_position", "art": "judo", "name": "Kumikata / clinch", "class": null, "source": "kodokan-wikipedia", "note": null}, {"seed_node": "front-headlock", "seed_kind": "starting_position", "art": "wrestling", "name": "Front headlock", "class": null, "source": "wrestling-takedown-wikipedia", "note": null}, {"seed_node": "side-control", "seed_kind": "starting_position", "art": "judo", "name": "Yoko-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_node": "kesa-gatame", "seed_kind": "starting_position", "art": "judo", "name": "Kesa-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_node": "north-south", "seed_kind": "starting_position", "art": "judo", "name": "Kami-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia", "note": "Upper four-quarter; north-south is the common BJJ name"}, {"seed_node": "mount", "seed_kind": "starting_position", "art": "judo", "name": "Tate-shiho-gatame", "class": "osaekomi-waza", "source": "kodokan-wikipedia", "note": null}, {"seed_node": "turtle", "seed_kind": "starting_position", "art": "wrestling", "name": "Referee's position (bottom)", "class": null, "source": "folkstyle-wikibooks", "note": null}, {"seed_node": "turtle", "seed_kind": "starting_position", "art": "wrestling", "name": "All fours / turtle", "class": null, "source": "folkstyle-wikibooks", "note": null}]};
+  </script>
+  <script>
+  const SAMPLE_CITATIONS = [
+    {
+      id: "c-hip-bump",
+      kind: "corpus",
+      movement: "Hip bump sweep",
+      instructor: "Ryan Hall",
+      instructional: "The Hip Bump",
+      chapter: "STRUCTURE",
+      link: { start: "closed-guard", move_type: "sweep", end: "mount", leaf: "Hip bump sweep" }
+    },
+    {
+      id: "c-knee-weave",
+      kind: "corpus",
+      movement: "Knee weave pass",
+      instructor: "Kyle Watson",
+      instructional: "Mastering The Knee Weave System",
+      chapter: "The Knee Weave Pass",
+      link: null
+    },
+    {
+      id: "c-loop",
+      kind: "corpus",
+      movement: "Loop choke",
+      instructor: "Prototype instructor",
+      instructional: "Prototype gi volume",
+      chapter: "Loop choke from turtle",
+      link: null
+    },
+    {
+      id: "c-overclasp",
+      kind: "coach-authored",
+      movement: "Overclasp",
+      steps: ["Grip the overclasp", "Shift the hip inside"],
+      link: null
+    }
+  ];
+
+  const FAMILY_ORDER = ["standing", "guard", "leg-entanglement", "passing", "pin", "turtle", "back"];
+
+  const Tree = (() => {
+    const clone = (v) => JSON.parse(JSON.stringify(v));
+
+    function slug(label) {
+      return String(label || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "") || ("n-" + Date.now());
+    }
+
+    function unifySeed(raw) {
+      const seed = clone(raw);
+      const positions = clone(seed.starting_positions || []);
+      const index = Object.fromEntries(positions.map((p) => [p.id, p]));
+      const submissions = [];
+      (seed.ending_positions_or_submissions || []).forEach((e) => {
+        if (e.kind === "submission") {
+          submissions.push({
+            id: e.id,
+            label: e.label,
+            kind: "submission",
+            cross_refs: e.cross_refs,
+            aliases: e.aliases
+          });
+          return;
+        }
+        if (!index[e.id]) {
+          const p = {
+            id: e.id,
+            label: e.label,
+            family: e.family || "other",
+            cross_refs: e.cross_refs,
+            aliases: e.aliases
+          };
+          positions.push(p);
+          index[e.id] = p;
+        }
+      });
+      seed.positions = positions;
+      seed.submissions = submissions;
+      delete seed.starting_positions;
+      delete seed.ending_positions_or_submissions;
+      return seed;
+    }
+
+    function load(seed, citations) {
+      return {
+        seed: unifySeed(seed),
+        citations: clone(citations),
+        selected: { start: null, moveType: null, end: null, leaf: null, identity: null },
+        query: "",
+        ruleset: "all",
+        lastChange: "Loaded the consensus seed with one record per position.",
+        accepted: false
+      };
+    }
+
+    function byId(list, id) {
+      return (list || []).find((x) => x.id === id);
+    }
+
+    function labelOf(list, id, fallback) {
+      const n = byId(list, id);
+      return n ? n.label : (fallback || id);
+    }
+
+    function endRef(seed, id) {
+      const p = byId(seed.positions, id);
+      if (p) return { id: p.id, label: p.label, kind: "position", family: p.family, cross_refs: p.cross_refs, aliases: p.aliases };
+      const s = byId(seed.submissions, id);
+      if (s) return { id: s.id, label: s.label, kind: "submission", cross_refs: s.cross_refs, aliases: s.aliases };
+      return null;
+    }
+
+    function identityLabel(seed, id) {
+      const n = endRef(seed, id);
+      return n ? n.label : id;
+    }
+
+    function relations(state, id) {
+      const outbound = [];
+      const inbound = [];
+      if (!id) return { outbound, inbound };
+      state.seed.paths.forEach((p) => {
+        if (p.start === id) outbound.push(p);
+        if (p.end === id) inbound.push(p);
+      });
+      return { outbound, inbound };
+    }
+
+    function exportSeed(state) {
+      const s = state.seed;
+      return {
+        meta: Object.assign({}, s.meta, {
+          identity_rule: "A position is one finder record used as a start and as an end. A submission is an ending only.",
+          counts: {
+            positions: s.positions.length,
+            submissions: s.submissions.length,
+            move_types: s.move_types.length,
+            paths: s.paths.length,
+            named_move_leaves: s.paths.reduce((n, p) => n + (p.leaves || []).length, 0)
+          }
+        }),
+        sources: s.sources,
+        license_notes: s.license_notes,
+        move_types: s.move_types,
+        positions: s.positions,
+        submissions: s.submissions,
+        paths: s.paths,
+        crosswalk: s.crosswalk
+      };
+    }
+
+    function issues(state) {
+      const s = state.seed;
+      const posIds = new Set(s.positions.map((x) => x.id));
+      const subIds = new Set(s.submissions.map((x) => x.id));
+      const identIds = new Set([...posIds, ...subIds]);
+      const mtIds = new Set(s.move_types.map((x) => x.id));
+      const usedStarts = new Set();
+      const usedMts = new Set();
+      const usedEnds = new Set();
+      const names = {};
+      const unknownEnds = new Set();
+      s.paths.forEach((p) => {
+        usedStarts.add(p.start);
+        usedMts.add(p.move_type);
+        usedEnds.add(p.end);
+        if (!identIds.has(p.end)) unknownEnds.add(p.end);
+        (p.leaves || []).forEach((l) => {
+          (names[l.name] ||= []).push(p);
+        });
+      });
+      const neverLeft = [...posIds].filter((id) => !usedStarts.has(id));
+      const neverLanded = [...posIds].filter((id) => !usedEnds.has(id));
+      const unusedMts = [...mtIds].filter((id) => !usedMts.has(id));
+      const unusedSubmissions = [...subIds].filter((id) => !usedEnds.has(id));
+      const dups = Object.entries(names).filter(([, v]) => v.length > 1).map(([n]) => n);
+      return {
+        missingEnds: [...unknownEnds],
+        neverLeft,
+        neverLanded,
+        unusedStarts: neverLeft,
+        unusedMts,
+        unusedEnds: unusedSubmissions.concat(neverLanded),
+        unusedSubmissions,
+        duplicateLeafNames: dups,
+        uncategorized: state.citations.filter((c) => !c.link).length,
+        linked: state.citations.filter((c) => c.link).length,
+        positionCount: s.positions.length,
+        submissionCount: s.submissions.length
+      };
+    }
+
+    function matchQuery(state, text) {
+      const q = state.query.trim().toLowerCase();
+      if (!q) return true;
+      return String(text || "").toLowerCase().includes(q);
+    }
+
+    function leafVisible(state, leaf) {
+      if (state.ruleset !== "all" && leaf.ruleset !== state.ruleset && leaf.ruleset !== "both") return false;
+      if (state.ruleset === "gi" && leaf.ruleset === "no-gi") return false;
+      if (state.ruleset === "no-gi" && leaf.ruleset === "gi") return false;
+      const bits = [leaf.name, leaf.ruleset, ...(leaf.aliases || []), ...(leaf.cross_refs || []).map((x) => x.name)];
+      return matchQuery(state, bits.join(" "));
+    }
+
+    function pathVisible(state, path) {
+      const start = byId(state.seed.positions, path.start);
+      const mt = byId(state.seed.move_types, path.move_type);
+      const end = endRef(state.seed, path.end);
+      const hay = [
+        start && start.label, path.start,
+        mt && mt.label, path.move_type,
+        end && end.label, path.end,
+        ...(path.leaves || []).flatMap((l) => [l.name, ...(l.aliases || []), ...(l.cross_refs || []).map((x) => x.name)])
+      ].join(" ");
+      if (state.query.trim() && !matchQuery(state, hay)) return false;
+      if (state.ruleset === "all") return true;
+      return (path.leaves || []).some((l) => leafVisible(state, l));
+    }
+
+    function visibleStarts(state) {
+      const counts = {};
+      state.seed.paths.forEach((p) => {
+        if (pathVisible(state, p)) counts[p.start] = (counts[p.start] || 0) + 1;
+      });
+      return state.seed.positions
+        .filter((s) => counts[s.id] || matchQuery(state, s.label) || s.id === state.selected.start)
+        .map((s) => ({ ...s, pathCount: counts[s.id] || 0 }));
+    }
+
+    function visibleMoveTypes(state) {
+      if (!state.selected.start) return [];
+      const counts = {};
+      state.seed.paths.forEach((p) => {
+        if (p.start !== state.selected.start) return;
+        if (!pathVisible(state, p)) return;
+        counts[p.move_type] = (counts[p.move_type] || 0) + 1;
+      });
+      return state.seed.move_types
+        .filter((m) => counts[m.id])
+        .map((m) => ({ ...m, pathCount: counts[m.id] }));
+    }
+
+    function visibleEnds(state) {
+      const { start, moveType } = state.selected;
+      if (!start || !moveType) return [];
+      return state.seed.paths
+        .filter((p) => p.start === start && p.move_type === moveType && pathVisible(state, p))
+        .map((p) => {
+          const end = endRef(state.seed, p.end);
+          return {
+            id: p.end,
+            label: end ? end.label : p.end,
+            kind: end ? end.kind : "missing",
+            missing: !end,
+            leafCount: (p.leaves || []).length
+          };
+        });
+    }
+
+    function selectedPath(state) {
+      const { start, moveType, end } = state.selected;
+      if (!start || !moveType || !end) return null;
+      return state.seed.paths.find((p) => p.start === start && p.move_type === moveType && p.end === end) || null;
+    }
+
+    function visibleLeaves(state) {
+      const p = selectedPath(state);
+      if (!p) return [];
+      return (p.leaves || []).filter((l) => leafVisible(state, l));
+    }
+
+    function unlinkMatching(state, pred) {
+      state.citations.forEach((c) => {
+        if (c.link && pred(c.link)) c.link = null;
+      });
+    }
+
+    function ensurePath(state, start, moveType, end) {
+      let p = state.seed.paths.find((x) => x.start === start && x.move_type === moveType && x.end === end);
+      if (!p) {
+        p = { start, move_type: moveType, end, leaves: [] };
+        state.seed.paths.push(p);
+      }
+      return p;
+    }
+
+    function dispatch(state, action) {
+      const next = clone(state);
+      const a = action || {};
+      const type = a.type;
+      if (type === "SELECT_START") {
+        next.selected = { start: a.id, moveType: null, end: null, leaf: null, identity: a.id };
+        next.lastChange = "Selected position " + identityLabel(next.seed, a.id) + " as a start.";
+      } else if (type === "SELECT_IDENTITY") {
+        const node = endRef(next.seed, a.id);
+        next.selected.identity = a.id;
+        next.selected.leaf = null;
+        if (node && node.kind === "position") {
+          next.selected.start = a.id;
+          next.selected.moveType = null;
+          next.selected.end = null;
+        }
+        next.lastChange = "Focused identity " + (node ? node.label : a.id) + (node ? " (" + node.kind + ")" : "") + ".";
+      } else if (type === "SELECT_MOVE_TYPE") {
+        next.selected.moveType = a.id;
+        next.selected.end = null;
+        next.selected.leaf = null;
+        next.lastChange = "Selected type of move " + labelOf(next.seed.move_types, a.id) + ".";
+      } else if (type === "SELECT_END") {
+        next.selected.end = a.id;
+        next.selected.leaf = null;
+        next.selected.identity = a.id;
+        const end = endRef(next.seed, a.id);
+        next.lastChange = "Selected ending " + (end ? end.label + " (" + end.kind + ")" : a.id) + ".";
+      } else if (type === "SELECT_LEAF") {
+        next.selected.leaf = a.name;
+        next.lastChange = "Selected named move " + a.name + ".";
+      } else if (type === "SEARCH") {
+        next.query = a.query;
+        next.lastChange = a.query ? "Search set to “" + a.query + "”." : "Search cleared.";
+      } else if (type === "FILTER_RULESET") {
+        next.ruleset = a.ruleset;
+        next.lastChange = "Ruleset filter set to " + a.ruleset + ".";
+      } else if (type === "RENAME") {
+        const { kind, id, label } = a;
+        if (kind === "start" || kind === "position" || kind === "end") {
+          const pos = byId(next.seed.positions, id);
+          const sub = byId(next.seed.submissions, id);
+          if (pos) {
+            pos.label = label;
+            next.lastChange = "Renamed position to " + label + ". Start and end both use this record.";
+          } else if (sub) {
+            sub.label = label;
+            next.lastChange = "Renamed submission to " + label + ".";
+          }
+        } else if (kind === "move_type") {
+          const n = byId(next.seed.move_types, id);
+          if (n) { n.label = label; next.lastChange = "Renamed type of move to " + label + "."; }
+        } else if (kind === "leaf") {
+          const p = selectedPath(next);
+          const leaf = p && (p.leaves || []).find((l) => l.name === id);
+          if (leaf) {
+            next.citations.forEach((c) => {
+              if (c.link && c.link.start === p.start && c.link.move_type === p.move_type && c.link.end === p.end && c.link.leaf === id) {
+                c.link.leaf = label;
+              }
+            });
+            leaf.name = label;
+            next.selected.leaf = label;
+            next.lastChange = "Renamed named move to " + label + ". Citation links followed the name.";
+          }
+        }
+      } else if (type === "ADD_START") {
+        const id = slug(a.label);
+        if (!byId(next.seed.positions, id)) {
+          next.seed.positions.push({ id, label: a.label, family: a.family || "guard" });
+        }
+        next.selected = { start: id, moveType: null, end: null, leaf: null, identity: id };
+        next.lastChange = "Added position " + a.label + ".";
+      } else if (type === "ADD_MOVE_TYPE") {
+        const id = slug(a.label);
+        if (!byId(next.seed.move_types, id)) {
+          next.seed.move_types.push({ id, label: a.label });
+        }
+        next.lastChange = "Added type of move " + a.label + ".";
+      } else if (type === "ADD_END") {
+        const id = a.id || slug(a.label);
+        if ((a.kind || "position") === "submission") {
+          if (!byId(next.seed.submissions, id)) {
+            next.seed.submissions.push({ id, label: a.label, kind: "submission" });
+          }
+          next.lastChange = "Added submission " + a.label + ".";
+        } else if (!byId(next.seed.positions, id)) {
+          next.seed.positions.push({ id, label: a.label, family: a.family || "other" });
+          next.lastChange = "Added position " + a.label + " (usable as start and as end).";
+        } else {
+          next.lastChange = a.label + " already exists as a position.";
+        }
+      } else if (type === "ADD_LEAF") {
+        const { start, moveType, end } = next.selected;
+        if (start && moveType && end) {
+          const p = ensurePath(next, start, moveType, end);
+          p.leaves = p.leaves || [];
+          p.leaves.push({ name: a.name, ruleset: a.ruleset || "both" });
+          next.selected.leaf = a.name;
+          next.lastChange = "Added named move " + a.name + ".";
+        } else {
+          next.lastChange = "Select a full path before adding a named move.";
+        }
+      } else if (type === "MOVE_LEAF") {
+        const from = selectedPath(next);
+        if (from && next.selected.leaf) {
+          const idx = (from.leaves || []).findIndex((l) => l.name === next.selected.leaf);
+          if (idx >= 0) {
+            const [leaf] = from.leaves.splice(idx, 1);
+            const dest = ensurePath(next, a.start, a.move_type, a.end);
+            dest.leaves = dest.leaves || [];
+            dest.leaves.push(leaf);
+            next.citations.forEach((c) => {
+              if (c.link && c.link.start === from.start && c.link.move_type === from.move_type && c.link.end === from.end && c.link.leaf === leaf.name) {
+                c.link = { start: a.start, move_type: a.move_type, end: a.end, leaf: leaf.name };
+              }
+            });
+            next.selected = { start: a.start, moveType: a.move_type, end: a.end, leaf: leaf.name, identity: a.start };
+            next.lastChange = "Moved " + leaf.name + ". Citation links stayed on that named move.";
+          }
+        }
+      } else if (type === "DELETE_START" || type === "DELETE_POSITION") {
+        const id = a.id;
+        unlinkMatching(next, (link) => link.start === id || link.end === id);
+        next.seed.positions = next.seed.positions.filter((x) => x.id !== id);
+        next.seed.paths = next.seed.paths.filter((p) => p.start !== id && p.end !== id);
+        next.selected = { start: null, moveType: null, end: null, leaf: null, identity: null };
+        next.lastChange = "Deleted position. Paths in and out are gone. Linked citations are uncategorized.";
+      } else if (type === "DELETE_MOVE_TYPE") {
+        const id = a.id;
+        unlinkMatching(next, (link) => link.move_type === id);
+        next.seed.move_types = next.seed.move_types.filter((x) => x.id !== id);
+        next.seed.paths = next.seed.paths.filter((p) => p.move_type !== id);
+        next.selected.moveType = null;
+        next.selected.end = null;
+        next.selected.leaf = null;
+        next.lastChange = "Deleted type of move. Linked citations are uncategorized.";
+      } else if (type === "DELETE_END") {
+        const id = a.id;
+        const node = endRef(next.seed, id);
+        if (node && node.kind === "position") {
+          return dispatch(next, { type: "DELETE_POSITION", id });
+        }
+        unlinkMatching(next, (link) => link.end === id);
+        next.seed.submissions = next.seed.submissions.filter((x) => x.id !== id);
+        next.seed.paths = next.seed.paths.filter((p) => p.end !== id);
+        next.selected.end = null;
+        next.selected.leaf = null;
+        if (next.selected.identity === id) next.selected.identity = null;
+        next.lastChange = "Deleted submission. Linked citations are uncategorized.";
+      } else if (type === "DELETE_LEAF") {
+        const p = selectedPath(next);
+        if (p && a.name) {
+          unlinkMatching(next, (link) => link.start === p.start && link.move_type === p.move_type && link.end === p.end && link.leaf === a.name);
+          p.leaves = (p.leaves || []).filter((l) => l.name !== a.name);
+          next.selected.leaf = null;
+          next.lastChange = "Deleted named move " + a.name + ". Linked citations are uncategorized.";
+        }
+      } else if (type === "PLACE_CITATION") {
+        const p = selectedPath(next);
+        const c = next.citations.find((x) => x.id === a.id);
+        if (c && p && next.selected.leaf) {
+          c.link = { start: p.start, move_type: p.move_type, end: p.end, leaf: next.selected.leaf };
+          next.lastChange = "Placed " + c.movement + " on " + next.selected.leaf + ".";
+        } else {
+          next.lastChange = "Select a named move, then place a citation on it.";
+        }
+      } else if (type === "UNCATEGORIZE") {
+        const c = next.citations.find((x) => x.id === a.id);
+        if (c) {
+          c.link = null;
+          next.lastChange = "Removed the enrichment link from " + c.movement + ".";
+        }
+      } else if (type === "FIX_MISSING_ENDS") {
+        next.lastChange = "Positions already share identity with endings. Nothing to copy.";
+      } else if (type === "RESET") {
+        return load(SEED, SAMPLE_CITATIONS);
+      } else if (type === "ACCEPT") {
+        next.accepted = true;
+        next.lastChange = "Coach marked this starting tree acceptable to import.";
+      }
+      return next;
+    }
+
+    return {
+      load, dispatch, issues, visibleStarts, visibleMoveTypes, visibleEnds, visibleLeaves,
+      selectedPath, labelOf, byId, endRef, identityLabel, relations, exportSeed,
+      pathVisible, leafVisible
+    };
+  })();
+
+  const Domain = (() => {
+    const concepts = [
+      {
+        id: "position",
+        label: "Position",
+        shape: "entity",
+        nature: "reference",
+        summary: "Catalog of where a named move is applied from or goes to. One record. Start and end are roles on the named move. Top, bottom, or neutral is how the student occupies this record, not a second Closed guard.",
+        attrs: ["label", "family", "aliases", "cross_refs"],
+        countKey: "positions"
+      },
+      {
+        id: "move_type",
+        label: "Type of move",
+        shape: "entity",
+        nature: "reference",
+        summary: "Catalog of what the named move is accomplishing. It carries Top, Bottom, and/or Neutral. Escape is Bottom, on a pin or control. Pass is Top. Sweep is Bottom. Takedown is Neutral. Transition stays the same side and family: bottom guard, leg-entanglement, or turtle to another of those; top pin, passing, or back to another of those; standing to standing. Submission and back-take may allow more than one side.",
+        attrs: ["label", "sides", "families when constrained"],
+        countKey: "move_types"
+      },
+      {
+        id: "submission",
+        label: "Submission",
+        shape: "entity",
+        nature: "reference",
+        summary: "Catalog of unique submissions. A named move may end here. A submission is not a position.",
+        attrs: ["label", "aliases", "cross_refs"],
+        countKey: "submissions"
+      },
+      {
+        id: "named_move",
+        label: "Named move",
+        shape: "entity",
+        nature: "reference",
+        summary: "One catalog movement, such as Hip bump sweep. It consists of a start position plus top/bottom/neutral, a type of move, and an end occupancy (a position plus top/bottom/neutral, or a submission). Citations belong here.",
+        attrs: ["name", "start", "start side", "type of move", "end", "end side", "ruleset", "aliases", "cross_refs"],
+        countKey: "leaves"
+      },
+      {
+        id: "system",
+        label: "System",
+        shape: "entity",
+        nature: "reference",
+        summary: "Two or more named moves used together to create a dilemma. When the partner defends one, they give another. A lesson may connect here. The unit never links here directly. Aliases are other names for the same system.",
+        attrs: ["member named moves", "aliases"],
+        countKey: "systems"
+      },
+      {
+        id: "citation",
+        label: "Citation",
+        shape: "entity",
+        nature: "reference",
+        summary: "A catalog teaching that belongs to a named move: instructor, instructional, volume, chapter, timestamp. Many citations can belong to one named move. Offered when the coach builds a lesson on that named move, or on a system that includes it.",
+        attrs: ["instructor", "instructional", "volume", "chapter", "timestamp", "cleaned statement"],
+        countKey: "citations"
+      },
+      {
+        id: "lesson_type",
+        label: "Lesson type",
+        shape: "entity",
+        nature: "reference",
+        summary: "Catalog of kinds of lesson: technique, drill, sparring, game. A lesson in a class is one of these.",
+        attrs: ["label"],
+        countKey: "lesson_types"
+      },
+      {
+        id: "unit",
+        label: "Unit",
+        shape: "entity",
+        nature: "activity",
+        summary: "Activity: sequenced classes. Catalog enters only through the lessons in those classes.",
+        attrs: ["paragraph", "ordered classes"],
+        countKey: "none"
+      },
+      {
+        id: "class",
+        label: "Class",
+        shape: "entity",
+        nature: "activity",
+        summary: "Activity: one meeting. An ordered series of lessons inside a unit.",
+        attrs: ["purpose line", "ordered lessons"],
+        countKey: "none"
+      },
+      {
+        id: "lesson",
+        label: "Lesson",
+        shape: "entity",
+        nature: "activity",
+        summary: "Activity: what is actually being worked on in a class. It connects to exactly one named move or exactly one system. Catalog enters the unit here. The coach sequences lessons into classes.",
+        attrs: ["lesson type", "named move xor system", "chosen citations", "partner job or scenario or condition"],
+        countKey: "none"
+      },
+      {
+        id: "chosen_citations",
+        label: "Chosen citations",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "lesson",
+        summary: "Which citations the coach uses in this lesson. The pool is the named move's citations, or the citations of every named move in the system."
+      },
+      {
+        id: "family",
+        label: "Family",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "position",
+        summary: "Grouping field on a position: standing, guard, leg entanglement, passing, pin, turtle, back."
+      },
+      {
+        id: "start_role",
+        label: "Start (role)",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "named_move",
+        summary: "The position the named move is applied from. A role on the named move, not a second list of positions."
+      },
+      {
+        id: "end_role",
+        label: "End (role)",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "named_move",
+        summary: "The position or submission the named move goes to. A role on the named move."
+      },
+      {
+        id: "orientation",
+        label: "Top / Bottom / Neutral",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "named_move",
+        summary: "How the learning student occupies a position, and which sides a type of move belongs to. Named move: start side and end side. Type of move: escape is bottom on a pin or control. Transition keeps the same side and family (closed guard bottom to another bottom guard; mount top to another top pin)."
+      },
+      {
+        id: "ruleset",
+        label: "Ruleset",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "named_move",
+        summary: "gi, no-gi, or both. Lives on the named move. Positions and types of move are shared across rulesets."
+      },
+      {
+        id: "aliases",
+        label: "Aliases",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "named_move",
+        summary: "Other names for the same catalog record. Lives on named moves, systems, and some positions and submissions."
+      },
+      {
+        id: "cross_ref",
+        label: "Cross-ref",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "named_move",
+        summary: "A judo or wrestling name on the same named-move record."
+      },
+      {
+        id: "uncategorized",
+        label: "Uncategorized",
+        shape: "attribute",
+        nature: "attribute",
+        owner: "citation",
+        summary: "Browse bucket when a citation has no named-move link. It is not offered on a lesson until it belongs to a named move."
+      }
+    ];
+
+    const edges = [
+      { from: "family", to: "position", label: "of" },
+      { from: "start_role", to: "named_move", label: "on" },
+      { from: "end_role", to: "named_move", label: "on" },
+      { from: "orientation", to: "named_move", label: "start and end side" },
+      { from: "orientation", to: "move_type", label: "of" },
+      { from: "named_move", to: "position", label: "start: 1" },
+      { from: "named_move", to: "position", label: "end: 0..1" },
+      { from: "named_move", to: "submission", label: "end: 0..1" },
+      { from: "named_move", to: "move_type", label: "1" },
+      { from: "ruleset", to: "named_move", label: "of" },
+      { from: "aliases", to: "named_move", label: "of" },
+      { from: "aliases", to: "system", label: "of" },
+      { from: "cross_ref", to: "named_move", label: "of" },
+      { from: "system", to: "named_move", label: "2..n members" },
+      { from: "citation", to: "named_move", label: "0..n per move" },
+      { from: "uncategorized", to: "citation", label: "when unlinked" },
+      { from: "unit", to: "class", label: "sequences 1..n" },
+      { from: "class", to: "lesson", label: "sequences 1..n" },
+      { from: "lesson", to: "lesson_type", label: "1" },
+      { from: "lesson", to: "named_move", label: "xor 0..1" },
+      { from: "lesson", to: "system", label: "xor 0..1" },
+      { from: "chosen_citations", to: "lesson", label: "of" }
+    ];
+
+    const layout = {
+      family: { x: 120, y: 80 },
+      start_role: { x: 120, y: 150 },
+      end_role: { x: 120, y: 220 },
+      orientation: { x: 120, y: 295 },
+      ruleset: { x: 120, y: 375 },
+      aliases: { x: 120, y: 450 },
+      cross_ref: { x: 120, y: 525 },
+      uncategorized: { x: 120, y: 600 },
+      chosen_citations: { x: 120, y: 675 },
+      position: { x: 430, y: 100 },
+      move_type: { x: 430, y: 250 },
+      submission: { x: 430, y: 400 },
+      named_move: { x: 430, y: 560 },
+      system: { x: 780, y: 160 },
+      citation: { x: 780, y: 340 },
+      lesson_type: { x: 780, y: 530 },
+      unit: { x: 1140, y: 120 },
+      class: { x: 1140, y: 300 },
+      lesson: { x: 1140, y: 500 }
+    };
+
+    function byId(id) {
+      return concepts.find((c) => c.id === id);
+    }
+
+    function counts(state) {
+      const s = state.seed;
+      const leafN = s.paths.reduce((n, p) => n + (p.leaves || []).length, 0);
+      return {
+        positions: s.positions.length,
+        submissions: s.submissions.length,
+        move_types: s.move_types.length,
+        leaves: leafN,
+        citations: state.citations.length,
+        systems: forceSetup.length >= 2 ? 1 : 0,
+        lesson_types: 4,
+        none: null
+      };
+    }
+
+    function neighbors(id) {
+      const ids = { [id]: true };
+      edges.forEach((e) => {
+        if (e.from === id) ids[e.to] = true;
+        if (e.to === id) ids[e.from] = true;
+      });
+      return ids;
+    }
+
+    return { concepts, edges, layout, byId, counts, neighbors };
+  })();
+
+  const SCENARIOS = [
+    {
+      id: "happy",
+      name: "Hip bump path",
+      blurb: "A complete path with a linked citation. Watch Closed guard → Sweep → Mount → Hip bump sweep. Load the closed-guard trilemma on the journey to see hip bump sit with kimura and triangle.",
+      steps: [
+        { label: "Clear search", action: { type: "SEARCH", query: "" } },
+        { label: "Show both rulesets", action: { type: "FILTER_RULESET", ruleset: "all" } },
+        { label: "Open Closed guard", action: { type: "SELECT_START", id: "closed-guard" } },
+        { label: "Open Sweep", action: { type: "SELECT_MOVE_TYPE", id: "sweep" } },
+        { label: "Open Mount", action: { type: "SELECT_END", id: "mount" } },
+        { label: "Select Hip bump sweep", action: { type: "SELECT_LEAF", name: "Hip bump sweep" } }
+      ]
+    },
+    {
+      id: "gi-leaf",
+      name: "Gi-only leaf",
+      blurb: "Bow and arrow choke is gi-only. Filter to no-gi and it should drop out of the named-move list.",
+      steps: [
+        { label: "Open Back control", action: { type: "SELECT_START", id: "back-control" } },
+        { label: "Open Submission", action: { type: "SELECT_MOVE_TYPE", id: "submission" } },
+        { label: "Open Bow and arrow choke", action: { type: "SELECT_END", id: "bow-and-arrow" } },
+        { label: "Filter to no-gi", action: { type: "FILTER_RULESET", ruleset: "no-gi" } },
+        { label: "Show both rulesets again", action: { type: "FILTER_RULESET", ruleset: "all" } }
+      ]
+    },
+    {
+      id: "identity",
+      name: "One Mount identity",
+      blurb: "Mount as an ending is the same Mount as a start. The plot highlights Closed guard sweeping into Mount, then Mount as a start toward Armbar.",
+      steps: [
+        { label: "Clear search", action: { type: "SEARCH", query: "" } },
+        { label: "Open Closed guard", action: { type: "SELECT_START", id: "closed-guard" } },
+        { label: "Open Sweep", action: { type: "SELECT_MOVE_TYPE", id: "sweep" } },
+        { label: "Open Mount as the ending", action: { type: "SELECT_END", id: "mount" } },
+        { label: "Focus Mount on the plot", action: { type: "SELECT_IDENTITY", id: "mount" } },
+        { label: "Open Worm guard as a start (same record can end a path)", action: { type: "SELECT_START", id: "worm-guard" } }
+      ]
+    },
+    {
+      id: "duplicate",
+      name: "Same name, two starts",
+      blurb: "Body lock pass sits under Butterfly guard and under Open guard. Search shows both paths.",
+      steps: [
+        { label: "Search Body lock pass", action: { type: "SEARCH", query: "Body lock pass" } },
+        { label: "Open Butterfly guard", action: { type: "SELECT_START", id: "butterfly-guard" } },
+        { label: "Open Pass", action: { type: "SELECT_MOVE_TYPE", id: "pass" } },
+        { label: "Open Side control", action: { type: "SELECT_END", id: "side-control" } }
+      ]
+    },
+    {
+      id: "uncat",
+      name: "Uncategorized citation",
+      blurb: "Knee weave pass is in the corpus name set and has no seed leaf. It stays usable under Uncategorized until placed.",
+      steps: [
+        { label: "Clear search", action: { type: "SEARCH", query: "" } },
+        { label: "Open Half guard", action: { type: "SELECT_START", id: "half-guard" } },
+        { label: "Open Pass", action: { type: "SELECT_MOVE_TYPE", id: "pass" } },
+        { label: "Open Side control", action: { type: "SELECT_END", id: "side-control" } },
+        { label: "Select Knee slice pass", action: { type: "SELECT_LEAF", name: "Knee slice pass" } },
+        { label: "Place Knee weave pass on that leaf (try it, then undo below)", action: { type: "PLACE_CITATION", id: "c-knee-weave" } },
+        { label: "Uncategorize Knee weave pass again", action: { type: "UNCATEGORIZE", id: "c-knee-weave" } }
+      ]
+    },
+    {
+      id: "delete",
+      name: "Delete uncategorizes",
+      blurb: "Ryan Hall’s Hip bump sweep is linked. Delete that named move and the citation should fall into Uncategorized.",
+      steps: [
+        { label: "Reset the tree", action: { type: "RESET" } },
+        { label: "Open Closed guard", action: { type: "SELECT_START", id: "closed-guard" } },
+        { label: "Open Sweep", action: { type: "SELECT_MOVE_TYPE", id: "sweep" } },
+        { label: "Open Mount", action: { type: "SELECT_END", id: "mount" } },
+        { label: "Select Hip bump sweep", action: { type: "SELECT_LEAF", name: "Hip bump sweep" } },
+        { label: "Delete Hip bump sweep", action: { type: "DELETE_LEAF", name: "Hip bump sweep" } }
+      ]
+    }
+  ];
+
+  let state = Tree.load(SEED, SAMPLE_CITATIONS);
+  let scenarioId = "happy";
+  let stepIndex = 0;
+
+  function el(tag, attrs, kids) {
+    const n = document.createElement(tag);
+    Object.entries(attrs || {}).forEach(([k, v]) => {
+      if (k === "class") n.className = v;
+      else if (k === "on") Object.entries(v).forEach(([ev, fn]) => n.addEventListener(ev, fn));
+      else if (k === "html") n.innerHTML = v;
+      else if (v === false || v == null) return;
+      else n.setAttribute(k, v);
+    });
+    (kids || []).forEach((c) => n.append(c));
+    return n;
+  }
+
+  function toast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => t.classList.remove("show"), 2400);
+  }
+
+  let forceStart = null;
+  let forceSide = null;
+  let forceTrail = [];
+  let forceOpenMoves = [];
+  let forceSetup = [];
+  let forcePos = {};
+  let forceRaf = 0;
+  function go(action) {
+    state = Tree.dispatch(state, action);
+    render();
+    toast(state.lastChange);
+  }
+
+  function selectPath(p) {
+    state = Tree.dispatch(state, { type: "SELECT_START", id: p.start });
+    state = Tree.dispatch(state, { type: "SELECT_MOVE_TYPE", id: p.move_type });
+    state = Tree.dispatch(state, { type: "SELECT_END", id: p.end });
+    render();
+    toast(state.lastChange);
+  }
+
+  function showTip(ev, title, lines) {
+    const t = document.getElementById("hover-tip");
+    t.replaceChildren();
+    t.append(el("strong", {}, [title]));
+    (lines || []).forEach((line) => t.append(el("div", { class: "muted" }, [line])));
+    t.hidden = false;
+    const x = Math.min(ev.clientX + 14, window.innerWidth - 280);
+    const y = Math.min(ev.clientY + 14, window.innerHeight - 120);
+    t.style.left = x + "px";
+    t.style.top = y + "px";
+  }
+  function hideTip() {
+    const t = document.getElementById("hover-tip");
+    if (t) t.hidden = true;
+  }
+
+  function ask(title, value) {
+    const v = window.prompt(title, value || "");
+    return v && v.trim() ? v.trim() : null;
+  }
+
+  const FAMILY_COLOR = {
+    standing: "#57534e",
+    guard: "#1e3a8a",
+    "leg-entanglement": "#5b21b6",
+    passing: "#9a3412",
+    pin: "#14532d",
+    turtle: "#854d0e",
+    back: "#9f1239",
+    other: "#78716c"
+  };
+  const MOVE_COLOR = {
+    takedown: "#57534e",
+    sweep: "#1d4ed8",
+    pass: "#c2410c",
+    escape: "#15803d",
+    submission: "#9f1239",
+    transition: "#7c3aed",
+    "back-take": "#b45309"
+  };
+
+  function svgEl(tag, attrs) {
+    const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    Object.entries(attrs || {}).forEach(([k, v]) => {
+      if (k === "on") Object.entries(v).forEach(([ev, fn]) => n.addEventListener(ev, fn));
+      else n.setAttribute(k, v);
+    });
+    return n;
+  }
+
+  function familyKey(pos) {
+    const fam = (pos && pos.family) || "other";
+    return FAMILY_ORDER.includes(fam) ? fam : "other";
+  }
+
+  const SIDE_LABEL = { top: "Top", bottom: "Bottom", neutral: "Neutral" };
+  const SIDE_COLOR = { top: "#14532d", bottom: "#1e3a8a", neutral: "#57534e" };
+  const CONTROL_FAMILIES = ["pin", "back", "turtle", "passing"];
+  const MOVE_TYPE_SPEC = {
+    takedown: { sides: ["neutral"] },
+    sweep: { sides: ["bottom"] },
+    pass: { sides: ["top"] },
+    escape: { sides: ["bottom"], families: CONTROL_FAMILIES },
+    submission: { sides: ["top", "bottom", "neutral"] },
+    transition: {
+      sides: ["top", "bottom", "neutral"],
+      sameFamily: true,
+      bySideFamilies: {
+        bottom: ["guard", "leg-entanglement", "turtle"],
+        top: ["pin", "passing", "back"],
+        neutral: ["standing"]
+      }
+    },
+    "back-take": { sides: ["top", "bottom"] }
+  };
+
+  function occupancyLabel(posId, side) {
+    const p = Tree.byId(state.seed.positions, posId) || Tree.endRef(state.seed, posId);
+    return (p ? p.label : posId) + " · " + (SIDE_LABEL[side] || side || "?");
+  }
+
+  function moveAllowed(moveType, side, family) {
+    if (!side) return true;
+    const spec = MOVE_TYPE_SPEC[moveType] || {};
+    if (spec.sides && spec.sides.indexOf(side) < 0) return false;
+    if (spec.families && spec.families.indexOf(family) < 0) return false;
+    if (spec.bySideFamilies) {
+      const fams = spec.bySideFamilies[side] || [];
+      if (fams.indexOf(family) < 0) return false;
+    }
+    return true;
+  }
+
+  function transitionEndOk(moveType, startFam, endRef) {
+    const spec = MOVE_TYPE_SPEC[moveType] || {};
+    if (!spec.sameFamily) return true;
+    if (!endRef || endRef.kind === "submission") return false;
+    return familyKey(endRef) === startFam;
+  }
+
+  function landingSide(moveType, startSide, endRef) {
+    if (!endRef || endRef.kind === "submission") return null;
+    const fam = familyKey(endRef);
+    if (moveType === "sweep" || moveType === "pass" || moveType === "back-take") return "top";
+    if (moveType === "takedown") {
+      if (fam === "guard") return "bottom";
+      if (fam === "standing") return "neutral";
+      return "top";
+    }
+    if (moveType === "escape") {
+      if (fam === "standing") return "neutral";
+      return "bottom";
+    }
+    if (moveType === "transition") return startSide;
+    return startSide;
+  }
+
+  function visiblePathList(state) {
+    return state.seed.paths.filter((p) => Tree.pathVisible(state, p));
+  }
+
+  function wireHover(elNode, titleFn, linesFn) {
+    elNode.addEventListener("mousemove", (ev) => showTip(ev, titleFn(), linesFn()));
+    elNode.addEventListener("mouseleave", hideTip);
+  }
+
+  function isChosen(layer, opt) {
+    if (layer.selectedSet) return layer.selectedSet.indexOf(opt.id) >= 0;
+    return layer.selected === opt.id;
+  }
+
+  function buildJourneyLayers(state) {
+    const paths = visiblePathList(state);
+    const layers = [];
+    layers.push({
+      kind: "start",
+      col: 0,
+      label: "Starting position",
+      options: state.seed.positions.map((p) => ({
+        id: p.id,
+        label: p.label,
+        kind: "start",
+        family: familyKey(p)
+      })),
+      selected: forceStart
+    });
+    if (!forceStart) return layers;
+    const startPos = Tree.byId(state.seed.positions, forceStart);
+    const startFam = familyKey(startPos);
+    layers.push({
+      kind: "side",
+      col: 1,
+      label: "Student is top, bottom, or neutral",
+      from: forceStart,
+      options: ["top", "bottom", "neutral"].map((id) => ({
+        id,
+        label: SIDE_LABEL[id],
+        kind: "side",
+        family: "side"
+      })),
+      selected: forceSide
+    });
+    if (!forceSide) return layers;
+    const mtIds = [];
+    paths.forEach((p) => {
+      if (p.start !== forceStart) return;
+      if (!moveAllowed(p.move_type, forceSide, startFam)) return;
+      if (!transitionEndOk(p.move_type, startFam, Tree.endRef(state.seed, p.end))) return;
+      if (mtIds.indexOf(p.move_type) < 0) mtIds.push(p.move_type);
+    });
+    layers.push({
+      kind: "move",
+      col: 2,
+      label: "Type of move (open several)",
+      from: forceStart,
+      options: mtIds.map((id) => {
+        const m = Tree.byId(state.seed.move_types, id);
+        const spec = MOVE_TYPE_SPEC[id] || {};
+        const sideBit = spec.sameFamily
+          ? " · same family"
+          : (spec.sides && spec.sides.length && spec.sides.length < 3
+            ? " · " + spec.sides.map((s) => SIDE_LABEL[s]).join("/")
+            : "");
+        return { id, label: (m ? m.label : id) + sideBit, kind: "move", family: "move" };
+      }),
+      selectedSet: forceOpenMoves.slice()
+    });
+    const leafOpts = [];
+    paths.forEach((p) => {
+      if (p.start !== forceStart) return;
+      if (forceOpenMoves.indexOf(p.move_type) < 0) return;
+      if (!transitionEndOk(p.move_type, startFam, Tree.endRef(state.seed, p.end))) return;
+      (p.leaves || []).forEach((l) => {
+        if (!Tree.leafVisible(state, l)) return;
+        leafOpts.push({
+          id: l.name + "@" + p.end,
+          name: l.name,
+          label: l.name,
+          kind: "leaf",
+          family: "leaf",
+          end: p.end,
+          ruleset: l.ruleset,
+          move: p.move_type
+        });
+      });
+    });
+    if (leafOpts.length) {
+      layers.push({
+        kind: "leaf",
+        col: 2,
+        label: "Named moves in this system",
+        from: forceStart,
+        options: leafOpts,
+        selectedSet: forceSetup.map((s) => s.id)
+      });
+    }
+    const seenEnd = {};
+    const endOpts = [];
+    (forceSetup.length ? forceSetup : []).forEach((leaf) => {
+      if (seenEnd[leaf.end]) return;
+      seenEnd[leaf.end] = true;
+      const e = Tree.endRef(state.seed, leaf.end);
+      const land = landingSide(leaf.move, forceSide, e);
+      endOpts.push({
+        id: leaf.end,
+        label: (e ? e.label : leaf.end) + (e && e.kind === "submission" ? "" : (" · " + (SIDE_LABEL[land] || ""))),
+        kind: e && e.kind === "submission" ? "submission" : "end",
+        endKind: e ? e.kind : "position",
+        family: e && e.kind === "submission" ? "submission" : familyKey(e),
+        landSide: land,
+        fromMove: leaf.move
+      });
+    });
+    if (endOpts.length) {
+      layers.push({
+        kind: "end",
+        col: 3,
+        label: "Where a success lands · click a position to continue from that side",
+        from: forceStart,
+        options: endOpts,
+        selectedSet: endOpts.map((o) => o.id)
+      });
+    }
+    return layers;
+  }
+
+  function optionDimmed(layer, opt) {
+    if (layer.kind === "start") return !!(layer.selected && layer.selected !== opt.id);
+    if (layer.kind === "side") return !!(layer.selected && layer.selected !== opt.id);
+    if (layer.kind === "leaf") return !isChosen(layer, opt) && forceSetup.length > 0;
+    return false;
+  }
+
+  function journeyCrumbs(layers) {
+    const crumbs = [];
+    forceTrail.forEach((hop, hi) => {
+      crumbs.push({
+        i: 0,
+        layer: layers[0],
+        label: occupancyLabel(hop.start, hop.side),
+        kind: "trail",
+        opt: { kind: "trail", hopIndex: hi }
+      });
+      (hop.members || []).forEach((name) => {
+        crumbs.push({ i: 0, layer: layers[0], label: name, kind: "trail-leaf", opt: { kind: "trail-leaf" } });
+      });
+    });
+    const startLayer = layers[0];
+    if (startLayer && startLayer.selected) {
+      const opt = startLayer.options.find((o) => o.id === startLayer.selected);
+      crumbs.push({
+        i: 0,
+        layer: startLayer,
+        label: forceSide ? occupancyLabel(forceStart, forceSide) : (opt ? opt.label : startLayer.selected),
+        kind: "start",
+        opt: opt
+      });
+    }
+    forceSetup.forEach((s) => {
+      const leafLayer = layers.find((l) => l.kind === "leaf");
+      crumbs.push({
+        i: leafLayer ? layers.indexOf(leafLayer) : 0,
+        layer: leafLayer || startLayer,
+        label: s.label || s.name,
+        kind: "leaf",
+        opt: s
+      });
+    });
+    return crumbs;
+  }
+
+  function journeyTrail(layers) {
+    const crumbs = journeyCrumbs(layers);
+    if (!crumbs.length) return "";
+    const start = crumbs[0] && crumbs[0].kind === "start" ? crumbs[0].label : "";
+    const members = crumbs.filter((c) => c.kind === "leaf").map((c) => c.label);
+    if (!members.length) return start;
+    return start + " · " + members.join(" / ");
+  }
+
+  function renderCrumbBar(layers) {
+    const crumbs = journeyCrumbs(layers);
+    const bar = el("div", { class: "crumb-bar" });
+    if (!crumbs.length) {
+      bar.append(el("span", { class: "empty" }, ["Pick a starting position, then top / bottom / neutral for the student."]));
+      return bar;
+    }
+    crumbs.forEach((c, idx) => {
+      if (idx) bar.append(el("span", { class: "sep" }, [c.kind === "leaf" && crumbs[idx - 1].kind === "leaf" ? "/" : "·"]));
+      bar.append(el("button", {
+        class: "crumb",
+        type: "button",
+        title: c.kind === "leaf" ? "Drop this named move from the system" : "Keep this start",
+        on: {
+          click: () => {
+            pickJourney(c.i, c.opt || { id: c.layer.selected, kind: c.kind }, true);
+          }
+        }
+      }, [c.label]));
+    });
+    return bar;
+  }
+
+  function renderSetupPairs() {
+    const wrap = el("div", { class: "setup-pairs" });
+    if (forceSetup.length < 2) {
+      wrap.append(el("span", { class: "xref" }, [
+        forceSetup.length === 1
+          ? "Add a second named move. Defending the first should give the second."
+          : "Open types of move, then click two or three named moves that complement each other."
+      ]));
+      return wrap;
+    }
+    forceSetup.forEach((a, i) => {
+      const b = forceSetup[(i + 1) % forceSetup.length];
+      wrap.append(el("span", { class: "pair" }, [
+        "Defend " + (a.label || a.name) + " → " + (b.label || b.name)
+      ]));
+    });
+    return wrap;
+  }
+
+  function syncTreeFromJourney(layers) {
+    if (forceStart) state = Tree.dispatch(state, { type: "SELECT_START", id: forceStart });
+    const last = forceSetup[forceSetup.length - 1];
+    if (last && last.move) state = Tree.dispatch(state, { type: "SELECT_MOVE_TYPE", id: last.move });
+    if (last && last.end) state = Tree.dispatch(state, { type: "SELECT_END", id: last.end });
+    if (last && last.name) state = Tree.dispatch(state, { type: "SELECT_LEAF", name: last.name });
+  }
+
+  function pickJourney(layerIndex, opt, reopen) {
+    if (opt.kind === "trail" || opt.kind === "trail-leaf") return;
+    if (opt.kind === "start") {
+      if (forceStart !== opt.id) {
+        forceStart = opt.id;
+        forceSide = null;
+        forceTrail = [];
+        forceOpenMoves = [];
+        forceSetup = [];
+        forcePos = {};
+      }
+    } else if (opt.kind === "side") {
+      if (forceSide !== opt.id) {
+        forceSide = opt.id;
+        forceOpenMoves = [];
+        forceSetup = [];
+      }
+    } else if (opt.kind === "end") {
+      const nextSide = opt.landSide || landingSide(opt.fromMove, forceSide, Tree.endRef(state.seed, opt.id));
+      forceTrail.push({
+        start: forceStart,
+        side: forceSide,
+        members: forceSetup.map((s) => s.label || s.name)
+      });
+      forceStart = opt.id;
+      forceSide = nextSide;
+      forceOpenMoves = [];
+      forceSetup = [];
+      forcePos = {};
+      const layers = buildJourneyLayers(state);
+      syncTreeFromJourney(layers);
+      render();
+      toast("Now " + occupancyLabel(forceStart, forceSide) + ". Types of move match that side.");
+      return;
+    } else if (opt.kind === "submission") {
+      toast("A submission is an ending. The system stays in " + occupancyLabel(forceStart, forceSide) + " when they defend.");
+      return;
+    } else if (opt.kind === "move") {
+      const i = forceOpenMoves.indexOf(opt.id);
+      if (i >= 0) {
+        forceOpenMoves.splice(i, 1);
+        forceSetup = forceSetup.filter((s) => s.move !== opt.id);
+      } else forceOpenMoves.push(opt.id);
+    } else if (opt.kind === "leaf") {
+      const i = forceSetup.findIndex((s) => s.id === opt.id);
+      if (i >= 0) forceSetup.splice(i, 1);
+      else forceSetup.push(opt);
+    }
+    const layers = buildJourneyLayers(state);
+    syncTreeFromJourney(layers);
+    const trail = journeyTrail(layers);
+    const msg = forceSetup.length >= 2
+      ? (trail + ". Defend one, they give the next.")
+      : (forceSide ? (occupancyLabel(forceStart, forceSide) + (trail ? " · " + trail : "")) : (trail || "Pick a starting position."));
+    render();
+    toast(msg || state.lastChange);
+  }
+
+  function loadClosedGuardSetup() {
+    forceStart = "closed-guard";
+    forceSide = "bottom";
+    forceTrail = [];
+    forceOpenMoves = ["sweep", "submission"];
+    forceSetup = [
+      { id: "Hip bump sweep@mount", name: "Hip bump sweep", label: "Hip bump sweep", kind: "leaf", family: "leaf", end: "mount", ruleset: "both", move: "sweep" },
+      { id: "Kimura from closed guard@kimura", name: "Kimura from closed guard", label: "Kimura from closed guard", kind: "leaf", family: "leaf", end: "kimura", ruleset: "both", move: "submission" },
+      { id: "Triangle choke@triangle", name: "Triangle choke", label: "Triangle choke", kind: "leaf", family: "leaf", end: "triangle", ruleset: "both", move: "submission" }
+    ];
+    forcePos = {};
+    const layers = buildJourneyLayers(state);
+    syncTreeFromJourney(layers);
+    render();
+    toast("Closed guard system: hip bump, kimura, triangle. Defend one, they give another.");
+  }
+
+  function renderForce(state) {
+    if (forceRaf) cancelAnimationFrame(forceRaf);
+    const layers = buildJourneyLayers(state);
+    const maxCol = layers.reduce((n, l) => Math.max(n, l.col || 0), 0);
+    const nCols = Math.max(1, maxCol + 1);
+    const width = Math.max(nCols <= 1 ? 1680 : 1480, 360 * nCols + 280);
+    const height = nCols <= 1 ? 980 : 760;
+    const svg = svgEl("svg", {
+      class: "force-svg",
+      viewBox: "0 0 " + width + " " + height,
+      role: "img"
+    });
+    function colX(c) {
+      if (nCols <= 1) return width * 0.5;
+      return 140 + c * ((width - 280) / (nCols - 1));
+    }
+    const titled = {};
+    layers.forEach((layer) => {
+      if (titled[layer.col]) return;
+      titled[layer.col] = true;
+      const sibling = layers.find((l) => l.col === layer.col && l.kind === "leaf");
+      const label = sibling && sibling.options.length && (layer.kind === "leaf" || layer.kind === "move")
+        ? "Types of move and named moves in the system"
+        : layer.label;
+      const t = svgEl("text", {
+        x: String(colX(layer.col)), y: "32",
+        "text-anchor": "middle", fill: "#78716c",
+        "font-size": "22", "font-weight": "650",
+        "font-family": "Segoe UI, sans-serif"
+      });
+      t.textContent = label;
+      svg.appendChild(t);
+    });
+    const startLayer = layers[0];
+    const startCx = colX(0);
+    const startCy = height * 0.52;
+    const fams = [];
+    startLayer.options.forEach((o) => {
+      if (fams.indexOf(o.family) < 0) fams.push(o.family);
+    });
+    const centroids = {};
+    fams.forEach((f, i) => {
+      const n = startLayer.options.filter((o) => o.family === f).length;
+      let x;
+      let y;
+      if (nCols <= 1) {
+        const famR = 268;
+        const a = -Math.PI / 2 + (2 * Math.PI * i) / Math.max(1, fams.length);
+        x = startCx + Math.cos(a) * famR;
+        y = startCy + Math.sin(a) * famR * 0.86;
+      } else {
+        x = startCx;
+        y = 100 + (i + 0.5) * ((height - 140) / Math.max(1, fams.length));
+      }
+      centroids[f] = { x, y, family: f, n };
+    });
+    Object.keys(centroids).forEach((f) => {
+      const c = centroids[f];
+      const r = 28 + Math.sqrt(c.n) * 22;
+      const ring = svgEl("circle", {
+        cx: String(c.x), cy: String(c.y), r: String(r),
+        fill: FAMILY_COLOR[f] || "#a8a29e",
+        opacity: "0.08",
+        stroke: FAMILY_COLOR[f] || "#a8a29e",
+        "stroke-dasharray": "6 6",
+        "stroke-width": "2"
+      });
+      svg.appendChild(ring);
+      const away = Math.atan2(c.y - startCy, c.x - startCx || 0.01);
+      const titleR = r + 22;
+      const tx = nCols <= 1 ? c.x + Math.cos(away) * titleR : c.x;
+      const ty = nCols <= 1 ? c.y + Math.sin(away) * titleR : (c.y - r - 14);
+      const lab = svgEl("text", {
+        x: String(tx), y: String(ty),
+        "text-anchor": "middle", fill: FAMILY_COLOR[f] || "#78716c",
+        "font-size": "20", "font-weight": "700",
+        "font-family": "Segoe UI, sans-serif",
+        style: "paint-order:stroke;stroke:#fff;stroke-width:6px"
+      });
+      lab.textContent = f.replace(/-/g, " ");
+      svg.appendChild(lab);
+      c.titleX = tx;
+      c.titleY = ty;
+      c.titleW = Math.max(28, f.replace(/-/g, " ").length * 10.1);
+    });
+
+    const nodeMap = {};
+    const links = [];
+    layers.forEach((layer, i) => {
+      layer.options.forEach((opt, k) => {
+        const nid = i + ":" + opt.kind + ":" + opt.id;
+        const prev = forcePos[nid];
+        const dimmed = optionDimmed(layer, opt);
+        const chosen = isChosen(layer, opt);
+        let ix = colX(layer.col);
+        let iy = 80 + (k + 0.5) * ((height - 110) / Math.max(1, layer.options.length));
+        if (layer.kind === "start" && centroids[opt.family]) {
+          const c = centroids[opt.family];
+          const members = startLayer.options.filter((o) => o.family === opt.family);
+          const idx = members.findIndex((o) => o.id === opt.id);
+          const ang = -Math.PI / 2 + (idx / Math.max(1, members.length)) * Math.PI * 2;
+          const rr = 16 + Math.sqrt(members.length) * 11;
+          ix = c.x + Math.cos(ang) * rr;
+          iy = c.y + Math.sin(ang) * rr * 0.88;
+        }
+        if (layer.kind === "side") {
+          ix = colX(layer.col);
+          iy = 180 + k * 120;
+        }
+        if (layer.kind === "move") {
+          ix = colX(layer.col) - 70;
+          iy = 90 + (k + 0.5) * ((height - 140) / Math.max(1, layer.options.length));
+        }
+        if (layer.kind === "leaf") {
+          ix = colX(layer.col) + 36;
+          iy = 96 + (k + 0.5) * ((height - 150) / Math.max(1, layer.options.length));
+        }
+        const n = {
+          id: nid,
+          kind: opt.kind,
+          label: opt.label,
+          family: opt.family,
+          opt,
+          layerIndex: i,
+          col: layer.col,
+          dimmed,
+          chosen,
+          homeX: ix,
+          homeY: iy,
+          x: prev ? prev.x : ix,
+          y: prev ? prev.y : iy,
+          vx: 0,
+          vy: 0
+        };
+        nodeMap[nid] = n;
+      });
+    });
+
+    function nodeOf(i, opt) {
+      return nodeMap[i + ":" + opt.kind + ":" + opt.id];
+    }
+    const startChosen = startLayer.selected && nodeOf(0, startLayer.options.find((o) => o.id === startLayer.selected) || { kind: "start", id: startLayer.selected });
+    const sideLayer = layers.find((l) => l.kind === "side");
+    const sideIdx = sideLayer ? layers.indexOf(sideLayer) : -1;
+    const sideChosen = sideLayer && sideLayer.selected && nodeOf(sideIdx, sideLayer.options.find((o) => o.id === sideLayer.selected) || { kind: "side", id: sideLayer.selected });
+    const moveLayer = layers.find((l) => l.kind === "move");
+    const moveIdx = moveLayer ? layers.indexOf(moveLayer) : -1;
+    layers.forEach((layer, i) => {
+      if (layer.kind === "side" && startChosen) {
+        layer.options.forEach((opt) => {
+          const t = nodeOf(i, opt);
+          links.push({ s: startChosen, t, dimmed: optionDimmed(layer, opt) });
+        });
+      }
+      if (layer.kind === "move") {
+        const src = sideChosen || startChosen;
+        if (src) {
+          layer.options.forEach((opt) => {
+            const t = nodeOf(i, opt);
+            links.push({ s: src, t, dimmed: false, move: opt.id });
+          });
+        }
+      }
+      if (layer.kind === "leaf") {
+        const endLayer = layers.find((l) => l.kind === "end");
+        const ei = endLayer ? layers.indexOf(endLayer) : -1;
+        layer.options.forEach((opt) => {
+          const leafN = nodeOf(i, opt);
+          const mtOpt = moveLayer && moveLayer.options.find((o) => o.id === opt.move);
+          const mtN = mtOpt && moveIdx >= 0 ? nodeOf(moveIdx, mtOpt) : startChosen;
+          if (mtN) links.push({ s: mtN, t: leafN, dimmed: optionDimmed(layer, opt), move: opt.move });
+          if (endLayer && isChosen(layer, opt)) {
+            const endOpt = endLayer.options.find((o) => o.id === opt.end);
+            const endN = endOpt ? nodeOf(ei, endOpt) : null;
+            if (endN) links.push({ s: leafN, t: endN, dimmed: false, move: opt.move });
+          }
+        });
+        const chosenLeaves = layer.options.map((opt) => nodeOf(i, opt)).filter((n) => n && n.chosen);
+        if (chosenLeaves.length >= 2) {
+          chosenLeaves.forEach((s, idx) => {
+            const t = chosenLeaves[(idx + 1) % chosenLeaves.length];
+            links.push({ s, t, complement: true, dimmed: false });
+          });
+        }
+      }
+    });
+
+    const nodes = Object.values(nodeMap);
+    const linkG = svgEl("g");
+    const nodeG = svgEl("g");
+    const labelG = svgEl("g");
+    svg.appendChild(linkG);
+    svg.appendChild(nodeG);
+    svg.appendChild(labelG);
+
+    function estimateW(text) {
+      return Math.max(28, String(text || "").length * 10.1);
+    }
+    function labelBox(n) {
+      const w = n.labW || estimateW(n.label);
+      const h = 22;
+      let x = n.lx;
+      if (n.anchor === "end") x = n.lx - w;
+      if (n.anchor === "middle") x = n.lx - w / 2;
+      return { x, y: n.ly - 11, w, h };
+    }
+    function placeRadial(group, cx, cy, minR) {
+      group.forEach((n) => { n._ang = Math.atan2(n.y - cy, n.x - cx); });
+      const count = Math.max(1, group.length);
+      const r = minR + Math.max(0, count - 5) * 3;
+      group.forEach((n) => {
+        const a = n._ang;
+        n.lx = cx + Math.cos(a) * r;
+        n.ly = cy + Math.sin(a) * r;
+        n.anchor = Math.cos(a) > 0.25 ? "start" : (Math.cos(a) < -0.25 ? "end" : "middle");
+        n.labW = estimateW(n.label);
+      });
+    }
+    function relaxLabels(list) {
+      for (let iter = 0; iter < 18; iter++) {
+        for (let i = 0; i < list.length; i++) {
+          for (let j = i + 1; j < list.length; j++) {
+            const A = labelBox(list[i]);
+            const B = labelBox(list[j]);
+            const ox = Math.min(A.x + A.w, B.x + B.w) - Math.max(A.x, B.x);
+            const oy = Math.min(A.y + A.h, B.y + B.h) - Math.max(A.y, B.y);
+            if (ox > 0 && oy > 0) {
+              const dy = (list[j].ly - list[i].ly) || 1;
+              const sign = dy > 0 ? 1 : -1;
+              const push = oy / 2 + 1.6;
+              const freezeI = list[i].freeze;
+              const freezeJ = list[j].freeze;
+              if (!freezeI) {
+                list[i].ly -= sign * (freezeJ ? push * 2 : push);
+                const dx = (list[j].lx - list[i].lx) || 1;
+                const sx = dx > 0 ? 1 : -1;
+                list[i].lx -= sx * Math.min(6, ox * 0.25 + 1.2) * (freezeJ ? 2 : 1);
+              }
+              if (!freezeJ) {
+                list[j].ly += sign * (freezeI ? push * 2 : push);
+                const dx = (list[j].lx - list[i].lx) || 1;
+                const sx = dx > 0 ? 1 : -1;
+                list[j].lx += sx * Math.min(6, ox * 0.25 + 1.2) * (freezeI ? 2 : 1);
+              }
+            }
+          }
+        }
+      }
+      list.forEach((n) => {
+        if (n.freeze) return;
+        n.ly = Math.max(48, Math.min(height - 12, n.ly));
+        n.lx = Math.max(12, Math.min(width - 12, n.lx));
+      });
+    }
+    function layoutLeaders() {
+      const starts = nodes.filter((n) => n.kind === "start");
+      if (nCols <= 1) {
+        fams.forEach((f) => {
+          const group = starts.filter((n) => n.family === f);
+          const c = centroids[f];
+          const diskR = 28 + Math.sqrt(c.n) * 22;
+          placeRadial(group, c.x, c.y, diskR + 40);
+        });
+      } else {
+        fams.forEach((f) => {
+          const group = starts.filter((n) => n.family === f).sort((a, b) => a.y - b.y);
+          const c = centroids[f];
+          const diskR = 28 + Math.sqrt(c.n) * 22;
+          group.forEach((n, i) => {
+            n.anchor = "end";
+            n.labW = estimateW(n.label);
+            n.lx = Math.max(14, c.x - diskR - 20);
+            n.ly = c.y - ((group.length - 1) * 12) + i * 24;
+          });
+        });
+      }
+      const obstacles = fams.map((f) => {
+        const c = centroids[f];
+        return {
+          freeze: true,
+          lx: c.titleX,
+          ly: c.titleY,
+          labW: c.titleW,
+          anchor: "middle",
+          label: f
+        };
+      });
+      relaxLabels(starts.concat(obstacles));
+      const others = nodes.filter((n) => n.kind !== "start");
+      others.forEach((n) => {
+        n.labW = estimateW(n.label);
+        n.anchor = "start";
+        n.lx = n.x + (n.kind === "leaf" ? 30 : 26);
+        n.ly = n.y;
+      });
+      relaxLabels(others);
+    }
+    function paintLeader(n) {
+      if (!n.leader || n.lx == null) return;
+      const dx = n.lx - n.x;
+      const dy = n.ly - n.y;
+      const d = Math.sqrt(dx * dx + dy * dy) || 1;
+      const gap = 12;
+      const endGap = 6;
+      n.leader.setAttribute("x1", String(n.x + (dx / d) * gap));
+      n.leader.setAttribute("y1", String(n.y + (dy / d) * gap));
+      n.leader.setAttribute("x2", String(n.lx - (dx / d) * endGap));
+      n.leader.setAttribute("y2", String(n.ly - (dy / d) * endGap));
+      n.leader.setAttribute("opacity", d < 18 ? "0" : (n.dimmed ? "0.28" : "0.55"));
+      n.labEl.setAttribute("x", String(n.lx));
+      n.labEl.setAttribute("y", String(n.ly + 6));
+      n.labEl.setAttribute("text-anchor", n.anchor || "start");
+    }
+    links.forEach((lnk) => {
+      if (!lnk.s || !lnk.t) return;
+      const line = svgEl("line", {
+        stroke: lnk.complement ? "#ea580c" : (lnk.dimmed ? "#d6d3d1" : (MOVE_COLOR[lnk.move] || "#a8a29e")),
+        "stroke-width": lnk.complement ? "2.8" : (lnk.t.chosen || !lnk.t.dimmed ? "2.4" : "1.2"),
+        opacity: lnk.complement ? "0.95" : (lnk.dimmed ? "0.22" : "0.75"),
+        "stroke-dasharray": lnk.complement ? "8 5" : "none"
+      });
+      wireHover(line, () => lnk.complement
+        ? ("Defend " + lnk.s.label + " gives " + lnk.t.label)
+        : (lnk.s.label + " → " + lnk.t.label), () => []);
+      linkG.appendChild(line);
+      lnk.el = line;
+    });
+    let dragging = null;
+    svg.addEventListener("mousemove", (ev) => {
+      if (!dragging) return;
+      dragging.fx = ev.offsetX;
+      dragging.fy = ev.offsetY;
+      dragging.x = dragging.fx;
+      dragging.y = dragging.fy;
+    });
+    svg.addEventListener("mouseup", () => {
+      if (dragging) { dragging.fx = dragging.fy = null; }
+      dragging = null;
+    });
+    nodes.forEach((n) => {
+      const g = svgEl("g");
+      g.style.cursor = "pointer";
+      const liveFill = n.kind === "move"
+        ? (MOVE_COLOR[n.opt.id] || "#57534e")
+        : (n.kind === "leaf" ? (MOVE_COLOR[n.opt.move] || "#1e3a8a")
+          : (n.kind === "side" ? (SIDE_COLOR[n.opt.id] || "#57534e")
+            : (n.kind === "submission" ? "#0f172a" : (FAMILY_COLOR[n.family] || "#57534e"))));
+      const fill = n.dimmed ? "#d6d3d1" : liveFill;
+      const stroke = n.chosen ? "#ea580c" : (n.dimmed ? "#a8a29e" : "#fff");
+      let shape;
+      if (n.kind === "move") {
+        shape = svgEl("rect", { x: "-10", y: "-10", width: "20", height: "20", rx: "4", fill, stroke, "stroke-width": n.chosen ? "3" : "1.2" });
+      } else if (n.kind === "side") {
+        shape = svgEl("rect", { x: "-18", y: "-12", width: "36", height: "24", rx: "6", fill, stroke, "stroke-width": n.chosen ? "3" : "1.2" });
+      } else if (n.kind === "leaf") {
+        shape = svgEl("rect", { x: "-16", y: "-9", width: "32", height: "18", rx: "9", fill, stroke, "stroke-width": n.chosen ? "3" : "1.2" });
+      } else if (n.kind === "submission") {
+        shape = svgEl("polygon", { points: "0,-11 11,0 0,11 -11,0", fill, stroke, "stroke-width": n.chosen ? "3" : "1.2" });
+      } else if (n.kind === "end") {
+        shape = svgEl("circle", { r: "10", fill: n.dimmed ? "#d6d3d1" : "#fff", stroke: n.dimmed ? "#a8a29e" : liveFill, "stroke-width": n.chosen ? "4" : "3" });
+      } else {
+        shape = svgEl("circle", { r: "10", fill, stroke, "stroke-width": n.chosen ? "3" : "1.2" });
+      }
+      g.appendChild(shape);
+      const leader = svgEl("line", {
+        stroke: n.dimmed ? "#d6d3d1" : "#78716c",
+        "stroke-width": "1.1"
+      });
+      const lab = svgEl("text", {
+        fill: n.dimmed ? "#a8a29e" : "#1c1917",
+        "font-size": "20",
+        "font-weight": n.chosen ? "700" : "500",
+        "font-family": "Segoe UI, sans-serif",
+        style: "paint-order:stroke;stroke:#fff;stroke-width:5px;cursor:pointer"
+      });
+      lab.textContent = n.label;
+      const kindLabel = n.kind === "start" ? "Starting position" : n.kind === "end" ? "Ending position" : n.kind === "move" ? "Type of move" : n.kind === "leaf" ? "Named-move leaf" : n.kind === "side" ? "Student occupancy" : "Submission";
+      function bindPick(elNode) {
+        wireHover(elNode, () => n.label, () => [
+          kindLabel,
+          n.kind === "leaf" ? (n.opt.ruleset + " · ends at " + n.opt.end) : "",
+          n.kind === "leaf"
+            ? (n.chosen ? "In this system. Click to drop." : "Click to add this named move to the system.")
+            : (n.kind === "move"
+              ? (n.chosen ? "Open. Click to close this type." : "Click to show named moves of this type.")
+              : (n.kind === "side"
+                ? (n.chosen ? "Student is " + n.label.toLowerCase() + "." : "Click: the learning student is " + n.label.toLowerCase() + ".")
+                : (n.kind === "end"
+                  ? "Click to continue from this landing and side."
+                  : (n.dimmed ? "Not selected" : (n.chosen ? "Selected" : "Click to pick"))))),
+          n.family && n.family !== "move" && n.family !== "leaf" ? n.family.replace(/-/g, " ") : ""
+        ]);
+        elNode.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          hideTip();
+          pickJourney(n.layerIndex, n.opt, n.chosen);
+        });
+      }
+      bindPick(g);
+      bindPick(lab);
+      g.addEventListener("mousedown", (ev) => {
+        dragging = n;
+        n.fx = n.x;
+        n.fy = n.y;
+        ev.preventDefault();
+      });
+      nodeG.appendChild(g);
+      labelG.appendChild(leader);
+      labelG.appendChild(lab);
+      n.el = g;
+      n.leader = leader;
+      n.labEl = lab;
+    });
+
+    function tick() {
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          let dx = nodes[j].x - nodes[i].x;
+          let dy = nodes[j].y - nodes[i].y;
+          let d2 = dx * dx + dy * dy || 1;
+          let d = Math.sqrt(d2);
+          const sameFam = nodes[i].kind === "start" && nodes[j].kind === "start" && nodes[i].family === nodes[j].family;
+          const same = nodes[i].col === nodes[j].col;
+          let f = (sameFam ? 700 : same ? 1600 : 700) / d2;
+          let fx = (dx / d) * f;
+          let fy = (dy / d) * f;
+          nodes[i].vx -= fx;
+          nodes[i].vy -= fy;
+          nodes[j].vx += fx;
+          nodes[j].vy += fy;
+        }
+      }
+      links.forEach((lnk) => {
+        if (!lnk.s || !lnk.t || !lnk.el) return;
+        let dx = lnk.t.x - lnk.s.x;
+        let dy = lnk.t.y - lnk.s.y;
+        let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        let rest = lnk.complement ? 170 : (lnk.s.kind === "leaf" || lnk.t.kind === "leaf" ? 88 : 140);
+        let f = (dist - rest) * 0.014;
+        let fx = (dx / dist) * f;
+        let fy = (dy / dist) * f;
+        lnk.s.vx += fx;
+        lnk.s.vy += fy;
+        lnk.t.vx -= fx;
+        lnk.t.vy -= fy;
+      });
+      nodes.forEach((n) => {
+        const tx = colX(n.col);
+        if (n.kind === "start" && centroids[n.family]) {
+          n.vx += (centroids[n.family].x - n.x) * 0.14;
+          n.vy += (centroids[n.family].y - n.y) * 0.14;
+        } else if (n.kind === "leaf") {
+          n.vx += (n.homeX - n.x) * 0.06;
+          n.vy += (n.homeY - n.y) * 0.06;
+        } else {
+          n.vx += (tx - n.x) * 0.045;
+          n.vy += (height / 2 - n.y) * 0.003;
+        }
+        if (n.fx != null) { n.x = n.fx; n.y = n.fy; n.vx = 0; n.vy = 0; }
+        else {
+          n.vx *= 0.78;
+          n.vy *= 0.78;
+          n.x += n.vx;
+          n.y += n.vy;
+        }
+        n.x = Math.max(36, Math.min(width - 36, n.x));
+        n.y = Math.max(48, Math.min(height - 24, n.y));
+        forcePos[n.id] = { x: n.x, y: n.y };
+        n.el.setAttribute("transform", "translate(" + n.x + "," + n.y + ")");
+      });
+      layoutLeaders();
+      nodes.forEach(paintLeader);
+      links.forEach((lnk) => {
+        if (!lnk.el || !lnk.s || !lnk.t) return;
+        lnk.el.setAttribute("x1", lnk.s.x);
+        lnk.el.setAttribute("y1", lnk.s.y);
+        lnk.el.setAttribute("x2", lnk.t.x);
+        lnk.el.setAttribute("y2", lnk.t.y);
+      });
+      forceRaf = requestAnimationFrame(tick);
+    }
+    tick();
+    return { svg, layers, count: nodes.length, width };
+  }
+
+  let erFocus = "orientation";
+
+  function renderEr(state) {
+    const wrap = el("section", { class: "panel plot-panel" }, [
+      el("h2", {}, ["Entity relationship · what is a record, what is only a field"])
+    ]);
+    const body = el("div", { class: "body" });
+    body.append(el("div", { class: "legend" }, [
+      el("span", {}, [el("i", { style: "background:#1e3a8a" }), "Catalog (reused library)"]),
+      el("span", {}, [el("i", { style: "background:#c2410c" }), "Activity (unit, class, lesson)"]),
+      el("span", {}, [el("i", { style: "background:#a8a29e" }), "Attribute of an entity"])
+    ]));
+    body.append(el("p", { class: "xref" }, [
+      "Click a box. Blue is catalog. Orange is activity. Transition keeps the same side and family: bottom guard to another guard, top pin to another pin."
+    ]));
+    const mount = el("div", { class: "er-wrap" });
+    body.append(mount);
+    const counts = Domain.counts(state);
+    const focus = Domain.byId(erFocus) || Domain.byId("named_move");
+    const detail = el("div", { class: "er-detail" });
+    function fillDetail(c) {
+      detail.replaceChildren();
+      if (!c) return;
+      const n = c.countKey ? counts[c.countKey] : null;
+      detail.append(el("h3", {}, [c.label]));
+      detail.append(el("p", {}, [
+        (c.nature === "attribute" ? "Attribute" : (c.nature === "activity" ? "Activity entity" : (c.shape === "relationship" ? "Relationship" : "Reference entity")))
+        + (c.owner ? " of " + (Domain.byId(c.owner) || {}).label : "")
+        + (n != null ? " · seed count " + n : "")
+      ]));
+      detail.append(el("p", {}, [c.summary]));
+      if (c.attrs && c.attrs.length) {
+        detail.append(el("p", { class: "xref" }, ["Fields: " + c.attrs.join(", ")]));
+      }
+      if (c.ask) detail.append(el("p", { class: "er-ask" }, [c.ask]));
+    }
+    fillDetail(focus);
+    body.append(detail);
+    wrap.append(body);
+
+    const width = 1360;
+    const height = 760;
+    if (typeof d3 === "undefined") {
+      mount.append(el("p", { class: "xref" }, ["D3 did not load. Open this file while online, or allow cdn.jsdelivr.net."]));
+      return wrap;
+    }
+    const svg = d3.select(mount)
+      .append("svg")
+      .attr("class", "er-svg")
+      .attr("viewBox", "0 0 " + width + " " + height)
+      .attr("role", "img");
+
+    const hot = Domain.neighbors(erFocus);
+    const nodes = Domain.concepts.map((c) => Object.assign({}, c, Domain.layout[c.id]));
+    const nodeBy = {};
+    nodes.forEach((n) => { nodeBy[n.id] = n; });
+    const links = Domain.edges.map((e) => ({
+      from: e.from,
+      to: e.to,
+      label: e.label,
+      s: nodeBy[e.from],
+      t: nodeBy[e.to]
+    })).filter((e) => e.s && e.t);
+
+    svg.append("g").attr("class", "er-cols").selectAll("text")
+      .data([
+        { x: 120, t: "Attribute" },
+        { x: 430, t: "Catalog: where and what" },
+        { x: 780, t: "Catalog: reused records" },
+        { x: 1140, t: "Activity: unit build" }
+      ])
+      .join("text")
+      .attr("x", (d) => d.x)
+      .attr("y", 28)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#78716c")
+      .attr("font-size", 16)
+      .attr("font-weight", 650)
+      .attr("font-family", "Segoe UI, sans-serif")
+      .text((d) => d.t);
+
+    const linkG = svg.append("g");
+    linkG.selectAll("line")
+      .data(links)
+      .join("line")
+      .attr("x1", (d) => d.s.x)
+      .attr("y1", (d) => d.s.y)
+      .attr("x2", (d) => d.t.x)
+      .attr("y2", (d) => d.t.y)
+      .attr("stroke", (d) => (hot[d.from] && hot[d.to] ? "#57534e" : "#d6d3d1"))
+      .attr("stroke-width", (d) => (hot[d.from] && hot[d.to] ? 2 : 1))
+      .attr("opacity", (d) => (hot[d.from] && hot[d.to] ? 0.85 : 0.35));
+
+    linkG.selectAll("text")
+      .data(links)
+      .join("text")
+      .attr("x", (d) => (d.s.x + d.t.x) / 2)
+      .attr("y", (d) => (d.s.y + d.t.y) / 2 - 6)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#78716c")
+      .attr("font-size", 11)
+      .attr("font-family", "Segoe UI, sans-serif")
+      .attr("opacity", (d) => (hot[d.from] && hot[d.to] ? 1 : 0.35))
+      .text((d) => d.label);
+
+    const g = svg.append("g")
+      .selectAll("g")
+      .data(nodes)
+      .join("g")
+      .attr("transform", (d) => "translate(" + d.x + "," + d.y + ")")
+      .attr("opacity", (d) => (hot[d.id] ? 1 : 0.28))
+      .style("cursor", "pointer")
+      .on("click", (ev, d) => {
+        ev.stopPropagation();
+        erFocus = d.id;
+        render();
+      })
+      .on("mouseenter", (ev, d) => {
+        showTip(ev, d.label, [
+          d.nature === "attribute" ? "Attribute" : (d.nature === "activity" ? "Activity entity" : (d.shape === "relationship" ? "Relationship" : "Reference entity")),
+          d.summary
+        ]);
+      })
+      .on("mouseleave", hideTip);
+
+    g.each(function (d) {
+      const sel = d3.select(this);
+      const on = d.id === erFocus;
+      if (d.shape === "attribute") {
+        sel.append("ellipse")
+          .attr("rx", 78)
+          .attr("ry", 28)
+          .attr("fill", "#fafaf9")
+          .attr("stroke", on ? "#ea580c" : "#a8a29e")
+          .attr("stroke-width", on ? 3 : 1.4)
+          .attr("stroke-dasharray", "5 4");
+      } else if (d.shape === "relationship") {
+        sel.append("polygon")
+          .attr("points", "0,-48 92,0 0,48 -92,0")
+          .attr("fill", "#ede9fe")
+          .attr("stroke", on ? "#ea580c" : "#7c3aed")
+          .attr("stroke-width", on ? 3 : 2);
+      } else if (d.nature === "activity") {
+        sel.append("rect")
+          .attr("x", -100)
+          .attr("y", -36)
+          .attr("width", 200)
+          .attr("height", 72)
+          .attr("rx", 6)
+          .attr("fill", "#ffedd5")
+          .attr("stroke", on ? "#ea580c" : "#c2410c")
+          .attr("stroke-width", on ? 3 : 2);
+      } else {
+        sel.append("rect")
+          .attr("x", -100)
+          .attr("y", -36)
+          .attr("width", 200)
+          .attr("height", 72)
+          .attr("rx", 6)
+          .attr("fill", "#dbeafe")
+          .attr("stroke", on ? "#ea580c" : "#1e3a8a")
+          .attr("stroke-width", on ? 3 : 2);
+      }
+      sel.append("text")
+        .attr("y", d.shape === "attribute" ? 5 : -6)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#1c1917")
+        .attr("font-size", 16)
+        .attr("font-weight", 700)
+        .attr("font-family", "Segoe UI, sans-serif")
+        .text(d.label);
+      if (d.shape !== "attribute") {
+        const n = d.countKey ? counts[d.countKey] : null;
+        sel.append("text")
+          .attr("y", 16)
+          .attr("text-anchor", "middle")
+          .attr("fill", "#57534e")
+          .attr("font-size", 12)
+          .attr("font-family", "Segoe UI, sans-serif")
+          .text((d.nature === "activity" ? "activity" : (d.shape === "relationship" ? "relationship" : "reference")) + (n != null ? " · " + n : ""));
+      }
+    });
+
+    return wrap;
+  }
+
+  function renderPlot(state) {
+    const wrap = el("section", { class: "panel plot-panel" }, [
+      el("h2", {}, ["Force-directed journey · assemble a system of named moves"])
+    ]);
+    const body = el("div", { class: "body" });
+    const force = renderForce(state);
+    body.append(renderCrumbBar(force.layers));
+    body.append(renderSetupPairs());
+    const legend = el("div", { class: "legend" });
+    Object.entries(MOVE_COLOR).forEach(([id, color]) => {
+      const mt = Tree.byId(state.seed.move_types, id);
+      legend.append(el("span", {}, [el("i", { style: "background:" + color }), mt ? mt.label : id]));
+    });
+    legend.append(el("span", {}, ["Dashed orange: defend A gives B. The selected named moves are the members of one system."]));
+    body.append(legend);
+
+    const forceHead = el("h2", {}, ["Build a system"]);
+    forceHead.style.marginTop = "0.35rem";
+    body.append(forceHead);
+    const forceTools = el("div", { class: "toolbar" }, [
+      el("button", {
+        class: "primary",
+        on: { click: () => { forceStart = null; forceSide = null; forceTrail = []; forceOpenMoves = []; forceSetup = []; forcePos = {}; render(); toast("System cleared. Pick a starting position."); } }
+      }, ["Reset system"]),
+      el("button", {
+        on: { click: loadClosedGuardSetup }
+      }, ["Load closed-guard trilemma"]),
+      el("span", { class: "xref" }, [
+        "Pick a start, then top / bottom / neutral. Types of move follow that side. A sweep from closed guard bottom lands mount top; click Mount to continue with no Escape."
+      ])
+    ]);
+    body.append(forceTools);
+    body.append(el("p", { class: "xref" }, [
+      "Filled circle = starting position · Rounded box = top / bottom / neutral · Hollow circle = success landing (click to continue) · Rounded bar = named move · Square = type of move · Diamond = submission. Escape is off when the student is on top."
+    ]));
+    body.append(el("div", { class: "force-wrap" }, [force.svg]));
+    body.append(el("p", { class: "xref" }, [
+      force.layers.length + " layers · " + force.count + " nodes · " + forceSetup.length + " named moves in this system."
+    ]));
+
+    const focus = state.selected.identity || state.selected.start;
+    const rel = Tree.relations(state, focus);
+    const ident = Tree.endRef(state.seed, focus);
+    const relGrid = el("div", { class: "rel-grid" });
+    const outBox = el("div", {}, [
+      el("h3", {}, ["Outbound from " + (ident ? ident.label : "a selected identity")])
+    ]);
+    if (!rel.outbound.length) outBox.append(el("p", { class: "xref" }, ["No outbound paths."]));
+    rel.outbound.forEach((p) => {
+      const end = Tree.endRef(state.seed, p.end);
+      const mt = Tree.byId(state.seed.move_types, p.move_type);
+      outBox.append(el("button", {
+        class: "row" + (state.selected.end === p.end && state.selected.moveType === p.move_type ? " on" : ""),
+        on: { click: () => selectPath(p) }
+      }, [
+        (mt ? mt.label : p.move_type) + " → " + (end ? end.label : p.end),
+        el("span", { class: "count" }, [(end ? end.kind : "?") + " · " + (p.leaves || []).length])
+      ]));
+    });
+    const inBox = el("div", {}, [
+      el("h3", {}, ["Inbound onto " + (ident ? ident.label : "a selected identity")])
+    ]);
+    if (!rel.inbound.length) inBox.append(el("p", { class: "xref" }, ["No inbound paths. This identity is never an ending in the seed."]));
+    rel.inbound.forEach((p) => {
+      const start = Tree.byId(state.seed.positions, p.start);
+      const mt = Tree.byId(state.seed.move_types, p.move_type);
+      inBox.append(el("button", {
+        class: "row" + (state.selected.start === p.start && state.selected.moveType === p.move_type ? " on" : ""),
+        on: { click: () => selectPath(p) }
+      }, [
+        (start ? start.label : p.start) + " → " + (mt ? mt.label : p.move_type),
+        el("span", { class: "count" }, [String((p.leaves || []).length)])
+      ]));
+    });
+    relGrid.append(outBox, inBox);
+    body.append(relGrid);
+    wrap.append(body);
+    return wrap;
+  }
+
+  function renderStatePanel() {
+    const iss = Tree.issues(state);
+    const sel = state.selected;
+    const start = Tree.byId(state.seed.positions, sel.start);
+    const mt = Tree.byId(state.seed.move_types, sel.moveType);
+    const end = Tree.endRef(state.seed, sel.end);
+    const ident = Tree.endRef(state.seed, sel.identity);
+    const rel = Tree.relations(state, sel.identity || sel.start);
+    const lines = [
+      "last_change: " + state.lastChange,
+      "accepted: " + state.accepted,
+      "search: " + JSON.stringify(state.query),
+      "ruleset_filter: " + state.ruleset,
+      "focused_identity: " + (ident ? ident.label + " (" + ident.kind + ")" : sel.identity),
+      "selected_start: " + (start ? start.label : sel.start),
+      "selected_move_type: " + (mt ? mt.label : sel.moveType),
+      "selected_end: " + (end ? end.label + " (" + end.kind + ")" : sel.end),
+      "selected_named_move: " + sel.leaf,
+      "identity_counts: positions " + iss.positionCount +
+        ", submissions " + iss.submissionCount +
+        ", move_types " + state.seed.move_types.length +
+        ", paths " + state.seed.paths.length +
+        ", leaves " + state.seed.paths.reduce((n, p) => n + (p.leaves || []).length, 0),
+      "unknown_path_ends: " + (iss.missingEnds.join(", ") || "none"),
+      "positions_never_landed_on: " + (iss.neverLanded.join(", ") || "none"),
+      "empty_submissions: " + (iss.unusedSubmissions.join(", ") || "none"),
+      "duplicate_leaf_names: " + (iss.duplicateLeafNames.join(", ") || "none"),
+      "focused_outbound: " + rel.outbound.length + " inbound: " + rel.inbound.length,
+      "citations_uncategorized: " + iss.uncategorized + " / linked " + iss.linked
+    ];
+    return lines.join("\n");
+  }
+
+  function render() {
+    const root = document.getElementById("app");
+    root.replaceChildren();
+    const iss = Tree.issues(state);
+    const starts = Tree.visibleStarts(state);
+    const mts = Tree.visibleMoveTypes(state);
+    const ends = Tree.visibleEnds(state);
+    const leaves = Tree.visibleLeaves(state);
+    const sel = state.selected;
+
+    const issuePills = el("div", { class: "issues" }, [
+      el("span", { class: "pill pill-proto" }, ["seed v" + (SEED.meta && SEED.meta.version)]),
+      el("span", { class: "pill pill-ok" }, [iss.positionCount + " position identities"]),
+      el("span", { class: "pill pill-ok" }, [iss.submissionCount + " submissions (end only)"]),
+      el("span", { class: "pill pill-ok" }, [state.seed.paths.length + " paths"]),
+      el("span", { class: "pill " + (iss.missingEnds.length ? "pill-bad" : "pill-ok") }, [
+        iss.missingEnds.length ? (iss.missingEnds.length + " path ends with no identity") : "every path end is a position or a submission"
+      ]),
+      el("span", { class: "pill " + (iss.neverLanded.length ? "pill-warn" : "pill-ok") }, [
+        iss.neverLanded.length + " positions never landed on"
+      ]),
+      el("span", { class: "pill " + (iss.unusedSubmissions.length ? "pill-warn" : "pill-ok") }, [
+        iss.unusedSubmissions.length + " empty submissions"
+      ]),
+      el("span", { class: "pill pill-warn" }, [iss.duplicateLeafNames.length + " repeated leaf names"]),
+      el("span", { class: "pill pill-proto" }, [iss.uncategorized + " uncategorized citations"])
+    ]);
+
+    const startCol = el("section", { class: "col" }, [
+      el("h2", {}, ["Starting position"]),
+      el("div", { class: "toolbar" }, [
+        el("input", {
+          type: "search",
+          placeholder: "Search names, aliases, judo, wrestling",
+          value: state.query,
+          on: { input: (e) => go({ type: "SEARCH", query: e.target.value }) }
+        }),
+        el("select", {
+          on: { change: (e) => go({ type: "FILTER_RULESET", ruleset: e.target.value }) }
+        }, ["all", "gi", "no-gi", "both"].map((r) => {
+          const o = el("option", { value: r }, [r === "all" ? "all rulesets" : r]);
+          if (state.ruleset === r) o.selected = true;
+          return o;
+        }))
+      ])
+    ]);
+    const startBody = el("div", { class: "body" });
+    const grouped = {};
+    starts.forEach((s) => {
+      (grouped[s.family || "other"] ||= []).push(s);
+    });
+    FAMILY_ORDER.concat(Object.keys(grouped)).filter((k, i, a) => grouped[k] && a.indexOf(k) === i).forEach((fam) => {
+      startBody.append(el("div", { class: "family" }, [fam.replace(/-/g, " ")]));
+      grouped[fam].forEach((s) => {
+        startBody.append(el("button", {
+          class: "row" + (sel.start === s.id ? " on" : ""),
+          on: { click: () => go({ type: "SELECT_START", id: s.id }) }
+        }, [s.label, el("span", { class: "count" }, [String(s.pathCount)])]));
+      });
+    });
+    startCol.append(startBody);
+
+    const mtCol = el("section", { class: "col" }, [el("h2", {}, ["Type of move"])]);
+    const mtBody = el("div", { class: "body" });
+    if (!sel.start) mtBody.append(el("p", { class: "xref" }, ["Pick a starting position."]));
+    mts.forEach((m) => {
+      mtBody.append(el("button", {
+        class: "row" + (sel.moveType === m.id ? " on" : ""),
+        on: { click: () => go({ type: "SELECT_MOVE_TYPE", id: m.id }) }
+      }, [m.label, el("span", { class: "count" }, [String(m.pathCount)])]));
+    });
+    mtCol.append(mtBody);
+
+    const endCol = el("section", { class: "col" }, [el("h2", {}, ["Ending position or submission"])]);
+    const endBody = el("div", { class: "body" });
+    if (!sel.moveType) endBody.append(el("p", { class: "xref" }, ["Pick a type of move."]));
+    ends.forEach((e) => {
+      endBody.append(el("button", {
+        class: "row" + (sel.end === e.id ? " on" : ""),
+        on: { click: () => go({ type: "SELECT_END", id: e.id }) }
+      }, [
+        el("span", {}, [
+          e.label,
+          e.missing ? el("span", { class: "miss" }, [" missing from ending list"]) : ""
+        ]),
+        el("span", { class: "count" }, [e.kind + " · " + e.leafCount])
+      ]));
+    });
+    endCol.append(endBody);
+
+    const leafCol = el("section", { class: "col" }, [el("h2", {}, ["Named-move leaves"])]);
+    const leafBody = el("div", { class: "body" });
+    if (!sel.end) leafBody.append(el("p", { class: "xref" }, ["Pick an ending."]));
+    leaves.forEach((l) => {
+      const rs = l.ruleset === "no-gi" ? "nogi" : l.ruleset;
+      const card = el("div", { class: "leaf" + (sel.leaf === l.name ? " on" : "") });
+      card.addEventListener("click", () => go({ type: "SELECT_LEAF", name: l.name }));
+      card.append(el("div", { class: "name" }, [l.name + " ", el("span", { class: "pill pill-" + rs }, [l.ruleset])]));
+      if (l.aliases && l.aliases.length) card.append(el("div", { class: "xref" }, ["Also: " + l.aliases.join(", ")]));
+      if (l.cross_refs && l.cross_refs.length) {
+        card.append(el("div", { class: "xref" }, [
+          l.cross_refs.map((x) => x.art + ": " + x.name).join(" · ")
+        ]));
+      }
+      leafBody.append(card);
+    });
+    leafCol.append(leafBody);
+
+    const editor = el("section", { class: "panel" }, [
+      el("h2", {}, ["Reorganize"]),
+      el("div", { class: "toolbar" }, [
+        el("button", { on: { click: () => {
+          const id = sel.identity || sel.start;
+          const cur = Tree.endRef(state.seed, id);
+          const label = ask("New name for this position (start and end share it)", cur ? cur.label : "");
+          if (label && id) go({ type: "RENAME", kind: "position", id, label });
+        } } }, ["Rename position"]),
+        el("button", { on: { click: () => {
+          const label = ask("New name for the selected type of move", Tree.labelOf(state.seed.move_types, sel.moveType));
+          if (label && sel.moveType) go({ type: "RENAME", kind: "move_type", id: sel.moveType, label });
+        } } }, ["Rename type"]),
+        el("button", { on: { click: () => {
+          const cur = Tree.endRef(state.seed, sel.end);
+          const label = ask("New name for the selected ending identity", cur ? cur.label : sel.end);
+          if (label && sel.end) go({ type: "RENAME", kind: "end", id: sel.end, label });
+        } } }, ["Rename ending identity"]),
+        el("button", { on: { click: () => {
+          const label = ask("New name for the selected named move", sel.leaf);
+          if (label && sel.leaf) go({ type: "RENAME", kind: "leaf", id: sel.leaf, label });
+        } } }, ["Rename named move"]),
+        el("button", { on: { click: () => {
+          const label = ask("New position name (usable as start and as end)");
+          if (label) go({ type: "ADD_START", label });
+        } } }, ["Add position"]),
+        el("button", { on: { click: () => {
+          const label = ask("New type of move");
+          if (label) go({ type: "ADD_MOVE_TYPE", label });
+        } } }, ["Add type"]),
+        el("button", { on: { click: () => {
+          const label = ask("New ending name");
+          if (!label) return;
+          const kind = window.confirm("Yes = submission ending. Cancel = position ending.") ? "submission" : "position";
+          go({ type: "ADD_END", label, kind });
+        } } }, ["Add ending"]),
+        el("button", { on: { click: () => {
+          const name = ask("New named-move leaf");
+          if (!name) return;
+          const ruleset = window.prompt("Ruleset: gi, no-gi, or both", "both") || "both";
+          go({ type: "ADD_LEAF", name, ruleset });
+        } } }, ["Add named move"]),
+        el("button", { on: { click: () => {
+          const start = ask("Move selected named move to this starting position id", sel.start);
+          const move_type = ask("… type of move id", sel.moveType);
+          const end = ask("… ending id", sel.end);
+          if (start && move_type && end) go({ type: "MOVE_LEAF", start, move_type, end });
+        } } }, ["Move named move"]),
+        el("button", { class: "danger", on: { click: () => sel.start && go({ type: "DELETE_POSITION", id: sel.start }) } }, ["Delete position"]),
+        el("button", { class: "danger", on: { click: () => sel.moveType && go({ type: "DELETE_MOVE_TYPE", id: sel.moveType }) } }, ["Delete type"]),
+        el("button", { class: "danger", on: { click: () => sel.end && go({ type: "DELETE_END", id: sel.end }) } }, ["Delete ending identity"]),
+        el("button", { class: "danger", on: { click: () => sel.leaf && go({ type: "DELETE_LEAF", name: sel.leaf }) } }, ["Delete named move"]),
+        el("button", { on: { click: () => go({ type: "RESET" }) } }, ["Reset seed"]),
+        el("button", { class: "primary", on: { click: () => {
+          const blob = new Blob([JSON.stringify(Tree.exportSeed(state), null, 2)], { type: "application/json" });
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "organized-seed.json";
+          a.click();
+          toast("Downloaded unique identities as organized-seed.json");
+        } } }, ["Download tree JSON"]),
+        el("button", { class: "primary", on: { click: () => go({ type: "ACCEPT" }) } }, ["Mark tree acceptable"])
+      ])
+    ]);
+
+    const uncat = el("section", { class: "panel uncat" }, [el("h2", {}, ["Citations (uncategorized bucket + links)"])]);
+    const unBody = el("div", { class: "body" });
+    state.citations.forEach((c) => {
+      const card = el("div", { class: "cite" + (c.link ? " linked" : "") });
+      const path = c.link
+        ? (Tree.identityLabel(state.seed, c.link.start) + " → " +
+           Tree.labelOf(state.seed.move_types, c.link.move_type) + " → " +
+           Tree.identityLabel(state.seed, c.link.end) + " → " +
+           c.link.leaf)
+        : "Uncategorized";
+      card.append(el("div", {}, [
+        el("strong", {}, [c.movement + " "]),
+        el("span", { class: "pill " + (c.link ? "pill-ok" : "pill-warn") }, [c.link ? "linked" : "uncategorized"]),
+        " ",
+        el("span", { class: "pill pill-proto" }, [c.kind])
+      ]));
+      card.append(el("div", { class: "xref" }, [
+        c.kind === "coach-authored"
+          ? ("Coach-authored · " + (c.steps || []).join("; "))
+          : (c.instructor + " · " + c.instructional + " · " + c.chapter)
+      ]));
+      card.append(el("div", { class: "xref" }, [path]));
+      const row = el("div", { class: "toolbar" });
+      row.append(el("button", { on: { click: () => go({ type: "PLACE_CITATION", id: c.id }) } }, ["Place on selected named move"]));
+      if (c.link) row.append(el("button", { on: { click: () => go({ type: "UNCATEGORIZE", id: c.id }) } }, ["Uncategorize"]));
+      card.append(row);
+      unBody.append(card);
+    });
+    uncat.append(unBody);
+
+    const scenario = SCENARIOS.find((s) => s.id === scenarioId) || SCENARIOS[0];
+    const walk = el("section", { class: "panel" }, [
+      el("h2", {}, ["Guided walkthroughs"]),
+      el("div", { class: "tabs" }, SCENARIOS.map((s) => el("button", {
+        class: s.id === scenarioId ? "on" : "",
+        on: { click: () => {
+          scenarioId = s.id;
+          stepIndex = 0;
+          if (s.id === "delete") {
+            /* keep current until Reset step */
+          } else if (s.id !== "identity") {
+            state = Tree.dispatch(state, { type: "SEARCH", query: "" });
+          }
+          render();
+        } }
+      }, [s.name]))),
+      el("p", { class: "xref", style: "padding:0 .85rem" }, [scenario.blurb]),
+    ]);
+    const ol = el("ol", { class: "steps" });
+    scenario.steps.forEach((step, i) => {
+      const li = el("li", { class: i === stepIndex ? "changed" : "" }, [
+        step.label + " ",
+        el("button", { on: { click: () => {
+          if (i === 0 && scenario.id !== "delete") {
+            /* allow any order */
+          }
+          go(step.action);
+          stepIndex = Math.min(i + 1, scenario.steps.length);
+        } } }, ["Do this"])
+      ]);
+      ol.append(li);
+    });
+    walk.append(ol);
+
+    const statePanel = el("section", { class: "panel" }, [
+      el("h2", {}, ["Current state"]),
+      el("div", { class: "body" }, [el("pre", { class: "state" }, [renderStatePanel()])])
+    ]);
+
+    root.append(issuePills);
+    root.append(renderEr(state));
+    root.append(renderPlot(state));
+    root.append(el("div", { class: "layout" }, [startCol, mtCol, endCol, leafCol]));
+    root.append(editor);
+    root.append(uncat);
+    root.append(el("div", { class: "split" }, [walk, statePanel]));
+  }
+
+  render();
+  </script>
+</body>
+</html>

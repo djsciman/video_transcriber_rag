@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import tempfile
 import unittest
 from contextlib import redirect_stdout
@@ -14,13 +15,14 @@ import batch_panoscribe
 
 
 def _write_video(path: Path) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(b"fake-video")
+    io_path = batch_panoscribe.io_path(path)
+    io_path.parent.mkdir(parents=True, exist_ok=True)
+    io_path.write_bytes(b"fake-video")
     return path
 
 
 def _read_json(path: Path) -> object:
-    return json.loads(path.read_text(encoding="utf-8"))
+    return json.loads(batch_panoscribe.io_path(path).read_text(encoding="utf-8"))
 
 
 def _speech_writer(
@@ -142,6 +144,12 @@ class CreateTranscriptTest(unittest.TestCase):
             self.assertRegex(out, r"Created: 1")
             self.assertEqual(speech_calls[0]["hotwords"], "Von Flue")
             self.assertIs(speech_calls[0]["ocr"], False)
+            self.assertTrue(
+                os.path.samefile(
+                    speech_calls[0]["aside"].parent,
+                    tempfile.gettempdir(),
+                )
+            )
 
     def test_transcript_path_mirrors_instructional_folder(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -155,6 +163,28 @@ class CreateTranscriptTest(unittest.TestCase):
             )
             self.assertEqual(status, 0)
             self.assertTrue((root / "out" / "Couch" / "Vol1.json").is_file())
+
+    def test_long_volume_name_still_creates_transcript(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            stem = (
+                "7187341508706-06-01- Common Problems Solving. "
+                "Open Guard Distraction Concepts To Get To Inside Passing Position"
+            )
+            nested = root / "in" / "Polish Power Inside Passing By Adam Wardzinski"
+            _write_video(nested / f"{stem}.mp4")
+            status, out = _run(
+                root / "in",
+                root / "out",
+                speech=_speech_writer(),
+                chapters=_chapter_reader([]),
+            )
+            self.assertEqual(status, 0)
+            dest = root / "out" / "Polish Power Inside Passing By Adam Wardzinski" / f"{stem}.json"
+            io_dest = batch_panoscribe.io_path(dest)
+            self.assertTrue(io_dest.is_file())
+            self.assertEqual(_read_json(io_dest)["video_file"], f"{stem}.mp4")
+            self.assertIn("Created: 1", out)
 
     def test_same_file_name_in_different_folders_keep_separate_transcripts(self):
         with tempfile.TemporaryDirectory() as tmp:
