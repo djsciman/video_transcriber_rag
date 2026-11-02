@@ -595,13 +595,24 @@ window.addEventListener("error", function (ev) {
   };
 
   const MOVE_TYPES = {
-    transition: { id: "transition", label: "Transition", sides: ["bottom", "top", "neutral"] },
-    sweep: { id: "sweep", label: "Sweep", sides: ["bottom"] },
-    "back-take": { id: "back-take", label: "Back take", sides: ["bottom", "top"] },
-    pass: { id: "pass", label: "Pass", sides: ["top"] },
-    escape: { id: "escape", label: "Escape", sides: ["bottom"] },
-    takedown: { id: "takedown", label: "Takedown", sides: ["neutral"] },
-    submission: { id: "submission", label: "Submission", sides: ["bottom", "top", "neutral"] }
+    transition: {
+      id: "transition", label: "Transition",
+      sides: ["bottom", "top"],
+      bySideFamilies: { bottom: ["guard"], top: ["pin", "back"] }
+    },
+    sweep: { id: "sweep", label: "Sweep", sides: ["bottom"], families: ["guard"] },
+    "back-take": { id: "back-take", label: "Back take", sides: ["bottom", "top"], families: ["guard", "pin"] },
+    pass: { id: "pass", label: "Pass", sides: ["top"], families: ["guard"] },
+    escape: { id: "escape", label: "Escape", sides: ["bottom"], families: ["pin", "back"] },
+    takedown: { id: "takedown", label: "Takedown", sides: ["neutral"], families: ["standing"] },
+    submission: { id: "submission", label: "Submission", sides: ["bottom", "top"] }
+  };
+
+  const FAMILY_SIDES = {
+    guard: ["bottom", "top"],
+    pin: ["bottom", "top"],
+    back: ["bottom", "top"],
+    standing: ["neutral"]
   };
 
   const TYPE_STYLE = {
@@ -676,7 +687,7 @@ window.addEventListener("error", function (ev) {
         chosenCitations: {},
         moveNotes: {},
         markNotes: {},
-        lastChange: "Empty design. Pick bottom, top, or neutral for the student."
+        lastChange: "Empty design. Pick occupancy for the student."
       };
     },
     clone: function (state) { return JSON.parse(JSON.stringify(state)); },
@@ -701,9 +712,25 @@ window.addEventListener("error", function (ev) {
         return m.start === start && m.startSide === occupancy;
       });
     },
-    typesAt: function (occupancy) {
+    occupanciesAt: function (start) {
+      const fam = POSITIONS[start] && POSITIONS[start].family;
+      return FAMILY_SIDES[fam] || ["bottom", "top"];
+    },
+    moveAllowed: function (moveType, occupancy, family) {
+      const spec = MOVE_TYPES[moveType];
+      if (!spec) return false;
+      if (occupancy && spec.sides.indexOf(occupancy) < 0) return false;
+      if (spec.families && family && spec.families.indexOf(family) < 0) return false;
+      if (spec.bySideFamilies && occupancy) {
+        const fams = spec.bySideFamilies[occupancy] || [];
+        if (fams.indexOf(family) < 0) return false;
+      }
+      return true;
+    },
+    typesAt: function (start, occupancy) {
+      const family = POSITIONS[start] ? POSITIONS[start].family : "";
       return Object.keys(MOVE_TYPES).filter(function (id) {
-        return MOVE_TYPES[id].sides.indexOf(occupancy) >= 0;
+        return DesignModel.moveAllowed(id, occupancy, family);
       });
     },
     systemsReady: function (onMap) {
@@ -741,7 +768,7 @@ window.addEventListener("error", function (ev) {
         return m && m.start === next.start && m.startSide === next.occupancy;
       });
       next.openMoveTypes = next.openMoveTypes.filter(function (tid) {
-        return DesignModel.typesAt(next.occupancy).indexOf(tid) >= 0;
+        return DesignModel.typesAt(next.start, next.occupancy).indexOf(tid) >= 0;
       });
       DesignModel.pruneSystems(next);
       DesignModel.pruneNotes(next);
@@ -758,6 +785,10 @@ window.addEventListener("error", function (ev) {
       if (kind === "RESET") return DesignModel.seed();
       if (kind === "LOAD_SAMPLE") return DesignModel.sample();
       if (kind === "SET_OCCUPANCY") {
+        if (DesignModel.occupanciesAt(next.start).indexOf(action.occupancy) < 0) {
+          next.lastChange = action.occupancy + " is not offered from " + POSITIONS[next.start].label + ".";
+          return next;
+        }
         if (next.occupancy === action.occupancy) {
           next.lastChange = "Student occupies " + POSITIONS[next.start].label + " · " + action.occupancy + ".";
           return next;
@@ -774,14 +805,18 @@ window.addEventListener("error", function (ev) {
       }
       if (kind === "OPEN_MOVE_TYPE") {
         if (!next.occupancy) {
-          if (MOVE_TYPES[action.id].sides.length === 1) next.occupancy = MOVE_TYPES[action.id].sides[0];
+          const sides = MOVE_TYPES[action.id].sides.filter(function (side) {
+            return DesignModel.occupanciesAt(next.start).indexOf(side) >= 0;
+          });
+          if (sides.length === 1) next.occupancy = sides[0];
           else {
-            next.lastChange = "Pick bottom, top, or neutral before opening a type of move.";
+            next.lastChange = "Pick occupancy before opening a type of move.";
             return next;
           }
         }
-        if (DesignModel.typesAt(next.occupancy).indexOf(action.id) < 0) {
-          next.lastChange = MOVE_TYPES[action.id].label + " is not offered from " + next.occupancy + ".";
+        if (DesignModel.typesAt(next.start, next.occupancy).indexOf(action.id) < 0) {
+          next.lastChange = MOVE_TYPES[action.id].label + " is not offered from " +
+            POSITIONS[next.start].label + " · " + next.occupancy + ".";
           return next;
         }
         if (next.openMoveTypes.indexOf(action.id) < 0) next.openMoveTypes.push(action.id);
@@ -790,12 +825,13 @@ window.addEventListener("error", function (ev) {
       }
       if (kind === "TOGGLE_MOVE_TYPE") {
         if (!next.occupancy) {
-          next.lastChange = "Pick bottom, top, or neutral before opening a type of move.";
+          next.lastChange = "Pick occupancy before opening a type of move.";
           return next;
         }
-        const allowed = DesignModel.typesAt(next.occupancy);
+        const allowed = DesignModel.typesAt(next.start, next.occupancy);
         if (allowed.indexOf(action.id) < 0) {
-          next.lastChange = MOVE_TYPES[action.id].label + " is not offered from " + next.occupancy + ".";
+          next.lastChange = MOVE_TYPES[action.id].label + " is not offered from " +
+            POSITIONS[next.start].label + " · " + next.occupancy + ".";
           return next;
         }
         const i = next.openMoveTypes.indexOf(action.id);
@@ -864,8 +900,9 @@ window.addEventListener("error", function (ev) {
           next.lastChange = "Pick occupancy before changing a type of move.";
           return next;
         }
-        if (DesignModel.typesAt(next.occupancy).indexOf(to) < 0) {
-          next.lastChange = MOVE_TYPES[to].label + " is not offered from " + next.occupancy + ".";
+        if (DesignModel.typesAt(next.start, next.occupancy).indexOf(to) < 0) {
+          next.lastChange = MOVE_TYPES[to].label + " is not offered from " +
+            POSITIONS[next.start].label + " · " + next.occupancy + ".";
           return next;
         }
         next.openMoveTypes = next.openMoveTypes.filter(function (tid) { return tid !== from; });
@@ -1069,7 +1106,7 @@ window.addEventListener("error", function (ev) {
       html += "<h2>Half guard</h2>";
       html += '<p class="hint">Occupancy is the student\'s role. Later marks that no longer fit leave the map.</p>';
       html += "<h3>Occupancy</h3><div class='row'>";
-      ["bottom", "top", "neutral"].forEach(function (side) {
+      DesignModel.occupanciesAt(state.start).forEach(function (side) {
         html += '<button type="button" class="chip' + (state.occupancy === side ? " on" : "") +
           '" data-act="occupancy" data-id="' + side + '">' + side + "</button>";
       });
@@ -1084,7 +1121,7 @@ window.addEventListener("error", function (ev) {
       html += "<h2>" + escapeHtml(MOVE_TYPES[sel.id].label) + "</h2>";
       html += '<p class="hint">Change the type. A named move will replace this mark.</p>';
       html += "<h3>Type of move</h3><div class='row'>";
-      DesignModel.typesAt(state.occupancy || "bottom").forEach(function (id) {
+      DesignModel.typesAt(state.start, state.occupancy || DesignModel.occupanciesAt(state.start)[0]).forEach(function (id) {
         html += '<button type="button" class="chip' + (sel.id === id ? " on" : "") +
           '" data-act="type" data-id="' + id + '">' + escapeHtml(MOVE_TYPES[id].label) + "</button>";
       });
@@ -1413,7 +1450,7 @@ window.addEventListener("error", function (ev) {
 
     if (!w.occupancy) {
       section(panel, "Occupancy");
-      ["bottom", "top", "neutral"].forEach(function (side) {
+      DesignModel.occupanciesAt(w.position || state.start).forEach(function (side) {
         panel.appendChild(pickBtn(side, false, function () {
           w.occupancy = side;
           w.moveType = null;
@@ -1429,7 +1466,9 @@ window.addEventListener("error", function (ev) {
 
     if (!w.moveType) {
       section(panel, "Type of move");
-      DesignModel.typesAt(w.occupancy).forEach(function (tid) {
+      const types = DesignModel.typesAt(w.position || state.start, w.occupancy);
+      if (!types.length) emptyHint(panel, "No types of move from this occupancy.");
+      types.forEach(function (tid) {
         panel.appendChild(pickBtn(MOVE_TYPES[tid].label, false, function () {
           const prev = w.placedType;
           w.moveType = tid;
