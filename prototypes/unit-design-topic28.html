@@ -1986,26 +1986,41 @@ window.addEventListener("error", function (ev) {
       return null;
     }
 
+    function worldToScreen(wx, wy) {
+      const pt = svg.createSVGPoint();
+      pt.x = ui.pan.x + (ui.zoom || 1) * wx;
+      pt.y = ui.pan.y + (ui.zoom || 1) * wy;
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return { x: wx, y: wy };
+      const s = pt.matrixTransform(ctm);
+      return { x: s.x, y: s.y };
+    }
+
     function hitMarkAt(e) {
       let el = e.target;
       while (el && el !== svg && el !== wrap) {
         const id = el.getAttribute && el.getAttribute("data-mark");
-        if (id) {
+        if (id && id !== "draft") {
           const n = nodeById(id);
           if (n) return n;
         }
         el = el.parentNode;
       }
-      let p;
-      try { p = worldPoint(svg, e.clientX, e.clientY); } catch (err) { return null; }
+      const ctm = svg.getScreenCTM();
+      const scale = ctm ? (Math.hypot(ctm.a, ctm.b) || 1) : 1;
+      const z = ui.zoom || 1;
       let best = null;
       let bestD = 1e9;
       nodes.forEach(function (n) {
-        const d = Math.sqrt((p.x - n.x) * (p.x - n.x) + (p.y - n.y) * (p.y - n.y));
-        if (d < n.r + 22 && d < bestD) { best = n; bestD = d; }
+        if (n.kind === "draft") return;
+        const s = worldToScreen(n.x, n.y);
+        const d = Math.hypot(e.clientX - s.x, e.clientY - s.y);
+        const hitR = Math.max(36, (n.r + 28) * z * scale);
+        if (d < hitR && d < bestD) { best = n; bestD = d; }
         if (n.lx != null && n.ly != null) {
-          const ld = Math.sqrt((p.x - n.lx) * (p.x - n.lx) + (p.y - n.ly) * (p.y - n.ly));
-          if (ld < 28 && ld < bestD) { best = n; bestD = ld; }
+          const ls = worldToScreen(n.lx, n.ly);
+          const ld = Math.hypot(e.clientX - ls.x, e.clientY - ls.y);
+          if (ld < 32 && ld < bestD) { best = n; bestD = ld; }
         }
       });
       return best;
@@ -2023,6 +2038,7 @@ window.addEventListener("error", function (ev) {
       ui.suppressEmptyClick = true;
       ui.dragging = n;
       ui.moved = false;
+      ui.dragFrom = { x: e.clientX, y: e.clientY };
       n.pinned = true;
       try { svg.setPointerCapture(e.pointerId); } catch (err) {}
     }
@@ -2148,6 +2164,7 @@ window.addEventListener("error", function (ev) {
       ui.suppressEmptyClick = true;
       ui.dragging = hit;
       ui.moved = false;
+      ui.dragFrom = { x: e.clientX, y: e.clientY };
       hit.pinned = true;
       try { svg.setPointerCapture(e.pointerId); } catch (err) {}
     }, true);
@@ -2162,9 +2179,9 @@ window.addEventListener("error", function (ev) {
         return;
       }
       if (!ui.dragging) return;
+      if (ui.dragFrom && Math.abs(e.clientX - ui.dragFrom.x) + Math.abs(e.clientY - ui.dragFrom.y) > 6) ui.moved = true;
       const p = worldPoint(svg, e.clientX, e.clientY);
       const n = ui.dragging;
-      if (Math.abs(p.x - n.x) + Math.abs(p.y - n.y) > 3) ui.moved = true;
       n.x = p.x;
       n.y = p.y;
       n.pinned = true;
