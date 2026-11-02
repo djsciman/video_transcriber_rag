@@ -1058,6 +1058,7 @@ window.addEventListener("error", function (ev) {
     panning: false,
     dragging: null,
     moved: false,
+    suppressEmptyClick: false,
     forceRaf: 0
   };
 
@@ -1969,9 +1970,9 @@ window.addEventListener("error", function (ev) {
         return;
       }
       e.stopPropagation();
-      e.preventDefault();
       closeMenu();
       closeMarkMenu();
+      ui.suppressEmptyClick = true;
       ui.dragging = n;
       ui.moved = false;
       n.pinned = true;
@@ -2009,19 +2010,21 @@ window.addEventListener("error", function (ev) {
         document.addEventListener("click", dismissMarkMenu, true);
       }, 0);
     }
-    function onMarkClick(e, n) {
-      e.stopPropagation();
-      if (ui.moved) return;
-      if (n.kind === "draft") {
+    function editMark(n) {
+      if (!n || n.kind === "draft") {
         if (!ui.wizard || !ui.wizard.active) startWizard(null);
-        openCatalogMenu(e.clientX, e.clientY, ui.wizard && ui.wizard.fromNode);
+        openCatalogMenu(null, null, ui.wizard && ui.wizard.fromNode);
         return;
       }
       if (ui.wizard) ui.wizard.active = false;
       ui.draft = null;
       closeMenu();
       selectNode(n);
-      paint();
+      setTimeout(function () { paint(); }, 0);
+    }
+    function onMarkClick(e, n) {
+      e.stopPropagation();
+      e.preventDefault();
     }
     function onMarkDbl(e, n) {
       e.stopPropagation();
@@ -2035,7 +2038,7 @@ window.addEventListener("error", function (ev) {
     }
 
     function emptyCanvasClick(e) {
-      if (ui.moved || ui.panning) return;
+      if (ui.moved || ui.panning || ui.suppressEmptyClick || ui.dragging) return;
       if (e.target.closest && e.target.closest(".graph-toolbar")) return;
       if (e.target.closest && e.target.closest(".sidebar-dock")) return;
       if (e.target.closest && e.target.closest("[data-mark]")) return;
@@ -2089,11 +2092,17 @@ window.addEventListener("error", function (ev) {
       rememberPos(n.id, n.x, n.y);
       paintGraph();
     });
-    svg.addEventListener("pointerup", function () {
+    svg.addEventListener("pointerup", function (e) {
+      const n = ui.dragging;
+      const moved = ui.moved;
       ui.dragging = null;
       ui.panning = false;
       wrap.classList.remove("panning");
-      setTimeout(function () { ui.moved = false; }, 0);
+      if (n && !moved && e.button === 0) editMark(n);
+      setTimeout(function () {
+        ui.moved = false;
+        ui.suppressEmptyClick = false;
+      }, 0);
     });
 
     ui.redrawGraph = paintGraph;
