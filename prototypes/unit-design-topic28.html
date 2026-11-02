@@ -56,7 +56,8 @@
       padding-left: 1.25rem;
       padding-right: 1.25rem;
     }
-    header.page { margin-top: 1.25rem; }
+    header.page { margin-top: 1.45rem; }
+    .box-proto, .box-final { margin-top: .35rem; }
     header.page h1 {
       font-family: var(--serif);
       font-weight: 600;
@@ -117,8 +118,9 @@
     .layout {
       display: grid;
       grid-template-columns: minmax(260px, 320px) 1fr minmax(260px, 340px);
-      gap: .85rem;
+      gap: 1.15rem;
       align-items: start;
+      padding: 8px 2px;
     }
     @media (max-width: 1040px) { .layout { grid-template-columns: 1fr; } }
     .panel {
@@ -309,17 +311,53 @@
     }
     .switcher .label { font-size: .85rem; min-width: 14rem; text-align: center; }
     .switcher .label span { display: block; font-size: .68rem; color: #a8a29e; }
+    .box-final, .box-proto {
+      position: relative;
+    }
+    .box-final::after, .box-proto::after {
+      content: "";
+      position: absolute;
+      inset: -6px;
+      border-radius: 14px;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .box-final::after { border: 2px dotted #15803d; }
+    .box-proto::after { border: 2px dotted #dc2626; }
+    .box-key {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .55rem 1rem;
+      align-items: center;
+      font-size: .78rem;
+    }
+    .box-key b {
+      display: inline-block;
+      width: .85rem;
+      height: .85rem;
+      border-radius: 3px;
+      vertical-align: -2px;
+      margin-right: .3rem;
+    }
+    .box-key .k-final { border: 2px dotted #86efac; }
+    .box-key .k-proto { border: 2px dotted #fca5a5; }
+    .banner.box-proto::after, .switcher.box-proto::after { inset: 3px; }
+    .proto-tools { margin-top: .55rem; padding: .35rem; }
   </style>
 </head>
 <body>
-  <div class="banner">
+  <div class="banner box-proto">
     <strong>PROTOTYPE · throwaway</strong>
     <span>Ticket <code>#28</code> · design a unit on the mental map</span>
     <span>Branch <code>prototype/unit-design-topic28</code></span>
     <span>Three layouts · no class packing</span>
+    <span class="box-key">
+      <span><b class="k-final"></b>green dotted: coach experience</span>
+      <span><b class="k-proto"></b>red dotted: prototype use</span>
+    </span>
   </div>
 
-  <header class="page">
+  <header class="page box-proto">
     <h1>How should the coach design a unit on the mental map?</h1>
     <p class="meta">
       Same <strong>gi half guard</strong> topic as the sample unit.
@@ -328,7 +366,7 @@
     </p>
   </header>
 
-  <div class="question">
+  <div class="question box-proto">
     <details open>
       <summary>What this prototype is checking</summary>
       <p>
@@ -343,21 +381,21 @@
     </details>
   </div>
 
-  <div class="walk">
+  <div class="walk box-proto">
     <h2>Guided walkthroughs</h2>
     <div class="tabs" id="scene-tabs"></div>
     <div class="scene" id="scene-copy"></div>
     <div class="steps-run" id="scene-steps"></div>
   </div>
-  <p class="changed" id="changed"></p>
+  <p class="changed box-proto" id="changed"></p>
   <div id="app"></div>
-  <div class="record">
+  <div class="record box-proto">
     <details open>
       <summary>Design record (full state after every action)</summary>
       <pre id="record"></pre>
     </details>
   </div>
-  <div class="switcher" role="toolbar" aria-label="Prototype layout switcher">
+  <div class="switcher box-proto" role="toolbar" aria-label="Prototype layout switcher">
     <button type="button" id="prev" aria-label="Previous layout">←</button>
     <div class="label" id="switch-label">A</div>
     <button type="button" id="next" aria-label="Next layout">→</button>
@@ -595,7 +633,7 @@
   }
 
   function palette() {
-    let html = '<div class="panel">';
+    let html = '<div class="panel box-final">';
     html += "<h2>" + escapeHtml(state.topic.label) + "</h2>";
     html += '<p class="hint">Start is Half guard. Occupancy is the student\'s role.</p>';
     html += "<h3>Occupancy</h3><div class='row'>";
@@ -647,14 +685,16 @@
     html += '<p class="hint">The topic\'s system, in the coach\'s words. Empty until written.</p>';
     html += '<textarea class="words" data-act="words">' + escapeHtml(state.topicSystem) + "</textarea>";
     html += '<div class="row" style="margin-top:.55rem">';
-    html += '<button type="button" class="icon-btn primary" data-act="sample">Load Tight waist design</button>';
     html += '<button type="button" class="icon-btn" data-act="reset">Clear design</button>';
+    html += "</div>";
+    html += '<div class="row proto-tools box-proto">';
+    html += '<button type="button" class="icon-btn primary" data-act="sample">Load Tight waist design</button>';
     html += "</div></div>";
     return html;
   }
 
   function handoff() {
-    let html = '<div class="panel handoff"><h2>What Design hands to Build</h2>';
+    let html = '<div class="panel handoff box-final"><h2>What Design hands to Build</h2>';
     html += '<p class="hint">Unordered. No class cuts, no partner jobs, no run sheet.</p>';
     html += "<h3>Start</h3>";
     html += state.occupancy
@@ -1046,6 +1086,7 @@
     const layout = app.firstChild;
     layout.insertAdjacentHTML("beforeend", palette());
     const stageHost = document.createElement("div");
+    stageHost.className = "box-final";
     const stage = variant === "B" ? renderHub() : (variant === "C" ? renderTray() : renderForce());
     stageHost.appendChild(stage);
     layout.appendChild(stageHost);
