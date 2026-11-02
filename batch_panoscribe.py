@@ -73,11 +73,30 @@ def io_path(path: Path) -> Path:
     absolute = os.path.abspath(path)
     if absolute.startswith("\\\\?\\") or len(absolute) < _WINDOWS_MAX_PATH:
         return path
+    return Path(_win_extended_path(absolute))
+
+
+def _win_extended_path(absolute: str) -> str:
+    """Return ``absolute`` with the Windows ``\\\\?\\`` prefix."""
+    if absolute.startswith("\\\\?\\"):
+        return absolute
     if absolute.startswith("\\\\"):
-        absolute = "\\\\?\\UNC\\" + absolute[2:]
-    else:
-        absolute = "\\\\?\\" + absolute
-    return Path(absolute)
+        return "\\\\?\\UNC\\" + absolute[2:]
+    return "\\\\?\\" + absolute
+
+
+def _mkstemp(*, prefix: str, suffix: str, directory: Path | None = None) -> tuple[int, Path]:
+    """Create a temp file. On Windows the directory is extended-length.
+
+    ``mkstemp`` concatenates prefix, random characters, and suffix onto
+    ``directory``. A short parent plus a long name still hits MAX_PATH unless
+    the directory string is already ``\\\\?\\``-prefixed.
+    """
+    dir_str = None if directory is None else str(directory)
+    if directory is not None and os.name == "nt":
+        dir_str = _win_extended_path(os.path.abspath(directory))
+    fd, name = tempfile.mkstemp(prefix=prefix, suffix=suffix, dir=dir_str)
+    return fd, Path(name)
 
 
 def is_video(path: Path) -> bool:
@@ -419,19 +438,15 @@ def _compose_transcript(
 def _atomic_write_json(path: Path, data: dict) -> None:
     target = io_path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp_name = tempfile.mkstemp(
-        prefix=f".{path.name}.",
-        suffix=".tmp",
-        dir=str(target.parent),
-    )
-    tmp_path = Path(tmp_name)
+    fd, tmp_path = _mkstemp(prefix=".bp.", suffix=".tmp", directory=target.parent)
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as handle:
             handle.write(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
         os.replace(tmp_path, target)
     except Exception:
-        if tmp_path.exists():
-            tmp_path.unlink()
+        io_tmp = io_path(tmp_path)
+        if io_tmp.exists():
+            io_tmp.unlink()
         raise
 
 
@@ -604,13 +619,13 @@ def process_volume(
         aside_path = None
         try:
             io_path(output_path).parent.mkdir(parents=True, exist_ok=True)
-            fd, aside_name = tempfile.mkstemp(
-                prefix=f".{output_path.stem}.speech.",
+            # Keep this path short. A dest-adjacent ``.{stem}.speech.*.json``
+            # can exceed Windows MAX_PATH when the final transcript path does not.
+            fd, aside_path = _mkstemp(
+                prefix="batch_panoscribe_speech_",
                 suffix=".json",
-                dir=str(io_path(output_path).parent),
             )
             os.close(fd)
-            aside_path = Path(aside_name)
             speech_command(io_path(video), io_path(aside_path), hotwords, ocr)
             speech_payload = json.loads(io_path(aside_path).read_text(encoding="utf-8"))
             if isinstance(speech_payload, list):

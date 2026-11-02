@@ -155,7 +155,7 @@ Options:
 |------|---------|
 | `--ocr` / `--no-ocr` | On-screen OCR for speech requests only (default: off) |
 
-On Windows, paths of 260+ characters are opened with the `\\?\` extended-length prefix so long mirrored corpus paths still work when Long Paths are disabled.
+On Windows, paths of 260+ characters are opened with the `\\?\` extended-length prefix so long mirrored corpus paths still work when Long Paths are disabled. Speech scratch JSON is written under the system temp directory so a long volume name cannot push that scratch path over the limit.
 
 ## Project layout
 
