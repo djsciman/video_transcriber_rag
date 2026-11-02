@@ -287,6 +287,35 @@
       color: #fff;
       border-color: #1c1917;
     }
+    .mark-menu {
+      position: absolute;
+      z-index: 45;
+      min-width: 8.5rem;
+      background: #fffcf6;
+      border: 2px solid #1c1917;
+      border-radius: 8px;
+      padding: .3rem;
+      box-shadow: var(--shadow);
+    }
+    .mark-menu button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: 0;
+      background: #fff;
+      border-radius: 6px;
+      padding: .4rem .55rem;
+      font: inherit;
+      cursor: pointer;
+    }
+    .mark-menu button:hover { background: #f5f5f4; }
+    .cite {
+      display: block;
+      font-size: .8rem;
+      margin: .2rem 0;
+      cursor: pointer;
+    }
+    .cite input { margin-right: .35rem; }
     .map-stage.panning { cursor: grabbing; }
     .add-select {
       font: inherit;
@@ -321,10 +350,16 @@
       vertical-align: -1px;
       border: 1px solid #a8a29e;
     }
-    .legend i.pos { border-radius: 99px; background: #0f766e; }
-    .legend i.end { border-radius: 99px; background: #fff; }
-    .legend i.mv { border-radius: 3px; background: #1d4ed8; }
+    .legend i.pos { border-radius: 99px; background: #78716c; }
+    .legend i.end { border-radius: 99px; background: #fff; border-color: #78716c; }
     .legend i.sys { background: transparent; border: 2px dashed #c2410c; }
+    .legend i.t-transition { border-radius: 3px; background: #0f766e; }
+    .legend i.t-sweep { background: #1d4ed8; transform: rotate(45deg); }
+    .legend i.t-back-take { background: #c2410c; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
+    .legend i.t-pass { border-radius: 3px; background: #7c3aed; }
+    .legend i.t-escape { border-radius: 99px; background: #15803d; }
+    .legend i.t-takedown { background: #a16207; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+    .legend i.t-submission { background: #be123c; }
     .hub {
       position: relative;
       min-height: 32rem;
@@ -510,7 +545,7 @@
         Steal pieces from A / B / C. The right-hand panel is the hand-off Build would receive.
       </p>
       <ul>
-        <li><strong>A Force map</strong> — full-width graph. Add walks family → position → occupancy → type of move → end position → named move. Chosen steps become a trail; click a trail step to reselect. Sidebar only when a mark is clicked. Right-drag pans. Recenter and Reset marks sit in the toolbar.</li>
+        <li><strong>A Force map</strong> — full-width graph. Add walks family → position → occupancy → type of move → end position → named move. A named move replaces the type mark. Left-click a mark to edit (named move, citations, notes). Right-click a mark to delete. Zoom, Recenter, Clear canvas in the toolbar. Right-drag pans.</li>
         <li><strong>B Hub and ring</strong> — Half guard is the hub. Home transitions sit on it. System members sit on the dilemma ring.</li>
         <li><strong>C Catalog tray</strong> — left is the catalog at this occupancy. Right is what is on the design. Click to move a named move or pin a system.</li>
       </ul>
@@ -569,6 +604,26 @@ window.addEventListener("error", function (ev) {
     submission: { id: "submission", label: "Submission", sides: ["bottom", "top", "neutral"] }
   };
 
+  const TYPE_STYLE = {
+    transition: { fill: "#0f766e", shape: "rect" },
+    sweep: { fill: "#1d4ed8", shape: "diamond" },
+    "back-take": { fill: "#c2410c", shape: "hex" },
+    pass: { fill: "#7c3aed", shape: "rect" },
+    escape: { fill: "#15803d", shape: "circle" },
+    takedown: { fill: "#a16207", shape: "triangle" },
+    submission: { fill: "#be123c", shape: "diamond" }
+  };
+
+  const CITATIONS = [
+    { id: "cit-kl-1", move: "knee-lever", instructor: "John Danaher", instructional: "Half Guard Passing and Dynamic Pins", chapter: "The knee lever" },
+    { id: "cit-kl-2", move: "knee-lever", instructor: "John Danaher", instructional: "Half Guard Passing and Dynamic Pins", chapter: "Knee lever details" },
+    { id: "cit-tw-1", move: "tight-waist", instructor: "John Danaher", instructional: "Half Guard Passing and Dynamic Pins", chapter: "Tight waist" },
+    { id: "cit-tw-2", move: "tight-waist", instructor: "John Danaher", instructional: "Half Guard Passing and Dynamic Pins", chapter: "Underhook to tight waist" },
+    { id: "cit-fl-1", move: "far-leg-come-up", instructor: "John Danaher", instructional: "Half Guard Passing and Dynamic Pins", chapter: "Far-leg come-up" },
+    { id: "cit-rt-1", move: "roll-through", instructor: "John Danaher", instructional: "Half Guard Passing and Dynamic Pins", chapter: "Roll-through sweep" },
+    { id: "cit-bt-1", move: "back-take-tight-waist", instructor: "John Danaher", instructional: "Half Guard Passing and Dynamic Pins", chapter: "Back take from tight waist" }
+  ];
+
   const NAMED_MOVES = {
     "knee-lever": {
       id: "knee-lever", label: "Knee lever",
@@ -618,6 +673,9 @@ window.addEventListener("error", function (ev) {
         onMap: [],
         systemsOnMap: [],
         topicSystem: "",
+        chosenCitations: {},
+        moveNotes: {},
+        markNotes: {},
         lastChange: "Empty design. Pick bottom, top, or neutral for the student."
       };
     },
@@ -631,6 +689,9 @@ window.addEventListener("error", function (ev) {
         onMap: ["knee-lever", "tight-waist", "far-leg-come-up", "roll-through", "back-take-tight-waist"],
         systemsOnMap: ["tight-waist-trilemma"],
         topicSystem: SAMPLE_WORDS,
+        chosenCitations: {},
+        moveNotes: {},
+        markNotes: {},
         lastChange: "Loaded the Tight waist design. No classes were packed."
       };
     },
@@ -656,11 +717,23 @@ window.addEventListener("error", function (ev) {
         return sys && sys.members.every(function (mid) { return next.onMap.indexOf(mid) >= 0; });
       });
     },
+    pruneNotes: function (next) {
+      if (!next.moveNotes) next.moveNotes = {};
+      if (!next.chosenCitations) next.chosenCitations = {};
+      if (!next.markNotes) next.markNotes = {};
+      Object.keys(next.moveNotes).forEach(function (id) {
+        if (next.onMap.indexOf(id) < 0) delete next.moveNotes[id];
+      });
+      Object.keys(next.chosenCitations).forEach(function (id) {
+        if (next.onMap.indexOf(id) < 0) delete next.chosenCitations[id];
+      });
+    },
     pruneIncompatible: function (next) {
       if (!next.occupancy) {
         next.openMoveTypes = [];
         next.onMap = [];
         next.systemsOnMap = [];
+        DesignModel.pruneNotes(next);
         return;
       }
       next.onMap = next.onMap.filter(function (id) {
@@ -671,6 +744,7 @@ window.addEventListener("error", function (ev) {
         return DesignModel.typesAt(next.occupancy).indexOf(tid) >= 0;
       });
       DesignModel.pruneSystems(next);
+      DesignModel.pruneNotes(next);
     },
     pathLabel: function (id) {
       const m = NAMED_MOVES[id];
@@ -729,6 +803,7 @@ window.addEventListener("error", function (ev) {
           next.openMoveTypes.splice(i, 1);
           next.onMap = next.onMap.filter(function (mid) { return NAMED_MOVES[mid].moveType !== action.id; });
           DesignModel.pruneSystems(next);
+          DesignModel.pruneNotes(next);
           next.lastChange = "Closed " + MOVE_TYPES[action.id].label + ".";
         } else {
           next.openMoveTypes.push(action.id);
@@ -748,6 +823,7 @@ window.addEventListener("error", function (ev) {
         if (i >= 0) {
           next.onMap.splice(i, 1);
           DesignModel.pruneSystems(next);
+          DesignModel.pruneNotes(next);
           next.lastChange = "Took " + m.label + " off the map.";
         } else {
           next.onMap.push(action.id);
@@ -796,7 +872,8 @@ window.addEventListener("error", function (ev) {
         if (next.openMoveTypes.indexOf(to) < 0) next.openMoveTypes.push(to);
         next.onMap = next.onMap.filter(function (mid) { return NAMED_MOVES[mid].moveType !== from; });
         DesignModel.pruneSystems(next);
-        next.lastChange = "Changed type of move to " + MOVE_TYPES[to].label + ". Named moves of the old type left the map.";
+        DesignModel.pruneNotes(next);
+        next.lastChange = "Changed type of move to " + MOVE_TYPES[to].label + ".";
         return next;
       }
       if (kind === "REPLACE_NAMED_MOVE") {
@@ -811,9 +888,10 @@ window.addEventListener("error", function (ev) {
         if (outgoing) {
           next.onMap = next.onMap.filter(function (id) { return id !== action.from; });
         }
-        if (next.openMoveTypes.indexOf(incoming.moveType) < 0) next.openMoveTypes.push(incoming.moveType);
+        next.openMoveTypes = next.openMoveTypes.filter(function (tid) { return tid !== incoming.moveType; });
         if (next.onMap.indexOf(action.to) < 0) next.onMap.push(action.to);
         DesignModel.pruneSystems(next);
+        DesignModel.pruneNotes(next);
         next.lastChange = outgoing
           ? "Replaced " + outgoing.label + " with " + incoming.label + "."
           : "Put " + incoming.label + " on the map.";
@@ -827,9 +905,9 @@ window.addEventListener("error", function (ev) {
           next.lastChange = m.label + " does not start from this occupancy.";
           return next;
         }
-        if (next.openMoveTypes.indexOf(m.moveType) < 0) next.openMoveTypes.push(m.moveType);
+        next.openMoveTypes = next.openMoveTypes.filter(function (tid) { return tid !== m.moveType; });
         if (next.onMap.indexOf(action.id) < 0) next.onMap.push(action.id);
-        next.lastChange = "Put " + m.label + " on the map.";
+        next.lastChange = "Put " + m.label + " on the map in place of " + MOVE_TYPES[m.moveType].label + ".";
         return next;
       }
       if (kind === "ADD_SYSTEM") {
@@ -857,6 +935,67 @@ window.addEventListener("error", function (ev) {
           : "Cleared how this topic is taught.";
         return next;
       }
+      if (kind === "SET_MOVE_NOTES") {
+        if (!next.moveNotes) next.moveNotes = {};
+        next.moveNotes[action.id] = action.text;
+        const lab = NAMED_MOVES[action.id] ? NAMED_MOVES[action.id].label : action.id;
+        next.lastChange = action.text.trim() ? "Wrote notes on " + lab + "." : "Cleared notes on " + lab + ".";
+        return next;
+      }
+      if (kind === "SET_MARK_NOTES") {
+        if (!next.markNotes) next.markNotes = {};
+        next.markNotes[action.key] = action.text;
+        next.lastChange = action.text.trim() ? "Wrote notes on this mark." : "Cleared notes on this mark.";
+        return next;
+      }
+      if (kind === "TOGGLE_CITATION") {
+        if (!next.chosenCitations) next.chosenCitations = {};
+        const list = next.chosenCitations[action.moveId] ? next.chosenCitations[action.moveId].slice() : [];
+        const i = list.indexOf(action.citationId);
+        if (i >= 0) list.splice(i, 1);
+        else list.push(action.citationId);
+        next.chosenCitations[action.moveId] = list;
+        const cit = CITATIONS.filter(function (c) { return c.id === action.citationId; })[0];
+        next.lastChange = (i >= 0 ? "Removed citation: " : "Selected citation: ") +
+          (cit ? cit.instructor + " · " + cit.chapter : action.citationId);
+        return next;
+      }
+      if (kind === "DELETE_MARK") {
+        if (action.kind === "start") {
+          next.occupancy = null;
+          DesignModel.pruneIncompatible(next);
+          next.lastChange = "Deleted the start mark.";
+          return next;
+        }
+        if (action.kind === "type") {
+          next.openMoveTypes = next.openMoveTypes.filter(function (tid) { return tid !== action.id; });
+          next.onMap = next.onMap.filter(function (mid) { return NAMED_MOVES[mid].moveType !== action.id; });
+          DesignModel.pruneSystems(next);
+          DesignModel.pruneNotes(next);
+          next.lastChange = "Deleted " + MOVE_TYPES[action.id].label + ".";
+          return next;
+        }
+        if (action.kind === "move") {
+          next.onMap = next.onMap.filter(function (id) { return id !== action.id; });
+          DesignModel.pruneSystems(next);
+          DesignModel.pruneNotes(next);
+          next.lastChange = "Deleted " + (NAMED_MOVES[action.id] ? NAMED_MOVES[action.id].label : action.id) + ".";
+          return next;
+        }
+        if (action.kind === "end") {
+          next.onMap = next.onMap.filter(function (id) { return NAMED_MOVES[id].end !== action.id; });
+          DesignModel.pruneSystems(next);
+          DesignModel.pruneNotes(next);
+          next.lastChange = "Deleted landing " + POSITIONS[action.id].label + " and named moves that ended there.";
+          return next;
+        }
+        if (action.kind === "system") {
+          next.systemsOnMap = next.systemsOnMap.filter(function (id) { return id !== action.id; });
+          next.lastChange = "Deleted " + SYSTEMS[action.id].label + " from the map. Members stay.";
+          return next;
+        }
+        return next;
+      }
       return next;
     }
   };
@@ -877,6 +1016,8 @@ window.addEventListener("error", function (ev) {
     wizard: null,
     draft: null,
     pan: { x: 0, y: 0 },
+    zoom: 1,
+    markMenu: null,
     panning: false,
     dragging: null,
     moved: false,
@@ -906,62 +1047,85 @@ window.addEventListener("error", function (ev) {
     });
   }
 
+  function notesBox(act, id, value, hint) {
+    return '<p class="hint">' + hint + "</p>" +
+      '<textarea class="words" data-act="' + act + '" data-id="' + escapeHtml(id) + '">' +
+      escapeHtml(value || "") + "</textarea>";
+  }
+
   function palette() {
+    const sel = ui.selected;
     let html = '<div class="panel box-final">';
-    html += "<h2>" + escapeHtml(state.topic.label) + "</h2>";
-    html += '<p class="hint">Editing this mark. Later marks that no longer fit this choice leave the map.</p>';
-    html += "<h3>Occupancy</h3><div class='row'>";
-    ["bottom", "top", "neutral"].forEach(function (side) {
-      html += '<button type="button" class="chip' + (state.occupancy === side ? " on" : "") +
-        '" data-act="occupancy" data-id="' + side + '">' + side + "</button>";
-    });
-    html += "</div>";
-    html += "<h3>Open a type of move</h3>";
-    if (!state.occupancy) {
-      html += '<p class="hint">Pick occupancy first.</p>';
-    } else {
-      html += "<div class='row'>";
-      DesignModel.typesAt(state.occupancy).forEach(function (id) {
-        html += '<button type="button" class="chip' + (state.openMoveTypes.indexOf(id) >= 0 ? " on" : "") +
+    if (!sel) {
+      html += "<h2>" + escapeHtml(state.topic.label) + "</h2>";
+      html += '<p class="hint">Click a mark to edit it.</p>';
+      html += '<div class="row proto-tools box-proto">';
+      html += '<button type="button" class="icon-btn primary" data-act="sample">Load Tight waist design</button>';
+      html += "</div></div>";
+      return html;
+    }
+
+    if (sel.kind === "start") {
+      html += "<h2>Half guard</h2>";
+      html += '<p class="hint">Occupancy is the student\'s role. Later marks that no longer fit leave the map.</p>';
+      html += "<h3>Occupancy</h3><div class='row'>";
+      ["bottom", "top", "neutral"].forEach(function (side) {
+        html += '<button type="button" class="chip' + (state.occupancy === side ? " on" : "") +
+          '" data-act="occupancy" data-id="' + side + '">' + side + "</button>";
+      });
+      html += "</div><h3>Coach notes</h3>";
+      html += notesBox("mark-notes", "pos:" + state.start, state.markNotes && state.markNotes["pos:" + state.start], "Notes on this start.");
+    } else if (sel.kind === "end") {
+      html += "<h2>" + escapeHtml(POSITIONS[sel.id].label) + "</h2>";
+      html += '<p class="hint">Landing. Named moves that end here sit on this mark.</p>';
+      html += "<h3>Coach notes</h3>";
+      html += notesBox("mark-notes", "pos:" + sel.id, state.markNotes && state.markNotes["pos:" + sel.id], "Notes on this landing.");
+    } else if (sel.kind === "type") {
+      html += "<h2>" + escapeHtml(MOVE_TYPES[sel.id].label) + "</h2>";
+      html += '<p class="hint">Change the type. A named move will replace this mark.</p>';
+      html += "<h3>Type of move</h3><div class='row'>";
+      DesignModel.typesAt(state.occupancy || "bottom").forEach(function (id) {
+        html += '<button type="button" class="chip' + (sel.id === id ? " on" : "") +
           '" data-act="type" data-id="' + id + '">' + escapeHtml(MOVE_TYPES[id].label) + "</button>";
       });
-      html += "</div>";
-    }
-    html += "<h3>Named moves at this occupancy</h3>";
-    const available = state.occupancy ? DesignModel.movesAt(state.start, state.occupancy) : [];
-    if (!available.length) {
-      html += '<p class="hint">No named moves in this sample catalog for that occupancy.</p>';
-    } else {
+      html += "</div><h3>Coach notes</h3>";
+      html += notesBox("mark-notes", "type:" + sel.id, state.markNotes && state.markNotes["type:" + sel.id], "Notes on this type.");
+    } else if (sel.kind === "move") {
+      const m = NAMED_MOVES[sel.id];
+      html += "<h2>" + escapeHtml(m.label) + "</h2>";
+      html += '<p class="hint">' + escapeHtml(DesignModel.pathLabel(sel.id)) + "</p>";
+      html += "<h3>Named move</h3>";
+      const available = state.occupancy ? DesignModel.movesAt(state.start, state.occupancy) : [sel.id];
       available.forEach(function (id) {
-        const m = NAMED_MOVES[id];
-        const opened = state.openMoveTypes.indexOf(m.moveType) >= 0;
-        const on = state.onMap.indexOf(id) >= 0;
-        html += '<button type="button" class="item' + (on ? " on-map" : "") +
-          '" data-act="move" data-id="' + id + '"' + (opened ? "" : " style=\"opacity:.55\"") + ">";
-        html += "<strong>" + escapeHtml(m.label) + "</strong>";
-        html += '<span class="path">' + escapeHtml(DesignModel.pathLabel(id)) +
-          (m.home ? " · home" : "") + "</span></button>";
+        const nm = NAMED_MOVES[id];
+        html += '<button type="button" class="item' + (id === sel.id ? " on-map" : "") +
+          '" data-act="move" data-id="' + id + '">';
+        html += "<strong>" + escapeHtml(nm.label) + "</strong>";
+        html += '<span class="path">' + escapeHtml(MOVE_TYPES[nm.moveType].label) +
+          " → " + escapeHtml(POSITIONS[nm.end].label) + " · " + nm.endSide + "</span></button>";
       });
+      html += "<h3>Citations</h3>";
+      const cits = CITATIONS.filter(function (c) { return c.move === sel.id; });
+      const chosen = (state.chosenCitations && state.chosenCitations[sel.id]) || [];
+      if (!cits.length) html += '<p class="hint">No citations in this sample for this named move.</p>';
+      cits.forEach(function (c) {
+        html += '<label class="cite"><input type="checkbox" data-act="citation" data-move="' +
+          sel.id + '" data-id="' + c.id + '"' + (chosen.indexOf(c.id) >= 0 ? " checked" : "") + "> " +
+          escapeHtml(c.instructor) + " · " + escapeHtml(c.chapter) + "</label>";
+      });
+      html += "<h3>Coach notes</h3>";
+      html += notesBox("move-notes", sel.id, state.moveNotes && state.moveNotes[sel.id], "Notes on this named move.");
+    } else if (sel.kind === "system") {
+      const sys = SYSTEMS[sel.id];
+      html += "<h2>" + escapeHtml(sys.label) + "</h2>";
+      html += '<p class="hint">' + sys.members.map(function (id) { return NAMED_MOVES[id].label; }).join(" / ") + "</p>";
+      html += "<h3>How this topic is taught</h3>";
+      html += notesBox("words", "topic", state.topicSystem, "The topic's system, in the coach's words.");
+      html += "<h3>Coach notes</h3>";
+      html += notesBox("mark-notes", "sys:" + sel.id, state.markNotes && state.markNotes["sys:" + sel.id], "Notes on this system.");
     }
-    html += "<h3>Catalog systems</h3>";
-    Object.keys(SYSTEMS).forEach(function (sid) {
-      const sys = SYSTEMS[sid];
-      const ready = DesignModel.systemsReady(state.onMap).indexOf(sid) >= 0;
-      const pinned = state.systemsOnMap.indexOf(sid) >= 0;
-      html += '<button type="button" class="item sys' + (pinned ? " on-map" : "") +
-        '" data-act="system" data-id="' + sid + '">';
-      html += "<strong>" + escapeHtml(sys.label) + "</strong>";
-      html += '<span class="path">' + sys.members.map(function (id) { return NAMED_MOVES[id].label; }).join(" / ");
-      html += pinned ? " · pinned on the design" : (ready ? " · members are on the map, click to pin" : " · click to put members on the map and pin");
-      html += "</span></button>";
-    });
-    html += "<h3>How this topic is taught</h3>";
-    html += '<p class="hint">The topic\'s system, in the coach\'s words. Empty until written.</p>';
-    html += '<textarea class="words" data-act="words">' + escapeHtml(state.topicSystem) + "</textarea>";
-    html += '<div class="row" style="margin-top:.55rem">';
-    html += '<button type="button" class="icon-btn" data-act="reset">Clear design</button>';
-    html += "</div>";
-    html += '<div class="row proto-tools box-proto">';
+
+    html += '<div class="row proto-tools box-proto" style="margin-top:.55rem">';
     html += '<button type="button" class="icon-btn primary" data-act="sample">Load Tight waist design</button>';
     html += "</div></div>";
     return html;
@@ -991,7 +1155,19 @@ window.addEventListener("error", function (ev) {
     html += state.topicSystem.trim()
       ? "<p>" + escapeHtml(state.topicSystem) + "</p>"
       : '<p class="empty">Not written yet.</p>';
-    html += "<h3>Ready for a lesson later</h3><p class=\"hint\">Each named move or pinned system can become a lesson target in Build. Citations stay on the named move until then.</p>";
+    html += "<h3>Citations chosen</h3><ul>";
+    let citCount = 0;
+    Object.keys(state.chosenCitations || {}).forEach(function (mid) {
+      (state.chosenCitations[mid] || []).forEach(function (cid) {
+        const c = CITATIONS.filter(function (x) { return x.id === cid; })[0];
+        if (!c) return;
+        citCount += 1;
+        html += "<li>" + escapeHtml(NAMED_MOVES[mid].label) + " · " +
+          escapeHtml(c.instructor) + " · " + escapeHtml(c.chapter) + "</li>";
+      });
+    });
+    if (!citCount) html += '<li class="empty">None selected.</li>';
+    html += "</ul><h3>Ready for a lesson later</h3><p class=\"hint\">Each named move or pinned system can become a lesson target in Build. Citations stay on the named move until then.</p>";
     html += "</div>";
     return html;
   }
@@ -1009,6 +1185,59 @@ window.addEventListener("error", function (ev) {
     const ctm = svg.getScreenCTM();
     if (!ctm) return { x: clientX, y: clientY };
     return pt.matrixTransform(ctm.inverse());
+  }
+
+  function worldPoint(svg, clientX, clientY) {
+    const s = svgPoint(svg, clientX, clientY);
+    const z = ui.zoom || 1;
+    return { x: (s.x - ui.pan.x) / z, y: (s.y - ui.pan.y) / z };
+  }
+
+  function appendMarkShape(g, n, fill, stroke, sw) {
+    const x = n.x, y = n.y, r = n.r;
+    const shape = n.shape || "rect";
+    if (shape === "circle") {
+      g.appendChild(svgEl("circle", {
+        cx: String(x), cy: String(y), r: String(r),
+        fill: fill, stroke: stroke, "stroke-width": String(sw)
+      }));
+    } else if (shape === "diamond") {
+      g.appendChild(svgEl("polygon", {
+        points: [x, y - r, x + r, y, x, y + r, x - r, y].join(" "),
+        fill: fill, stroke: stroke, "stroke-width": String(sw)
+      }));
+    } else if (shape === "triangle") {
+      g.appendChild(svgEl("polygon", {
+        points: [x, y - r, x + r * 0.95, y + r * 0.7, x - r * 0.95, y + r * 0.7].join(" "),
+        fill: fill, stroke: stroke, "stroke-width": String(sw)
+      }));
+    } else if (shape === "hex") {
+      const pts = [];
+      for (let i = 0; i < 6; i++) {
+        const a = Math.PI / 3 * i - Math.PI / 6;
+        pts.push((x + r * Math.cos(a)) + "," + (y + r * Math.sin(a)));
+      }
+      g.appendChild(svgEl("polygon", {
+        points: pts.join(" "),
+        fill: fill, stroke: stroke, "stroke-width": String(sw)
+      }));
+    } else {
+      g.appendChild(svgEl("rect", {
+        x: String(x - r), y: String(y - r * 0.72), width: String(r * 2), height: String(r * 1.44),
+        rx: "4", fill: fill, stroke: stroke, "stroke-width": String(sw)
+      }));
+    }
+  }
+
+  function dismissMarkMenu(e) {
+    if (ui.markMenu && ui.markMenu.contains(e.target)) return;
+    closeMarkMenu();
+  }
+
+  function closeMarkMenu() {
+    document.removeEventListener("click", dismissMarkMenu, true);
+    if (ui.markMenu && ui.markMenu.parentNode) ui.markMenu.parentNode.removeChild(ui.markMenu);
+    ui.markMenu = null;
   }
 
   function rememberPos(id, x, y) {
@@ -1067,12 +1296,23 @@ window.addEventListener("error", function (ev) {
       position: null,
       occupancy: null,
       moveType: null,
+      placedType: null,
       end: null
     };
     if (state.occupancy) {
       w.family = POSITIONS[state.start].family;
       w.position = state.start;
       w.occupancy = state.occupancy;
+    }
+    if (fromNode && fromNode.kind === "type") {
+      w.moveType = fromNode.id.replace("type:", "");
+      w.placedType = w.moveType;
+    }
+    if (fromNode && fromNode.kind === "move" && fromNode.moveId) {
+      const m = NAMED_MOVES[fromNode.moveId];
+      w.moveType = m.moveType;
+      w.placedType = m.moveType;
+      w.end = m.end;
     }
     ui.wizard = w;
     return w;
@@ -1191,12 +1431,23 @@ window.addEventListener("error", function (ev) {
       section(panel, "Type of move");
       DesignModel.typesAt(w.occupancy).forEach(function (tid) {
         panel.appendChild(pickBtn(MOVE_TYPES[tid].label, false, function () {
+          const prev = w.placedType;
           w.moveType = tid;
+          w.placedType = tid;
           w.end = null;
-          placeNewMark("type:" + tid, at.x, at.y);
+          if (prev && prev !== tid && ui.markPos["type:" + prev] && !ui.markPos["type:" + tid]) {
+            rememberPos("type:" + tid, ui.markPos["type:" + prev].x, ui.markPos["type:" + prev].y);
+            delete ui.markPos["type:" + prev];
+          } else {
+            placeNewMark("type:" + tid, at.x, at.y);
+          }
           ui.draft = { x: at.x + 120, y: at.y };
           ui.pendingAt = { x: ui.draft.x, y: ui.draft.y };
-          wizardApply({ type: "OPEN_MOVE_TYPE", id: tid });
+          if (prev && prev !== tid) {
+            wizardApply({ type: "CHANGE_MOVE_TYPE", from: prev, to: tid });
+          } else {
+            wizardApply({ type: "OPEN_MOVE_TYPE", id: tid });
+          }
         }));
       });
       return;
@@ -1227,8 +1478,11 @@ window.addEventListener("error", function (ev) {
     if (!moves.length) emptyHint(panel, "No named move for that path.");
     moves.forEach(function (mid) {
       panel.appendChild(pickBtn(NAMED_MOVES[mid].label, false, function () {
-        const pos = w.fromNode ? placeNear(w.fromNode.id, 1) : at;
-        placeNewMark("move:" + mid, pos.x, pos.y);
+        const typeId = "type:" + NAMED_MOVES[mid].moveType;
+        const typePos = ui.markPos[typeId];
+        const pos = typePos || (w.fromNode ? placeNear(w.fromNode.id, 1) : at);
+        rememberPos("move:" + mid, pos.x, pos.y);
+        if (typePos) delete ui.markPos[typeId];
         ui.draft = null;
         ui.wizard.active = false;
         closeMenu();
@@ -1343,6 +1597,7 @@ window.addEventListener("error", function (ev) {
     recenterBtn.addEventListener("click", function (e) {
       e.stopPropagation();
       ui.pan = { x: 0, y: 0 };
+      ui.zoom = 1;
       if (ui.applyPan) ui.applyPan();
     });
     tools.appendChild(recenterBtn);
@@ -1357,6 +1612,35 @@ window.addEventListener("error", function (ev) {
       paint();
     });
     tools.appendChild(resetMarksBtn);
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.className = "icon-btn";
+    clearBtn.textContent = "Clear canvas";
+    clearBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      apply({ type: "RESET" });
+    });
+    tools.appendChild(clearBtn);
+    const zoomOutBtn = document.createElement("button");
+    zoomOutBtn.type = "button";
+    zoomOutBtn.className = "icon-btn";
+    zoomOutBtn.textContent = "Zoom −";
+    zoomOutBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      ui.zoom = Math.max(0.5, Math.round((ui.zoom - 0.15) * 100) / 100);
+      if (ui.applyPan) ui.applyPan();
+    });
+    tools.appendChild(zoomOutBtn);
+    const zoomInBtn = document.createElement("button");
+    zoomInBtn.type = "button";
+    zoomInBtn.className = "icon-btn";
+    zoomInBtn.textContent = "Zoom +";
+    zoomInBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      ui.zoom = Math.min(2.5, Math.round((ui.zoom + 0.15) * 100) / 100);
+      if (ui.applyPan) ui.applyPan();
+    });
+    tools.appendChild(zoomInBtn);
     tools.insertAdjacentHTML("beforeend", "<label>Label size</label><span class=\"size-btns row\"></span>");
     tools.querySelector("[data-add]").addEventListener("click", function (e) {
       e.preventDefault();
@@ -1391,11 +1675,13 @@ window.addEventListener("error", function (ev) {
     const legend = document.createElement("div");
     legend.className = "legend";
     legend.innerHTML =
-      '<span><i class="pos"></i>start</span>' +
-      '<span><i class="end"></i>landing</span>' +
-      '<span><i class="mv"></i>named move</span>' +
-      '<span><i class="sys"></i>defend A gives B</span>' +
-      "<span>Click empty space to add. Click a mark to edit. Double-click a mark to add another. Drag to rearrange.</span>";
+      '<span><i class="pos"></i>start (grey)</span>' +
+      '<span><i class="end"></i>landing (grey)</span>' +
+      Object.keys(MOVE_TYPES).map(function (tid) {
+        return '<span><i class="t-' + tid + '"></i>' + MOVE_TYPES[tid].label + "</span>";
+      }).join("") +
+      '<span><i class="sys"></i>system</span>' +
+      "<span>Left-click a mark to edit. Right-click a mark to delete. Right-drag empty space to pan.</span>";
     wrap.appendChild(legend);
 
     const bg = svgEl("rect", {
@@ -1426,21 +1712,27 @@ window.addEventListener("error", function (ev) {
         homeX: width * 0.82, homeY: height * (0.28 + i * 0.28), r: 20
       });
     });
-    state.openMoveTypes.forEach(function (tid, i) {
+    const typesWithMoves = {};
+    state.onMap.forEach(function (id) { typesWithMoves[NAMED_MOVES[id].moveType] = true; });
+    const pendingTypes = state.openMoveTypes.filter(function (tid) { return !typesWithMoves[tid]; });
+    pendingTypes.forEach(function (tid, i) {
+      const st = TYPE_STYLE[tid] || { fill: "#57534e", shape: "rect" };
       nodes.push({
-        id: "type:" + tid, kind: "type",
+        id: "type:" + tid, kind: "type", moveType: tid, shape: st.shape, fill: st.fill,
         label: MOVE_TYPES[tid].label,
-        homeX: width * 0.4, homeY: 80 + i * ((height - 120) / Math.max(1, state.openMoveTypes.length)), r: 16
+        homeX: width * 0.4, homeY: 80 + i * ((height - 120) / Math.max(1, pendingTypes.length || 1)), r: 16
       });
     });
     state.onMap.forEach(function (id, i) {
       const m = NAMED_MOVES[id];
+      const st = TYPE_STYLE[m.moveType] || { fill: "#1d4ed8", shape: "rect" };
       nodes.push({
-        id: "move:" + id, kind: "move", moveId: id, home: m.home,
+        id: "move:" + id, kind: "move", moveId: id, home: m.home, moveType: m.moveType,
+        shape: st.shape, fill: st.fill,
         label: m.label,
         homeX: width * (m.home ? 0.32 : 0.58),
         homeY: 90 + i * ((height - 140) / Math.max(1, state.onMap.length)),
-        r: 15
+        r: 16
       });
     });
     state.systemsOnMap.forEach(function (sid, i) {
@@ -1472,15 +1764,13 @@ window.addEventListener("error", function (ev) {
     });
 
     const startN = byId["pos:" + state.start];
-    state.openMoveTypes.forEach(function (tid) {
+    pendingTypes.forEach(function (tid) {
       if (startN && byId["type:" + tid]) links.push({ s: startN, t: byId["type:" + tid], kind: "open" });
     });
     state.onMap.forEach(function (id) {
       const m = NAMED_MOVES[id];
       const mn = byId["move:" + id];
-      const tn = byId["type:" + m.moveType];
-      if (tn && mn) links.push({ s: tn, t: mn, kind: "leaf" });
-      else if (startN && mn) links.push({ s: startN, t: mn, kind: "leaf" });
+      if (startN && mn) links.push({ s: startN, t: mn, kind: "leaf" });
       const endN = byId["pos:" + m.end];
       if (endN && mn) links.push({ s: mn, t: endN, kind: "land" });
       else if (startN && mn && m.end === state.start) links.push({ s: mn, t: startN, kind: "home" });
@@ -1504,7 +1794,7 @@ window.addEventListener("error", function (ev) {
     world.appendChild(labelG);
     svg.appendChild(world);
     function applyPan() {
-      world.setAttribute("transform", "translate(" + ui.pan.x + " " + ui.pan.y + ")");
+      world.setAttribute("transform", "translate(" + ui.pan.x + " " + ui.pan.y + ") scale(" + (ui.zoom || 1) + ")");
     }
     ui.applyPan = applyPan;
     applyPan();
@@ -1583,6 +1873,7 @@ window.addEventListener("error", function (ev) {
         lab.addEventListener("pointerdown", function (e) { onMarkDown(e, n); });
         lab.addEventListener("click", function (e) { onMarkClick(e, n); });
         lab.addEventListener("dblclick", function (e) { onMarkDbl(e, n); });
+        lab.addEventListener("contextmenu", function (e) { onMarkContext(e, n); });
         labelG.appendChild(lab);
 
         const g = svgEl("g", { style: "cursor:grab" });
@@ -1591,16 +1882,12 @@ window.addEventListener("error", function (ev) {
         if (n.kind === "start" || n.kind === "end") {
           g.appendChild(svgEl("circle", {
             cx: String(n.x), cy: String(n.y), r: String(n.r),
-            fill: n.kind === "start" ? "#0f766e" : "#fff",
-            stroke: on ? "#1c1917" : "#0f766e",
+            fill: n.kind === "start" ? "#78716c" : "#fff",
+            stroke: on ? "#1c1917" : "#57534e",
             "stroke-width": on ? "4" : "3"
           }));
         } else if (n.kind === "type") {
-          g.appendChild(svgEl("rect", {
-            x: String(n.x - 15), y: String(n.y - 15), width: "30", height: "30",
-            fill: "#e7e5e4", stroke: on ? "#1c1917" : "#57534e",
-            "stroke-width": on ? "3" : "2", rx: "4"
-          }));
+          appendMarkShape(g, n, n.fill || "#a8a29e", on ? "#1c1917" : "#44403c", on ? 3 : 2);
         } else if (n.kind === "draft") {
           g.appendChild(svgEl("circle", {
             cx: String(n.x), cy: String(n.y), r: String(n.r),
@@ -1614,16 +1901,12 @@ window.addEventListener("error", function (ev) {
             "stroke-width": on ? "3" : "2"
           }));
         } else {
-          g.appendChild(svgEl("rect", {
-            x: String(n.x - 17), y: String(n.y - 13), width: "34", height: "26",
-            fill: n.home ? "#0f766e" : "#1d4ed8",
-            stroke: on ? "#1c1917" : "#1c1917",
-            "stroke-width": on ? "3" : "1.5", rx: "4"
-          }));
+          appendMarkShape(g, n, n.fill || "#1d4ed8", on ? "#1c1917" : "#1c1917", on ? 3 : 1.5);
         }
         g.addEventListener("pointerdown", function (e) { onMarkDown(e, n); });
         g.addEventListener("click", function (e) { onMarkClick(e, n); });
         g.addEventListener("dblclick", function (e) { onMarkDbl(e, n); });
+        g.addEventListener("contextmenu", function (e) { onMarkContext(e, n); });
         nodeG.appendChild(g);
       });
     }
@@ -1641,14 +1924,51 @@ window.addEventListener("error", function (ev) {
     }
 
     function onMarkDown(e, n) {
-      if (e.button === 2) return;
+      if (e.button === 2) {
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+      }
       e.stopPropagation();
       e.preventDefault();
       closeMenu();
+      closeMarkMenu();
       ui.dragging = n;
       ui.moved = false;
       n.pinned = true;
       try { svg.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+    function onMarkContext(e, n) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (n.kind === "draft") return;
+      closeMenu();
+      closeMarkMenu();
+      const host = wrap;
+      const menu = document.createElement("div");
+      menu.className = "mark-menu";
+      const rect = host.getBoundingClientRect();
+      menu.style.left = Math.max(8, e.clientX - rect.left) + "px";
+      menu.style.top = Math.max(40, e.clientY - rect.top) + "px";
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = "Delete";
+      b.addEventListener("click", function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        closeMarkMenu();
+        if (n.kind === "start") apply({ type: "DELETE_MARK", kind: "start" });
+        else if (n.kind === "end") apply({ type: "DELETE_MARK", kind: "end", id: n.id.slice(4) });
+        else if (n.kind === "type") apply({ type: "DELETE_MARK", kind: "type", id: n.id.slice(5) });
+        else if (n.kind === "move") apply({ type: "DELETE_MARK", kind: "move", id: n.moveId });
+        else if (n.kind === "system") apply({ type: "DELETE_MARK", kind: "system", id: n.sysId });
+      });
+      menu.appendChild(b);
+      host.appendChild(menu);
+      ui.markMenu = menu;
+      setTimeout(function () {
+        document.addEventListener("click", dismissMarkMenu, true);
+      }, 0);
     }
     function onMarkClick(e, n) {
       e.stopPropagation();
@@ -1670,7 +1990,7 @@ window.addEventListener("error", function (ev) {
       if (n.kind === "draft") return;
       ui.pendingAt = placeNear(n.id, 1);
       ui.draft = { x: ui.pendingAt.x, y: ui.pendingAt.y };
-      selectNode(n);
+      ui.selected = null;
       startWizard(n);
       paint();
     }
@@ -1682,11 +2002,12 @@ window.addEventListener("error", function (ev) {
       if (e.target.closest && e.target.closest("[data-mark]")) return;
       if (e.target.closest && e.target.closest(".catalog-flyout")) return;
       if (e.target.closest && e.target.closest(".legend")) return;
+      if (e.target.closest && e.target.closest(".mark-menu")) return;
       e.stopPropagation();
+      closeMarkMenu();
       let p = { x: width * 0.45, y: height * 0.45 };
       try {
-        const s = svgPoint(svg, e.clientX, e.clientY);
-        p = { x: s.x - ui.pan.x, y: s.y - ui.pan.y };
+        p = worldPoint(svg, e.clientX, e.clientY);
       } catch (err) {}
       ui.pendingAt = p;
       ui.draft = { x: p.x, y: p.y };
@@ -1700,7 +2021,9 @@ window.addEventListener("error", function (ev) {
 
     svg.addEventListener("pointerdown", function (e) {
       if (e.button !== 2) return;
+      if (e.target.closest && e.target.closest("[data-mark]")) return;
       e.preventDefault();
+      closeMarkMenu();
       ui.panning = true;
       ui.moved = false;
       wrap.classList.add("panning");
@@ -1718,8 +2041,7 @@ window.addEventListener("error", function (ev) {
         return;
       }
       if (!ui.dragging) return;
-      const s = svgPoint(svg, e.clientX, e.clientY);
-      const p = { x: s.x - ui.pan.x, y: s.y - ui.pan.y };
+      const p = worldPoint(svg, e.clientX, e.clientY);
       const n = ui.dragging;
       if (Math.abs(p.x - n.x) + Math.abs(p.y - n.y) > 3) ui.moved = true;
       n.x = p.x;
@@ -1922,6 +2244,15 @@ window.addEventListener("error", function (ev) {
     lines.push("Named moves: " + (state.onMap.map(function (id) { return NAMED_MOVES[id].label; }).join(", ") || "none"));
     lines.push("Systems: " + (state.systemsOnMap.map(function (id) { return SYSTEMS[id].label; }).join(", ") || "none"));
     lines.push("This topic's system: " + (state.topicSystem.trim() || "(empty)"));
+    Object.keys(state.chosenCitations || {}).forEach(function (mid) {
+      const ids = state.chosenCitations[mid] || [];
+      if (!ids.length) return;
+      lines.push("Citations on " + NAMED_MOVES[mid].label + ": " + ids.join(", "));
+    });
+    Object.keys(state.moveNotes || {}).forEach(function (mid) {
+      if (!(state.moveNotes[mid] || "").trim()) return;
+      lines.push("Notes on " + NAMED_MOVES[mid].label + ": " + state.moveNotes[mid]);
+    });
     lines.push("Classes packed: none (Design does not pack)");
     return lines.join("\n");
   }
@@ -1938,10 +2269,13 @@ window.addEventListener("error", function (ev) {
   }
 
   function paint() {
+    const sx = window.scrollX;
+    const sy = window.scrollY;
     const variant = currentVariant();
     document.body.dataset.variant = variant;
     const resumeWizard = ui.wizard && ui.wizard.active;
     closeMenu();
+    closeMarkMenu();
     if (ui.forceRaf) cancelAnimationFrame(ui.forceRaf);
     const app = document.getElementById("app");
     app.innerHTML = "";
@@ -1977,6 +2311,8 @@ window.addEventListener("error", function (ev) {
     const meta = VARIANTS.find(function (v) { return v.key === variant; });
     document.getElementById("switch-label").innerHTML = meta.key + " (" + meta.name + ")<span>arrow keys cycle layouts</span>";
     paintScenes();
+    window.scrollTo(sx, sy);
+    requestAnimationFrame(function () { window.scrollTo(sx, sy); });
   }
 
   function liveSelected() {
@@ -2012,6 +2348,7 @@ window.addEventListener("error", function (ev) {
       ui.markPos = {};
       ui.selected = null;
       ui.pan = { x: 0, y: 0 };
+      ui.zoom = 1;
       ui.wizard = null;
       ui.draft = null;
     }
@@ -2021,12 +2358,26 @@ window.addEventListener("error", function (ev) {
       ui.wizard = null;
       ui.draft = null;
       ui.pan = { x: 0, y: 0 };
+      ui.zoom = 1;
     }
-    if (action.type === "CHANGE_MOVE_TYPE") {
+    if (action.type === "CHANGE_MOVE_TYPE" && !(ui.wizard && ui.wizard.active)) {
       ui.selected = { kind: "type", id: action.to };
     }
     if (action.type === "REPLACE_NAMED_MOVE") {
+      const fromPos = ui.markPos["move:" + action.from];
+      if (fromPos) rememberPos("move:" + action.to, fromPos.x, fromPos.y);
       ui.selected = { kind: "move", id: action.to };
+    }
+    if (action.type === "ADD_NAMED_MOVE") {
+      const m = NAMED_MOVES[action.id];
+      const typeId = m ? "type:" + m.moveType : "";
+      if (typeId && ui.markPos[typeId] && !ui.markPos["move:" + action.id]) {
+        rememberPos("move:" + action.id, ui.markPos[typeId].x, ui.markPos[typeId].y);
+      }
+      delete ui.markPos[typeId];
+    }
+    if (action.type === "DELETE_MARK") {
+      ui.selected = null;
     }
     state = DesignModel.reduce(state, action);
     liveSelected();
@@ -2041,6 +2392,7 @@ window.addEventListener("error", function (ev) {
     if (act === "occupancy") apply({ type: "SET_OCCUPANCY", occupancy: btn.getAttribute("data-id") });
     if (act === "type") {
       const id = btn.getAttribute("data-id");
+      if (ui.selected && ui.selected.kind === "type" && ui.selected.id === id) return;
       if (ui.selected && ui.selected.kind === "type" && ui.selected.id !== id) {
         apply({ type: "CHANGE_MOVE_TYPE", from: ui.selected.id, to: id });
       } else {
@@ -2049,6 +2401,7 @@ window.addEventListener("error", function (ev) {
     }
     if (act === "move") {
       const id = btn.getAttribute("data-id");
+      if (ui.selected && ui.selected.kind === "move" && ui.selected.id === id) return;
       if (ui.selected && ui.selected.kind === "move" && ui.selected.id !== id) {
         apply({ type: "REPLACE_NAMED_MOVE", from: ui.selected.id, to: id });
       } else {
@@ -2060,10 +2413,30 @@ window.addEventListener("error", function (ev) {
     if (act === "reset") apply({ type: "RESET" });
   });
   document.getElementById("app").addEventListener("change", function (e) {
-    if (e.target.getAttribute("data-act") === "words") {
+    const act = e.target.getAttribute("data-act");
+    if (act === "words") {
       apply({ type: "SET_WORDS", text: e.target.value });
-      const area = document.querySelector("textarea.words");
+      const area = document.querySelector('textarea[data-act="words"]');
       if (area) { area.focus(); area.selectionStart = area.selectionEnd = area.value.length; }
+    }
+    if (act === "move-notes") {
+      const id = e.target.getAttribute("data-id");
+      apply({ type: "SET_MOVE_NOTES", id: id, text: e.target.value });
+      const area = document.querySelector('textarea[data-act="move-notes"][data-id="' + id + '"]');
+      if (area) { area.focus(); area.selectionStart = area.selectionEnd = area.value.length; }
+    }
+    if (act === "mark-notes") {
+      const id = e.target.getAttribute("data-id");
+      apply({ type: "SET_MARK_NOTES", key: id, text: e.target.value });
+      const area = document.querySelector('textarea[data-act="mark-notes"][data-id="' + id + '"]');
+      if (area) { area.focus(); area.selectionStart = area.selectionEnd = area.value.length; }
+    }
+    if (act === "citation") {
+      apply({
+        type: "TOGGLE_CITATION",
+        moveId: e.target.getAttribute("data-move"),
+        citationId: e.target.getAttribute("data-id")
+      });
     }
   });
 
@@ -2095,6 +2468,7 @@ window.addEventListener("error", function (ev) {
       if (ui.wizard) ui.wizard.active = false;
       ui.draft = null;
       closeMenu();
+      closeMarkMenu();
       paint();
       return;
     }
