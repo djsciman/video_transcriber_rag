@@ -367,7 +367,7 @@
       Catalog records are reused: Position, Type of move, Submission, Named move, System, Citation, Lesson type.
       Activity records use that catalog: Unit, Class, Lesson.
       A lesson connects to a named move or to a system. Lessons are then sequenced into classes and a unit. The unit has no direct link to a system.
-      Top, bottom, or neutral is how the learning student occupies a position. A sweep from closed guard bottom lands mount top, so escape is not the next type of move.
+      Top, bottom, or neutral sits on the named move and on the type of move. Escape is a bottom type, on a pin or control. A sweep from closed guard bottom lands mount top, so escape is off.
     </p>
   </header>
   <div class="question">
@@ -883,8 +883,8 @@
         label: "Type of move",
         shape: "entity",
         nature: "reference",
-        summary: "Catalog of what the named move is accomplishing: takedown, sweep, pass, escape, submission, transition, back take.",
-        attrs: ["label"],
+        summary: "Catalog of what the named move is accomplishing. It carries Top, Bottom, and/or Neutral. Escape is Bottom, on a pin or control. Pass is Top. Sweep is Bottom. Takedown is Neutral. Submission and transition may allow more than one side.",
+        attrs: ["label", "sides", "families when constrained"],
         countKey: "move_types"
       },
       {
@@ -997,7 +997,7 @@
         shape: "attribute",
         nature: "attribute",
         owner: "named_move",
-        summary: "How the learning student occupies the start position and the end position. Closed guard bottom plus a sweep lands mount top. Escape is a bottom type of move, so it is off after that landing."
+        summary: "How the learning student occupies a position, and which sides a type of move belongs to. Named move: start side and end side. Type of move: escape is bottom on a pin or control; a sweep from closed guard bottom lands mount top, so escape is off."
       },
       {
         id: "ruleset",
@@ -1038,6 +1038,7 @@
       { from: "start_role", to: "named_move", label: "on" },
       { from: "end_role", to: "named_move", label: "on" },
       { from: "orientation", to: "named_move", label: "start and end side" },
+      { from: "orientation", to: "move_type", label: "of" },
       { from: "named_move", to: "position", label: "start: 1" },
       { from: "named_move", to: "position", label: "end: 0..1" },
       { from: "named_move", to: "submission", label: "end: 0..1" },
@@ -1292,6 +1293,16 @@
 
   const SIDE_LABEL = { top: "Top", bottom: "Bottom", neutral: "Neutral" };
   const SIDE_COLOR = { top: "#14532d", bottom: "#1e3a8a", neutral: "#57534e" };
+  const CONTROL_FAMILIES = ["pin", "back", "turtle", "passing"];
+  const MOVE_TYPE_SPEC = {
+    takedown: { sides: ["neutral"] },
+    sweep: { sides: ["bottom"] },
+    pass: { sides: ["top"] },
+    escape: { sides: ["bottom"], families: CONTROL_FAMILIES },
+    submission: { sides: ["top", "bottom", "neutral"] },
+    transition: { sides: ["top", "bottom", "neutral"] },
+    "back-take": { sides: ["top", "bottom"] }
+  };
 
   function occupancyLabel(posId, side) {
     const p = Tree.byId(state.seed.positions, posId) || Tree.endRef(state.seed, posId);
@@ -1300,13 +1311,9 @@
 
   function moveAllowed(moveType, side, family) {
     if (!side) return true;
-    if (side === "top") return moveType !== "escape" && moveType !== "sweep";
-    if (side === "bottom") {
-      if (moveType === "pass" || moveType === "takedown") return false;
-      if (moveType === "escape" && family === "guard") return false;
-      return true;
-    }
-    if (side === "neutral") return moveType !== "sweep" && moveType !== "pass";
+    const spec = MOVE_TYPE_SPEC[moveType] || {};
+    if (spec.sides && spec.sides.indexOf(side) < 0) return false;
+    if (spec.families && spec.families.indexOf(family) < 0) return false;
     return true;
   }
 
@@ -1391,7 +1398,11 @@
       from: forceStart,
       options: mtIds.map((id) => {
         const m = Tree.byId(state.seed.move_types, id);
-        return { id, label: m ? m.label : id, kind: "move", family: "move" };
+        const spec = MOVE_TYPE_SPEC[id] || {};
+        const sideBit = spec.sides && spec.sides.length && spec.sides.length < 3
+          ? " · " + spec.sides.map((s) => SIDE_LABEL[s]).join("/")
+          : "";
+        return { id, label: (m ? m.label : id) + sideBit, kind: "move", family: "move" };
       }),
       selectedSet: forceOpenMoves.slice()
     });
@@ -2130,7 +2141,7 @@
       el("span", {}, [el("i", { style: "background:#a8a29e" }), "Attribute of an entity"])
     ]));
     body.append(el("p", { class: "xref" }, [
-      "Click a box. Blue is catalog. Orange is activity. A lesson connects to exactly one named move or exactly one system. Top / bottom / neutral is how the student occupies a position on a named move."
+      "Click a box. Blue is catalog. Orange is activity. Top / bottom / neutral sits on the named move (start and end) and on the type of move (escape is bottom, on a pin or control)."
     ]));
     const mount = el("div", { class: "er-wrap" });
     body.append(mount);
