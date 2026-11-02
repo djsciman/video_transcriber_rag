@@ -49,12 +49,25 @@
     }
     .banner strong { color: #86efac; }
     .banner code { font-family: var(--mono); font-size: .8rem; color: #e7e5e4; }
-    header.page, .question, .walk, #app, .record {
+    header.page, .question, .walk, .record {
       max-width: 1280px;
       margin-left: auto;
       margin-right: auto;
       padding-left: 1.25rem;
       padding-right: 1.25rem;
+    }
+    #app {
+      max-width: 1280px;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 1.25rem;
+      padding-right: 1.25rem;
+    }
+    body[data-variant="A"] #app {
+      max-width: none;
+      width: 100%;
+      padding-left: .75rem;
+      padding-right: .75rem;
     }
     header.page { margin-top: 1.45rem; }
     .box-proto, .box-final { margin-top: .35rem; }
@@ -163,6 +176,103 @@
       position: relative;
     }
     .map-stage svg { width: 100%; height: 32rem; display: block; }
+    .layout-a { display: block; padding: 8px 2px; }
+    .layout-a .graph-shell {
+      position: relative;
+      min-height: 70vh;
+    }
+    .layout-a .map-stage {
+      min-height: 70vh;
+      height: calc(100vh - 11rem);
+    }
+    .layout-a .map-stage svg {
+      height: calc(100vh - 14.5rem);
+      min-height: 36rem;
+      cursor: crosshair;
+    }
+    .graph-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .45rem 1rem;
+      padding: .45rem .7rem;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+    .graph-toolbar label { font-size: .78rem; color: var(--muted); }
+    .graph-toolbar .size-btns button.on {
+      background: #1c1917;
+      color: #fff;
+      border-color: #1c1917;
+    }
+    .sidebar-dock {
+      position: absolute;
+      left: 12px;
+      top: 52px;
+      width: min(320px, 92vw);
+      max-height: calc(100% - 70px);
+      overflow: auto;
+      z-index: 8;
+    }
+    .graph-empty {
+      position: absolute;
+      left: 50%;
+      top: 46%;
+      transform: translate(-50%, -50%);
+      color: var(--muted);
+      font-size: 1.05rem;
+      pointer-events: none;
+      text-align: center;
+      max-width: 28rem;
+    }
+    .graph-menu {
+      position: fixed;
+      z-index: 60;
+      background: #fffcf6;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      min-width: 15.5rem;
+      padding: .25rem 0;
+      box-shadow: var(--shadow);
+    }
+    .graph-menu .mi {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      gap: .75rem;
+      padding: .42rem .8rem;
+      cursor: pointer;
+      font-size: .88rem;
+      background: transparent;
+      border: 0;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+      color: inherit;
+    }
+    .graph-menu .mi:hover, .graph-menu .mi:focus { background: #f5f5f4; }
+    .graph-menu .mi .caret { color: var(--muted); }
+    .graph-menu .sub {
+      display: none;
+      position: absolute;
+      left: 100%;
+      top: -4px;
+      min-width: 15rem;
+      background: #fffcf6;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .25rem 0;
+      box-shadow: var(--shadow);
+    }
+    .graph-menu .mi:hover > .sub, .graph-menu .mi:focus-within > .sub { display: block; }
+    .graph-menu .head {
+      padding: .35rem .8rem .2rem;
+      font-size: .7rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .layout-a .handoff-wide { margin-top: .85rem; }
     .legend {
       display: flex;
       flex-wrap: wrap;
@@ -374,7 +484,7 @@
         Steal pieces from A / B / C. The right-hand panel is the hand-off Build would receive.
       </p>
       <ul>
-        <li><strong>A Force map</strong> — pick occupancy, open types of move, toggle named moves. Dashed orange is defend-one-gives-another.</li>
+        <li><strong>A Force map</strong> — full-width graph. Click empty space for the catalog. A mark appears as you answer. Click a mark to edit in the sidebar. Double-click a mark to add another through type of move, then named move or system. Drag marks; they resist overlap. Labels never overlap.</li>
         <li><strong>B Hub and ring</strong> — Half guard is the hub. Home transitions sit on it. System members sit on the dilemma ring.</li>
         <li><strong>C Catalog tray</strong> — left is the catalog at this occupancy. Right is what is on the design. Click to move a named move or pin a system.</li>
       </ul>
@@ -521,14 +631,35 @@
       if (kind === "LOAD_SAMPLE") return DesignModel.sample();
       if (kind === "SET_OCCUPANCY") {
         if (next.occupancy === action.occupancy) {
-          next.lastChange = "Occupancy is already " + action.occupancy + ".";
+          next.lastChange = "Student occupies " + POSITIONS[next.start].label + " · " + action.occupancy + ".";
           return next;
         }
+        const had = next.occupancy;
         next.occupancy = action.occupancy;
-        next.openMoveTypes = [];
-        next.onMap = [];
-        next.systemsOnMap = [];
-        next.lastChange = "Student occupies " + POSITIONS[next.start].label + " · " + action.occupancy + ". Named moves reset.";
+        if (had) {
+          next.openMoveTypes = [];
+          next.onMap = [];
+          next.systemsOnMap = [];
+          next.lastChange = "Student occupies " + POSITIONS[next.start].label + " · " + action.occupancy + ". Named moves reset.";
+        } else {
+          next.lastChange = "Student occupies " + POSITIONS[next.start].label + " · " + action.occupancy + ".";
+        }
+        return next;
+      }
+      if (kind === "OPEN_MOVE_TYPE") {
+        if (!next.occupancy) {
+          if (MOVE_TYPES[action.id].sides.length === 1) next.occupancy = MOVE_TYPES[action.id].sides[0];
+          else {
+            next.lastChange = "Pick bottom, top, or neutral before opening a type of move.";
+            return next;
+          }
+        }
+        if (DesignModel.typesAt(next.occupancy).indexOf(action.id) < 0) {
+          next.lastChange = MOVE_TYPES[action.id].label + " is not offered from " + next.occupancy + ".";
+          return next;
+        }
+        if (next.openMoveTypes.indexOf(action.id) < 0) next.openMoveTypes.push(action.id);
+        next.lastChange = "Opened " + MOVE_TYPES[action.id].label + ".";
         return next;
       }
       if (kind === "TOGGLE_MOVE_TYPE") {
@@ -597,6 +728,37 @@
         next.lastChange = "Pinned " + sys.label + " as one system. Defend one, they give another.";
         return next;
       }
+      if (kind === "ADD_NAMED_MOVE") {
+        const m = NAMED_MOVES[action.id];
+        if (!m) return next;
+        if (!next.occupancy) next.occupancy = m.startSide;
+        if (m.start !== next.start || m.startSide !== next.occupancy) {
+          next.lastChange = m.label + " does not start from this occupancy.";
+          return next;
+        }
+        if (next.openMoveTypes.indexOf(m.moveType) < 0) next.openMoveTypes.push(m.moveType);
+        if (next.onMap.indexOf(action.id) < 0) next.onMap.push(action.id);
+        next.lastChange = "Put " + m.label + " on the map.";
+        return next;
+      }
+      if (kind === "ADD_SYSTEM") {
+        const sys = SYSTEMS[action.id];
+        if (!sys) return next;
+        const member = NAMED_MOVES[sys.members[0]];
+        if (!next.occupancy) next.occupancy = member.startSide;
+        else if (next.occupancy !== member.startSide || next.start !== member.start) {
+          next.lastChange = sys.label + " starts from " + POSITIONS[member.start].label + " · " + member.startSide + ".";
+          return next;
+        }
+        sys.members.forEach(function (mid) {
+          const m = NAMED_MOVES[mid];
+          if (next.openMoveTypes.indexOf(m.moveType) < 0) next.openMoveTypes.push(m.moveType);
+          if (next.onMap.indexOf(mid) < 0) next.onMap.push(mid);
+        });
+        if (next.systemsOnMap.indexOf(action.id) < 0) next.systemsOnMap.push(action.id);
+        next.lastChange = "Pinned " + sys.label + " as one system. Defend one, they give another.";
+        return next;
+      }
       if (kind === "SET_WORDS") {
         next.topicSystem = action.text;
         next.lastChange = action.text.trim()
@@ -615,7 +777,22 @@
   ];
 
   let state = DesignModel.seed();
-  const ui = { scene: 0, forcePos: {} };
+  const ui = {
+    scene: 0,
+    markPos: {},
+    selected: null,
+    labelSize: 16,
+    menu: null,
+    dragging: null,
+    moved: false,
+    forceRaf: 0
+  };
+
+  function closeMenu() {
+    if (ui.menu && ui.menu.parentNode) ui.menu.parentNode.removeChild(ui.menu);
+    ui.menu = null;
+    document.removeEventListener("click", dismissMenu, true);
+  }
 
   function currentVariant() {
     const q = new URLSearchParams(location.search).get("variant") || "A";
@@ -728,52 +905,301 @@
     return n;
   }
 
+  function svgPoint(svg, clientX, clientY) {
+    const pt = svg.createSVGPoint();
+    pt.x = clientX;
+    pt.y = clientY;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: clientX, y: clientY };
+    return pt.matrixTransform(ctm.inverse());
+  }
+
+  function rememberPos(id, x, y) {
+    ui.markPos[id] = { x: x, y: y };
+  }
+
+  function placeNear(fromId, index) {
+    const origin = ui.markPos[fromId] || { x: 480, y: 280 };
+    const a = -0.4 + index * 0.7;
+    return { x: origin.x + 140 * Math.cos(a), y: origin.y + 90 * Math.sin(a) };
+  }
+
+  function menuItem(label, hasSub, onPick) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "mi";
+    b.innerHTML = escapeHtml(label) + (hasSub ? '<span class="caret">▸</span>' : "");
+    if (onPick) {
+      b.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        onPick();
+      });
+    }
+    return b;
+  }
+
+  function submenu() {
+    const s = document.createElement("div");
+    s.className = "sub";
+    return s;
+  }
+
+  function openCatalogMenu(clientX, clientY, fromNode) {
+    closeMenu();
+    const menu = document.createElement("div");
+    menu.className = "graph-menu box-final";
+    menu.style.left = Math.min(clientX, window.innerWidth - 280) + "px";
+    menu.style.top = Math.min(clientY, window.innerHeight - 240) + "px";
+    const head = document.createElement("div");
+    head.className = "head";
+    head.textContent = fromNode ? "Add from this mark" : "Add to the map";
+    menu.appendChild(head);
+
+    const at = ui.pendingAt || { x: 480, y: 280 };
+
+    if (!fromNode) {
+      const occ = menuItem("Occupancy", true);
+      const occSub = submenu();
+      ["bottom", "top", "neutral"].forEach(function (side) {
+        occSub.appendChild(menuItem(side, false, function () {
+          rememberPos("pos:" + state.start, at.x, at.y);
+          ui.selected = { kind: "start", id: state.start };
+          closeMenu();
+          apply({ type: "SET_OCCUPANCY", occupancy: side });
+        }));
+      });
+      occ.appendChild(occSub);
+      menu.appendChild(occ);
+    }
+
+    const typeItem = menuItem("Type of move", true);
+    const typeSub = submenu();
+    const typeIds = state.occupancy ? DesignModel.typesAt(state.occupancy) : Object.keys(MOVE_TYPES);
+    typeIds.forEach(function (tid) {
+      const moves = Object.keys(NAMED_MOVES).filter(function (id) {
+        const m = NAMED_MOVES[id];
+        return m.moveType === tid && (!state.occupancy || (m.start === state.start && m.startSide === state.occupancy));
+      });
+      const row = menuItem(MOVE_TYPES[tid].label, true);
+      const moveSub = submenu();
+      if (!fromNode) {
+        moveSub.appendChild(menuItem("Place " + MOVE_TYPES[tid].label + " mark", false, function () {
+          if (!state.occupancy && MOVE_TYPES[tid].sides.length === 1) {
+            rememberPos("pos:" + state.start, at.x - 120, at.y);
+          }
+          rememberPos("type:" + tid, at.x, at.y);
+          ui.selected = { kind: "type", id: tid };
+          closeMenu();
+          apply({ type: "OPEN_MOVE_TYPE", id: tid });
+        }));
+      }
+      moves.forEach(function (mid) {
+        moveSub.appendChild(menuItem(NAMED_MOVES[mid].label, false, function () {
+          const pos = fromNode ? placeNear(fromNode.id, 1) : at;
+          rememberPos("move:" + mid, pos.x, pos.y);
+          ui.selected = { kind: "move", id: mid };
+          closeMenu();
+          apply({ type: "ADD_NAMED_MOVE", id: mid });
+        }));
+      });
+      if (!moves.length) {
+        const empty = menuItem("No named moves", false);
+        empty.disabled = true;
+        moveSub.appendChild(empty);
+      }
+      row.appendChild(moveSub);
+      typeSub.appendChild(row);
+    });
+    typeItem.appendChild(typeSub);
+    menu.appendChild(typeItem);
+
+    const nm = menuItem("Named move", true);
+    const nmSub = submenu();
+    const available = state.occupancy
+      ? DesignModel.movesAt(state.start, state.occupancy)
+      : Object.keys(NAMED_MOVES);
+    available.forEach(function (mid) {
+      nmSub.appendChild(menuItem(NAMED_MOVES[mid].label, false, function () {
+        const pos = fromNode ? placeNear(fromNode.id, 1) : at;
+        rememberPos("move:" + mid, pos.x, pos.y);
+        ui.selected = { kind: "move", id: mid };
+        closeMenu();
+        apply({ type: "ADD_NAMED_MOVE", id: mid });
+      }));
+    });
+    if (!available.length) {
+      const empty = menuItem("None at this occupancy", false);
+      empty.disabled = true;
+      nmSub.appendChild(empty);
+    }
+    nm.appendChild(nmSub);
+    menu.appendChild(nm);
+
+    const sysItem = menuItem("System", true);
+    const sysSub = submenu();
+    Object.keys(SYSTEMS).forEach(function (sid) {
+      sysSub.appendChild(menuItem(SYSTEMS[sid].label, false, function () {
+        const pos = fromNode ? placeNear(fromNode.id, 1) : at;
+        rememberPos("sys:" + sid, pos.x, pos.y);
+        SYSTEMS[sid].members.forEach(function (mid, i) {
+          if (!ui.markPos["move:" + mid]) rememberPos("move:" + mid, pos.x + 90 * Math.cos(i), pos.y + 70 * Math.sin(i));
+        });
+        ui.selected = { kind: "system", id: sid };
+        closeMenu();
+        apply({ type: "ADD_SYSTEM", id: sid });
+      }));
+    });
+    sysItem.appendChild(sysSub);
+    menu.appendChild(sysItem);
+
+    if (!fromNode) {
+      menu.appendChild(menuItem("How this topic is taught", false, function () {
+        ui.selected = { kind: "words", id: "words" };
+        closeMenu();
+        paint();
+      }));
+    }
+
+    document.body.appendChild(menu);
+    ui.menu = menu;
+    setTimeout(function () {
+      document.addEventListener("click", dismissMenu, true);
+    }, 0);
+  }
+
+  function dismissMenu(e) {
+    if (ui.menu && ui.menu.contains(e.target)) return;
+    closeMenu();
+    document.removeEventListener("click", dismissMenu, true);
+  }
+
+  function layoutLabels(nodes, fontSize, width, height) {
+    const char = fontSize * 0.62;
+    nodes.forEach(function (n) {
+      n.labW = Math.max(28, String(n.label).length * char);
+      n.labH = fontSize + 8;
+      const ang = Math.atan2(n.y - height / 2, n.x - width / 2);
+      const r = n.r + fontSize + 10;
+      n.lx = n.x + Math.cos(ang) * r;
+      n.ly = n.y + Math.sin(ang) * r;
+      n.anchor = Math.cos(ang) > 0.25 ? "start" : (Math.cos(ang) < -0.25 ? "end" : "middle");
+    });
+    function box(n) {
+      let x = n.lx;
+      if (n.anchor === "end") x = n.lx - n.labW;
+      if (n.anchor === "middle") x = n.lx - n.labW / 2;
+      return { x: x, y: n.ly - n.labH / 2, w: n.labW, h: n.labH };
+    }
+    for (let iter = 0; iter < 28; iter++) {
+      for (let i = 0; i < nodes.length; i++) {
+        const A = box(nodes[i]);
+        nodes.forEach(function (m) {
+          const nx1 = m.x - m.r - 6, ny1 = m.y - m.r - 6;
+          const nx2 = m.x + m.r + 6, ny2 = m.y + m.r + 6;
+          const ox = Math.min(A.x + A.w, nx2) - Math.max(A.x, nx1);
+          const oy = Math.min(A.y + A.h, ny2) - Math.max(A.y, ny1);
+          if (ox > 0 && oy > 0) {
+            const dx = (A.x + A.w / 2) - m.x;
+            const dy = (A.y + A.h / 2) - m.y;
+            const d = Math.sqrt(dx * dx + dy * dy) || 1;
+            nodes[i].lx += (dx / d) * (ox * 0.4 + 2);
+            nodes[i].ly += (dy / d) * (oy * 0.4 + 2);
+          }
+        });
+        for (let j = i + 1; j < nodes.length; j++) {
+          const B = box(nodes[j]);
+          const ox = Math.min(A.x + A.w, B.x + B.w) - Math.max(A.x, B.x);
+          const oy = Math.min(A.y + A.h, B.y + B.h) - Math.max(A.y, B.y);
+          if (ox > 0 && oy > 0) {
+            const sign = (nodes[j].ly - nodes[i].ly) >= 0 ? 1 : -1;
+            const push = oy / 2 + 2;
+            nodes[i].ly -= sign * push;
+            nodes[j].ly += sign * push;
+            const sx = (nodes[j].lx - nodes[i].lx) >= 0 ? 1 : -1;
+            nodes[i].lx -= sx * Math.min(8, ox * 0.3 + 1);
+            nodes[j].lx += sx * Math.min(8, ox * 0.3 + 1);
+          }
+        }
+        nodes[i].lx = Math.max(8 + nodes[i].labW / 4, Math.min(width - 8 - nodes[i].labW / 4, nodes[i].lx));
+        nodes[i].ly = Math.max(fontSize, Math.min(height - 4, nodes[i].ly));
+      }
+    }
+  }
+
   function renderForce() {
+    if (ui.forceRaf) cancelAnimationFrame(ui.forceRaf);
     const wrap = document.createElement("div");
     wrap.className = "map-stage";
-    const svg = svgEl("svg", { viewBox: "0 0 920 520", role: "img" });
+    const tools = document.createElement("div");
+    tools.className = "graph-toolbar";
+    tools.innerHTML = "<label>Label size</label><span class=\"size-btns row\"></span>";
+    const sizes = [12, 16, 20];
+    const sizeHost = tools.querySelector(".size-btns");
+    sizes.forEach(function (sz) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip" + (ui.labelSize === sz ? " on" : "");
+      b.textContent = sz === 12 ? "S" : (sz === 16 ? "M" : "L");
+      b.addEventListener("click", function (e) {
+        e.stopPropagation();
+        ui.labelSize = sz;
+        paint();
+      });
+      sizeHost.appendChild(b);
+    });
+    wrap.appendChild(tools);
+
+    const width = Math.max(960, (document.getElementById("app").clientWidth || 1200) - 8);
+    const height = Math.max(560, Math.floor(window.innerHeight * 0.62));
+    const svg = svgEl("svg", {
+      viewBox: "0 0 " + width + " " + height,
+      role: "img"
+    });
     wrap.appendChild(svg);
+
     const legend = document.createElement("div");
     legend.className = "legend";
     legend.innerHTML =
       '<span><i class="pos"></i>start</span>' +
       '<span><i class="end"></i>landing</span>' +
       '<span><i class="mv"></i>named move</span>' +
-      '<span><i class="sys"></i>defend A gives B</span>';
+      '<span><i class="sys"></i>defend A gives B</span>' +
+      "<span>Click empty space to add. Click a mark to edit. Double-click a mark to add another. Drag to rearrange.</span>";
     wrap.appendChild(legend);
-    if (!state.occupancy) {
-      const t = svgEl("text", { x: "460", y: "250", "text-anchor": "middle", fill: "#78716c", "font-size": "18" });
-      t.textContent = "Pick occupancy to open the map.";
-      svg.appendChild(t);
-      return wrap;
-    }
+
+    const bg = svgEl("rect", {
+      x: "0", y: "0", width: String(width), height: String(height),
+      fill: "#ffffff"
+    });
+    svg.appendChild(bg);
 
     const nodes = [];
     const links = [];
-    nodes.push({
-      id: "pos:" + state.start, kind: "start",
-      label: POSITIONS[state.start].label + " · " + state.occupancy,
-      homeX: 160, homeY: 260, r: 28
-    });
+    if (state.occupancy) {
+      nodes.push({
+        id: "pos:" + state.start, kind: "start",
+        label: POSITIONS[state.start].label + " · " + state.occupancy,
+        homeX: width * 0.22, homeY: height * 0.5, r: 26
+      });
+    }
     const landings = {};
     state.onMap.forEach(function (id) {
       const m = NAMED_MOVES[id];
       if (m.end !== state.start) landings[m.end] = m.endSide;
     });
-    const landIds = Object.keys(landings);
-    landIds.forEach(function (pid, i) {
+    Object.keys(landings).forEach(function (pid, i) {
       nodes.push({
         id: "pos:" + pid, kind: "end",
         label: POSITIONS[pid].label + " · " + landings[pid],
-        homeX: 760, homeY: 140 + i * 180, r: 22
+        homeX: width * 0.82, homeY: height * (0.28 + i * 0.28), r: 20
       });
     });
-    const openTypes = state.openMoveTypes.slice();
-    openTypes.forEach(function (tid, i) {
+    state.openMoveTypes.forEach(function (tid, i) {
       nodes.push({
         id: "type:" + tid, kind: "type",
         label: MOVE_TYPES[tid].label,
-        homeX: 340, homeY: 90 + i * (340 / Math.max(1, openTypes.length)), r: 16
+        homeX: width * 0.4, homeY: 80 + i * ((height - 120) / Math.max(1, state.openMoveTypes.length)), r: 16
       });
     });
     state.onMap.forEach(function (id, i) {
@@ -781,39 +1207,52 @@
       nodes.push({
         id: "move:" + id, kind: "move", moveId: id, home: m.home,
         label: m.label,
-        homeX: m.home ? 250 : 520,
-        homeY: m.home ? (180 + (m.id === "knee-lever" ? 0 : 140)) : (90 + i * 70),
-        r: 14
+        homeX: width * (m.home ? 0.32 : 0.58),
+        homeY: 90 + i * ((height - 140) / Math.max(1, state.onMap.length)),
+        r: 15
+      });
+    });
+    state.systemsOnMap.forEach(function (sid, i) {
+      nodes.push({
+        id: "sys:" + sid, kind: "system", sysId: sid,
+        label: SYSTEMS[sid].label,
+        homeX: width * 0.5, homeY: height * 0.18 + i * 50, r: 18
       });
     });
 
     const byId = {};
     nodes.forEach(function (n) {
-      const prev = ui.forcePos[n.id];
+      const prev = ui.markPos[n.id];
       n.x = prev ? prev.x : n.homeX;
       n.y = prev ? prev.y : n.homeY;
-      n.vx = 0; n.vy = 0;
+      n.vx = 0;
+      n.vy = 0;
+      n.pinned = !!prev;
       byId[n.id] = n;
+      rememberPos(n.id, n.x, n.y);
     });
+
     const startN = byId["pos:" + state.start];
-    openTypes.forEach(function (tid) {
-      links.push({ s: startN, t: byId["type:" + tid], kind: "open" });
+    state.openMoveTypes.forEach(function (tid) {
+      if (startN && byId["type:" + tid]) links.push({ s: startN, t: byId["type:" + tid], kind: "open" });
     });
     state.onMap.forEach(function (id) {
       const m = NAMED_MOVES[id];
       const mn = byId["move:" + id];
       const tn = byId["type:" + m.moveType];
-      if (tn) links.push({ s: tn, t: mn, kind: "leaf" });
-      else links.push({ s: startN, t: mn, kind: "leaf" });
+      if (tn && mn) links.push({ s: tn, t: mn, kind: "leaf" });
+      else if (startN && mn) links.push({ s: startN, t: mn, kind: "leaf" });
       const endN = byId["pos:" + m.end];
-      if (endN) links.push({ s: mn, t: endN, kind: "land" });
-      else links.push({ s: mn, t: startN, kind: "home" });
+      if (endN && mn) links.push({ s: mn, t: endN, kind: "land" });
+      else if (startN && mn && m.end === state.start) links.push({ s: mn, t: startN, kind: "home" });
     });
     state.systemsOnMap.forEach(function (sid) {
+      const sysN = byId["sys:" + sid];
       const members = SYSTEMS[sid].members.map(function (id) { return byId["move:" + id]; }).filter(Boolean);
       members.forEach(function (a, i) {
         const b = members[(i + 1) % members.length];
         if (a && b) links.push({ s: a, t: b, kind: "defend" });
+        if (sysN && a) links.push({ s: sysN, t: a, kind: "sys" });
       });
     });
 
@@ -824,29 +1263,43 @@
     svg.appendChild(nodeG);
     svg.appendChild(labelG);
 
-    function tick() {
+    if (!nodes.length) {
+      const hint = document.createElement("div");
+      hint.className = "graph-empty";
+      hint.textContent = "Click empty space. Choose occupancy, a type of move, a named move, or a system. The mark appears as you answer.";
+      wrap.appendChild(hint);
+    }
+
+    function selectedId() {
+      if (!ui.selected) return "";
+      if (ui.selected.kind === "start") return "pos:" + ui.selected.id;
+      if (ui.selected.kind === "type") return "type:" + ui.selected.id;
+      if (ui.selected.kind === "move") return "move:" + ui.selected.id;
+      if (ui.selected.kind === "system") return "sys:" + ui.selected.id;
+      return "";
+    }
+
+    function paintGraph() {
       nodes.forEach(function (n) {
-        n.vx += (n.homeX - n.x) * 0.04;
-        n.vy += (n.homeY - n.y) * 0.04;
+        n.x = Math.max(n.r + 8, Math.min(width - n.r - 8, n.x));
+        n.y = Math.max(n.r + 8, Math.min(height - n.r - 8, n.y));
       });
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const a = nodes[i], b = nodes[j];
           let dx = b.x - a.x, dy = b.y - a.y;
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          const min = (a.r || 16) + (b.r || 16) + 18;
+          const min = a.r + b.r + 28;
           if (dist < min) {
-            const p = (min - dist) / dist * 0.08;
-            a.x -= dx * p; a.y -= dy * p;
-            b.x += dx * p; b.y += dy * p;
+            const p = (min - dist) / dist * 0.5;
+            const dragId = ui.dragging && ui.dragging.id;
+            if (a.id !== dragId) { a.x -= dx * p; a.y -= dy * p; }
+            if (b.id !== dragId) { b.x += dx * p; b.y += dy * p; }
           }
         }
       }
-      nodes.forEach(function (n) {
-        n.vx *= 0.8; n.vy *= 0.8;
-        n.x += n.vx; n.y += n.vy;
-        ui.forcePos[n.id] = { x: n.x, y: n.y };
-      });
+      nodes.forEach(function (n) { rememberPos(n.id, n.x, n.y); });
+      layoutLabels(nodes, ui.labelSize, width, height);
       linkG.innerHTML = "";
       nodeG.innerHTML = "";
       labelG.innerHTML = "";
@@ -856,55 +1309,148 @@
           x2: String(lnk.t.x), y2: String(lnk.t.y),
           stroke: lnk.kind === "defend" ? "#c2410c" : "#a8a29e",
           "stroke-width": lnk.kind === "defend" ? "2.4" : "1.4",
-          "stroke-dasharray": lnk.kind === "defend" ? "7 5" : (lnk.kind === "home" ? "3 4" : "0"),
+          "stroke-dasharray": lnk.kind === "defend" ? "7 5" : (lnk.kind === "home" || lnk.kind === "sys" ? "3 4" : "0"),
           opacity: lnk.kind === "open" ? "0.45" : "0.9"
         });
         linkG.appendChild(line);
       });
+      const sel = selectedId();
       nodes.forEach(function (n) {
-        const g = svgEl("g", { style: "cursor:pointer" });
+        const leader = svgEl("line", {
+          x1: String(n.x), y1: String(n.y),
+          x2: String(n.lx), y2: String(n.ly),
+          stroke: "#a8a29e", "stroke-width": "1"
+        });
+        labelG.appendChild(leader);
+        const lab = svgEl("text", {
+          x: String(n.lx), y: String(n.ly),
+          "text-anchor": n.anchor, fill: "#1c1917",
+          "font-size": String(ui.labelSize),
+          "font-family": "Segoe UI, sans-serif",
+          "font-weight": n.id === sel ? "700" : "500",
+          style: "paint-order:stroke;stroke:#fff;stroke-width:5px;cursor:pointer"
+        });
+        lab.textContent = n.label;
+        lab.addEventListener("pointerdown", function (e) { onMarkDown(e, n); });
+        lab.addEventListener("click", function (e) { onMarkClick(e, n); });
+        lab.addEventListener("dblclick", function (e) { onMarkDbl(e, n); });
+        labelG.appendChild(lab);
+
+        const g = svgEl("g", { style: "cursor:grab" });
+        const on = n.id === sel;
         if (n.kind === "start" || n.kind === "end") {
           g.appendChild(svgEl("circle", {
             cx: String(n.x), cy: String(n.y), r: String(n.r),
             fill: n.kind === "start" ? "#0f766e" : "#fff",
-            stroke: "#0f766e", "stroke-width": "3"
+            stroke: on ? "#1c1917" : "#0f766e",
+            "stroke-width": on ? "4" : "3"
           }));
         } else if (n.kind === "type") {
           g.appendChild(svgEl("rect", {
-            x: String(n.x - 14), y: String(n.y - 14), width: "28", height: "28",
-            fill: "#e7e5e4", stroke: "#57534e", "stroke-width": "2", rx: "4"
+            x: String(n.x - 15), y: String(n.y - 15), width: "30", height: "30",
+            fill: "#e7e5e4", stroke: on ? "#1c1917" : "#57534e",
+            "stroke-width": on ? "3" : "2", rx: "4"
+          }));
+        } else if (n.kind === "system") {
+          g.appendChild(svgEl("polygon", {
+            points: [n.x, n.y - 18, n.x + 18, n.y, n.x, n.y + 18, n.x - 18, n.y].join(" "),
+            fill: "#c2410c", stroke: on ? "#1c1917" : "#9a3412",
+            "stroke-width": on ? "3" : "2"
           }));
         } else {
-          const pinned = state.systemsOnMap.some(function (sid) {
-            return SYSTEMS[sid].members.indexOf(n.moveId) >= 0;
-          });
           g.appendChild(svgEl("rect", {
-            x: String(n.x - 16), y: String(n.y - 12), width: "32", height: "24",
-            fill: n.home ? "#0f766e" : (pinned ? "#c2410c" : "#1d4ed8"),
-            stroke: "#1c1917", "stroke-width": "1.5", rx: "4"
+            x: String(n.x - 17), y: String(n.y - 13), width: "34", height: "26",
+            fill: n.home ? "#0f766e" : "#1d4ed8",
+            stroke: on ? "#1c1917" : "#1c1917",
+            "stroke-width": on ? "3" : "1.5", rx: "4"
           }));
-          g.addEventListener("click", function () {
-            apply({ type: "TOGGLE_NAMED_MOVE", id: n.moveId });
-          });
         }
-        if (n.kind === "type") {
-          g.addEventListener("click", function () {
-            apply({ type: "TOGGLE_MOVE_TYPE", id: n.id.slice(5) });
-          });
-        }
+        g.addEventListener("pointerdown", function (e) { onMarkDown(e, n); });
+        g.addEventListener("click", function (e) { onMarkClick(e, n); });
+        g.addEventListener("dblclick", function (e) { onMarkDbl(e, n); });
         nodeG.appendChild(g);
-        const lab = svgEl("text", {
-          x: String(n.x), y: String(n.y + (n.kind === "start" || n.kind === "end" ? n.r + 16 : 28)),
-          "text-anchor": "middle", fill: "#1c1917", "font-size": "12",
-          "font-family": "Segoe UI, sans-serif",
-          style: "paint-order:stroke;stroke:#fff;stroke-width:4px"
-        });
-        lab.textContent = n.label;
-        labelG.appendChild(lab);
       });
     }
-    for (let i = 0; i < 40; i++) tick();
+
+    function selectNode(n) {
+      if (n.kind === "start") ui.selected = { kind: "start", id: state.start };
+      else if (n.kind === "end") ui.selected = { kind: "start", id: n.id.slice(4) };
+      else if (n.kind === "type") ui.selected = { kind: "type", id: n.id.slice(5) };
+      else if (n.kind === "move") ui.selected = { kind: "move", id: n.moveId };
+      else if (n.kind === "system") ui.selected = { kind: "system", id: n.sysId };
+    }
+
+    function onMarkDown(e, n) {
+      e.stopPropagation();
+      e.preventDefault();
+      closeMenu();
+      ui.dragging = n;
+      ui.moved = false;
+      n.pinned = true;
+      try { svg.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+    function onMarkClick(e, n) {
+      e.stopPropagation();
+      if (ui.moved) return;
+      selectNode(n);
+      paintGraph();
+      showDock();
+    }
+    function onMarkDbl(e, n) {
+      e.stopPropagation();
+      e.preventDefault();
+      ui.pendingAt = placeNear(n.id, 1);
+      selectNode(n);
+      paintGraph();
+      showDock();
+      openCatalogMenu(e.clientX, e.clientY, n);
+    }
+
+    bg.addEventListener("click", function (e) {
+      if (ui.moved) return;
+      const p = svgPoint(svg, e.clientX, e.clientY);
+      ui.pendingAt = p;
+      ui.selected = null;
+      paintGraph();
+      showDock();
+      openCatalogMenu(e.clientX, e.clientY, null);
+    });
+
+    svg.addEventListener("pointermove", function (e) {
+      if (!ui.dragging) return;
+      const p = svgPoint(svg, e.clientX, e.clientY);
+      const n = ui.dragging;
+      if (Math.abs(p.x - n.x) + Math.abs(p.y - n.y) > 3) ui.moved = true;
+      n.x = p.x;
+      n.y = p.y;
+      n.pinned = true;
+      rememberPos(n.id, n.x, n.y);
+      paintGraph();
+    });
+    svg.addEventListener("pointerup", function () {
+      ui.dragging = null;
+      setTimeout(function () { ui.moved = false; }, 0);
+    });
+
+    ui.redrawGraph = paintGraph;
+    paintGraph();
     return wrap;
+  }
+
+  function showDock() {
+    const shell = document.querySelector(".graph-shell");
+    if (!shell) return;
+    let dock = shell.querySelector(".sidebar-dock");
+    if (!ui.selected) {
+      if (dock) dock.remove();
+      return;
+    }
+    if (!dock) {
+      dock = document.createElement("div");
+      dock.className = "sidebar-dock";
+      shell.appendChild(dock);
+    }
+    dock.innerHTML = palette();
   }
 
   function renderHub() {
@@ -1051,6 +1597,15 @@
         { label: "Load Tight waist design", action: { type: "LOAD_SAMPLE" } },
         { label: "Occupancy top", action: { type: "SET_OCCUPANCY", occupancy: "top" } }
       ]
+    },
+    {
+      name: "Plot from empty",
+      copy: "Clear the design. Occupancy bottom materializes the start mark. Far-leg come-up plots a named-move mark. The graph stays full width.",
+      steps: [
+        { label: "Clear design", action: { type: "RESET" } },
+        { label: "Occupancy bottom", action: { type: "SET_OCCUPANCY", occupancy: "bottom" } },
+        { label: "Add far-leg come-up", action: { type: "ADD_NAMED_MOVE", id: "far-leg-come-up" } }
+      ]
     }
   ];
 
@@ -1081,16 +1636,34 @@
 
   function paint() {
     const variant = currentVariant();
+    document.body.dataset.variant = variant;
+    closeMenu();
+    if (ui.forceRaf) cancelAnimationFrame(ui.forceRaf);
     const app = document.getElementById("app");
-    app.innerHTML = '<div class="layout"></div>';
-    const layout = app.firstChild;
-    layout.insertAdjacentHTML("beforeend", palette());
-    const stageHost = document.createElement("div");
-    stageHost.className = "box-final";
-    const stage = variant === "B" ? renderHub() : (variant === "C" ? renderTray() : renderForce());
-    stageHost.appendChild(stage);
-    layout.appendChild(stageHost);
-    layout.insertAdjacentHTML("beforeend", handoff());
+    app.innerHTML = "";
+    const layout = document.createElement("div");
+    if (variant === "A") {
+      layout.className = "layout layout-a";
+      const shell = document.createElement("div");
+      shell.className = "graph-shell box-final";
+      shell.appendChild(renderForce());
+      layout.appendChild(shell);
+      const hand = document.createElement("div");
+      hand.className = "handoff-wide";
+      hand.innerHTML = handoff();
+      layout.appendChild(hand);
+      app.appendChild(layout);
+      showDock();
+    } else {
+      layout.className = "layout";
+      layout.insertAdjacentHTML("beforeend", palette());
+      const stageHost = document.createElement("div");
+      stageHost.className = "box-final";
+      stageHost.appendChild(variant === "B" ? renderHub() : renderTray());
+      layout.appendChild(stageHost);
+      layout.insertAdjacentHTML("beforeend", handoff());
+      app.appendChild(layout);
+    }
     document.getElementById("record").textContent = recordText();
     document.getElementById("changed").textContent = state.lastChange;
     const meta = VARIANTS.find(function (v) { return v.key === variant; });
@@ -1099,6 +1672,17 @@
   }
 
   function apply(action) {
+    if (action.type === "RESET") {
+      ui.markPos = {};
+      ui.selected = null;
+    }
+    if (action.type === "LOAD_SAMPLE") {
+      ui.markPos = {};
+      ui.selected = { kind: "system", id: "tight-waist-trilemma" };
+    }
+    if (action.type === "SET_OCCUPANCY" && state.occupancy && state.occupancy !== action.occupancy) {
+      ui.markPos = {};
+    }
     state = DesignModel.reduce(state, action);
     paint();
   }
@@ -1146,6 +1730,8 @@
   document.addEventListener("keydown", function (e) {
     const t = e.target;
     if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+    if (e.key === "Escape") { closeMenu(); return; }
+    if (ui.menu) return;
     if (e.key === "ArrowLeft") cycle(-1);
     if (e.key === "ArrowRight") cycle(1);
   });
