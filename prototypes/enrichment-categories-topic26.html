@@ -366,7 +366,7 @@
     <p class="meta">
       Catalog records are reused: Position, Type of move, Submission, Named move, System, Citation, Lesson type.
       Activity records use that catalog: Unit, Class, Lesson.
-      A named move is the start, the type of move, and the end. A lesson points at a named move. Citations of that named move are the pool the coach chooses from while building the lesson.
+      A lesson connects to a named move or to a system. Lessons are then sequenced into classes and a unit. The unit has no direct link to a system.
     </p>
   </header>
   <div class="question">
@@ -900,7 +900,7 @@
         label: "Named move",
         shape: "entity",
         nature: "reference",
-        summary: "One catalog movement, such as Hip bump sweep. It consists of a start position, a type of move, and an end (a position or a submission). Citations belong here. A lesson points here. Systems group two or more of these.",
+        summary: "One catalog movement, such as Hip bump sweep. It consists of a start position, a type of move, and an end (a position or a submission). Citations belong here. A lesson may connect here. Systems group two or more of these.",
         attrs: ["name", "start", "type of move", "end", "ruleset", "aliases", "cross_refs"],
         countKey: "leaves"
       },
@@ -909,17 +909,16 @@
         label: "System",
         shape: "entity",
         nature: "reference",
-        summary: "Two or more named moves used together to create a dilemma. When the partner defends one, they give another. Reused from the catalog when a unit teaches it.",
+        summary: "Two or more named moves used together to create a dilemma. When the partner defends one, they give another. A lesson may connect here. The unit never links here directly.",
         attrs: ["member named moves"],
-        countKey: "systems",
-        ask: "The glossary already defines System as the coach's choice of how one topic is taught. Is this dilemma cluster that same System?"
+        countKey: "systems"
       },
       {
         id: "citation",
         label: "Citation",
         shape: "entity",
         nature: "reference",
-        summary: "A catalog teaching that belongs to a named move: instructor, instructional, volume, chapter, timestamp. Many citations can belong to one named move. When the coach builds a lesson on that named move, these citations are the pool they choose from.",
+        summary: "A catalog teaching that belongs to a named move: instructor, instructional, volume, chapter, timestamp. Many citations can belong to one named move. Offered when the coach builds a lesson on that named move, or on a system that includes it.",
         attrs: ["instructor", "instructional", "volume", "chapter", "timestamp", "cleaned statement"],
         countKey: "citations"
       },
@@ -937,8 +936,8 @@
         label: "Unit",
         shape: "entity",
         nature: "activity",
-        summary: "Activity: the classes that cover one large topic. It teaches a system from the catalog.",
-        attrs: ["paragraph", "classes"],
+        summary: "Activity: sequenced classes. Catalog enters only through the lessons in those classes.",
+        attrs: ["paragraph", "ordered classes"],
         countKey: "none"
       },
       {
@@ -955,8 +954,8 @@
         label: "Lesson",
         shape: "entity",
         nature: "activity",
-        summary: "Activity: what is actually being worked on in a class. It points at one named move. Citations of that named move are offered while building; the coach chooses which to use in the instruction.",
-        attrs: ["lesson type", "named move", "chosen citations", "partner job or scenario or condition"],
+        summary: "Activity: what is actually being worked on in a class. It connects to one named move or to one system. That is where catalog enters the unit. The coach then sequences lessons into classes.",
+        attrs: ["lesson type", "named move or system", "chosen citations", "partner job or scenario or condition"],
         countKey: "none"
       },
       {
@@ -965,7 +964,7 @@
         shape: "attribute",
         nature: "attribute",
         owner: "lesson",
-        summary: "Which of the named move's citations the coach uses in this lesson. The lesson's identity is the named move. This field is the subset they leverage for instruction."
+        summary: "Which citations the coach uses in this lesson. The pool is the named move's citations, or the citations of every named move in the system."
       },
       {
         id: "family",
@@ -1039,11 +1038,11 @@
       { from: "system", to: "named_move", label: "2..n members" },
       { from: "citation", to: "named_move", label: "0..n per move" },
       { from: "uncategorized", to: "citation", label: "when unlinked" },
-      { from: "unit", to: "system", label: "teaches" },
-      { from: "unit", to: "class", label: "1..n" },
-      { from: "class", to: "lesson", label: "1..n" },
+      { from: "unit", to: "class", label: "sequences 1..n" },
+      { from: "class", to: "lesson", label: "sequences 1..n" },
       { from: "lesson", to: "lesson_type", label: "1" },
-      { from: "lesson", to: "named_move", label: "works" },
+      { from: "lesson", to: "named_move", label: "0..1" },
+      { from: "lesson", to: "system", label: "0..1" },
       { from: "chosen_citations", to: "lesson", label: "of" }
     ];
 
@@ -1060,12 +1059,12 @@
       move_type: { x: 430, y: 250 },
       submission: { x: 430, y: 400 },
       named_move: { x: 430, y: 560 },
-      system: { x: 780, y: 130 },
-      citation: { x: 780, y: 320 },
-      lesson_type: { x: 780, y: 510 },
-      unit: { x: 1140, y: 130 },
-      class: { x: 1140, y: 320 },
-      lesson: { x: 1140, y: 510 }
+      system: { x: 780, y: 160 },
+      citation: { x: 780, y: 340 },
+      lesson_type: { x: 780, y: 530 },
+      unit: { x: 1140, y: 120 },
+      class: { x: 1140, y: 300 },
+      lesson: { x: 1140, y: 500 }
     };
 
     function byId(id) {
@@ -1984,7 +1983,7 @@
       el("span", {}, [el("i", { style: "background:#a8a29e" }), "Attribute of an entity"])
     ]));
     body.append(el("p", { class: "xref" }, [
-      "Click a box. Blue is catalog (reused). Orange is activity (a unit, class, or lesson you are building). Dotted ovals are fields. A lesson points at a named move. Citations belong to the named move; the coach chooses which to use in that lesson."
+      "Click a box. Blue is catalog. Orange is activity. Catalog enters at Lesson: a named move or a system. Unit and Class only sequence those lessons."
     ]));
     const mount = el("div", { class: "er-wrap" });
     body.append(mount);
