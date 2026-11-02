@@ -883,7 +883,7 @@
         label: "Type of move",
         shape: "entity",
         nature: "reference",
-        summary: "Catalog of what the named move is accomplishing. It carries Top, Bottom, and/or Neutral. Escape is Bottom, on a pin or control. Pass is Top. Sweep is Bottom. Takedown is Neutral. Submission and transition may allow more than one side.",
+        summary: "Catalog of what the named move is accomplishing. It carries Top, Bottom, and/or Neutral. Escape is Bottom, on a pin or control. Pass is Top. Sweep is Bottom. Takedown is Neutral. Transition stays the same side and family: bottom guard to another guard, top pin to another pin. Submission and back-take may allow more than one side.",
         attrs: ["label", "sides", "families when constrained"],
         countKey: "move_types"
       },
@@ -997,7 +997,7 @@
         shape: "attribute",
         nature: "attribute",
         owner: "named_move",
-        summary: "How the learning student occupies a position, and which sides a type of move belongs to. Named move: start side and end side. Type of move: escape is bottom on a pin or control; a sweep from closed guard bottom lands mount top, so escape is off."
+        summary: "How the learning student occupies a position, and which sides a type of move belongs to. Named move: start side and end side. Type of move: escape is bottom on a pin or control. Transition keeps the same side and family (closed guard bottom to another bottom guard; mount top to another top pin)."
       },
       {
         id: "ruleset",
@@ -1300,7 +1300,15 @@
     pass: { sides: ["top"] },
     escape: { sides: ["bottom"], families: CONTROL_FAMILIES },
     submission: { sides: ["top", "bottom", "neutral"] },
-    transition: { sides: ["top", "bottom", "neutral"] },
+    transition: {
+      sides: ["top", "bottom", "neutral"],
+      sameFamily: true,
+      bySideFamilies: {
+        bottom: ["guard", "leg-entanglement", "turtle"],
+        top: ["pin", "passing", "back"],
+        neutral: ["standing"]
+      }
+    },
     "back-take": { sides: ["top", "bottom"] }
   };
 
@@ -1314,7 +1322,18 @@
     const spec = MOVE_TYPE_SPEC[moveType] || {};
     if (spec.sides && spec.sides.indexOf(side) < 0) return false;
     if (spec.families && spec.families.indexOf(family) < 0) return false;
+    if (spec.bySideFamilies) {
+      const fams = spec.bySideFamilies[side] || [];
+      if (fams.indexOf(family) < 0) return false;
+    }
     return true;
+  }
+
+  function transitionEndOk(moveType, startFam, endRef) {
+    const spec = MOVE_TYPE_SPEC[moveType] || {};
+    if (!spec.sameFamily) return true;
+    if (!endRef || endRef.kind === "submission") return false;
+    return familyKey(endRef) === startFam;
   }
 
   function landingSide(moveType, startSide, endRef) {
@@ -1330,12 +1349,7 @@
       if (fam === "standing") return "neutral";
       return "bottom";
     }
-    if (moveType === "transition") {
-      if (fam === "guard" || fam === "turtle" || fam === "leg-entanglement") return "bottom";
-      if (fam === "pin" || fam === "passing" || fam === "back") return "top";
-      if (fam === "standing") return "neutral";
-      return startSide;
-    }
+    if (moveType === "transition") return startSide;
     return startSide;
   }
 
@@ -1389,6 +1403,7 @@
     paths.forEach((p) => {
       if (p.start !== forceStart) return;
       if (!moveAllowed(p.move_type, forceSide, startFam)) return;
+      if (!transitionEndOk(p.move_type, startFam, Tree.endRef(state.seed, p.end))) return;
       if (mtIds.indexOf(p.move_type) < 0) mtIds.push(p.move_type);
     });
     layers.push({
@@ -1399,9 +1414,11 @@
       options: mtIds.map((id) => {
         const m = Tree.byId(state.seed.move_types, id);
         const spec = MOVE_TYPE_SPEC[id] || {};
-        const sideBit = spec.sides && spec.sides.length && spec.sides.length < 3
-          ? " · " + spec.sides.map((s) => SIDE_LABEL[s]).join("/")
-          : "";
+        const sideBit = spec.sameFamily
+          ? " · same family"
+          : (spec.sides && spec.sides.length && spec.sides.length < 3
+            ? " · " + spec.sides.map((s) => SIDE_LABEL[s]).join("/")
+            : "");
         return { id, label: (m ? m.label : id) + sideBit, kind: "move", family: "move" };
       }),
       selectedSet: forceOpenMoves.slice()
@@ -1410,6 +1427,7 @@
     paths.forEach((p) => {
       if (p.start !== forceStart) return;
       if (forceOpenMoves.indexOf(p.move_type) < 0) return;
+      if (!transitionEndOk(p.move_type, startFam, Tree.endRef(state.seed, p.end))) return;
       (p.leaves || []).forEach((l) => {
         if (!Tree.leafVisible(state, l)) return;
         leafOpts.push({
@@ -2141,7 +2159,7 @@
       el("span", {}, [el("i", { style: "background:#a8a29e" }), "Attribute of an entity"])
     ]));
     body.append(el("p", { class: "xref" }, [
-      "Click a box. Blue is catalog. Orange is activity. Top / bottom / neutral sits on the named move (start and end) and on the type of move (escape is bottom, on a pin or control)."
+      "Click a box. Blue is catalog. Orange is activity. Transition keeps the same side and family: bottom guard to another guard, top pin to another pin."
     ]));
     const mount = el("div", { class: "er-wrap" });
     body.append(mount);
