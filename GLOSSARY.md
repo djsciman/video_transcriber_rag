@@ -29,7 +29,7 @@ A titled time range inside a volume.
 _Avoid_: clip, section
 
 **Citation**:
-A movement the coach may place on a lesson. A corpus citation names the instructor, the instructional, the volume, the chapter, and the movement; its words are the cleaned statement the coach has accepted; each showing in that chapter has a timestamp and a playback link; the volume is the video. A coach-authored citation is written by the coach from their own knowledge as a movement name and step bullets, with no instructional, volume, chapter, or playback link. Either kind may hold one optional link to an enrichment node after the coach accepts or corrects a placement; with no link it stays usable and appears under uncategorized in hierarchy browse. When the coach changes the move name on a corpus citation's cleaned statement, the movement name on that citation updates with that edit. The coach may remove an accepted citation from the curated store.
+A catalog teaching that belongs to a named move. A corpus citation names the instructor, the instructional, the volume, the chapter, and the movement; its words are the cleaned statement the coach has accepted; each showing in that chapter has a timestamp and a playback link; the volume is the video. A coach-authored citation is written by the coach from their own knowledge as a movement name and step bullets, with no instructional, volume, chapter, or playback link. Many citations can belong to one named move. With no named-move link it stays in the catalog under uncategorized and is not offered on a lesson. When the coach changes the move name on a corpus citation's cleaned statement, the movement name on that citation updates with that edit. The coach may remove an accepted citation from the curated store.
 _Avoid_: clip, quote
 
 **Cleaned statement**:
@@ -69,8 +69,8 @@ Gi or no-gi work the coach chooses to teach, at the grain the coach names, becau
 _Avoid_: situation, subject, question, debate
 
 **System**:
-The coach's own choice of how one topic is taught, one per topic and one unit, and it remains that topic's system after that unit. The instructionals seed it, the coach's own experience is part of the system itself, and an instructor's method can be the whole system when it fits that experience.
-_Avoid_: line, style, house game
+Two or more named moves used together to create a dilemma. When the partner defends one, they give another. A lesson may connect to one system. The coach also chooses a system as how one topic is taught, one per topic; that choice stays on the topic after the unit. Aliases are other names for the same system.
+_Avoid_: sequence, complement, line, style, house game
 
 **System conflict**:
 An earlier system of the same ruleset that a student cannot follow together with one side of a disagreement.
@@ -93,7 +93,7 @@ The note that says what may transfer and what depends on tools the topic's rules
 _Avoid_: disclaimer, warning
 
 **Unit**:
-The classes that teach one system through to performance under resistance. It carries a paragraph in the coach's words used as an advisor build prompt or as a descriptor while the coach builds by hand. It keeps a history of saved states; the coach can copy a past state into a new editable unit. There is no maximum number of classes.
+The classes that teach one topic through to performance under resistance. Catalog enters through lessons; the unit sequences those lessons into classes. It carries a paragraph in the coach's words used as an advisor build prompt or as a descriptor while the coach builds by hand. It keeps a history of saved states; the coach can copy a past state into a new editable unit. There is no maximum number of classes.
 _Avoid_: course, curriculum, camp
 
 **Class**:
@@ -101,11 +101,11 @@ One meeting of students inside a unit. It has a short purpose line, which may be
 _Avoid_: module
 
 **Lesson**:
-One part of a class. A lesson is a technique, a drill, sparring, or a game.
+One part of a class: a technique, a drill, sparring, or a game. It connects to exactly one named move or exactly one system. While building it, the coach chooses which citations of that target to use in the instruction.
 _Avoid_: class, module
 
 **Technique**:
-A lesson that explains a movement in detail before the students perform it. It carries the citations the coach placed for that movement. In the same class, its drill follows with nothing between them, and the partner job challenges the student who performs the technique.
+A lesson that explains a movement in detail before the students perform it. In the same class, its drill follows with nothing between them, and the partner job challenges the student who performs the technique.
 _Avoid_: lecture
 
 **Drill**:
@@ -129,15 +129,31 @@ A sparring lesson that adds a condition on the move or the goal. It carries that
 _Avoid_: situational sparring
 
 **Custom lesson**:
-A lesson saved from a unit, or created in the Custom library, that the coach can pull into a unit through search or hierarchy browse under Custom. It does not hold an enrichment link; hierarchy shows it through the enrichment links on the citations it contains.
+A lesson saved from a unit, or created in the Custom library, that the coach can pull into a unit through search or hierarchy browse under Custom. Hierarchy shows it through the named move or system the lesson connects to.
 _Avoid_: template, favorite, snippet
 
 **Enrichment**:
-Finder nodes kept with the curated store so hierarchy browse and dimensional search include moves the transcripts never name. The tree starts from a one-time consensus seed from open public sources; the coach then adds, renames, moves, and deletes nodes on the live copy. Shared path levels are starting position, type of move, and ending position or submission; named-move leaves are gi-specific or no-gi-specific. Enrichment does not hold lesson fields.
+The catalog of finder records kept with the curated store: positions, types of move, submissions, named moves, and systems. The tree starts from a one-time consensus seed from open public sources; the coach then adds, renames, moves, and deletes nodes on the live copy. Enrichment does not hold lesson fields.
 _Avoid_: scrape, ontology import, knowledge graph
 
+**Position**:
+One catalog record for where a named move starts or ends. Family is a field. Top, bottom, or neutral is how the student occupies it on a named move, not a second position record.
+_Avoid_: starting-position list, ending-position list
+
+**Type of move**:
+What a named move accomplishes (takedown, sweep, pass, escape, submission, transition, or back take), carrying top, bottom, and/or neutral. Escape is bottom on a pin or control; pass is top; sweep is bottom; takedown is neutral; transition stays the same side and family.
+_Avoid_: category, path level
+
+**Named move**:
+One catalog movement such as Hip bump sweep. It consists of a start position plus top, bottom, or neutral; a type of move; and an end (a position plus top, bottom, or neutral, or a submission). Citations belong here. A lesson may connect here.
+_Avoid_: path, leaf, sequence
+
+**Submission**:
+A catalog finishing hold. A named move may end here. It is not a position.
+_Avoid_: tap as a position
+
 **Uncategorized**:
-The hierarchy-browse bucket for citations that have no enrichment-node link. Those citations stay usable on lessons.
+The hierarchy-browse bucket for citations that have no named-move link. Those citations are not offered on a lesson until they belong to a named move.
 _Avoid_: unsorted, misc, other
 
 **Resistance**:
