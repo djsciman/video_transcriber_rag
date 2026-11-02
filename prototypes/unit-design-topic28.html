@@ -198,6 +198,8 @@
       padding: .45rem .7rem;
       border-bottom: 1px solid var(--line);
       background: #fff;
+      position: relative;
+      z-index: 3;
     }
     .graph-toolbar label { font-size: .78rem; color: var(--muted); }
     .graph-toolbar .size-btns button.on {
@@ -216,18 +218,21 @@
     }
     .graph-empty {
       position: absolute;
-      left: 50%;
-      top: 46%;
-      transform: translate(-50%, -50%);
+      inset: 2.6rem 0 2.4rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       color: var(--muted);
       font-size: 1.05rem;
-      pointer-events: none;
       text-align: center;
-      max-width: 28rem;
+      padding: 1rem;
+      cursor: crosshair;
+      z-index: 2;
     }
+    .graph-empty span { max-width: 28rem; pointer-events: none; }
     .graph-menu {
       position: fixed;
-      z-index: 60;
+      z-index: 200;
       background: #fffcf6;
       border: 1px solid var(--line);
       border-radius: 10px;
@@ -264,7 +269,7 @@
       padding: .25rem 0;
       box-shadow: var(--shadow);
     }
-    .graph-menu .mi:hover > .sub, .graph-menu .mi:focus-within > .sub { display: block; }
+    .graph-menu .mi:hover > .sub, .graph-menu .mi:focus-within > .sub, .graph-menu .mi.open > .sub { display: block; }
     .graph-menu .head {
       padding: .35rem .8rem .2rem;
       font-size: .7rem;
@@ -791,7 +796,7 @@
   function closeMenu() {
     if (ui.menu && ui.menu.parentNode) ui.menu.parentNode.removeChild(ui.menu);
     ui.menu = null;
-    document.removeEventListener("click", dismissMenu, true);
+    document.removeEventListener("pointerdown", dismissMenu, true);
   }
 
   function currentVariant() {
@@ -929,13 +934,19 @@
     b.type = "button";
     b.className = "mi";
     b.innerHTML = escapeHtml(label) + (hasSub ? '<span class="caret">▸</span>' : "");
-    if (onPick) {
-      b.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        onPick();
-      });
-    }
+    b.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (hasSub) {
+        const was = b.classList.contains("open");
+        if (b.parentNode) {
+          [].forEach.call(b.parentNode.children, function (el) { el.classList.remove("open"); });
+        }
+        if (!was) b.classList.add("open");
+        return;
+      }
+      if (onPick) onPick();
+    });
     return b;
   }
 
@@ -1063,15 +1074,14 @@
 
     document.body.appendChild(menu);
     ui.menu = menu;
-    setTimeout(function () {
-      document.addEventListener("click", dismissMenu, true);
-    }, 0);
+    ui.menuOpenedAt = Date.now();
+    document.addEventListener("pointerdown", dismissMenu, true);
   }
 
   function dismissMenu(e) {
+    if (Date.now() - (ui.menuOpenedAt || 0) < 400) return;
     if (ui.menu && ui.menu.contains(e.target)) return;
     closeMenu();
-    document.removeEventListener("click", dismissMenu, true);
   }
 
   function layoutLabels(nodes, fontSize, width, height) {
@@ -1170,7 +1180,8 @@
 
     const bg = svgEl("rect", {
       x: "0", y: "0", width: String(width), height: String(height),
-      fill: "#ffffff"
+      fill: "#ffffff",
+      "pointer-events": "all"
     });
     svg.appendChild(bg);
 
@@ -1266,7 +1277,7 @@
     if (!nodes.length) {
       const hint = document.createElement("div");
       hint.className = "graph-empty";
-      hint.textContent = "Click empty space. Choose occupancy, a type of move, a named move, or a system. The mark appears as you answer.";
+      hint.innerHTML = "<span>Click empty space. Choose occupancy, a type of move, a named move, or a system. The mark appears as you answer.</span>";
       wrap.appendChild(hint);
     }
 
@@ -1310,7 +1321,8 @@
           stroke: lnk.kind === "defend" ? "#c2410c" : "#a8a29e",
           "stroke-width": lnk.kind === "defend" ? "2.4" : "1.4",
           "stroke-dasharray": lnk.kind === "defend" ? "7 5" : (lnk.kind === "home" || lnk.kind === "sys" ? "3 4" : "0"),
-          opacity: lnk.kind === "open" ? "0.45" : "0.9"
+          opacity: lnk.kind === "open" ? "0.45" : "0.9",
+          "pointer-events": "none"
         });
         linkG.appendChild(line);
       });
@@ -1319,7 +1331,8 @@
         const leader = svgEl("line", {
           x1: String(n.x), y1: String(n.y),
           x2: String(n.lx), y2: String(n.ly),
-          stroke: "#a8a29e", "stroke-width": "1"
+          stroke: "#a8a29e", "stroke-width": "1",
+          "pointer-events": "none"
         });
         labelG.appendChild(leader);
         const lab = svgEl("text", {
@@ -1331,12 +1344,14 @@
           style: "paint-order:stroke;stroke:#fff;stroke-width:5px;cursor:pointer"
         });
         lab.textContent = n.label;
+        lab.setAttribute("data-mark", n.id);
         lab.addEventListener("pointerdown", function (e) { onMarkDown(e, n); });
         lab.addEventListener("click", function (e) { onMarkClick(e, n); });
         lab.addEventListener("dblclick", function (e) { onMarkDbl(e, n); });
         labelG.appendChild(lab);
 
         const g = svgEl("g", { style: "cursor:grab" });
+        g.setAttribute("data-mark", n.id);
         const on = n.id === sel;
         if (n.kind === "start" || n.kind === "end") {
           g.appendChild(svgEl("circle", {
@@ -1406,15 +1421,20 @@
       openCatalogMenu(e.clientX, e.clientY, n);
     }
 
-    bg.addEventListener("click", function (e) {
+    function emptyCanvasClick(e) {
       if (ui.moved) return;
+      if (e.target.closest && e.target.closest(".graph-toolbar")) return;
+      if (e.target.closest && e.target.closest(".sidebar-dock")) return;
+      if (e.target.closest && e.target.closest("[data-mark]")) return;
+      e.preventDefault();
+      e.stopPropagation();
       const p = svgPoint(svg, e.clientX, e.clientY);
       ui.pendingAt = p;
       ui.selected = null;
-      paintGraph();
       showDock();
       openCatalogMenu(e.clientX, e.clientY, null);
-    });
+    }
+    wrap.addEventListener("pointerdown", emptyCanvasClick);
 
     svg.addEventListener("pointermove", function (e) {
       if (!ui.dragging) return;
