@@ -243,8 +243,27 @@
     }
     .catalog-flyout[hidden] { display: none !important; }
     .catalog-flyout h3 { margin: 0 0 .45rem; font-size: .95rem; font-family: var(--serif); }
+    .catalog-crumbs {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .2rem .3rem;
+      margin: 0 0 .55rem;
+    }
+    .catalog-crumbs button {
+      border: 0;
+      background: #1c1917;
+      color: #fff;
+      border-radius: 999px;
+      padding: .18rem .55rem;
+      cursor: pointer;
+      font: inherit;
+      font-size: .78rem;
+    }
+    .catalog-crumbs button:hover { background: #44403c; }
+    .catalog-crumbs .sep { color: var(--muted); font-size: .78rem; }
     .catalog-flyout h4 {
-      margin: .65rem 0 .25rem;
+      margin: .2rem 0 .25rem;
       font-size: .7rem;
       letter-spacing: .04em;
       text-transform: uppercase;
@@ -491,7 +510,7 @@
         Steal pieces from A / B / C. The right-hand panel is the hand-off Build would receive.
       </p>
       <ul>
-        <li><strong>A Force map</strong> — full-width graph. Add walks family → position → occupancy → type of move → end position → named move. Right-drag pans. Recenter and Reset marks sit in the toolbar.</li>
+        <li><strong>A Force map</strong> — full-width graph. Add walks family → position → occupancy → type of move → end position → named move. Chosen steps become a trail; click a trail step to reselect. Sidebar only when a mark is clicked. Right-drag pans. Recenter and Reset marks sit in the toolbar.</li>
         <li><strong>B Hub and ring</strong> — Half guard is the hub. Home transitions sit on it. System members sit on the dilemma ring.</li>
         <li><strong>C Catalog tray</strong> — left is the catalog at this occupancy. Right is what is on the design. Click to move a named move or pin a system.</li>
       </ul>
@@ -637,6 +656,22 @@ window.addEventListener("error", function (ev) {
         return sys && sys.members.every(function (mid) { return next.onMap.indexOf(mid) >= 0; });
       });
     },
+    pruneIncompatible: function (next) {
+      if (!next.occupancy) {
+        next.openMoveTypes = [];
+        next.onMap = [];
+        next.systemsOnMap = [];
+        return;
+      }
+      next.onMap = next.onMap.filter(function (id) {
+        const m = NAMED_MOVES[id];
+        return m && m.start === next.start && m.startSide === next.occupancy;
+      });
+      next.openMoveTypes = next.openMoveTypes.filter(function (tid) {
+        return DesignModel.typesAt(next.occupancy).indexOf(tid) >= 0;
+      });
+      DesignModel.pruneSystems(next);
+    },
     pathLabel: function (id) {
       const m = NAMED_MOVES[id];
       const start = POSITIONS[m.start].label;
@@ -654,14 +689,12 @@ window.addEventListener("error", function (ev) {
           return next;
         }
         const had = next.occupancy;
+        const before = next.onMap.length;
         next.occupancy = action.occupancy;
-        if (had) {
-          next.openMoveTypes = [];
-          next.onMap = [];
-          next.systemsOnMap = [];
-          next.lastChange = "Student occupies " + POSITIONS[next.start].label + " · " + action.occupancy + ". Named moves reset.";
-        } else {
-          next.lastChange = "Student occupies " + POSITIONS[next.start].label + " · " + action.occupancy + ".";
+        DesignModel.pruneIncompatible(next);
+        next.lastChange = "Student occupies " + POSITIONS[next.start].label + " · " + action.occupancy + ".";
+        if (had && next.onMap.length < before) {
+          next.lastChange += " Later marks that no longer fit this occupancy left the map.";
         }
         return next;
       }
@@ -747,6 +780,45 @@ window.addEventListener("error", function (ev) {
         next.lastChange = "Pinned " + sys.label + " as one system. Defend one, they give another.";
         return next;
       }
+      if (kind === "CHANGE_MOVE_TYPE") {
+        const from = action.from;
+        const to = action.to;
+        if (!MOVE_TYPES[to]) return next;
+        if (!next.occupancy) {
+          next.lastChange = "Pick occupancy before changing a type of move.";
+          return next;
+        }
+        if (DesignModel.typesAt(next.occupancy).indexOf(to) < 0) {
+          next.lastChange = MOVE_TYPES[to].label + " is not offered from " + next.occupancy + ".";
+          return next;
+        }
+        next.openMoveTypes = next.openMoveTypes.filter(function (tid) { return tid !== from; });
+        if (next.openMoveTypes.indexOf(to) < 0) next.openMoveTypes.push(to);
+        next.onMap = next.onMap.filter(function (mid) { return NAMED_MOVES[mid].moveType !== from; });
+        DesignModel.pruneSystems(next);
+        next.lastChange = "Changed type of move to " + MOVE_TYPES[to].label + ". Named moves of the old type left the map.";
+        return next;
+      }
+      if (kind === "REPLACE_NAMED_MOVE") {
+        const incoming = NAMED_MOVES[action.to];
+        const outgoing = NAMED_MOVES[action.from];
+        if (!incoming) return next;
+        if (!next.occupancy) next.occupancy = incoming.startSide;
+        if (incoming.start !== next.start || incoming.startSide !== next.occupancy) {
+          next.lastChange = incoming.label + " does not start from this occupancy.";
+          return next;
+        }
+        if (outgoing) {
+          next.onMap = next.onMap.filter(function (id) { return id !== action.from; });
+        }
+        if (next.openMoveTypes.indexOf(incoming.moveType) < 0) next.openMoveTypes.push(incoming.moveType);
+        if (next.onMap.indexOf(action.to) < 0) next.onMap.push(action.to);
+        DesignModel.pruneSystems(next);
+        next.lastChange = outgoing
+          ? "Replaced " + outgoing.label + " with " + incoming.label + "."
+          : "Put " + incoming.label + " on the map.";
+        return next;
+      }
       if (kind === "ADD_NAMED_MOVE") {
         const m = NAMED_MOVES[action.id];
         if (!m) return next;
@@ -803,6 +875,7 @@ window.addEventListener("error", function (ev) {
     labelSize: 16,
     menu: null,
     wizard: null,
+    draft: null,
     pan: { x: 0, y: 0 },
     panning: false,
     dragging: null,
@@ -836,7 +909,7 @@ window.addEventListener("error", function (ev) {
   function palette() {
     let html = '<div class="panel box-final">';
     html += "<h2>" + escapeHtml(state.topic.label) + "</h2>";
-    html += '<p class="hint">Start is Half guard. Occupancy is the student\'s role.</p>';
+    html += '<p class="hint">Editing this mark. Later marks that no longer fit this choice leave the map.</p>';
     html += "<h3>Occupancy</h3><div class='row'>";
     ["bottom", "top", "neutral"].forEach(function (side) {
       html += '<button type="button" class="chip' + (state.occupancy === side ? " on" : "") +
@@ -996,7 +1069,7 @@ window.addEventListener("error", function (ev) {
       moveType: null,
       end: null
     };
-    if (fromNode && state.occupancy) {
+    if (state.occupancy) {
       w.family = POSITIONS[state.start].family;
       w.position = state.start;
       w.occupancy = state.occupancy;
@@ -1010,68 +1083,126 @@ window.addEventListener("error", function (ev) {
     apply(action);
   }
 
+  function wizardCrumbs(w) {
+    const crumbs = [];
+    if (w.family) crumbs.push({ key: "family", label: FAMILIES[w.family].label });
+    if (w.position) crumbs.push({ key: "position", label: POSITIONS[w.position].label });
+    if (w.occupancy) crumbs.push({ key: "occupancy", label: w.occupancy });
+    if (w.moveType) crumbs.push({ key: "moveType", label: MOVE_TYPES[w.moveType].label });
+    if (w.end) crumbs.push({ key: "end", label: POSITIONS[w.end].label });
+    return crumbs;
+  }
+
+  function rewindWizard(w, key) {
+    const order = ["family", "position", "occupancy", "moveType", "end"];
+    const at = order.indexOf(key);
+    order.forEach(function (k, i) {
+      if (i >= at) w[k] = null;
+    });
+  }
+
+  function wizardDraftLabel(w) {
+    if (!w) return "New mark";
+    if (!w.family) return "New mark";
+    if (!w.position) return FAMILIES[w.family].label;
+    if (!w.occupancy) return POSITIONS[w.position].label;
+    if (!w.moveType) return POSITIONS[w.position].label + " · " + w.occupancy;
+    if (w.moveType !== "submission" && !w.end) return MOVE_TYPES[w.moveType].label;
+    return "Named move";
+  }
+
+  function placeNewMark(id, x, y) {
+    if (!ui.markPos[id]) rememberPos(id, x, y);
+  }
+
   function fillCatalog(panel) {
     const w = ui.wizard || startWizard(null);
     panel.innerHTML = "";
     const h = document.createElement("h3");
     h.textContent = w.fromNode ? "Add from this mark" : "Add to the map";
     panel.appendChild(h);
-    const at = ui.pendingAt || { x: 480, y: 280 };
+    const at = ui.pendingAt || (ui.draft ? { x: ui.draft.x, y: ui.draft.y } : { x: 480, y: 280 });
+    const crumbs = wizardCrumbs(w);
+    if (crumbs.length) {
+      const trail = document.createElement("div");
+      trail.className = "catalog-crumbs";
+      crumbs.forEach(function (c, i) {
+        if (i) {
+          const sep = document.createElement("span");
+          sep.className = "sep";
+          sep.textContent = "›";
+          trail.appendChild(sep);
+        }
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = c.label;
+        b.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          rewindWizard(w, c.key);
+          fillCatalog(panel);
+        });
+        trail.appendChild(b);
+      });
+      panel.appendChild(trail);
+    }
 
-    section(panel, "Family");
-    Object.keys(FAMILIES).filter(function (fid) {
-      return fid === "guard";
-    }).forEach(function (fid) {
-      panel.appendChild(pickBtn(FAMILIES[fid].label, w.family === fid, function () {
-        w.family = fid;
-        w.position = null;
-        w.occupancy = null;
-        w.moveType = null;
-        w.end = null;
-        fillCatalog(panel);
-      }));
-    });
-    if (!w.family) return;
+    if (!w.family) {
+      section(panel, "Family");
+      Object.keys(FAMILIES).filter(function (fid) { return fid === "guard"; }).forEach(function (fid) {
+        panel.appendChild(pickBtn(FAMILIES[fid].label, false, function () {
+          w.family = fid;
+          fillCatalog(panel);
+        }));
+      });
+      return;
+    }
 
-    section(panel, "Position");
-    const startPositions = w.family === "guard" ? ["half-guard"] : [];
-    startPositions.forEach(function (pid) {
-      panel.appendChild(pickBtn(POSITIONS[pid].label, w.position === pid, function () {
-        w.position = pid;
-        w.occupancy = null;
-        w.moveType = null;
-        w.end = null;
-        fillCatalog(panel);
-      }));
-    });
-    if (!w.position) return;
+    if (!w.position) {
+      section(panel, "Position");
+      const startPositions = w.family === "guard" ? ["half-guard"] : [];
+      if (!startPositions.length) emptyHint(panel, "No positions in this sample for that family.");
+      startPositions.forEach(function (pid) {
+        panel.appendChild(pickBtn(POSITIONS[pid].label, false, function () {
+          w.position = pid;
+          fillCatalog(panel);
+        }));
+      });
+      return;
+    }
 
-    section(panel, "Occupancy");
-    ["bottom", "top", "neutral"].forEach(function (side) {
-      panel.appendChild(pickBtn(side, w.occupancy === side, function () {
-        w.occupancy = side;
-        w.moveType = null;
-        w.end = null;
-        rememberPos("pos:" + w.position, at.x, at.y);
-        ui.selected = { kind: "start", id: w.position };
-        wizardApply({ type: "SET_OCCUPANCY", occupancy: side });
-      }));
-    });
-    if (!w.occupancy) return;
+    if (!w.occupancy) {
+      section(panel, "Occupancy");
+      ["bottom", "top", "neutral"].forEach(function (side) {
+        panel.appendChild(pickBtn(side, false, function () {
+          w.occupancy = side;
+          w.moveType = null;
+          w.end = null;
+          if (!state.occupancy) placeNewMark("pos:" + w.position, at.x, at.y);
+          ui.draft = { x: at.x + 120, y: at.y };
+          ui.pendingAt = { x: ui.draft.x, y: ui.draft.y };
+          wizardApply({ type: "SET_OCCUPANCY", occupancy: side });
+        }));
+      });
+      return;
+    }
 
-    section(panel, "Type of move");
-    DesignModel.typesAt(w.occupancy).forEach(function (tid) {
-      panel.appendChild(pickBtn(MOVE_TYPES[tid].label, w.moveType === tid, function () {
-        w.moveType = tid;
-        w.end = null;
-        rememberPos("type:" + tid, at.x + 80, at.y);
-        ui.selected = { kind: "type", id: tid };
-        wizardApply({ type: "OPEN_MOVE_TYPE", id: tid });
-      }));
-    });
-    if (!w.moveType) return;
+    if (!w.moveType) {
+      section(panel, "Type of move");
+      DesignModel.typesAt(w.occupancy).forEach(function (tid) {
+        panel.appendChild(pickBtn(MOVE_TYPES[tid].label, false, function () {
+          w.moveType = tid;
+          w.end = null;
+          placeNewMark("type:" + tid, at.x, at.y);
+          ui.draft = { x: at.x + 120, y: at.y };
+          ui.pendingAt = { x: ui.draft.x, y: ui.draft.y };
+          wizardApply({ type: "OPEN_MOVE_TYPE", id: tid });
+        }));
+      });
+      return;
+    }
 
-    if (w.moveType !== "submission") {
+    if (w.moveType !== "submission" && !w.end) {
       section(panel, "End position");
       const ends = [];
       matchingMoves(w).forEach(function (id) {
@@ -1080,13 +1211,15 @@ window.addEventListener("error", function (ev) {
       });
       if (!ends.length) emptyHint(panel, "No named moves on this path yet.");
       ends.forEach(function (pid) {
-        panel.appendChild(pickBtn(POSITIONS[pid].label, w.end === pid, function () {
+        panel.appendChild(pickBtn(POSITIONS[pid].label, false, function () {
           w.end = pid;
-          rememberPos("pos:" + pid, at.x + 220, at.y);
+          placeNewMark("pos:" + pid, at.x + 40, at.y);
+          ui.draft = { x: at.x, y: at.y + 80 };
+          ui.pendingAt = { x: ui.draft.x, y: ui.draft.y };
           fillCatalog(panel);
         }));
       });
-      if (!w.end) return;
+      return;
     }
 
     section(panel, "Named move");
@@ -1095,8 +1228,8 @@ window.addEventListener("error", function (ev) {
     moves.forEach(function (mid) {
       panel.appendChild(pickBtn(NAMED_MOVES[mid].label, false, function () {
         const pos = w.fromNode ? placeNear(w.fromNode.id, 1) : at;
-        rememberPos("move:" + mid, pos.x, pos.y);
-        ui.selected = { kind: "move", id: mid };
+        placeNewMark("move:" + mid, pos.x, pos.y);
+        ui.draft = null;
         ui.wizard.active = false;
         closeMenu();
         apply({ type: "ADD_NAMED_MOVE", id: mid });
@@ -1133,8 +1266,12 @@ window.addEventListener("error", function (ev) {
   function dismissMenu(e) {
     if (ui.menu && ui.menu.contains(e.target)) return;
     if (e.target.closest && e.target.closest("[data-add]")) return;
+    if (e.target.closest && e.target.closest(".map-stage") && !e.target.closest(".graph-toolbar")) return;
     if (ui.wizard) ui.wizard.active = false;
+    const hadDraft = !!ui.draft;
+    ui.draft = null;
     closeMenu();
+    if (hadDraft) paint();
   }
 
   function layoutLabels(nodes, fontSize, width, height) {
@@ -1225,8 +1362,10 @@ window.addEventListener("error", function (ev) {
       e.preventDefault();
       e.stopPropagation();
       ui.pendingAt = { x: width * 0.45, y: height * 0.45 };
+      ui.draft = { x: ui.pendingAt.x, y: ui.pendingAt.y };
+      ui.selected = null;
       startWizard(null);
-      openCatalogMenu(e.clientX, e.clientY, null);
+      paint();
     });
     const sizes = [12, 16, 20];
     const sizeHost = tools.querySelector(".size-btns");
@@ -1311,6 +1450,13 @@ window.addEventListener("error", function (ev) {
         homeX: width * 0.5, homeY: height * 0.18 + i * 50, r: 18
       });
     });
+    if (ui.draft) {
+      nodes.push({
+        id: "draft", kind: "draft",
+        label: wizardDraftLabel(ui.wizard),
+        homeX: ui.draft.x, homeY: ui.draft.y, r: 18
+      });
+    }
 
     const byId = {};
     nodes.forEach(function (n) {
@@ -1321,7 +1467,8 @@ window.addEventListener("error", function (ev) {
       n.vy = 0;
       n.pinned = !!prev;
       byId[n.id] = n;
-      rememberPos(n.id, n.x, n.y);
+      if (n.id === "draft") ui.draft = { x: n.x, y: n.y };
+      else rememberPos(n.id, n.x, n.y);
     });
 
     const startN = byId["pos:" + state.start];
@@ -1371,7 +1518,7 @@ window.addEventListener("error", function (ev) {
 
     function selectedId() {
       if (!ui.selected) return "";
-      if (ui.selected.kind === "start") return "pos:" + ui.selected.id;
+      if (ui.selected.kind === "start" || ui.selected.kind === "end") return "pos:" + ui.selected.id;
       if (ui.selected.kind === "type") return "type:" + ui.selected.id;
       if (ui.selected.kind === "move") return "move:" + ui.selected.id;
       if (ui.selected.kind === "system") return "sys:" + ui.selected.id;
@@ -1394,7 +1541,10 @@ window.addEventListener("error", function (ev) {
           }
         }
       }
-      nodes.forEach(function (n) { rememberPos(n.id, n.x, n.y); });
+      nodes.forEach(function (n) {
+        if (n.id === "draft") ui.draft = { x: n.x, y: n.y };
+        else rememberPos(n.id, n.x, n.y);
+      });
       layoutLabels(nodes, ui.labelSize, width, height);
       linkG.innerHTML = "";
       nodeG.innerHTML = "";
@@ -1451,6 +1601,12 @@ window.addEventListener("error", function (ev) {
             fill: "#e7e5e4", stroke: on ? "#1c1917" : "#57534e",
             "stroke-width": on ? "3" : "2", rx: "4"
           }));
+        } else if (n.kind === "draft") {
+          g.appendChild(svgEl("circle", {
+            cx: String(n.x), cy: String(n.y), r: String(n.r),
+            fill: "#fff", stroke: "#1c1917",
+            "stroke-width": "2.5", "stroke-dasharray": "5 4"
+          }));
         } else if (n.kind === "system") {
           g.appendChild(svgEl("polygon", {
             points: [n.x, n.y - 18, n.x + 18, n.y, n.x, n.y + 18, n.x - 18, n.y].join(" "),
@@ -1473,8 +1629,12 @@ window.addEventListener("error", function (ev) {
     }
 
     function selectNode(n) {
+      if (n.kind === "draft") {
+        ui.selected = null;
+        return;
+      }
       if (n.kind === "start") ui.selected = { kind: "start", id: state.start };
-      else if (n.kind === "end") ui.selected = { kind: "start", id: n.id.slice(4) };
+      else if (n.kind === "end") ui.selected = { kind: "end", id: n.id.slice(4) };
       else if (n.kind === "type") ui.selected = { kind: "type", id: n.id.slice(5) };
       else if (n.kind === "move") ui.selected = { kind: "move", id: n.moveId };
       else if (n.kind === "system") ui.selected = { kind: "system", id: n.sysId };
@@ -1493,19 +1653,26 @@ window.addEventListener("error", function (ev) {
     function onMarkClick(e, n) {
       e.stopPropagation();
       if (ui.moved) return;
+      if (n.kind === "draft") {
+        if (!ui.wizard || !ui.wizard.active) startWizard(null);
+        openCatalogMenu(e.clientX, e.clientY, ui.wizard && ui.wizard.fromNode);
+        return;
+      }
+      if (ui.wizard) ui.wizard.active = false;
+      ui.draft = null;
+      closeMenu();
       selectNode(n);
-      paintGraph();
-      showDock();
+      paint();
     }
     function onMarkDbl(e, n) {
       e.stopPropagation();
       e.preventDefault();
+      if (n.kind === "draft") return;
       ui.pendingAt = placeNear(n.id, 1);
+      ui.draft = { x: ui.pendingAt.x, y: ui.pendingAt.y };
       selectNode(n);
-      paintGraph();
-      showDock();
       startWizard(n);
-      openCatalogMenu(e.clientX, e.clientY, n);
+      paint();
     }
 
     function emptyCanvasClick(e) {
@@ -1514,6 +1681,7 @@ window.addEventListener("error", function (ev) {
       if (e.target.closest && e.target.closest(".sidebar-dock")) return;
       if (e.target.closest && e.target.closest("[data-mark]")) return;
       if (e.target.closest && e.target.closest(".catalog-flyout")) return;
+      if (e.target.closest && e.target.closest(".legend")) return;
       e.stopPropagation();
       let p = { x: width * 0.45, y: height * 0.45 };
       try {
@@ -1521,13 +1689,12 @@ window.addEventListener("error", function (ev) {
         p = { x: s.x - ui.pan.x, y: s.y - ui.pan.y };
       } catch (err) {}
       ui.pendingAt = p;
+      ui.draft = { x: p.x, y: p.y };
       ui.selected = null;
-      showDock();
       startWizard(null);
-      openCatalogMenu(e.clientX, e.clientY, null);
+      paint();
     }
     wrap.addEventListener("click", emptyCanvasClick);
-    svg.addEventListener("click", emptyCanvasClick);
     wrap.addEventListener("contextmenu", function (e) { e.preventDefault(); });
     svg.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 
@@ -1728,7 +1895,7 @@ window.addEventListener("error", function (ev) {
     },
     {
       name: "Occupancy with no catalog",
-      copy: "Switch to top. This sample has no named moves from Half guard · top. The map clears.",
+      copy: "Switch to top. This sample has no named moves from Half guard · top. Those named moves leave the map.",
       steps: [
         { label: "Load Tight waist design", action: { type: "LOAD_SAMPLE" } },
         { label: "Occupancy top", action: { type: "SET_OCCUPANCY", occupancy: "top" } }
@@ -1812,23 +1979,58 @@ window.addEventListener("error", function (ev) {
     paintScenes();
   }
 
+  function liveSelected() {
+    if (!ui.selected) return;
+    if (ui.selected.kind === "start" && !state.occupancy) ui.selected = null;
+    if (ui.selected.kind === "end") {
+      const still = state.onMap.some(function (id) { return NAMED_MOVES[id].end === ui.selected.id; });
+      if (!still) ui.selected = null;
+    }
+    if (ui.selected.kind === "type" && state.openMoveTypes.indexOf(ui.selected.id) < 0) ui.selected = null;
+    if (ui.selected.kind === "move" && state.onMap.indexOf(ui.selected.id) < 0) ui.selected = null;
+    if (ui.selected.kind === "system" && state.systemsOnMap.indexOf(ui.selected.id) < 0) ui.selected = null;
+  }
+
+  function syncMarkPos() {
+    const keep = { draft: true };
+    if (state.occupancy) keep["pos:" + state.start] = true;
+    state.openMoveTypes.forEach(function (tid) { keep["type:" + tid] = true; });
+    state.onMap.forEach(function (id) {
+      const m = NAMED_MOVES[id];
+      keep["move:" + id] = true;
+      keep["type:" + m.moveType] = true;
+      if (m.end !== state.start) keep["pos:" + m.end] = true;
+    });
+    state.systemsOnMap.forEach(function (sid) { keep["sys:" + sid] = true; });
+    Object.keys(ui.markPos).forEach(function (id) {
+      if (!keep[id]) delete ui.markPos[id];
+    });
+  }
+
   function apply(action) {
     if (action.type === "RESET") {
       ui.markPos = {};
       ui.selected = null;
       ui.pan = { x: 0, y: 0 };
       ui.wizard = null;
+      ui.draft = null;
     }
     if (action.type === "LOAD_SAMPLE") {
       ui.markPos = {};
-      ui.selected = { kind: "system", id: "tight-waist-trilemma" };
+      ui.selected = null;
       ui.wizard = null;
+      ui.draft = null;
       ui.pan = { x: 0, y: 0 };
     }
-    if (action.type === "SET_OCCUPANCY" && state.occupancy && state.occupancy !== action.occupancy) {
-      ui.markPos = {};
+    if (action.type === "CHANGE_MOVE_TYPE") {
+      ui.selected = { kind: "type", id: action.to };
+    }
+    if (action.type === "REPLACE_NAMED_MOVE") {
+      ui.selected = { kind: "move", id: action.to };
     }
     state = DesignModel.reduce(state, action);
+    liveSelected();
+    syncMarkPos();
     paint();
   }
 
@@ -1837,8 +2039,22 @@ window.addEventListener("error", function (ev) {
     if (!btn) return;
     const act = btn.getAttribute("data-act");
     if (act === "occupancy") apply({ type: "SET_OCCUPANCY", occupancy: btn.getAttribute("data-id") });
-    if (act === "type") apply({ type: "TOGGLE_MOVE_TYPE", id: btn.getAttribute("data-id") });
-    if (act === "move") apply({ type: "TOGGLE_NAMED_MOVE", id: btn.getAttribute("data-id") });
+    if (act === "type") {
+      const id = btn.getAttribute("data-id");
+      if (ui.selected && ui.selected.kind === "type" && ui.selected.id !== id) {
+        apply({ type: "CHANGE_MOVE_TYPE", from: ui.selected.id, to: id });
+      } else {
+        apply({ type: "TOGGLE_MOVE_TYPE", id: id });
+      }
+    }
+    if (act === "move") {
+      const id = btn.getAttribute("data-id");
+      if (ui.selected && ui.selected.kind === "move" && ui.selected.id !== id) {
+        apply({ type: "REPLACE_NAMED_MOVE", from: ui.selected.id, to: id });
+      } else {
+        apply({ type: "TOGGLE_NAMED_MOVE", id: id });
+      }
+    }
     if (act === "system") apply({ type: "TOGGLE_SYSTEM", id: btn.getAttribute("data-id") });
     if (act === "sample") apply({ type: "LOAD_SAMPLE" });
     if (act === "reset") apply({ type: "RESET" });
@@ -1875,7 +2091,13 @@ window.addEventListener("error", function (ev) {
   document.addEventListener("keydown", function (e) {
     const t = e.target;
     if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
-    if (e.key === "Escape") { closeMenu(); return; }
+    if (e.key === "Escape") {
+      if (ui.wizard) ui.wizard.active = false;
+      ui.draft = null;
+      closeMenu();
+      paint();
+      return;
+    }
     if (ui.menu) return;
     if (e.key === "ArrowLeft") cycle(-1);
     if (e.key === "ArrowRight") cycle(1);
