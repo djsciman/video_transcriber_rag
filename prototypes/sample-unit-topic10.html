@@ -368,6 +368,17 @@
     tr.sparring { background: linear-gradient(90deg, var(--spar-soft), #fff 42%); }
     tr.game { background: linear-gradient(90deg, var(--game-soft), #fff 42%); }
     tr.glued td:first-child { box-shadow: inset 4px 0 0 #fb923c; }
+    tr[data-drag="lesson"] { cursor: grab; }
+    tr[data-drag="lesson"].dragging, .cut.dragging { opacity: .5; }
+    tr.drop-target td { outline: 2px dashed #9a3412; outline-offset: -2px; }
+    .edit-tools { display: flex; flex-direction: column; gap: .25rem; min-width: 4.2rem; }
+    .edit-tools .grip {
+      font-size: .85rem;
+      letter-spacing: -.05em;
+      color: var(--muted);
+      cursor: grab;
+      user-select: none;
+    }
     .tiny { color: var(--muted); font-size: .76rem; }
     .check { width: 2rem; text-align: center; font-family: var(--mono); color: #a8a29e; }
     .target .path { display: block; color: var(--muted); font-size: .75rem; }
@@ -424,7 +435,7 @@
         Edit packs class cuts, adds or removes lessons, and chooses citations.
       </p>
       <ul>
-        <li><strong>A Class cards</strong> — each class is a colored card with its own table (meeting-card organization + run-sheet columns).</li>
+        <li><strong>A Class cards</strong> — each class is a colored card with its own table. In Edit, drag a lesson or use Up/Down; a technique and its drill move as one block, including across class cuts.</li>
         <li><strong>B Spine table</strong> — one clipboard table; dark class-cut rails sit in the row stream.</li>
         <li><strong>C List + inspector</strong> — compact colored lesson list; What to run opens on the right for the selected lesson.</li>
       </ul>
@@ -594,6 +605,24 @@
       if (i > 0 && lessons[i - 1].glue && L && L.type === "drill") return { start: i - 1, end: i };
       return { start: i, end: i };
     },
+    step: function (classes, ci, li, dir) {
+      const lessons = classes[ci].lessons;
+      const b = UnitModel.block(lessons, li);
+      if (dir < 0) {
+        if (b.start === 0) {
+          if (ci === 0) return null;
+          return { fromCi: ci, fromLi: li, toCi: ci - 1, toLi: classes[ci - 1].lessons.length };
+        }
+        const prevB = UnitModel.block(lessons, b.start - 1);
+        return { fromCi: ci, fromLi: li, toCi: ci, toLi: prevB.start };
+      }
+      if (b.end === lessons.length - 1) {
+        if (ci === classes.length - 1) return null;
+        return { fromCi: ci, fromLi: li, toCi: ci + 1, toLi: 0 };
+      }
+      const nextB = UnitModel.block(lessons, b.end + 1);
+      return { fromCi: ci, fromLi: li, toCi: ci, toLi: nextB.end + 1 };
+    },
     reduce: function (state, action) {
       const next = UnitModel.clone(state);
       const kind = action.type;
@@ -631,6 +660,43 @@
           UnitModel.retitle(next.classes);
           next.lastChange = "Class cut moved down. The first block of this class joined the earlier class.";
         }
+        return next;
+      }
+      if (kind === "MOVE_LESSON") {
+        const fromCi = action.fromCi;
+        const fromLi = action.fromLi;
+        let toCi = action.toCi;
+        let toLi = action.toLi;
+        if (fromCi < 0 || toCi < 0 || fromCi >= next.classes.length || toCi >= next.classes.length) {
+          next.lastChange = "Lesson order unchanged.";
+          return next;
+        }
+        const src = next.classes[fromCi];
+        const b = UnitModel.block(src.lessons, fromLi);
+        const dest = next.classes[toCi];
+        if (toLi < 0) toLi = 0;
+        if (toLi > dest.lessons.length) toLi = dest.lessons.length;
+        if (toLi < dest.lessons.length) toLi = UnitModel.block(dest.lessons, toLi).start;
+        if (fromCi === toCi && (toLi === b.start || toLi === b.end + 1)) {
+          next.lastChange = "That lesson is already in this place.";
+          return next;
+        }
+        const chunk = src.lessons.splice(b.start, b.end - b.start + 1);
+        if (fromCi === toCi && toLi > b.start) toLi -= chunk.length;
+        if (src.lessons.length === 0) {
+          if (next.classes.length === 1) {
+            src.lessons = chunk;
+            next.lastChange = "A class must keep at least one lesson. Move cancelled.";
+            return next;
+          }
+          next.classes.splice(fromCi, 1);
+          if (toCi > fromCi) toCi -= 1;
+        }
+        const destNow = next.classes[toCi];
+        destNow.lessons = destNow.lessons.slice(0, toLi).concat(chunk, destNow.lessons.slice(toLi));
+        UnitModel.retitle(next.classes);
+        const names = chunk.map(function (L) { return L.title; }).join(" + ");
+        next.lastChange = "Reordered " + names + " into " + destNow.title + ".";
         return next;
       }
       if (kind === "REORDER_CLASS") {
@@ -733,7 +799,7 @@
   ];
 
   let state = UnitModel.seed();
-  let ui = { picker: null, scene: 0, sceneStep: 0, dragFrom: null, selected: { ci: 0, li: 0 } };
+  let ui = { picker: null, scene: 0, sceneStep: 0, drag: null, selected: { ci: 0, li: 0 } };
 
   const VARIANTS = [
     { key: "A", name: "Class cards" },
@@ -963,14 +1029,22 @@
     return html;
   }
 
-  function lessonRow(klass, ci, li, mode) {
+  function lessonRow(klass, ci, li, mode, reorder) {
     const lesson = klass.lessons[li];
     const prev = klass.lessons[li - 1];
     const glued = !!(prev && prev.glue && lesson.type === "drill");
-    let html = '<tr class="' + lesson.type + (glued || lesson.glue ? " glued" : "") + '">';
+    const canDrag = mode === "edit" && reorder;
+    let html = '<tr class="' + lesson.type + (glued || lesson.glue ? " glued" : "") + '"' +
+      (canDrag ? ' draggable="true" data-drag="lesson" data-class="' + ci + '" data-lesson="' + li + '"' : "") + ">";
     if (mode === "read") html += '<td class="check"><input type="checkbox" aria-label="Ran ' + escapeAttr(lesson.title) + '"></td>';
     if (mode === "edit") {
-      html += '<td><button type="button" class="icon-btn warn" data-act="remove" data-class="' + ci + '" data-lesson="' + li + '">Remove</button></td>';
+      html += '<td class="edit-tools">';
+      if (reorder) {
+        html += '<span class="grip" title="Drag to reorder">⋮⋮</span>';
+        html += '<button type="button" class="icon-btn" data-act="lesson-up" data-class="' + ci + '" data-lesson="' + li + '">Up</button>';
+        html += '<button type="button" class="icon-btn" data-act="lesson-down" data-class="' + ci + '" data-lesson="' + li + '">Down</button>';
+      }
+      html += '<button type="button" class="icon-btn warn" data-act="remove" data-class="' + ci + '" data-lesson="' + li + '">Remove</button></td>';
     }
     html += "<td>" + lessonTitleCell(lesson, glued) + "</td>";
     html += "<td>" + typePill(lesson.type) + "</td>";
@@ -989,7 +1063,7 @@
       html += cutInner(klass, ci, mode) + "</div>";
       if (mode === "edit") html += addBarHtml(ci);
       html += '<table class="sheet">' + tableHead(mode) + "<tbody>";
-      klass.lessons.forEach(function (_lesson, li) { html += lessonRow(klass, ci, li, mode); });
+      klass.lessons.forEach(function (_lesson, li) { html += lessonRow(klass, ci, li, mode, true); });
       html += "</tbody></table></section>";
     });
     html += '<p class="foot"><strong>Success watch:</strong> ' + escapeHtml(state.success) + "</p>";
@@ -1117,6 +1191,16 @@
         { label: "Switch to Edit", mode: "edit" },
         { label: "Add far-leg citation", action: { type: "SET_CITATIONS", classIndex: 1, lessonIndex: 0, ids: ["jd-trilemma", "jd-far-leg"] } }
       ]
+    },
+    {
+      name: "Reorder on A",
+      copy: "Layout A, Edit. Move Roll through above The trilemma. The glued drill travels with it. Drag a row, or use Up / Down. Drop on another class cut to pack it there.",
+      steps: [
+        { label: "Reset unit", action: { type: "RESET" } },
+        { label: "Layout A", variant: "A" },
+        { label: "Switch to Edit", mode: "edit" },
+        { label: "Move roll-through above the trilemma", action: { type: "MOVE_LESSON", fromCi: 1, fromLi: 2, toCi: 1, toLi: 0 } }
+      ]
     }
   ];
 
@@ -1174,6 +1258,15 @@
     }
     if (act === "cut-up") dispatch({ type: "MOVE_CUT", classIndex: ci, dir: -1 });
     if (act === "cut-down") dispatch({ type: "MOVE_CUT", classIndex: ci, dir: 1 });
+    if (act === "lesson-up" || act === "lesson-down") {
+      const step = UnitModel.step(state.classes, ci, li, act === "lesson-up" ? -1 : 1);
+      if (!step) {
+        toast("That block is already at the " + (act === "lesson-up" ? "top" : "bottom") + " of the unit.");
+        return;
+      }
+      dispatch({ type: "MOVE_LESSON", fromCi: step.fromCi, fromLi: step.fromLi, toCi: step.toCi, toLi: step.toLi });
+      return;
+    }
     if (act === "remove") dispatch({ type: "REMOVE_LESSON", classIndex: ci, lessonIndex: li });
     if (act === "cites") {
       ui.picker = { ci: ci, li: li };
@@ -1202,29 +1295,91 @@
 
   document.getElementById("app").addEventListener("dragstart", function (e) {
     if (currentMode() !== "edit") return;
+    if (e.target.closest("button, input, select, a, textarea, .picker")) return;
+    const row = e.target.closest('tr[data-drag="lesson"]');
     const cut = e.target.closest(".cut");
+    if (row) {
+      ui.drag = {
+        kind: "lesson",
+        ci: Number(row.getAttribute("data-class")),
+        li: Number(row.getAttribute("data-lesson"))
+      };
+      row.classList.add("dragging");
+      e.dataTransfer.setData("text/plain", "lesson");
+      e.dataTransfer.effectAllowed = "move";
+      return;
+    }
     if (!cut) return;
-    ui.dragFrom = Number(cut.getAttribute("data-class"));
+    ui.drag = { kind: "class", ci: Number(cut.getAttribute("data-class")) };
     cut.classList.add("dragging");
-    e.dataTransfer.setData("text/plain", String(ui.dragFrom));
+    e.dataTransfer.setData("text/plain", "class");
     e.dataTransfer.effectAllowed = "move";
   });
-  document.getElementById("app").addEventListener("dragend", function (e) {
-    const cut = e.target.closest(".cut");
-    if (cut) cut.classList.remove("dragging");
+  document.getElementById("app").addEventListener("dragend", function () {
+    document.querySelectorAll(".dragging, .drop-target").forEach(function (el) {
+      el.classList.remove("dragging");
+      el.classList.remove("drop-target");
+    });
+    ui.drag = null;
   });
   document.getElementById("app").addEventListener("dragover", function (e) {
-    if (currentMode() !== "edit") return;
+    if (currentMode() !== "edit" || !ui.drag) return;
+    document.querySelectorAll("tr.drop-target").forEach(function (el) { el.classList.remove("drop-target"); });
+    if (ui.drag.kind === "lesson") {
+      const row = e.target.closest('tr[data-drag="lesson"]');
+      const card = e.target.closest(".class-card");
+      if (row || card || e.target.closest(".cut")) {
+        e.preventDefault();
+        if (row) row.classList.add("drop-target");
+      }
+      return;
+    }
     if (e.target.closest(".cut")) e.preventDefault();
   });
   document.getElementById("app").addEventListener("drop", function (e) {
-    const cut = e.target.closest(".cut");
-    if (!cut || currentMode() !== "edit") return;
+    if (currentMode() !== "edit" || !ui.drag) return;
     e.preventDefault();
-    const to = Number(cut.getAttribute("data-class"));
-    const from = ui.dragFrom;
-    ui.dragFrom = null;
-    dispatch({ type: "REORDER_CLASS", from: from, to: to });
+    const drag = ui.drag;
+    ui.drag = null;
+    if (drag.kind === "lesson") {
+      const row = e.target.closest('tr[data-drag="lesson"]');
+      const cut = e.target.closest(".cut");
+      const card = e.target.closest(".class-card");
+      if (row) {
+        dispatch({
+          type: "MOVE_LESSON",
+          fromCi: drag.ci,
+          fromLi: drag.li,
+          toCi: Number(row.getAttribute("data-class")),
+          toLi: Number(row.getAttribute("data-lesson"))
+        });
+        return;
+      }
+      if (cut) {
+        dispatch({
+          type: "MOVE_LESSON",
+          fromCi: drag.ci,
+          fromLi: drag.li,
+          toCi: Number(cut.getAttribute("data-class")),
+          toLi: 0
+        });
+        return;
+      }
+      if (card) {
+        const toCi = Number(card.getAttribute("data-class"));
+        dispatch({
+          type: "MOVE_LESSON",
+          fromCi: drag.ci,
+          fromLi: drag.li,
+          toCi: toCi,
+          toLi: state.classes[toCi].lessons.length
+        });
+      }
+      return;
+    }
+    const cut = e.target.closest(".cut");
+    if (!cut) return;
+    dispatch({ type: "REORDER_CLASS", from: drag.ci, to: Number(cut.getAttribute("data-class")) });
   });
 
   document.getElementById("prev").addEventListener("click", function () { cycle(-1); });
@@ -1254,6 +1409,7 @@
     if (!stepBtn) return;
     const scene = SCENES[ui.scene];
     const step = scene.steps[Number(stepBtn.getAttribute("data-step"))];
+    if (step.variant) setVariant(step.variant);
     if (step.mode) setMode(step.mode);
     if (step.action) dispatch(step.action);
   });
