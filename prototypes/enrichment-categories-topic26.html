@@ -251,7 +251,7 @@
       overflow: hidden;
     }
     .force-svg { height: 900px; }
-    .er-svg { height: 720px; }
+    .er-svg { height: 700px; }
     .setup-pairs {
       display: flex;
       flex-wrap: wrap;
@@ -364,9 +364,9 @@
   <header class="page">
     <h1>Starting finder tree</h1>
     <p class="meta">
-      One position record is used as a start and as an end. Submissions are endings only.
-      The entity diagram asks which of those names are records, which are only fields, and which are activities the coach performs.
-      A sequence is a setup of complementary named moves: when the partner defends A, they give B. Teaching order is a field on that setup, not the fighting graph.
+      Catalog records are reused: Position, Type of move, Submission, Named move, System, Citation, Lesson type.
+      Activity records use that catalog: Unit, Class, Lesson.
+      A named move is the start, the type of move, and the end (a position or a submission). A system is two or more named moves that create a dilemma.
     </p>
   </header>
   <div class="question">
@@ -374,8 +374,8 @@
       <summary>Question this prototype answers</summary>
       <p>
         Does this starting tree of finder nodes look right to import as the live copy the coach then edits?
-        Which names are entities (a catalog record, or an activity such as a sequence or a citation) and which are only attributes of those records?
-        A sequence is a complementary setup, not a one-way chain. Click the entity diagram, load the closed-guard sample, add or drop named moves, then say what should change before import.
+        Click the entity diagram. Catalog boxes are blue. Activity boxes are orange. Dotted ovals are fields.
+        Load the closed-guard sample on the force graph to assemble a system of named moves, then say what should change.
       </p>
     </details>
   </div>
@@ -873,7 +873,7 @@
         label: "Position",
         shape: "entity",
         nature: "reference",
-        summary: "One finder record. A path may use it as a start or as an end. Those are roles, not two entities.",
+        summary: "Catalog of where a named move is applied from or goes to. One record. Start and end are roles on the named move.",
         attrs: ["label", "family", "aliases", "cross_refs"],
         countKey: "positions"
       },
@@ -882,7 +882,7 @@
         label: "Type of move",
         shape: "entity",
         nature: "reference",
-        summary: "Catalog of how a path leaves a position: takedown, sweep, pass, escape, submission, transition, back take.",
+        summary: "Catalog of what the named move is accomplishing: takedown, sweep, pass, escape, submission, transition, back take.",
         attrs: ["label"],
         countKey: "move_types"
       },
@@ -891,7 +891,7 @@
         label: "Submission",
         shape: "entity",
         nature: "reference",
-        summary: "Finder record that occupies the end of a path only. It is not a position.",
+        summary: "Catalog of unique submissions. A named move may end here. A submission is not a position.",
         attrs: ["label", "aliases", "cross_refs"],
         countKey: "submissions"
       },
@@ -900,66 +900,64 @@
         label: "Named move",
         shape: "entity",
         nature: "reference",
-        summary: "A specific named movement on a path, such as Hip bump sweep. The seed stores it as a leaf on the path. The same name can sit on more than one path.",
-        attrs: ["name", "ruleset", "aliases", "cross_refs", "seen_in"],
-        countKey: "leaves",
-        ask: "Should a named move be its own identity, or only a leaf hanging off a path?"
+        summary: "One catalog movement, such as Hip bump sweep. It consists of a start position, a type of move, and an end (a position or a submission). Citations link here. Systems group two or more of these.",
+        attrs: ["name", "start", "type of move", "end", "ruleset", "aliases", "cross_refs"],
+        countKey: "leaves"
       },
       {
-        id: "path",
-        label: "Path",
-        shape: "relationship",
-        nature: "reference",
-        summary: "The allowed hop: one position as start, one type of move, one ending (a position or a submission). Named-move leaves hang on this hop.",
-        attrs: ["start role", "end role"],
-        countKey: "paths",
-        ask: "Is a path a catalog entity the coach edits, or only the relationship between those records?"
-      },
-      {
-        id: "sequence",
-        label: "Sequence",
+        id: "system",
+        label: "System",
         shape: "entity",
-        nature: "activity",
-        summary: "A coach-authored setup of complementary named moves that share a start. When the partner defends one, they give another. Linear last-move chains fail against a good opponent. Not a finder node in the seed.",
-        attrs: ["shared start", "member named moves", "teaching order"],
-        countKey: "sequence",
-        ask: "Is a sequence this complementary setup (dilemma or trilemma), with teaching order only as a field?"
-      },
-      {
-        id: "complement",
-        label: "Complement",
-        shape: "relationship",
         nature: "reference",
-        summary: "Directed pair inside a sequence: defending named move A gives named move B. The coach authors these pairs. A two-move setup is a dilemma; three is a trilemma.",
-        attrs: ["defend A", "gives B"],
-        countKey: "complements",
-        ask: "Does the coach store each defend-A-gives-B pair, rather than treating every pair of members as complementary?"
+        summary: "Two or more named moves used together to create a dilemma. When the partner defends one, they give another. Reused from the catalog when a unit teaches it.",
+        attrs: ["member named moves"],
+        countKey: "systems",
+        ask: "The glossary already defines System as the coach's choice of how one topic is taught. Is this dilemma cluster that same System?"
       },
       {
         id: "citation",
         label: "Citation",
         shape: "entity",
-        nature: "activity",
-        summary: "A recorded teaching of a movement. It may hold one optional link to an enrichment node (path plus named move). With no link it stays usable under uncategorized.",
-        attrs: ["movement name", "optional node link"],
+        nature: "reference",
+        summary: "A catalog teaching of a named move: instructor, instructional, volume, chapter, timestamp. Many citations can link to one named move. With no named-move link it stays usable under uncategorized.",
+        attrs: ["instructor", "instructional", "volume", "chapter", "timestamp", "cleaned statement"],
         countKey: "citations"
+      },
+      {
+        id: "lesson_type",
+        label: "Lesson type",
+        shape: "entity",
+        nature: "reference",
+        summary: "Catalog of kinds of lesson: technique, drill, sparring, game. A lesson in a class is one of these.",
+        attrs: ["label"],
+        countKey: "lesson_types"
       },
       {
         id: "unit",
         label: "Unit",
         shape: "entity",
         nature: "activity",
-        summary: "The classes that teach one system. Enrichment does not hold lesson fields. A sequence is a candidate packing of a complementary setup the coach may turn into lessons.",
-        attrs: ["system paragraph", "classes"],
+        summary: "Activity: the classes that cover one large topic. It teaches a system from the catalog.",
+        attrs: ["paragraph", "classes"],
         countKey: "none"
       },
       {
-        id: "teaching_order",
-        label: "Teaching order",
-        shape: "attribute",
-        nature: "attribute",
-        owner: "sequence",
-        summary: "Optional order for how the complementary named moves are taught in class. Fighting goes back and forth; this field only sequences the lessons."
+        id: "class",
+        label: "Class",
+        shape: "entity",
+        nature: "activity",
+        summary: "Activity: one meeting. An ordered series of lessons inside a unit.",
+        attrs: ["purpose line", "ordered lessons"],
+        countKey: "none"
+      },
+      {
+        id: "lesson",
+        label: "Lesson",
+        shape: "entity",
+        nature: "activity",
+        summary: "Activity: what is actually being worked on in a class. It has a lesson type. A technique lesson places citations (which already point at named moves).",
+        attrs: ["lesson type", "citations or partner job or scenario or condition"],
+        countKey: "none"
       },
       {
         id: "family",
@@ -967,24 +965,23 @@
         shape: "attribute",
         nature: "attribute",
         owner: "position",
-        summary: "Grouping on a position: standing, guard, leg entanglement, passing, pin, turtle, back. Not its own finder node.",
-        ask: "Should family stay an attribute, or become a parent entity that positions belong to?"
+        summary: "Grouping field on a position: standing, guard, leg entanglement, passing, pin, turtle, back."
       },
       {
         id: "start_role",
         label: "Start (role)",
         shape: "attribute",
         nature: "attribute",
-        owner: "path",
-        summary: "How a path uses a position. Starting position is this role, not a second list of records."
+        owner: "named_move",
+        summary: "The position the named move is applied from. A role on the named move, not a second list of positions."
       },
       {
         id: "end_role",
         label: "End (role)",
         shape: "attribute",
         nature: "attribute",
-        owner: "path",
-        summary: "How a path uses a position or a submission. Ending position is this role."
+        owner: "named_move",
+        summary: "The position or submission the named move goes to. A role on the named move."
       },
       {
         id: "ruleset",
@@ -992,7 +989,7 @@
         shape: "attribute",
         nature: "attribute",
         owner: "named_move",
-        summary: "gi, no-gi, or both. Lives on the named-move leaf. Positions and types of move are shared across rulesets."
+        summary: "gi, no-gi, or both. Lives on the named move. Positions and types of move are shared across rulesets."
       },
       {
         id: "aliases",
@@ -1008,7 +1005,7 @@
         shape: "attribute",
         nature: "attribute",
         owner: "named_move",
-        summary: "A judo or wrestling name on the same finder record. Not a fourth path level."
+        summary: "A judo or wrestling name on the same named-move record."
       },
       {
         id: "uncategorized",
@@ -1016,31 +1013,29 @@
         shape: "attribute",
         nature: "attribute",
         owner: "citation",
-        summary: "Browse bucket when a citation has no enrichment-node link. Not a seed node."
+        summary: "Browse bucket when a citation has no named-move link. Not a catalog node."
       }
     ];
 
     const edges = [
       { from: "family", to: "position", label: "of" },
-      { from: "start_role", to: "path", label: "on" },
-      { from: "end_role", to: "path", label: "on" },
-      { from: "path", to: "position", label: "start: 1" },
-      { from: "path", to: "position", label: "end: 0..1" },
-      { from: "path", to: "submission", label: "end: 0..1" },
-      { from: "path", to: "move_type", label: "1" },
-      { from: "path", to: "named_move", label: "1..n leaves" },
+      { from: "start_role", to: "named_move", label: "on" },
+      { from: "end_role", to: "named_move", label: "on" },
+      { from: "named_move", to: "position", label: "start: 1" },
+      { from: "named_move", to: "position", label: "end: 0..1" },
+      { from: "named_move", to: "submission", label: "end: 0..1" },
+      { from: "named_move", to: "move_type", label: "1" },
       { from: "ruleset", to: "named_move", label: "of" },
       { from: "aliases", to: "named_move", label: "of" },
       { from: "cross_ref", to: "named_move", label: "of" },
-      { from: "teaching_order", to: "sequence", label: "of" },
-      { from: "sequence", to: "position", label: "shared start" },
-      { from: "sequence", to: "named_move", label: "members 2..n" },
-      { from: "sequence", to: "complement", label: "holds" },
-      { from: "sequence", to: "path", label: "uses hops" },
-      { from: "sequence", to: "unit", label: "packs into" },
-      { from: "complement", to: "named_move", label: "defend A gives B" },
-      { from: "citation", to: "named_move", label: "optional link" },
-      { from: "uncategorized", to: "citation", label: "when unlinked" }
+      { from: "system", to: "named_move", label: "2..n members" },
+      { from: "citation", to: "named_move", label: "0..n per move" },
+      { from: "uncategorized", to: "citation", label: "when unlinked" },
+      { from: "unit", to: "system", label: "teaches" },
+      { from: "unit", to: "class", label: "1..n" },
+      { from: "class", to: "lesson", label: "1..n" },
+      { from: "lesson", to: "lesson_type", label: "1" },
+      { from: "lesson", to: "citation", label: "technique places" }
     ];
 
     const layout = {
@@ -1051,16 +1046,16 @@
       aliases: { x: 120, y: 430 },
       cross_ref: { x: 120, y: 505 },
       uncategorized: { x: 120, y: 580 },
-      teaching_order: { x: 120, y: 655 },
-      position: { x: 430, y: 130 },
-      move_type: { x: 430, y: 270 },
-      submission: { x: 430, y: 410 },
-      complement: { x: 780, y: 110 },
-      path: { x: 780, y: 300 },
-      named_move: { x: 780, y: 500 },
-      sequence: { x: 1140, y: 110 },
-      citation: { x: 1140, y: 340 },
-      unit: { x: 1140, y: 530 }
+      position: { x: 430, y: 100 },
+      move_type: { x: 430, y: 250 },
+      submission: { x: 430, y: 400 },
+      named_move: { x: 430, y: 560 },
+      system: { x: 780, y: 130 },
+      citation: { x: 780, y: 320 },
+      lesson_type: { x: 780, y: 510 },
+      unit: { x: 1140, y: 130 },
+      class: { x: 1140, y: 320 },
+      lesson: { x: 1140, y: 510 }
     };
 
     function byId(id) {
@@ -1074,11 +1069,10 @@
         positions: s.positions.length,
         submissions: s.submissions.length,
         move_types: s.move_types.length,
-        paths: s.paths.length,
         leaves: leafN,
         citations: state.citations.length,
-        sequence: forceSetup.length,
-        complements: forceSetup.length > 1 ? forceSetup.length : 0,
+        systems: forceSetup.length >= 2 ? 1 : 0,
+        lesson_types: 4,
         none: null
       };
     }
@@ -1340,7 +1334,7 @@
       layers.push({
         kind: "leaf",
         col: 1,
-        label: "Named moves in this setup",
+        label: "Named moves in this system",
         from: forceStart,
         options: leafOpts,
         selectedSet: forceSetup.map((s) => s.id)
@@ -1412,7 +1406,7 @@
     const crumbs = journeyCrumbs(layers);
     const bar = el("div", { class: "crumb-bar" });
     if (!crumbs.length) {
-      bar.append(el("span", { class: "empty" }, ["Pick a starting position, then add complementary named moves to the setup."]));
+      bar.append(el("span", { class: "empty" }, ["Pick a starting position, then add two or more named moves to the system."]));
       return bar;
     }
     crumbs.forEach((c, idx) => {
@@ -1420,7 +1414,7 @@
       bar.append(el("button", {
         class: "crumb",
         type: "button",
-        title: c.kind === "leaf" ? "Drop this named move from the setup" : "Keep this start",
+        title: c.kind === "leaf" ? "Drop this named move from the system" : "Keep this start",
         on: {
           click: () => {
             pickJourney(c.i, c.opt || { id: c.layer.selected, kind: c.kind }, true);
@@ -1467,7 +1461,7 @@
         forcePos = {};
       }
     } else if (opt.kind === "end" || opt.kind === "submission") {
-      toast("A success lands here. When they defend, the setup stays in the start.");
+      toast("A success lands here. When they defend, the system stays in the start.");
       return;
     } else if (opt.kind === "move") {
       const i = forceOpenMoves.indexOf(opt.id);
@@ -1502,7 +1496,7 @@
     const layers = buildJourneyLayers(state);
     syncTreeFromJourney(layers);
     render();
-    toast("Closed guard trilemma: hip bump, kimura, triangle. Defend one, they give another.");
+    toast("Closed guard system: hip bump, kimura, triangle. Defend one, they give another.");
   }
 
   function renderForce(state) {
@@ -1527,7 +1521,7 @@
       titled[layer.col] = true;
       const sibling = layers.find((l) => l.col === layer.col && l.kind === "leaf");
       const label = sibling && sibling.options.length && (layer.kind === "leaf" || layer.kind === "move")
-        ? "Types of move and named moves in the setup"
+        ? "Types of move and named moves in the system"
         : layer.label;
       const t = svgEl("text", {
         x: String(colX(layer.col)), y: "32",
@@ -1868,7 +1862,7 @@
           kindLabel,
           n.kind === "leaf" ? (n.opt.ruleset + " · ends at " + n.opt.end) : "",
           n.kind === "leaf"
-            ? (n.chosen ? "In the setup. Click to drop." : "Click to add as a complement.")
+            ? (n.chosen ? "In this system. Click to drop." : "Click to add this named move to the system.")
             : (n.kind === "move"
               ? (n.chosen ? "Open. Click to close this type." : "Click to show named moves of this type.")
               : (n.dimmed ? "Not selected" : (n.chosen ? "Selected" : "Click to pick"))),
@@ -1967,7 +1961,7 @@
     return { svg, layers, count: nodes.length, width };
   }
 
-  let erFocus = "sequence";
+  let erFocus = "named_move";
 
   function renderEr(state) {
     const wrap = el("section", { class: "panel plot-panel" }, [
@@ -1975,18 +1969,17 @@
     ]);
     const body = el("div", { class: "body" });
     body.append(el("div", { class: "legend" }, [
-      el("span", {}, [el("i", { style: "background:#1e3a8a" }), "Reference entity (catalog)"]),
-      el("span", {}, [el("i", { style: "background:#c2410c" }), "Activity entity (something that happens)"]),
-      el("span", {}, [el("i", { style: "background:#7c3aed" }), "Relationship"]),
+      el("span", {}, [el("i", { style: "background:#1e3a8a" }), "Catalog (reused library)"]),
+      el("span", {}, [el("i", { style: "background:#c2410c" }), "Activity (unit, class, lesson)"]),
       el("span", {}, [el("i", { style: "background:#a8a29e" }), "Attribute of an entity"])
     ]));
     body.append(el("p", { class: "xref" }, [
-      "Click a box. The panel below says whether it is a reference, an activity, or only an attribute. Dotted ovals are fields. Diamonds are relationships. This is a proposed model for feedback, not a lock."
+      "Click a box. Blue is catalog (reused). Orange is activity (a unit, class, or lesson you are building). Dotted ovals are fields. A named move holds the start, the type, and the end. A system holds the dilemma."
     ]));
     const mount = el("div", { class: "er-wrap" });
     body.append(mount);
     const counts = Domain.counts(state);
-    const focus = Domain.byId(erFocus) || Domain.byId("path");
+    const focus = Domain.byId(erFocus) || Domain.byId("named_move");
     const detail = el("div", { class: "er-detail" });
     function fillDetail(c) {
       detail.replaceChildren();
@@ -2009,7 +2002,7 @@
     wrap.append(body);
 
     const width = 1360;
-    const height = 720;
+    const height = 700;
     if (typeof d3 === "undefined") {
       mount.append(el("p", { class: "xref" }, ["D3 did not load. Open this file while online, or allow cdn.jsdelivr.net."]));
       return wrap;
@@ -2035,9 +2028,9 @@
     svg.append("g").attr("class", "er-cols").selectAll("text")
       .data([
         { x: 120, t: "Attribute" },
-        { x: 430, t: "Reference entity" },
-        { x: 780, t: "Relationship" },
-        { x: 1140, t: "Activity entity" }
+        { x: 430, t: "Catalog: where and what" },
+        { x: 780, t: "Catalog: reused records" },
+        { x: 1140, t: "Activity: unit build" }
       ])
       .join("text")
       .attr("x", (d) => d.x)
@@ -2156,7 +2149,7 @@
 
   function renderPlot(state) {
     const wrap = el("section", { class: "panel plot-panel" }, [
-      el("h2", {}, ["Force-directed journey · complementary setup for a unit"])
+      el("h2", {}, ["Force-directed journey · assemble a system of named moves"])
     ]);
     const body = el("div", { class: "body" });
     const force = renderForce(state);
@@ -2167,22 +2160,22 @@
       const mt = Tree.byId(state.seed.move_types, id);
       legend.append(el("span", {}, [el("i", { style: "background:" + color }), mt ? mt.label : id]));
     });
-    legend.append(el("span", {}, ["Dashed orange: defend A gives B. Pick several named moves that complement each other."]));
+    legend.append(el("span", {}, ["Dashed orange: defend A gives B. The selected named moves are the members of one system."]));
     body.append(legend);
 
-    const forceHead = el("h2", {}, ["Build a complementary setup"]);
+    const forceHead = el("h2", {}, ["Build a system"]);
     forceHead.style.marginTop = "0.35rem";
     body.append(forceHead);
     const forceTools = el("div", { class: "toolbar" }, [
       el("button", {
         class: "primary",
-        on: { click: () => { forceStart = null; forceOpenMoves = []; forceSetup = []; forcePos = {}; render(); toast("Setup cleared. Pick a starting position."); } }
-      }, ["Reset setup"]),
+        on: { click: () => { forceStart = null; forceOpenMoves = []; forceSetup = []; forcePos = {}; render(); toast("System cleared. Pick a starting position."); } }
+      }, ["Reset system"]),
       el("button", {
         on: { click: loadClosedGuardSetup }
       }, ["Load closed-guard trilemma"]),
       el("span", { class: "xref" }, [
-        "Pick a start, open more than one type of move, then click named moves that work together. A success lands on the ending; a defense stays in the start and gives the next named move."
+        "Pick a start, open types of move, then click two or more named moves. Those named moves are the system. A success lands on the ending; a defense stays in the start and gives the next named move."
       ])
     ]);
     body.append(forceTools);
@@ -2191,7 +2184,7 @@
     ]));
     body.append(el("div", { class: "force-wrap" }, [force.svg]));
     body.append(el("p", { class: "xref" }, [
-      force.layers.length + " layers · " + force.count + " nodes · " + forceSetup.length + " named moves in the setup."
+      force.layers.length + " layers · " + force.count + " nodes · " + forceSetup.length + " named moves in this system."
     ]));
 
     const focus = state.selected.identity || state.selected.start;
