@@ -12,7 +12,8 @@ The title is OCR of the title card for --title-seconds after the card
 starts (default 6). Slides are joined with " -- ", and repeated text is
 kept once. A frame that fails the plate test ends the title. The opening
 disclaimer is not used: naming starts at the first matched card, and a
-paragraph longer than 160 characters is skipped. A card with no text is
+paragraph longer than 160 characters is skipped. A card whose match is
+in the first 15 seconds is titled Introduction. A card with no text is
 titled continued. Those titles are written
 to the timestamp CSV and to the chapter-names CSV. Without --apply, only
 those files are written. With --apply, an existing chapter CSV is embedded
@@ -73,6 +74,16 @@ TITLE_SAMPLE_SECONDS = 0.5
 DISCLAIMER_CHAR_LIMIT = 160
 # Used when that frame has no readable text.
 CONTINUED_TITLE = "continued"
+# Series/volume branding at the start of a volume.
+OPENING_TITLE = "Introduction"
+OPENING_SECONDS = 15.0
+
+
+def opening_chapter_title(title, anchor, opening_seconds=OPENING_SECONDS):
+    """Name the series/volume branding plate at the start of a volume."""
+    if anchor < opening_seconds:
+        return OPENING_TITLE
+    return title
 
 
 def video_duration(video):
@@ -589,6 +600,7 @@ def title_chapters(video, rows, duration, matches, mode, color, hue, sat, val, f
             engine, video, anchor, duration, window,
             mode, color, hue, sat, val, fraction, auto,
         )
+        title = opening_chapter_title(title, anchor)
         titled.append((title, start, end))
         line = (
             f"{find_color_frames.format_timestamp(start)}  "
