@@ -64,6 +64,9 @@
     header.page, .question, #app, .walk, .record {
       max-width: 1180px; margin-left: auto; margin-right: auto; padding-left: 1.25rem; padding-right: 1.25rem;
     }
+    body[data-variant="C"] #app {
+      max-width: none;
+    }
     header.page { margin-top: 1.25rem; }
     header.page h1 {
       font-family: var(--serif); font-weight: 600; font-size: 1.7rem; margin: 0 0 .35rem; letter-spacing: -.02em;
@@ -156,10 +159,22 @@
     }
     .origin-card ul { margin: .2rem 0 .4rem; padding-left: 1.1rem; font-size: .88rem; }
     .origin-card .hint, .tiny, .success, .foot { color: var(--muted); font-size: .82rem; }
-    .doors { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .doors { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1rem; }
     @media (max-width: 860px) { .doors, .handoff-split { grid-template-columns: 1fr !important; } }
-    .handoff-split { display: grid; grid-template-columns: minmax(280px, 36%) 1fr; gap: 1rem; align-items: start; }
-    .rail { position: sticky; top: .6rem; }
+    .handoff-split { display: grid; grid-template-columns: minmax(340px, 1.15fr) minmax(320px, 0.95fr); gap: 1rem; align-items: start; }
+    .rail { position: sticky; top: .5rem; }
+    .canvas-panel { padding: .75rem .85rem 1rem; }
+    .canvas-panel h2 { display: inline; }
+    .canvas-stage {
+      height: 420px; margin-top: .55rem; background:
+        radial-gradient(circle at 30% 40%, #ecfdf555, transparent 55%),
+        #fafaf9;
+      border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+    }
+    body[data-variant="C"] .canvas-stage { height: min(62vh, 560px); }
+    .canvas-stage svg { display: block; width: 100%; height: 100%; }
+    .prompt-fold { margin-top: .55rem; font-size: .86rem; color: var(--muted); }
+    .prompt-fold summary { cursor: pointer; font-weight: 650; color: var(--ink); }
     .free-play { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
     .mode-tabs { display: flex; gap: .35rem; flex-wrap: wrap; margin: .65rem 0 .15rem; }
 
@@ -237,11 +252,11 @@
   <div class="question box-proto">
     <details open>
       <summary>What this prototype is checking</summary>
-      <p>Packing from an unordered Tight waist map (or from a prompt) onto the locked Draft sheet.</p>
+      <p>The locked Design canvas sits beside the locked Draft sheet. Convert reads that canvas. A prompt is the other origin.</p>
       <ul>
-        <li><strong>A Doors then sheet</strong> — pick an origin; the chooser collapses; Draft fills the page.</li>
-        <li><strong>B Stacked</strong> — Design readout and prompt stay above the sheet.</li>
-        <li><strong>C Split</strong> — origin rail on the left; Draft on the right.</li>
+        <li><strong>A Doors then sheet</strong> — prompt door and Design canvas; after convert the chooser collapses.</li>
+        <li><strong>B Stacked</strong> — Design canvas above the sheet.</li>
+        <li><strong>C Canvas | Draft</strong> — Design canvas on the left, Draft on the right. Default.</li>
       </ul>
     </details>
   </div>
@@ -568,9 +583,9 @@
     seed: function () {
       return {
         origin: null,
-        design: PackingModel.emptyDesign(),
+        design: PackingModel.sampleDesign(),
         unit: PackingModel.emptyUnit(),
-        lastChange: "Pick a prompt Build or convert a Design canvas. The first list is empty."
+        lastChange: "Tight waist is on the Design canvas. Convert it, or Build from the prompt."
       };
     },
     clone: PackingModel.clone,
@@ -626,8 +641,8 @@
   ];
   const VARIANTS = [
     { key: "A", name: "Doors then sheet" },
-    { key: "B", name: "Stacked readout" },
-    { key: "C", name: "Split rail" }
+    { key: "B", name: "Stacked canvas" },
+    { key: "C", name: "Canvas | Draft" }
   ];
   const TARGETS = [
     { kind: "named_move", id: "knee-lever" },
@@ -657,8 +672,8 @@
     return MODES.some(function (m) { return m.key === v; }) ? v : "draft";
   }
   function currentVariant() {
-    const v = (new URLSearchParams(location.search).get("variant") || "A").toUpperCase();
-    return VARIANTS.some(function (x) { return x.key === v; }) ? v : "A";
+    const v = (new URLSearchParams(location.search).get("variant") || "C").toUpperCase();
+    return VARIANTS.some(function (x) { return x.key === v; }) ? v : "C";
   }
   function setMode(key) {
     const url = new URL(location.href);
@@ -740,29 +755,23 @@
     return pill + "<strong>" + escapeHtml(t.label) + "</strong><span class=\"tiny\"> · " + escapeHtml(t.path) + "</span>";
   }
 
-  function mapReadout() {
-    const d = state.design;
-    let html = '<h3>What Design hands over</h3>';
-    html += '<p class="hint">Unordered. No class cuts, no partner jobs, no run sheet.</p>';
-    html += "<p>" + (d.occupancy
-      ? "Half guard · " + escapeHtml(d.occupancy)
-      : '<span class="tiny">Occupancy not chosen.</span>') + "</p>";
-    html += "<h3>Named moves</h3><ul>";
-    if (!d.onMap.length) html += "<li class=\"tiny\">None.</li>";
-    d.onMap.forEach(function (id) {
-      const m = NAMED_MOVES[id];
-      html += "<li><span class=\"pill pill-move\">named move</span> " + escapeHtml(m.label) +
-        " <span class=\"tiny\">" + escapeHtml(m.moveType) + "</span></li>";
-    });
-    html += "</ul><h3>Systems</h3><ul>";
-    if (!d.systemsOnMap.length) html += "<li class=\"tiny\">None.</li>";
-    d.systemsOnMap.forEach(function (sid) {
-      const sys = SYSTEMS[sid];
-      html += "<li><span class=\"pill pill-sys\">system</span> " + escapeHtml(sys.label) +
-        " <span class=\"tiny\">" + sys.members.map(function (id) { return NAMED_MOVES[id].label; }).join(" / ") + "</span></li>";
-    });
-    html += "</ul>";
-    if (d.topicSystem) html += '<div class="unit-para"><label>Topic system</label>' + escapeHtml(d.topicSystem) + "</div>";
+  const TYPE_STYLE = {
+    transition: { fill: "#0f766e" },
+    sweep: { fill: "#b45309" },
+    "back take": { fill: "#6d28d9" }
+  };
+
+  function canvasPanel(asRail) {
+    let html = '<section class="canvas-panel box-final' + (asRail ? " rail" : "") + '">';
+    html += "<h2>Design canvas</h2>";
+    html += '<span class="pill pill-gi">gi half guard</span>';
+    html += '<p class="hint">The locked mental map. Unordered. Convert writes the first Draft from these marks.</p>';
+    html += '<div id="design-canvas" class="canvas-stage" role="img" aria-label="Design canvas"></div>';
+    html += originActions();
+    html += '<details class="prompt-fold"><summary>Or build from a prompt</summary>';
+    html += '<div class="unit-para"><label>Unit paragraph</label>' + escapeHtml(PARAGRAPH) + "</div>";
+    html += '<div class="free-play"><button type="button" class="go" data-act="prompt">Build from prompt</button></div>';
+    html += "</details></section>";
     return html;
   }
 
@@ -770,21 +779,100 @@
     let html = '<div class="free-play">';
     html += '<button type="button" class="go secondary" data-act="load-design">Load Tight waist design</button>';
     html += '<button type="button" class="go" data-act="convert">Convert Design to Build</button>';
-    html += '<button type="button" class="go" data-act="prompt">Build from prompt</button>';
     html += '<button type="button" data-act="reset">Reset</button></div>';
     return html;
   }
 
+  function svgEl(name, attrs) {
+    const n = document.createElementNS("http://www.w3.org/2000/svg", name);
+    Object.keys(attrs || {}).forEach(function (k) { n.setAttribute(k, attrs[k]); });
+    if (attrs && attrs["textContent"]) {
+      n.textContent = attrs.textContent;
+      n.removeAttribute("textContent");
+    }
+    return n;
+  }
+
+  function drawCanvas() {
+    const host = document.getElementById("design-canvas");
+    if (!host || typeof document.createElementNS !== "function") return;
+    host.innerHTML = "";
+    const W = Math.max(host.clientWidth || 480, 280);
+    const H = Math.max(host.clientHeight || 400, 280);
+    const svg = svgEl("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", height: "100%" });
+    const d = state.design;
+    const cx = W * 0.36;
+    const cy = H * 0.5;
+    if (!d.occupancy && !d.onMap.length) {
+      const t = svgEl("text", { x: W / 2, y: H / 2, fill: "#78716c", "font-size": "14", "text-anchor": "middle" });
+      t.textContent = "Load Tight waist to put named moves on the canvas.";
+      svg.appendChild(t);
+      host.appendChild(svg);
+      return;
+    }
+    const layout = {
+      "knee-lever": { x: cx - W * 0.22, y: cy - H * 0.22 },
+      "tight-waist": { x: cx - W * 0.24, y: cy + H * 0.2 },
+      "far-leg-come-up": { x: cx + W * 0.28, y: cy - H * 0.24 },
+      "roll-through": { x: cx + W * 0.32, y: cy + H * 0.02 },
+      "back-take-tight-waist": { x: cx + W * 0.26, y: cy + H * 0.26 }
+    };
+    function line(x1, y1, x2, y2, dash) {
+      const el = svgEl("line", {
+        x1: x1, y1: y1, x2: x2, y2: y2,
+        stroke: dash ? "#ea580c" : "#d6d3d1",
+        "stroke-width": dash ? 1.6 : 1.2,
+        "stroke-dasharray": dash ? "6 4" : "0"
+      });
+      svg.appendChild(el);
+    }
+    d.onMap.forEach(function (id) {
+      const p = layout[id] || { x: cx + 80, y: cy };
+      line(cx, cy, p.x, p.y, false);
+    });
+    (d.systemsOnMap || []).forEach(function (sid) {
+      const members = (SYSTEMS[sid].members || []).filter(function (id) { return d.onMap.indexOf(id) >= 0; });
+      if (members.length < 2) return;
+      members.forEach(function (id, i) {
+        const a = layout[id];
+        const b = layout[members[(i + 1) % members.length]];
+        if (a && b) line(a.x, a.y, b.x, b.y, true);
+      });
+      const mx = members.reduce(function (s, id) { return s + layout[id].x; }, 0) / members.length;
+      const my = members.reduce(function (s, id) { return s + layout[id].y; }, 0) / members.length - 28;
+      const label = svgEl("text", { x: mx, y: my, fill: "#c2410c", "font-size": "11", "font-weight": "700", "text-anchor": "middle" });
+      label.textContent = SYSTEMS[sid].label;
+      svg.appendChild(label);
+    });
+    function node(x, y, fill, r, label, sub) {
+      svg.appendChild(svgEl("circle", { cx: x, cy: y, r: r, fill: fill, stroke: "#fff", "stroke-width": 2 }));
+      const t = svgEl("text", { x: x, y: y + r + 14, fill: "#1c1917", "font-size": "12", "font-weight": "650", "text-anchor": "middle" });
+      t.textContent = label;
+      svg.appendChild(t);
+      if (sub) {
+        const s = svgEl("text", { x: x, y: y + r + 28, fill: "#78716c", "font-size": "10", "text-anchor": "middle" });
+        s.textContent = sub;
+        svg.appendChild(s);
+      }
+    }
+    node(cx, cy, "#57534e", 16, "Half guard", d.occupancy || "");
+    d.onMap.forEach(function (id) {
+      const m = NAMED_MOVES[id];
+      const p = layout[id] || { x: cx + 80, y: cy };
+      const st = TYPE_STYLE[m.moveType] || { fill: "#1d4ed8" };
+      node(p.x, p.y, st.fill, 12, m.label, m.moveType);
+    });
+    host.appendChild(svg);
+  }
+
   function originDoors() {
-    let html = '<div class="doors box-final">';
-    html += '<section class="origin-card"><h2>From a prompt</h2>';
+    let html = '<div class="doors">';
+    html += '<section class="origin-card box-final"><h2>From a prompt</h2>';
     html += '<p class="hint">The unit paragraph asks the advisor for a whole first Draft.</p>';
     html += '<div class="unit-para"><label>Unit paragraph</label>' + escapeHtml(PARAGRAPH) + "</div>";
     html += '<div class="free-play"><button type="button" class="go" data-act="prompt">Build from prompt</button></div></section>';
-    html += '<section class="origin-card"><h2>From Design</h2>';
-    html += mapReadout();
-    html += originActions();
-    html += "</section></div>";
+    html += canvasPanel(false);
+    html += "</div>";
     return html;
   }
 
@@ -796,24 +884,15 @@
   }
 
   function originStack() {
-    let html = '<section class="origin-card box-final"><h2>Origins</h2>';
-    html += '<div class="unit-para"><label>Unit paragraph</label>' + escapeHtml(PARAGRAPH) + "</div>";
-    html += mapReadout();
-    html += originActions();
+    let html = canvasPanel(false);
     if (state.origin) {
       html += '<p class="success">Active origin: <strong>' + escapeHtml(state.origin) + "</strong>. The other generator refuses until Reset.</p>";
     }
-    html += "</section>";
     return html;
   }
 
   function originRail() {
-    let html = '<aside class="origin-card rail box-final"><h2>Start a list</h2>';
-    html += '<div class="unit-para"><label>Prompt</label>' + escapeHtml(PARAGRAPH) + "</div>";
-    html += mapReadout();
-    html += originActions();
-    html += "</aside>";
-    return html;
+    return canvasPanel(true);
   }
 
   function modeTabsHtml() {
@@ -921,7 +1000,7 @@
     const mode = currentMode();
     const unit = state.unit;
     if (!state.origin || !unit.classes.length) {
-      return '<div class="empty-sheet box-final"><p>No first list yet. Pick a prompt Build or convert Design.</p></div>';
+      return '<div class="empty-sheet box-final"><p>No first list yet. Convert the Design canvas, or open the prompt under it.</p></div>';
     }
     let html = unitChrome();
     html += '<div class="sheet-stack box-final">';
@@ -977,7 +1056,7 @@
   const SCENES = [
     {
       name: "Convert Tight waist",
-      copy: "Load the unordered Tight waist map. Convert. Draft has two classes of glued technique blocks. Far-leg and the back take stay inside the trilemma. Roll-through is isolated.",
+      copy: "Tight waist is already on the Design canvas. Convert. Draft appears beside that canvas. Far-leg and the back take stay inside the trilemma. Roll-through is isolated.",
       steps: [
         { label: "Reset", action: { type: "RESET" } },
         { label: "Load Tight waist design", action: { type: "LOAD_DESIGN" } },
@@ -1047,6 +1126,7 @@
     const meta = VARIANTS.find(function (v) { return v.key === variant; });
     document.getElementById("switch-label").innerHTML = variant + " (" + meta.name + ")<span>arrow keys cycle hand-off chrome</span>";
     paintScenes();
+    drawCanvas();
   }
 
   function selectedTarget(ci) {
@@ -1180,6 +1260,7 @@
     if (step.action) dispatch(step.action);
   });
 
+  window.addEventListener("resize", function () { drawCanvas(); });
   paint();
 })();
   </script>
