@@ -42,7 +42,34 @@
       line-height: 1.45;
       padding-bottom: 6.5rem;
     }
-    /* Three variants of the unit run plan, via ?variant= A|B|C. Draft/Read/Edit via ?mode=. */
+    /* Spec mix is layout A. B/C stay as steal-from. ?variant= A|B|C. Draft/Read/Edit via ?mode=. */
+    .box-final, .box-proto {
+      position: relative;
+      outline-offset: 6px;
+    }
+    .box-final { outline: 2px dotted #15803d; }
+    .box-proto { outline: 2px dotted #dc2626; }
+    .banner.box-proto, .switcher.box-proto { outline-offset: 3px; }
+    .box-key {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .55rem 1rem;
+      align-items: center;
+      font-size: .78rem;
+    }
+    .box-key b {
+      display: inline-block;
+      width: .7rem;
+      height: .7rem;
+      border-radius: 2px;
+      margin-right: .3rem;
+      vertical-align: -1px;
+      outline: 2px dotted currentColor;
+      outline-offset: 1px;
+    }
+    .box-key .k-final { color: #86efac; }
+    .box-key .k-proto { color: #fca5a5; }
+    .sheet-stack { margin-top: .15rem; }
     .banner {
       background: #1c1917;
       color: #fafaf9;
@@ -411,53 +438,57 @@
   </style>
 </head>
 <body>
-  <div class="banner">
+  <div class="banner box-proto">
     <strong>PROTOTYPE · throwaway</strong>
     <span>Ticket <code>#10</code> · sample unit after the system</span>
     <span>Branch <code>prototype/sample-unit-topic10</code></span>
-    <span>Three layouts · Draft / Read / Edit on each</span>
+    <span>A is the spec mix · B / C stay for comparison</span>
+    <span class="box-key">
+      <span><b class="k-final"></b>green dotted: coach experience</span>
+      <span><b class="k-proto"></b>red dotted: prototype use</span>
+    </span>
   </div>
 
-  <header class="page">
+  <header class="page box-proto">
     <h1>How should a unit read as a plan the coach can run?</h1>
     <p class="meta">
-      Three proposed layouts for <strong>gi half guard</strong>, all on the same unit.
-      Draft / Read / Edit sit on the page. The bottom bar flips A / B / C.
-      Technique What to run shows step bullets. A glued drill shows only the partner job.
+      Locked mix for <strong>gi half guard</strong>: colored class cards, full technique steps, partner-job-only glued drills, Draft / Read / Edit on that same sheet.
+      Draft is a proposal the coach cannot edit. Read and Edit are modes of this sheet.
+      Bottom bar still flips A / B / C so the steal-from layouts remain.
     </p>
   </header>
 
-  <div class="question">
+  <div class="question box-proto">
     <details open>
       <summary>What this prototype is checking</summary>
       <p>
-        Same unit, three structures. Steal pieces. Draft is the Build proposal. Read is the teaching sheet.
-        Edit packs class cuts, adds or removes lessons, and chooses citations.
+        <strong>A Class cards</strong> is the required shape. Draft has dashed cards and no packing chrome.
+        Read is the teaching sheet (day-of checkboxes). Edit packs on the same tables.
       </p>
       <ul>
-        <li><strong>A Class cards</strong> — each class is a colored card with its own table. In Edit, drag a lesson or use Up/Down; a technique and its drill move as one block, including across class cuts.</li>
-        <li><strong>B Spine table</strong> — one clipboard table; dark class-cut rails sit in the row stream.</li>
-        <li><strong>C List + inspector</strong> — compact colored lesson list; What to run opens on the right for the selected lesson.</li>
+        <li><strong>A Class cards (spec mix)</strong> — each class is a colored card with its own table. Technique What to run shows step bullets. A glued drill shows only the partner job. In Edit, drag a lesson or use Up/Down; a technique and its drill move as one block, including across class cuts.</li>
+        <li><strong>B Spine table</strong> — comparison only. One clipboard table; dark class-cut rails sit in the row stream.</li>
+        <li><strong>C List + inspector</strong> — comparison only. Compact colored lesson list; What to run opens on the right for the selected lesson.</li>
       </ul>
     </details>
   </div>
 
-  <div class="walk">
+  <div class="walk box-proto">
     <h2>Guided walkthroughs</h2>
     <div class="tabs" id="scene-tabs"></div>
     <div class="scene" id="scene-copy"></div>
     <div class="steps-run" id="scene-steps"></div>
   </div>
-  <p class="changed" id="changed"></p>
+  <p class="changed box-proto" id="changed"></p>
   <div id="app"></div>
-  <div class="record">
+  <div class="record box-proto">
     <details open>
       <summary>Unit record (full state after every action)</summary>
       <pre id="record"></pre>
     </details>
   </div>
   <div class="toast" id="toast"></div>
-  <div class="switcher" role="toolbar" aria-label="Prototype layout switcher">
+  <div class="switcher box-proto" role="toolbar" aria-label="Prototype layout switcher">
     <button type="button" id="prev" aria-label="Previous layout">←</button>
     <div class="label" id="switch-label">A</div>
     <button type="button" id="next" aria-label="Next layout">→</button>
@@ -802,7 +833,7 @@
   let ui = { picker: null, scene: 0, sceneStep: 0, drag: null, selected: { ci: 0, li: 0 } };
 
   const VARIANTS = [
-    { key: "A", name: "Class cards" },
+    { key: "A", name: "Class cards (spec mix)" },
     { key: "B", name: "Spine table" },
     { key: "C", name: "List + inspector" }
   ];
@@ -961,12 +992,10 @@
   function unitChrome() {
     const mode = currentMode();
     const modeMeta = MODES.find(function (m) { return m.key === mode; });
-    const variant = VARIANTS.find(function (v) { return v.key === currentVariant(); });
-    let html = '<div class="unit-top"><div class="row">';
+    let html = '<div class="unit-top box-final"><div class="row">';
     html += "<h2>" + escapeHtml(state.topic.label) + "</h2>";
     html += '<span class="pill pill-gi">' + escapeHtml(state.topic.ruleset) + "</span>";
-    html += '<span class="pill pill-' + mode + '">' + modeMeta.name + "</span>";
-    html += '<span class="pill pill-proto">' + variant.key + " · " + variant.name + "</span></div>";
+    html += '<span class="pill pill-' + mode + '">' + modeMeta.name + "</span></div>";
     html += modeTabsHtml();
     html += '<div class="unit-para"><label>Topic system (coach words)</label>' + escapeHtml(state.topicSystem) + "</div>";
     html += '<div class="unit-para"><label>Catalog system</label>' + escapeHtml(catalogLine()) + "</div>";
@@ -1057,6 +1086,7 @@
   function renderA() {
     const mode = currentMode();
     let html = unitChrome();
+    html += '<div class="sheet-stack box-final">';
     state.classes.forEach(function (klass, ci) {
       html += '<section class="class-card" data-class="' + ci + '">';
       html += '<div class="cut" draggable="' + (mode === "edit" ? "true" : "false") + '" data-class="' + ci + '">';
@@ -1067,6 +1097,7 @@
       html += "</tbody></table></section>";
     });
     html += '<p class="foot"><strong>Success watch:</strong> ' + escapeHtml(state.success) + "</p>";
+    html += "</div>";
     return html;
   }
 
@@ -1157,6 +1188,17 @@
   }
 
   const SCENES = [
+    {
+      name: "Draft then teach then pack",
+      copy: "Layout A. Draft shows dashed class cards and no drag, add, or citation controls. Switch to Read for day-of checkboxes and full technique steps. Switch to Edit on the same cards to pack.",
+      steps: [
+        { label: "Reset unit", action: { type: "RESET" } },
+        { label: "Layout A", variant: "A" },
+        { label: "Switch to Draft", mode: "draft" },
+        { label: "Switch to Read", mode: "read" },
+        { label: "Switch to Edit", mode: "edit" }
+      ]
+    },
     {
       name: "Read class 2",
       copy: "Open Read. On class 2, What to run for The trilemma shows step bullets. The glued drill row shows only the partner job.",
