@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PROTOTYPE — Design to first Draft · topic 30</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --paper: #fffcf6;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #d6d3d1;
+      --accent: #9a3412;
+      --ok: #14532d;
+      --ok-soft: #dcfce7;
+      --tech: #1e3a8a;
+      --tech-soft: #dbeafe;
+      --drill: #854d0e;
+      --drill-soft: #fef9c3;
+      --spar: #9f1239;
+      --spar-soft: #ffe4e6;
+      --game: #5b21b6;
+      --game-soft: #ede9fe;
+      --sys: #0f766e;
+      --sys-soft: #ccfbf1;
+      --move: #1d4ed8;
+      --shadow: 0 1px 2px rgba(28,25,23,.06), 0 8px 24px rgba(28,25,23,.06);
+      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #fde68a55, transparent 60%),
+        radial-gradient(900px 500px at 100% 0%, #bbf7d055, transparent 55%),
+        var(--bg);
+      line-height: 1.45;
+      padding-bottom: 6.5rem;
+    }
+    .box-final, .box-proto { position: relative; outline-offset: 6px; }
+    .box-final { outline: 2px dotted #15803d; }
+    .box-proto { outline: 2px dotted #dc2626; }
+    .banner.box-proto, .switcher.box-proto { outline-offset: 3px; }
+    .box-key {
+      display: flex; flex-wrap: wrap; gap: .55rem 1rem; align-items: center; font-size: .78rem;
+    }
+    .box-key b {
+      display: inline-block; width: .7rem; height: .7rem; border-radius: 2px;
+      margin-right: .3rem; vertical-align: -1px; outline: 2px dotted currentColor; outline-offset: 1px;
+    }
+    .box-key .k-final { color: #86efac; }
+    .box-key .k-proto { color: #fca5a5; }
+    .banner {
+      background: #1c1917; color: #fafaf9; padding: .65rem 1.25rem; font-size: .85rem;
+      display: flex; gap: 1rem; flex-wrap: wrap; align-items: baseline;
+    }
+    .banner strong { color: #86efac; }
+    .banner code { font-family: var(--mono); font-size: .8rem; color: #e7e5e4; }
+    header.page, .question, #app, .walk, .record {
+      max-width: 1180px; margin-left: auto; margin-right: auto; padding-left: 1.25rem; padding-right: 1.25rem;
+    }
+    header.page { margin-top: 1.25rem; }
+    header.page h1 {
+      font-family: var(--serif); font-weight: 600; font-size: 1.7rem; margin: 0 0 .35rem; letter-spacing: -.02em;
+    }
+    header.page .meta { color: var(--muted); font-size: .95rem; max-width: 78ch; }
+    .question { margin-top: .85rem; }
+    .question details, .walk {
+      background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
+      padding: .75rem 1rem; box-shadow: var(--shadow); margin-top: .85rem;
+    }
+    .question summary { cursor: pointer; font-weight: 600; }
+    .question p, .question ul { margin: .5rem 0 0; color: var(--muted); font-size: .92rem; max-width: 78ch; }
+    .walk h2 { margin: 0 0 .45rem; font-size: .95rem; }
+    .walk .tabs { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .55rem; }
+    .walk .tabs button, .mode-tabs button, .free-play button, .icon-btn, .add-bar button, .picker-save, .cut .cut-btns button {
+      border: 1px solid var(--line); background: #fff; border-radius: 999px;
+      padding: .25rem .7rem; cursor: pointer; font-size: .8rem;
+    }
+    .walk .tabs button.on, .mode-tabs button.on { background: #1c1917; color: #fff; border-color: #1c1917; }
+    .walk .scene { font-size: .88rem; color: var(--muted); }
+    .walk .scene strong { color: var(--ink); }
+    .walk .steps-run { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
+    .walk .steps-run button, .free-play .go, .origin-card .go {
+      border: 1px solid #1c1917; background: #1c1917; color: #fff;
+      border-radius: 8px; padding: .4rem .75rem; cursor: pointer; font-size: .82rem;
+    }
+    .origin-card .go.secondary { background: #44403c; border-color: #44403c; }
+    .changed {
+      margin: .75rem auto 0; max-width: 1180px; padding: 0 1.25rem;
+      font-size: .85rem; color: #9a3412; font-weight: 650; min-height: 1.2em;
+    }
+    #app { margin-top: .85rem; }
+    .pill {
+      display: inline-flex; align-items: center; gap: .3rem; border-radius: 999px;
+      padding: .12rem .5rem; font-size: .7rem; font-weight: 650;
+      letter-spacing: .02em; text-transform: uppercase;
+    }
+    .pill-gi { background: var(--ok-soft); color: var(--ok); }
+    .pill-tech { background: var(--tech-soft); color: var(--tech); }
+    .pill-drill { background: var(--drill-soft); color: var(--drill); }
+    .pill-spar { background: var(--spar-soft); color: var(--spar); }
+    .pill-game { background: var(--game-soft); color: var(--game); }
+    .pill-glue { background: #ffedd5; color: #9a3412; }
+    .pill-sys { background: var(--sys-soft); color: var(--sys); }
+    .pill-move { background: #dbeafe; color: var(--move); }
+    .pill-draft { background: #fef3c7; color: #92400e; }
+    .pill-read { background: var(--ok-soft); color: var(--ok); }
+    .pill-edit { background: #ffedd5; color: #9a3412; }
+    .pill-origin { background: #e7e5e4; color: #44403c; }
+    a.play {
+      color: var(--accent); text-decoration: underline; text-underline-offset: 2px;
+      cursor: pointer; font-family: var(--mono); font-size: .85em;
+    }
+    .steps { margin: .3rem 0 0; padding-left: 1.1rem; }
+    .steps li { margin: .2rem 0; }
+    .steps .you { font-weight: 650; }
+    .toast {
+      position: fixed; right: 1rem; bottom: 5.4rem; max-width: 28rem;
+      background: #1c1917; color: #fafaf9; padding: .75rem 1rem; border-radius: 10px;
+      font-size: .82rem; display: none; z-index: 40; white-space: pre-wrap; font-family: var(--mono);
+    }
+    .toast.show { display: block; }
+    .switcher {
+      position: fixed; left: 50%; bottom: 1rem; transform: translateX(-50%); z-index: 50;
+      display: flex; align-items: center; gap: .45rem; background: #0c0a09; color: #fafaf9;
+      border-radius: 999px; padding: .4rem .5rem; box-shadow: 0 10px 30px rgba(0,0,0,.35); user-select: none;
+    }
+    .switcher button {
+      border: 0; background: #292524; color: #fafaf9; min-width: 2.1rem; height: 2.1rem;
+      border-radius: 999px; cursor: pointer; font-size: .9rem; padding: 0 .7rem;
+    }
+    .switcher button:hover { background: #44403c; }
+    .switcher .label { min-width: 14rem; text-align: center; font-size: .82rem; font-weight: 600; }
+    .switcher .label span { display: block; font-weight: 400; color: #a8a29e; font-size: .7rem; }
+
+    .unit-top, .origin-card, .origin-strip, .empty-sheet {
+      background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
+      box-shadow: var(--shadow); padding: 1rem 1.2rem; margin-bottom: 1rem;
+    }
+    .unit-top h2, .origin-card h2 { font-family: var(--serif); margin: 0 .5rem 0 0; font-size: 1.25rem; display: inline; }
+    .unit-top .row, .origin-strip { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+    .origin-strip { margin-bottom: 1rem; }
+    .unit-para, .map-list {
+      background: #fff; border: 1px dashed var(--line); border-radius: 8px;
+      padding: .65rem .8rem; font-size: .92rem; margin-top: .45rem; max-width: 88ch;
+    }
+    .unit-para label, .origin-card h3 {
+      display: block; font-size: .7rem; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--muted); font-weight: 650; margin: .35rem 0 .25rem;
+    }
+    .origin-card ul { margin: .2rem 0 .4rem; padding-left: 1.1rem; font-size: .88rem; }
+    .origin-card .hint, .tiny, .success, .foot { color: var(--muted); font-size: .82rem; }
+    .doors { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 860px) { .doors, .handoff-split { grid-template-columns: 1fr !important; } }
+    .handoff-split { display: grid; grid-template-columns: minmax(280px, 36%) 1fr; gap: 1rem; align-items: start; }
+    .rail { position: sticky; top: .6rem; }
+    .free-play { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
+    .mode-tabs { display: flex; gap: .35rem; flex-wrap: wrap; margin: .65rem 0 .15rem; }
+
+    .class-card {
+      background: var(--paper); border: 1px solid var(--line); border-radius: 14px;
+      box-shadow: var(--shadow); overflow: hidden; margin-bottom: 1rem;
+    }
+    body[data-mode="draft"] .class-card { border-style: dashed; border-width: 2px; }
+    .cut {
+      display: flex; flex-wrap: wrap; align-items: center; gap: .55rem 1rem;
+      padding: .7rem 1rem; background: #1c1917; color: #fafaf9;
+    }
+    .cut .n { font-family: var(--mono); font-size: .72rem; color: #a8a29e; }
+    .cut h3 { margin: 0; font-size: 1.05rem; font-family: var(--serif); }
+    .cut .purpose { color: #d6d3d1; font-size: .85rem; margin-left: auto; max-width: 46ch; }
+    .cut .cut-btns button, .add-bar button, .icon-btn, .picker-save {
+      border: 0; background: #44403c; color: #fff; border-radius: 7px; padding: .25rem .5rem;
+    }
+    .add-bar {
+      display: flex; flex-wrap: wrap; gap: .35rem; padding: .5rem .8rem;
+      background: #fff7ed; border-bottom: 1px solid #fed7aa;
+    }
+    table.sheet { width: 100%; border-collapse: collapse; font-size: .86rem; background: #fff; }
+    table.sheet th, table.sheet td {
+      border-bottom: 1px solid var(--line); padding: .45rem .55rem; vertical-align: top; text-align: left;
+    }
+    table.sheet th {
+      background: #f5f5f4; font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
+    }
+    tr.tech { background: linear-gradient(90deg, var(--tech-soft), #fff 42%); }
+    tr.drill { background: linear-gradient(90deg, var(--drill-soft), #fff 42%); }
+    tr.sparring { background: linear-gradient(90deg, var(--spar-soft), #fff 42%); }
+    tr.game { background: linear-gradient(90deg, var(--game-soft), #fff 42%); }
+    tr.glued td:first-child { box-shadow: inset 4px 0 0 #fb923c; }
+    tr[data-drag="lesson"] { cursor: grab; }
+    tr[data-drag="lesson"].dragging, .cut.dragging { opacity: .5; }
+    tr.drop-target td { outline: 2px dashed #9a3412; outline-offset: -2px; }
+    .edit-tools { display: flex; flex-direction: column; gap: .25rem; min-width: 4.2rem; }
+    .icon-btn.warn { background: #9f1239; }
+    .picker {
+      margin-top: .4rem; padding: .55rem .65rem; border: 1px solid #fdba74;
+      background: #fff7ed; border-radius: 8px;
+    }
+    .picker label { display: block; margin: .25rem 0; font-size: .84rem; cursor: pointer; }
+    .record { margin: 1rem auto 2rem; }
+    .record details { background: #1c1917; color: #e7e5e4; border-radius: 12px; padding: .85rem 1rem; }
+    .record summary { cursor: pointer; font-weight: 650; color: #fafaf9; }
+    .record pre {
+      margin: .7rem 0 0; white-space: pre-wrap; font-family: var(--mono);
+      font-size: .76rem; line-height: 1.45; color: #d6d3d1;
+    }
+  </style>
+</head>
+<body>
+  <div class="banner box-proto">
+    <strong>PROTOTYPE · throwaway</strong>
+    <span>Ticket <code>#30</code> · Design set becomes first Draft</span>
+    <span>Branch <code>prototype/design-to-draft-topic30</code></span>
+    <span>A / B / C are hand-off chrome · class cards stay the locked sheet</span>
+    <span class="box-key">
+      <span><b class="k-final"></b>green dotted: coach experience</span>
+      <span><b class="k-proto"></b>red dotted: prototype use</span>
+    </span>
+  </div>
+
+  <header class="page box-proto">
+    <h1>How does the designed mental map become the first ordered lesson list?</h1>
+    <p class="meta">
+      Two origins for the first Build list: a unit paragraph, or a Design canvas the advisor converts.
+      First Draft is glued technique plus following drill, with class cuts. The coach adds sparring, a game, or a drill with no technique ahead.
+      One generator for that first list. The run-plan sheet stays the locked class cards.
+    </p>
+  </header>
+
+  <div class="question box-proto">
+    <details open>
+      <summary>What this prototype is checking</summary>
+      <p>Packing from an unordered Tight waist map (or from a prompt) onto the locked Draft sheet.</p>
+      <ul>
+        <li><strong>A Doors then sheet</strong> — pick an origin; the chooser collapses; Draft fills the page.</li>
+        <li><strong>B Stacked</strong> — Design readout and prompt stay above the sheet.</li>
+        <li><strong>C Split</strong> — origin rail on the left; Draft on the right.</li>
+      </ul>
+    </details>
+  </div>
+
+  <div class="walk box-proto">
+    <h2>Guided walkthroughs</h2>
+    <div class="tabs" id="scene-tabs"></div>
+    <div class="scene" id="scene-copy"></div>
+    <div class="steps-run" id="scene-steps"></div>
+  </div>
+  <p class="changed box-proto" id="changed"></p>
+  <div id="app"></div>
+  <div class="record box-proto">
+    <details open>
+      <summary>Hand-off record (full state after every action)</summary>
+      <pre id="record"></pre>
+    </details>
+  </div>
+  <div class="toast" id="toast"></div>
+  <div class="switcher box-proto" role="toolbar" aria-label="Prototype hand-off switcher">
+    <button type="button" id="prev" aria-label="Previous layout">←</button>
+    <div class="label" id="switch-label">A</div>
+    <button type="button" id="next" aria-label="Next layout">→</button>
+  </div>
+
+  <script>
+(function () {
+  const TOPIC = { name: "half guard", ruleset: "gi", label: "gi half guard" };
+  const PARAGRAPH = "Build a gi half guard unit where students win the underhook, make tight waist home, then branch the trilemma under rising partner jobs, and finish able to attempt the topic in a positional round from half guard bottom against a ready partner.";
+  const SAMPLE_WORDS = "Tight waist is home after the underhook. The trilemma opens three paths from that home: come up to capture their far leg, roll through, and take the back. A partner who sits up to switch for the underhook and hunts overhead or modified X is the resistance the drills answer.";
+  const SUCCESS = "Positional round from half guard bottom, free play inside gi rules. Coach read by eye: how many attempted the topic, and how many completed it or came close against a better partner (none / some / most / all).";
+
+  const NAMED_MOVES = {
+    "knee-lever": { id: "knee-lever", label: "Knee lever", start: "Half guard", startSide: "bottom", moveType: "transition", end: "Half guard", endSide: "bottom" },
+    "tight-waist": { id: "tight-waist", label: "Tight waist", start: "Half guard", startSide: "bottom", moveType: "transition", end: "Half guard", endSide: "bottom" },
+    "far-leg-come-up": { id: "far-leg-come-up", label: "Far-leg come-up", start: "Half guard", startSide: "bottom", moveType: "sweep", end: "Side control", endSide: "top" },
+    "roll-through": { id: "roll-through", label: "Roll-through sweep", start: "Half guard", startSide: "bottom", moveType: "sweep", end: "Side control", endSide: "top" },
+    "back-take-tight-waist": { id: "back-take-tight-waist", label: "Back take from tight waist", start: "Half guard", startSide: "bottom", moveType: "back take", end: "Back control", endSide: "top" }
+  };
+  const SYSTEMS = {
+    "tight-waist-trilemma": {
+      id: "tight-waist-trilemma",
+      label: "Tight waist trilemma",
+      members: ["far-leg-come-up", "roll-through", "back-take-tight-waist"]
+    }
+  };
+  const VIDEO = "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Underhooks and Roll Through Sweep.mp4";
+  const INST = "Half Guard BJJ Fundamentals - Go Further Faster";
+  const VOL = "Underhooks and Roll Through Sweep";
+
+  function cite(id, namedMove, chapter, movement, start, steps) {
+    return {
+      id: id, namedMove: namedMove, instructor: "John Danaher", instructional: INST,
+      volume: VOL, chapter: chapter, movement: movement, videoFile: VIDEO, start: start, steps: steps
+    };
+  }
+  const CITATIONS = {
+    "jd-get-uh": cite("jd-get-uh", "knee-lever", "Getting to Underhooks",
+      "Knee Lever - Get the underhook from half guard bottom", "0:05", [
+        { you: "inside foot", action: "place next to", against: "their inside knee" },
+        { you: "inside arm", action: "turn into an underhook under", against: "their inside arm" }
+      ]),
+    "jd-tight-waist": cite("jd-tight-waist", "tight-waist", "Winning From Underhooks - The Tight Waist Series",
+      "Tight Waist Series - Winning from underhooks", "7:41", [
+        { you: "inside arm", action: "wrap the tight waist around", against: "their waist" },
+        { you: "body", action: "get off the flat back onto the outside hip", against: null }
+      ]),
+    "jd-trilemma": cite("jd-trilemma", "roll-through", "The Trilemma",
+      "The Trilemma - Tight Waist Series", "15:24", [
+        { you: "inside arm + inside leg", action: "hold tight waist and hook as the home system", against: "their waist and inside leg" },
+        { you: "whole body", action: "roll through toward the outside when that path is blocked", against: "their center of gravity" }
+      ]),
+    "jd-far-leg": cite("jd-far-leg", "far-leg-come-up", "The Trilemma",
+      "Far-leg come-up from tight waist", "16:10", [
+        { you: "outside base hand", action: "come up and capture", against: "their outside ankle or knee" }
+      ]),
+    "jd-roll": cite("jd-roll", "roll-through", "Roll Through Sweeps",
+      "Roll Through Sweeps - From tight waist", "22:25", [
+        { you: "inside knee block + inside tight waist", action: "get under", against: "their center of gravity" },
+        { you: "whole body", action: "roll them through toward the outside", against: "their posted base" }
+      ]),
+    "jd-back": cite("jd-back", "back-take-tight-waist", "The Trilemma",
+      "Back take from tight waist", "17:02", [
+        { you: "inside arm and head", action: "take the back when they defend the roll", against: "their back" }
+      ])
+  };
+
+  const LESSON_COPY = {
+    "knee-lever": {
+      title: "Get the underhook",
+      job: "Start cooperative: let them take the underhook and set tight waist. Then frame and crossface lightly so they must re-win the underhook."
+    },
+    "tight-waist": {
+      title: "Tight waist as home",
+      job: "From settled tight waist, the partner tries to kill the waist with a strong crossface and a sit-up switch. The student only restarts when tight waist is back. No sweeps yet."
+    },
+    "tight-waist-trilemma": {
+      title: "The trilemma",
+      job: "Partner starts ready: strong crossface and an early sit-up to switch. Student must keep tight waist, show two of the three threats, and only finish the path the partner leaves open."
+    },
+    "roll-through": {
+      title: "Roll through from tight waist",
+      job: "Partner sprawls the far leg and fights the pant grip. Student resets to tight waist on every failed roll."
+    }
+  };
+
+  /* Portable packing + unit reducer — no DOM. */
+  const PackingModel = {
+    clone: function (v) { return JSON.parse(JSON.stringify(v)); },
+    emptyDesign: function () {
+      return {
+        start: "half-guard", occupancy: "", onMap: [], systemsOnMap: [],
+        topicSystem: "", chosenCitations: {}
+      };
+    },
+    sampleDesign: function () {
+      return {
+        start: "half-guard", occupancy: "bottom",
+        onMap: ["knee-lever", "tight-waist", "far-leg-come-up", "roll-through", "back-take-tight-waist"],
+        systemsOnMap: ["tight-waist-trilemma"],
+        topicSystem: SAMPLE_WORDS,
+        chosenCitations: {}
+      };
+    },
+    emptyUnit: function () {
+      return {
+        topic: TOPIC, topicSystem: "", catalogSystemId: "tight-waist-trilemma",
+        paragraph: PARAGRAPH, success: SUCCESS, classes: [], nextId: 1
+      };
+    },
+    memberSet: function (design) {
+      const set = {};
+      (design.systemsOnMap || []).forEach(function (sid) {
+        (SYSTEMS[sid].members || []).forEach(function (id) { set[id] = true; });
+      });
+      return set;
+    },
+    isolateIds: function (design) {
+      const members = PackingModel.memberSet(design);
+      return (design.onMap || []).filter(function (id) {
+        return id === "roll-through" && members[id];
+      });
+    },
+    homeIds: function (design) {
+      const members = PackingModel.memberSet(design);
+      const homes = (design.onMap || []).filter(function (id) { return !members[id]; });
+      homes.sort(function (a, b) {
+        const rank = function (id) { return NAMED_MOVES[id].moveType === "transition" ? 0 : 1; };
+        return rank(a) - rank(b);
+      });
+      return homes;
+    },
+    citationsFor: function (target, design) {
+      const chosen = design.chosenCitations || {};
+      if (target.kind === "named_move" && chosen[target.id] && chosen[target.id].length) {
+        return chosen[target.id].slice();
+      }
+      if (target.kind === "system") {
+        const members = SYSTEMS[target.id].members;
+        const ids = Object.keys(CITATIONS).filter(function (id) {
+          return members.indexOf(CITATIONS[id].namedMove) !== -1;
+        });
+        const preferred = ids.filter(function (id) { return id === "jd-trilemma"; });
+        return (preferred.length ? preferred : ids.slice(0, 1));
+      }
+      const ids = Object.keys(CITATIONS).filter(function (id) {
+        return CITATIONS[id].namedMove === target.id;
+      });
+      const specific = ids.filter(function (id) { return id !== "jd-trilemma"; });
+      return (specific.length ? specific : ids).slice(0, 1);
+    },
+    glueBlock: function (target, design) {
+      const key = target.kind === "system" ? target.id : target.id;
+      const copy = LESSON_COPY[key] || { title: NAMED_MOVES[target.id].label, job: "Coach fills the partner job." };
+      const cites = PackingModel.citationsFor(target, design);
+      return [
+        { type: "technique", title: copy.title, target: target, citations: cites.slice(), glue: true },
+        { type: "drill", title: copy.title + " drill", target: target, citations: cites.slice(), partnerJob: copy.job }
+      ];
+    },
+    fromDesign: function (design) {
+      const unit = PackingModel.emptyUnit();
+      unit.topicSystem = design.topicSystem || SAMPLE_WORDS;
+      const homes = PackingModel.homeIds(design);
+      const systems = design.systemsOnMap || [];
+      const isolated = PackingModel.isolateIds(design);
+      const class1 = [];
+      homes.forEach(function (id) {
+        class1.push.apply(class1, PackingModel.glueBlock({ kind: "named_move", id: id }, design));
+      });
+      const class2 = [];
+      systems.forEach(function (sid) {
+        class2.push.apply(class2, PackingModel.glueBlock({ kind: "system", id: sid }, design));
+      });
+      isolated.forEach(function (id) {
+        class2.push.apply(class2, PackingModel.glueBlock({ kind: "named_move", id: id }, design));
+      });
+      if (class1.length && class2.length) {
+        unit.classes = [
+          { id: 1, title: "Class 1", purpose: "Win the underhook and make tight waist the home they refuse to leave.", lessons: class1 },
+          { id: 2, title: "Class 2", purpose: "From tight waist home, open the trilemma and hit the isolated finish.", lessons: class2 }
+        ];
+        unit.nextId = 3;
+      } else {
+        const lessons = class1.length ? class1 : class2;
+        unit.classes = lessons.length
+          ? [{ id: 1, title: "Class 1", purpose: "Teach the mapped named moves and systems.", lessons: lessons }]
+          : [];
+        unit.nextId = unit.classes.length ? 2 : 1;
+      }
+      return unit;
+    },
+    fromPrompt: function () {
+      return PackingModel.fromDesign(PackingModel.sampleDesign());
+    }
+  };
+
+  const UnitModel = {
+    clone: PackingModel.clone,
+    retitle: function (classes) {
+      classes.forEach(function (c, i) { c.title = "Class " + (i + 1); });
+    },
+    block: function (lessons, i) {
+      const L = lessons[i];
+      if (L && L.type === "technique" && L.glue) return { start: i, end: Math.min(i + 1, lessons.length - 1) };
+      if (i > 0 && lessons[i - 1].glue && L && L.type === "drill") return { start: i - 1, end: i };
+      return { start: i, end: i };
+    },
+    step: function (classes, ci, li, dir) {
+      const lessons = classes[ci].lessons;
+      const b = UnitModel.block(lessons, li);
+      if (dir < 0) {
+        if (b.start === 0) {
+          if (ci === 0) return null;
+          return { fromCi: ci, fromLi: li, toCi: ci - 1, toLi: classes[ci - 1].lessons.length };
+        }
+        const prevB = UnitModel.block(lessons, b.start - 1);
+        return { fromCi: ci, fromLi: li, toCi: ci, toLi: prevB.start };
+      }
+      if (b.end === lessons.length - 1) {
+        if (ci === classes.length - 1) return null;
+        return { fromCi: ci, fromLi: li, toCi: ci + 1, toLi: 0 };
+      }
+      const nextB = UnitModel.block(lessons, b.end + 1);
+      return { fromCi: ci, fromLi: li, toCi: ci, toLi: nextB.end + 1 };
+    },
+    reduce: function (unit, action) {
+      const next = UnitModel.clone(unit);
+      const kind = action.type;
+      if (kind === "MOVE_LESSON") {
+        const fromCi = action.fromCi;
+        let toCi = action.toCi;
+        let toLi = action.toLi;
+        if (fromCi < 0 || toCi < 0 || fromCi >= next.classes.length || toCi >= next.classes.length) return next;
+        const src = next.classes[fromCi];
+        const b = UnitModel.block(src.lessons, action.fromLi);
+        const dest = next.classes[toCi];
+        if (toLi < 0) toLi = 0;
+        if (toLi > dest.lessons.length) toLi = dest.lessons.length;
+        if (toLi < dest.lessons.length) toLi = UnitModel.block(dest.lessons, toLi).start;
+        if (fromCi === toCi && (toLi === b.start || toLi === b.end + 1)) return next;
+        const chunk = src.lessons.splice(b.start, b.end - b.start + 1);
+        if (fromCi === toCi && toLi > b.start) toLi -= chunk.length;
+        if (src.lessons.length === 0) {
+          if (next.classes.length === 1) { src.lessons = chunk; return next; }
+          next.classes.splice(fromCi, 1);
+          if (toCi > fromCi) toCi -= 1;
+        }
+        const destNow = next.classes[toCi];
+        destNow.lessons = destNow.lessons.slice(0, toLi).concat(chunk, destNow.lessons.slice(toLi));
+        UnitModel.retitle(next.classes);
+        next._change = "Reordered " + chunk.map(function (L) { return L.title; }).join(" + ") + " into " + destNow.title + ".";
+        return next;
+      }
+      if (kind === "REMOVE_LESSON") {
+        const klass = next.classes[action.classIndex];
+        const b = UnitModel.block(klass.lessons, action.lessonIndex);
+        const removed = klass.lessons.splice(b.start, b.end - b.start + 1);
+        if (klass.lessons.length === 0) {
+          if (next.classes.length === 1) { klass.lessons = removed; return next; }
+          next.classes.splice(action.classIndex, 1);
+          UnitModel.retitle(next.classes);
+        }
+        next._change = "Removed " + removed.map(function (L) { return L.title; }).join(" + ") + ".";
+        return next;
+      }
+      if (kind === "ADD_LESSON") {
+        const klass = next.classes[action.classIndex];
+        const target = action.target;
+        const type = action.lessonType;
+        const title = action.title;
+        if (type === "technique") {
+          klass.lessons.push({ type: "technique", title: title, target: target, citations: [], glue: true });
+          klass.lessons.push({
+            type: "drill", title: title + " drill", target: target, citations: [],
+            partnerJob: "Coach fills the partner job."
+          });
+          next._change = "Added technique " + title + " with its glued drill.";
+        } else {
+          const lesson = { type: type, title: title, target: target, citations: [] };
+          if (type === "drill") lesson.partnerJob = "Coach fills the partner job.";
+          if (type === "sparring") lesson.scenario = action.scenario || "Start and restart in half guard bottom. Both may work anything gi allows inside that start.";
+          if (type === "game") lesson.condition = action.condition || "Coach writes the condition.";
+          klass.lessons.push(lesson);
+          next._change = "Added " + type + " " + title + ".";
+        }
+        return next;
+      }
+      if (kind === "SET_CITATIONS") {
+        const lesson = next.classes[action.classIndex].lessons[action.lessonIndex];
+        lesson.citations = action.ids.slice();
+        if (lesson.glue) {
+          const drill = next.classes[action.classIndex].lessons[action.lessonIndex + 1];
+          if (drill && drill.type === "drill") drill.citations = action.ids.slice();
+        }
+        next._change = "Citations on " + lesson.title + " updated.";
+        return next;
+      }
+      return next;
+    }
+  };
+
+  const AppModel = {
+    seed: function () {
+      return {
+        origin: null,
+        design: PackingModel.emptyDesign(),
+        unit: PackingModel.emptyUnit(),
+        lastChange: "Pick a prompt Build or convert a Design canvas. The first list is empty."
+      };
+    },
+    clone: PackingModel.clone,
+    reduce: function (state, action) {
+      const next = AppModel.clone(state);
+      const kind = action.type;
+      if (kind === "RESET") return AppModel.seed();
+      if (kind === "LOAD_DESIGN") {
+        next.design = PackingModel.sampleDesign();
+        next.lastChange = "Loaded the Tight waist design. Unordered. No classes packed.";
+        return next;
+      }
+      if (kind === "CONVERT_DESIGN") {
+        if (next.origin === "prompt") {
+          next.lastChange = "This unit already has a first list from the prompt. Reset to convert from Design.";
+          return next;
+        }
+        if (!next.design.onMap.length && !next.design.systemsOnMap.length) {
+          next.lastChange = "The map has no named moves or systems to convert. Load Tight waist first.";
+          return next;
+        }
+        next.unit = PackingModel.fromDesign(next.design);
+        next.origin = "design";
+        next.lastChange = "Advisor converted the Design set into a first Draft of glued technique blocks.";
+        return next;
+      }
+      if (kind === "BUILD_PROMPT") {
+        if (next.origin === "design") {
+          next.lastChange = "This unit already has a first list from Design conversion. Reset to Build from a prompt.";
+          return next;
+        }
+        next.unit = PackingModel.fromPrompt();
+        next.design = PackingModel.sampleDesign();
+        next.origin = "prompt";
+        next.lastChange = "Advisor built the first Draft from the unit paragraph.";
+        return next;
+      }
+      if (!next.origin) {
+        next.lastChange = "Pick prompt or Design conversion before packing the list.";
+        return next;
+      }
+      next.unit = UnitModel.reduce(next.unit, action);
+      next.lastChange = next.unit._change || next.lastChange;
+      delete next.unit._change;
+      return next;
+    }
+  };
+
+  const MODES = [
+    { key: "draft", name: "Draft", hint: "Build proposal" },
+    { key: "read", name: "Read", hint: "Teach from this sheet" },
+    { key: "edit", name: "Edit", hint: "Pack and add non-technique" }
+  ];
+  const VARIANTS = [
+    { key: "A", name: "Doors then sheet" },
+    { key: "B", name: "Stacked readout" },
+    { key: "C", name: "Split rail" }
+  ];
+  const TARGETS = [
+    { kind: "named_move", id: "knee-lever" },
+    { kind: "named_move", id: "tight-waist" },
+    { kind: "named_move", id: "roll-through" },
+    { kind: "system", id: "tight-waist-trilemma" }
+  ];
+
+  let state = AppModel.seed();
+  let ui = { picker: null, scene: 0, drag: null };
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { el.classList.remove("show"); }, 2800);
+  }
+  function escapeAttr(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function currentMode() {
+    const v = (new URLSearchParams(location.search).get("mode") || "draft").toLowerCase();
+    return MODES.some(function (m) { return m.key === v; }) ? v : "draft";
+  }
+  function currentVariant() {
+    const v = (new URLSearchParams(location.search).get("variant") || "A").toUpperCase();
+    return VARIANTS.some(function (x) { return x.key === v; }) ? v : "A";
+  }
+  function setMode(key) {
+    const url = new URL(location.href);
+    url.searchParams.set("mode", key);
+    history.replaceState(null, "", url);
+    paint();
+  }
+  function setVariant(key) {
+    const url = new URL(location.href);
+    url.searchParams.set("variant", key);
+    history.replaceState(null, "", url);
+    paint();
+  }
+  function dispatch(action) {
+    state = AppModel.reduce(state, action);
+    ui.picker = null;
+    paint();
+  }
+
+  function resolveTarget(target) {
+    if (target.kind === "system") {
+      const sys = SYSTEMS[target.id];
+      return { kind: "system", label: sys.label, path: "defend one named move, give another" };
+    }
+    const mv = NAMED_MOVES[target.id];
+    return {
+      kind: "named_move", label: mv.label,
+      path: mv.start + " · " + mv.startSide + " -> " + mv.moveType + " -> " + mv.end + " · " + mv.endSide
+    };
+  }
+  function availableCitationIds(target) {
+    if (target.kind === "system") {
+      const members = SYSTEMS[target.id].members;
+      return Object.keys(CITATIONS).filter(function (id) {
+        return members.indexOf(CITATIONS[id].namedMove) !== -1;
+      });
+    }
+    return Object.keys(CITATIONS).filter(function (id) { return CITATIONS[id].namedMove === target.id; });
+  }
+  function playLink(c) {
+    return '<a class="play" href="#play" data-file="' + escapeAttr(c.videoFile) + '" data-start="' + escapeAttr(c.start) + '">' +
+      c.start + "</a>";
+  }
+  function stepsHtml(steps) {
+    return '<ul class="steps">' + steps.map(function (s) {
+      const against = s.against ? " -> " + escapeHtml(s.against) : "";
+      return "<li><span class=\"you\">" + escapeHtml(s.you) + "</span> " + escapeHtml(s.action) + against + "</li>";
+    }).join("") + "</ul>";
+  }
+  function whatToRun(lesson, prev) {
+    if (lesson.type === "technique") {
+      if (!lesson.citations.length) return '<span class="tiny">No citations chosen yet.</span>';
+      return lesson.citations.map(function (id) {
+        const c = CITATIONS[id];
+        return "<strong>" + escapeHtml(c.movement) + "</strong>" + stepsHtml(c.steps);
+      }).join("");
+    }
+    if (lesson.type === "drill") {
+      return '<span class="tiny">Partner job</span><div>' + escapeHtml(lesson.partnerJob) + "</div>";
+    }
+    if (lesson.type === "sparring") {
+      return '<span class="tiny">Scenario</span><div>' + escapeHtml(lesson.scenario) + "</div>";
+    }
+    if (lesson.type === "game") {
+      return '<span class="tiny">Condition</span><div>' + escapeHtml(lesson.condition) + "</div>";
+    }
+    return "";
+  }
+  function playbackCell(lesson, prev) {
+    if (prev && prev.glue && lesson.type === "drill") return "—";
+    if (!lesson.citations.length) return "—";
+    return lesson.citations.map(function (id) { return playLink(CITATIONS[id]); }).join("<br>");
+  }
+  function targetHtml(target) {
+    const t = resolveTarget(target);
+    const pill = t.kind === "system"
+      ? '<span class="pill pill-sys">system</span> '
+      : '<span class="pill pill-move">named move</span> ';
+    return pill + "<strong>" + escapeHtml(t.label) + "</strong><span class=\"tiny\"> · " + escapeHtml(t.path) + "</span>";
+  }
+
+  function mapReadout() {
+    const d = state.design;
+    let html = '<h3>What Design hands over</h3>';
+    html += '<p class="hint">Unordered. No class cuts, no partner jobs, no run sheet.</p>';
+    html += "<p>" + (d.occupancy
+      ? "Half guard · " + escapeHtml(d.occupancy)
+      : '<span class="tiny">Occupancy not chosen.</span>') + "</p>";
+    html += "<h3>Named moves</h3><ul>";
+    if (!d.onMap.length) html += "<li class=\"tiny\">None.</li>";
+    d.onMap.forEach(function (id) {
+      const m = NAMED_MOVES[id];
+      html += "<li><span class=\"pill pill-move\">named move</span> " + escapeHtml(m.label) +
+        " <span class=\"tiny\">" + escapeHtml(m.moveType) + "</span></li>";
+    });
+    html += "</ul><h3>Systems</h3><ul>";
+    if (!d.systemsOnMap.length) html += "<li class=\"tiny\">None.</li>";
+    d.systemsOnMap.forEach(function (sid) {
+      const sys = SYSTEMS[sid];
+      html += "<li><span class=\"pill pill-sys\">system</span> " + escapeHtml(sys.label) +
+        " <span class=\"tiny\">" + sys.members.map(function (id) { return NAMED_MOVES[id].label; }).join(" / ") + "</span></li>";
+    });
+    html += "</ul>";
+    if (d.topicSystem) html += '<div class="unit-para"><label>Topic system</label>' + escapeHtml(d.topicSystem) + "</div>";
+    return html;
+  }
+
+  function originActions() {
+    let html = '<div class="free-play">';
+    html += '<button type="button" class="go secondary" data-act="load-design">Load Tight waist design</button>';
+    html += '<button type="button" class="go" data-act="convert">Convert Design to Build</button>';
+    html += '<button type="button" class="go" data-act="prompt">Build from prompt</button>';
+    html += '<button type="button" data-act="reset">Reset</button></div>';
+    return html;
+  }
+
+  function originDoors() {
+    let html = '<div class="doors box-final">';
+    html += '<section class="origin-card"><h2>From a prompt</h2>';
+    html += '<p class="hint">The unit paragraph asks the advisor for a whole first Draft.</p>';
+    html += '<div class="unit-para"><label>Unit paragraph</label>' + escapeHtml(PARAGRAPH) + "</div>";
+    html += '<div class="free-play"><button type="button" class="go" data-act="prompt">Build from prompt</button></div></section>';
+    html += '<section class="origin-card"><h2>From Design</h2>';
+    html += mapReadout();
+    html += originActions();
+    html += "</section></div>";
+    return html;
+  }
+
+  function originStrip() {
+    const label = state.origin === "prompt" ? "First list from prompt" : "First list from Design conversion";
+    return '<div class="origin-strip box-final">' +
+      '<span class="pill pill-origin">' + label + "</span>" +
+      '<button type="button" data-act="reset">Reset origin</button></div>';
+  }
+
+  function originStack() {
+    let html = '<section class="origin-card box-final"><h2>Origins</h2>';
+    html += '<div class="unit-para"><label>Unit paragraph</label>' + escapeHtml(PARAGRAPH) + "</div>";
+    html += mapReadout();
+    html += originActions();
+    if (state.origin) {
+      html += '<p class="success">Active origin: <strong>' + escapeHtml(state.origin) + "</strong>. The other generator refuses until Reset.</p>";
+    }
+    html += "</section>";
+    return html;
+  }
+
+  function originRail() {
+    let html = '<aside class="origin-card rail box-final"><h2>Start a list</h2>';
+    html += '<div class="unit-para"><label>Prompt</label>' + escapeHtml(PARAGRAPH) + "</div>";
+    html += mapReadout();
+    html += originActions();
+    html += "</aside>";
+    return html;
+  }
+
+  function modeTabsHtml() {
+    const mode = currentMode();
+    return '<div class="mode-tabs">' + MODES.map(function (m) {
+      return '<button type="button" data-act="mode" data-mode="' + m.key + '" class="' + (mode === m.key ? "on" : "") + '">' +
+        m.name + "</button>";
+    }).join("") + "</div>";
+  }
+
+  function unitChrome() {
+    const mode = currentMode();
+    const modeMeta = MODES.find(function (m) { return m.key === mode; });
+    const unit = state.unit;
+    let html = '<div class="unit-top box-final"><div class="row">';
+    html += "<h2>" + escapeHtml(unit.topic.label) + "</h2>";
+    html += '<span class="pill pill-gi">' + escapeHtml(unit.topic.ruleset) + "</span>";
+    html += '<span class="pill pill-' + mode + '">' + modeMeta.name + "</span>";
+    if (state.origin) html += '<span class="pill pill-origin">' + escapeHtml(state.origin) + "</span>";
+    html += "</div>";
+    html += modeTabsHtml();
+    html += '<div class="unit-para"><label>Topic system (coach words)</label>' +
+      escapeHtml(unit.topicSystem || "(empty until a first list exists)") + "</div>";
+    html += '<p class="success"><strong>Success watch:</strong> ' + escapeHtml(unit.success) + "</p></div>";
+    return html;
+  }
+
+  function cutInner(klass, ci, mode) {
+    let html = '<span class="n">CUT</span><h3>' + escapeHtml(klass.title) + "</h3>";
+    if (mode === "draft") html += '<span class="pill pill-draft">Build proposal</span>';
+    html += '<div class="purpose">' + escapeHtml(klass.purpose) + "</div>";
+    return html;
+  }
+  function addBarHtml(ci) {
+    let html = '<div class="add-bar">Add:';
+    html += '<button type="button" data-act="add" data-class="' + ci + '" data-type="technique">Technique + drill</button>';
+    html += '<button type="button" data-act="add" data-class="' + ci + '" data-type="drill">Drill</button>';
+    html += '<button type="button" data-act="add" data-class="' + ci + '" data-type="sparring">Sparring</button>';
+    html += '<button type="button" data-act="add" data-class="' + ci + '" data-type="game">Game</button>';
+    html += '<select data-target-for="' + ci + '">';
+    TARGETS.forEach(function (t) {
+      const label = t.kind === "system" ? "system · " + SYSTEMS[t.id].label : NAMED_MOVES[t.id].label;
+      html += '<option value="' + t.kind + ":" + t.id + '">' + escapeHtml(label) + "</option>";
+    });
+    html += "</select></div>";
+    return html;
+  }
+  function lessonTitleCell(lesson, glued) {
+    let html = "<strong>" + escapeHtml(lesson.title) + "</strong>";
+    if (lesson.glue) html += ' <span class="pill pill-glue">+ drill</span>';
+    if (glued) html += ' <span class="pill pill-glue">follows technique</span>';
+    return html;
+  }
+  function typePill(type) {
+    return '<span class="pill pill-' + (type === "sparring" ? "spar" : type) + '">' + type + "</span>";
+  }
+  function pickerHtml(ci, li, lesson) {
+    const ids = availableCitationIds(lesson.target);
+    let html = '<div class="picker" data-ci="' + ci + '" data-li="' + li + '">';
+    ids.forEach(function (id) {
+      const c = CITATIONS[id];
+      const on = lesson.citations.indexOf(id) !== -1;
+      html += '<label><input type="checkbox" data-cite="' + escapeAttr(id) + '"' + (on ? " checked" : "") + "> " +
+        escapeHtml(c.movement) + "</label>";
+    });
+    html += '<button type="button" class="picker-save">Save choices</button></div>';
+    return html;
+  }
+  function editCite(ci, li, lesson, mode) {
+    if (mode !== "edit") return "";
+    let html = '<div style="margin-top:.35rem"><button type="button" class="icon-btn" data-act="cites" data-class="' + ci + '" data-lesson="' + li + '">Choose citations</button></div>';
+    if (ui.picker && ui.picker.ci === ci && ui.picker.li === li) html += pickerHtml(ci, li, lesson);
+    return html;
+  }
+  function tableHead(mode) {
+    let html = "<thead><tr>";
+    if (mode === "read") html += "<th>✓</th>";
+    if (mode === "edit") html += "<th></th>";
+    html += "<th>Lesson</th><th>Type</th><th>Target</th><th>What to run</th><th>Playback</th></tr></thead>";
+    return html;
+  }
+  function lessonRow(klass, ci, li, mode) {
+    const lesson = klass.lessons[li];
+    const prev = klass.lessons[li - 1];
+    const glued = !!(prev && prev.glue && lesson.type === "drill");
+    const canDrag = mode === "edit";
+    let html = '<tr class="' + lesson.type + (glued || lesson.glue ? " glued" : "") + '"' +
+      (canDrag ? ' draggable="true" data-drag="lesson" data-class="' + ci + '" data-lesson="' + li + '"' : "") + ">";
+    if (mode === "read") html += '<td><input type="checkbox" aria-label="Ran ' + escapeAttr(lesson.title) + '"></td>';
+    if (mode === "edit") {
+      html += '<td class="edit-tools">';
+      html += '<button type="button" class="icon-btn" data-act="lesson-up" data-class="' + ci + '" data-lesson="' + li + '">Up</button>';
+      html += '<button type="button" class="icon-btn" data-act="lesson-down" data-class="' + ci + '" data-lesson="' + li + '">Down</button>';
+      html += '<button type="button" class="icon-btn warn" data-act="remove" data-class="' + ci + '" data-lesson="' + li + '">Remove</button></td>';
+    }
+    html += "<td>" + lessonTitleCell(lesson, glued) + "</td>";
+    html += "<td>" + typePill(lesson.type) + "</td>";
+    html += "<td>" + targetHtml(lesson.target) + "</td>";
+    html += "<td>" + whatToRun(lesson, prev) + editCite(ci, li, lesson, mode) + "</td>";
+    html += "<td>" + playbackCell(lesson, prev) + "</td></tr>";
+    return html;
+  }
+
+  function renderSheet() {
+    const mode = currentMode();
+    const unit = state.unit;
+    if (!state.origin || !unit.classes.length) {
+      return '<div class="empty-sheet box-final"><p>No first list yet. Pick a prompt Build or convert Design.</p></div>';
+    }
+    let html = unitChrome();
+    html += '<div class="sheet-stack box-final">';
+    unit.classes.forEach(function (klass, ci) {
+      html += '<section class="class-card" data-class="' + ci + '">';
+      html += '<div class="cut" data-class="' + ci + '">' + cutInner(klass, ci, mode) + "</div>";
+      if (mode === "edit") html += addBarHtml(ci);
+      html += '<table class="sheet">' + tableHead(mode) + "<tbody>";
+      klass.lessons.forEach(function (_lesson, li) { html += lessonRow(klass, ci, li, mode); });
+      html += "</tbody></table></section>";
+    });
+    html += '<p class="foot">First Draft is technique blocks. Add sparring, a game, or a drill-only lesson in Edit.</p></div>';
+    return html;
+  }
+
+  function renderA() {
+    if (!state.origin) return originDoors();
+    return originStrip() + renderSheet();
+  }
+  function renderB() {
+    return originStack() + renderSheet();
+  }
+  function renderC() {
+    return '<div class="handoff-split">' + originRail() + "<div>" + renderSheet() + "</div></div>";
+  }
+
+  function recordText() {
+    const lines = [];
+    lines.push("Hand-off layout: " + currentVariant());
+    lines.push("Mode: " + currentMode());
+    lines.push("Origin: " + (state.origin || "none"));
+    lines.push("Last change: " + state.lastChange);
+    lines.push("Design occupancy: " + (state.design.occupancy || "none"));
+    lines.push("Design named moves: " + (state.design.onMap.join(", ") || "none"));
+    lines.push("Design systems: " + (state.design.systemsOnMap.join(", ") || "none"));
+    lines.push("Home blocks: " + PackingModel.homeIds(state.design).join(", "));
+    lines.push("Isolated members: " + PackingModel.isolateIds(state.design).join(", "));
+    state.unit.classes.forEach(function (klass) {
+      lines.push("");
+      lines.push(klass.title + " — " + klass.purpose);
+      klass.lessons.forEach(function (lesson, i) {
+        const t = resolveTarget(lesson.target);
+        lines.push("  " + (i + 1) + ". " + lesson.type + " · " + lesson.title +
+          " | " + t.kind + " · " + t.label +
+          (lesson.glue ? " | glued drill follows" : "") +
+          " | citations: " + (lesson.citations.join(", ") || "none"));
+      });
+    });
+    if (!state.unit.classes.length) lines.push("(no classes)");
+    return lines.join("\n");
+  }
+
+  const SCENES = [
+    {
+      name: "Convert Tight waist",
+      copy: "Load the unordered Tight waist map. Convert. Draft has two classes of glued technique blocks. Far-leg and the back take stay inside the trilemma. Roll-through is isolated.",
+      steps: [
+        { label: "Reset", action: { type: "RESET" } },
+        { label: "Load Tight waist design", action: { type: "LOAD_DESIGN" } },
+        { label: "Convert Design to Build", action: { type: "CONVERT_DESIGN" } },
+        { label: "Switch to Draft", mode: "draft" }
+      ]
+    },
+    {
+      name: "Build from prompt",
+      copy: "The unit paragraph produces the same kind of first list: glued technique blocks and class cuts. Origin is prompt.",
+      steps: [
+        { label: "Reset", action: { type: "RESET" } },
+        { label: "Build from prompt", action: { type: "BUILD_PROMPT" } }
+      ]
+    },
+    {
+      name: "One origin",
+      copy: "Convert from Design, then try Build from prompt. The second generator refuses until Reset.",
+      steps: [
+        { label: "Reset", action: { type: "RESET" } },
+        { label: "Load Tight waist design", action: { type: "LOAD_DESIGN" } },
+        { label: "Convert Design to Build", action: { type: "CONVERT_DESIGN" } },
+        { label: "Try Build from prompt", action: { type: "BUILD_PROMPT" } }
+      ]
+    },
+    {
+      name: "Coach adds sparring",
+      copy: "After conversion, Edit adds a positional round onto class 1. That lesson was never a map mark.",
+      steps: [
+        { label: "Reset", action: { type: "RESET" } },
+        { label: "Load Tight waist design", action: { type: "LOAD_DESIGN" } },
+        { label: "Convert Design to Build", action: { type: "CONVERT_DESIGN" } },
+        { label: "Switch to Edit", mode: "edit" },
+        {
+          label: "Add positional round to class 1",
+          action: {
+            type: "ADD_LESSON", classIndex: 0, lessonType: "sparring",
+            target: { kind: "named_move", id: "tight-waist" },
+            title: "Positional rounds — half guard bottom"
+          }
+        }
+      ]
+    }
+  ];
+
+  function paintScenes() {
+    const tabs = document.getElementById("scene-tabs");
+    tabs.innerHTML = SCENES.map(function (s, i) {
+      return '<button type="button" data-scene="' + i + '" class="' + (ui.scene === i ? "on" : "") + '">' + s.name + "</button>";
+    }).join("");
+    const scene = SCENES[ui.scene];
+    document.getElementById("scene-copy").innerHTML = "<strong>" + scene.name + ".</strong> " + scene.copy;
+    document.getElementById("scene-steps").innerHTML = scene.steps.map(function (st, i) {
+      return '<button type="button" data-step="' + i + '">' + (i + 1) + ". " + st.label + "</button>";
+    }).join("");
+  }
+
+  function paint() {
+    const mode = currentMode();
+    const variant = currentVariant();
+    document.body.dataset.mode = mode;
+    document.body.dataset.variant = variant;
+    const renderers = { A: renderA, B: renderB, C: renderC };
+    document.getElementById("app").innerHTML = renderers[variant]();
+    document.getElementById("record").textContent = recordText();
+    document.getElementById("changed").textContent = state.lastChange;
+    const meta = VARIANTS.find(function (v) { return v.key === variant; });
+    document.getElementById("switch-label").innerHTML = variant + " (" + meta.name + ")<span>arrow keys cycle hand-off chrome</span>";
+    paintScenes();
+  }
+
+  function selectedTarget(ci) {
+    const sel = document.querySelector('select[data-target-for="' + ci + '"]');
+    const raw = sel ? sel.value : "named_move:knee-lever";
+    const parts = raw.split(":");
+    return { kind: parts[0], id: parts[1] };
+  }
+
+  document.getElementById("app").addEventListener("click", function (e) {
+    const play = e.target.closest("a.play");
+    if (play) {
+      e.preventDefault();
+      toast("Playback (prototype stub)\n" + play.getAttribute("data-file") + "\n@" + play.getAttribute("data-start"));
+      return;
+    }
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    const act = btn.getAttribute("data-act");
+    const ci = Number(btn.getAttribute("data-class"));
+    const li = Number(btn.getAttribute("data-lesson"));
+    if (act === "mode") { setMode(btn.getAttribute("data-mode")); return; }
+    if (act === "reset") { dispatch({ type: "RESET" }); setMode("draft"); return; }
+    if (act === "load-design") { dispatch({ type: "LOAD_DESIGN" }); return; }
+    if (act === "convert") { dispatch({ type: "CONVERT_DESIGN" }); setMode("draft"); return; }
+    if (act === "prompt") { dispatch({ type: "BUILD_PROMPT" }); setMode("draft"); return; }
+    if (act === "lesson-up" || act === "lesson-down") {
+      const step = UnitModel.step(state.unit.classes, ci, li, act === "lesson-up" ? -1 : 1);
+      if (!step) { toast("That block is already at the edge of the unit."); return; }
+      dispatch({ type: "MOVE_LESSON", fromCi: step.fromCi, fromLi: step.fromLi, toCi: step.toCi, toLi: step.toLi });
+      return;
+    }
+    if (act === "remove") dispatch({ type: "REMOVE_LESSON", classIndex: ci, lessonIndex: li });
+    if (act === "cites") { ui.picker = { ci: ci, li: li }; paint(); }
+    if (act === "add") {
+      const type = btn.getAttribute("data-type");
+      const target = selectedTarget(ci);
+      const label = target.kind === "system" ? SYSTEMS[target.id].label : NAMED_MOVES[target.id].label;
+      dispatch({ type: "ADD_LESSON", classIndex: ci, lessonType: type, target: target, title: label });
+    }
+    if (btn.classList.contains("picker-save")) {
+      const box = btn.closest(".picker");
+      const ids = Array.prototype.map.call(box.querySelectorAll("input:checked"), function (el) {
+        return el.getAttribute("data-cite");
+      });
+      dispatch({
+        type: "SET_CITATIONS",
+        classIndex: Number(box.getAttribute("data-ci")),
+        lessonIndex: Number(box.getAttribute("data-li")),
+        ids: ids
+      });
+    }
+  });
+
+  document.getElementById("app").addEventListener("dragstart", function (e) {
+    if (currentMode() !== "edit") return;
+    const row = e.target.closest('tr[data-drag="lesson"]');
+    if (!row) return;
+    ui.drag = { ci: Number(row.getAttribute("data-class")), li: Number(row.getAttribute("data-lesson")) };
+    row.classList.add("dragging");
+    e.dataTransfer.setData("text/plain", "lesson");
+    e.dataTransfer.effectAllowed = "move";
+  });
+  document.getElementById("app").addEventListener("dragend", function () {
+    document.querySelectorAll(".dragging, .drop-target").forEach(function (el) {
+      el.classList.remove("dragging");
+      el.classList.remove("drop-target");
+    });
+    ui.drag = null;
+  });
+  document.getElementById("app").addEventListener("dragover", function (e) {
+    if (currentMode() !== "edit" || !ui.drag) return;
+    document.querySelectorAll("tr.drop-target").forEach(function (el) { el.classList.remove("drop-target"); });
+    const row = e.target.closest('tr[data-drag="lesson"]');
+    const card = e.target.closest(".class-card");
+    if (row || card) {
+      e.preventDefault();
+      if (row) row.classList.add("drop-target");
+    }
+  });
+  document.getElementById("app").addEventListener("drop", function (e) {
+    if (currentMode() !== "edit" || !ui.drag) return;
+    e.preventDefault();
+    const drag = ui.drag;
+    ui.drag = null;
+    const row = e.target.closest('tr[data-drag="lesson"]');
+    const card = e.target.closest(".class-card");
+    if (row) {
+      dispatch({
+        type: "MOVE_LESSON", fromCi: drag.ci, fromLi: drag.li,
+        toCi: Number(row.getAttribute("data-class")), toLi: Number(row.getAttribute("data-lesson"))
+      });
+      return;
+    }
+    if (card) {
+      const toCi = Number(card.getAttribute("data-class"));
+      dispatch({
+        type: "MOVE_LESSON", fromCi: drag.ci, fromLi: drag.li,
+        toCi: toCi, toLi: state.unit.classes[toCi].lessons.length
+      });
+    }
+  });
+
+  document.getElementById("prev").addEventListener("click", function () { cycle(-1); });
+  document.getElementById("next").addEventListener("click", function () { cycle(1); });
+  function cycle(delta) {
+    const keys = VARIANTS.map(function (v) { return v.key; });
+    const i = keys.indexOf(currentVariant());
+    setVariant(keys[(i + delta + keys.length) % keys.length]);
+  }
+  document.addEventListener("keydown", function (e) {
+    const t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+    if (e.key === "ArrowLeft") { e.preventDefault(); cycle(-1); }
+    if (e.key === "ArrowRight") { e.preventDefault(); cycle(1); }
+  });
+
+  document.querySelector(".walk").addEventListener("click", function (e) {
+    const tab = e.target.closest("[data-scene]");
+    if (tab) {
+      ui.scene = Number(tab.getAttribute("data-scene"));
+      state = AppModel.seed();
+      setMode("draft");
+      return;
+    }
+    const stepBtn = e.target.closest("[data-step]");
+    if (!stepBtn) return;
+    const scene = SCENES[ui.scene];
+    const step = scene.steps[Number(stepBtn.getAttribute("data-step"))];
+    if (step.mode) setMode(step.mode);
+    if (step.action) dispatch(step.action);
+  });
+
+  paint();
+})();
+  </script>
+</body>
+</html>
