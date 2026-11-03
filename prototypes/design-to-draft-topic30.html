@@ -116,10 +116,6 @@
     .pill-read { background: var(--ok-soft); color: var(--ok); }
     .pill-edit { background: #ffedd5; color: #9a3412; }
     .pill-origin { background: #e7e5e4; color: #44403c; }
-    a.play {
-      color: var(--accent); text-decoration: underline; text-underline-offset: 2px;
-      cursor: pointer; font-family: var(--mono); font-size: .85em;
-    }
     .steps { margin: .3rem 0 0; padding-left: 1.1rem; }
     .steps li { margin: .2rem 0; }
     .steps .you { font-weight: 650; }
@@ -205,14 +201,12 @@
       background: #f5f5f4; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
     }
     .col-check { width: 2.4rem; }
-    .col-lesson { width: 28%; }
+    .col-lesson { width: 32%; }
     .col-type { width: 7.2rem; }
-    .col-target { width: 20%; }
+    .col-target { width: 22%; }
     .col-run { width: auto; }
-    .col-play { width: 5.4rem; }
     .cell-lesson, .cell-target { overflow-wrap: break-word; }
     .cell-target .pill { display: block; width: fit-content; margin-bottom: .15rem; }
-    .cell-play { white-space: nowrap; }
     .cell-run { font-size: .9rem; }
     tr.tech { background: linear-gradient(90deg, var(--tech-soft), #fff 42%); }
     tr.drill { background: linear-gradient(90deg, var(--drill-soft), #fff 42%); }
@@ -303,13 +297,12 @@
       .print-back table.sheet th { font-size: 8pt; letter-spacing: .02em; }
       .print-back table.sheet th, .print-back table.sheet td { padding: .14rem .24rem; }
       .print-back .col-check { width: 0.32in; }
-      .print-back .col-lesson { width: 2.1in; }
-      .print-back .col-type { width: 0.88in; }
-      .print-back .col-target { width: 1.38in; }
-      .print-back .col-play { width: 0.8in; }
+      .print-back .col-lesson { width: 2.4in; }
+      .print-back .col-type { width: 0.9in; }
+      .print-back .col-target { width: 1.6in; }
       .print-back .col-run { width: auto; }
       .print-back .cell-lesson { font-size: 12pt; }
-      .print-back .cell-type, .print-back .cell-target, .print-back .cell-play { font-size: 10.5pt; }
+      .print-back .cell-type, .print-back .cell-target { font-size: 10.5pt; }
       .print-back .cell-run { font-size: 9.5pt; line-height: 1.2; }
       .print-back .cell-target .pill { display: block; width: fit-content; margin: 0 0 .1rem; }
       .print-back .unit-top h2 { font-size: 16pt; }
@@ -324,7 +317,6 @@
       .print-back .tiny { display: none; }
       .print-back .steps { margin: .06rem 0 0; padding-left: .9rem; font-size: 9.5pt; }
       .print-back .pill { font-size: 8pt; padding: .06rem .36rem; }
-      a.play { color: #000; text-decoration: none; }
     }
   </style>
 </head>
@@ -811,10 +803,6 @@
     }
     return Object.keys(CITATIONS).filter(function (id) { return CITATIONS[id].namedMove === target.id; });
   }
-  function playLink(c) {
-    return '<a class="play" href="#play" data-file="' + escapeAttr(c.videoFile) + '" data-start="' + escapeAttr(c.start) + '">' +
-      c.start + "</a>";
-  }
   function stepsHtml(steps) {
     return '<ul class="steps">' + steps.map(function (s) {
       const against = s.against ? " -> " + escapeHtml(s.against) : "";
@@ -839,11 +827,6 @@
       return '<span class="tiny">Condition</span><div>' + escapeHtml(lesson.condition) + "</div>";
     }
     return "";
-  }
-  function playbackCell(lesson, prev) {
-    if (prev && prev.glue && lesson.type === "drill") return "—";
-    if (!lesson.citations.length) return "—";
-    return lesson.citations.map(function (id) { return playLink(CITATIONS[id]); }).join("<br>");
   }
   function targetHtml(target) {
     const t = resolveTarget(target);
@@ -1094,11 +1077,11 @@
   function tableHead(mode) {
     let html = "<colgroup>";
     if (mode === "read" || mode === "edit") html += '<col class="col-check">';
-    html += '<col class="col-lesson"><col class="col-type"><col class="col-target"><col class="col-run"><col class="col-play">';
+    html += '<col class="col-lesson"><col class="col-type"><col class="col-target"><col class="col-run">';
     html += "</colgroup><thead><tr>";
     if (mode === "read") html += "<th>✓</th>";
     if (mode === "edit") html += "<th></th>";
-    html += "<th>Lesson</th><th>Type</th><th>Target</th><th>What to run</th><th>Playback</th></tr></thead>";
+    html += "<th>Lesson</th><th>Type</th><th>Target</th><th>What to run</th></tr></thead>";
     return html;
   }
   function lessonRow(klass, ci, li, mode) {
@@ -1118,8 +1101,7 @@
     html += '<td class="cell-lesson">' + lessonTitleCell(lesson, glued) + "</td>";
     html += '<td class="cell-type">' + typePill(lesson.type) + "</td>";
     html += '<td class="cell-target">' + targetHtml(lesson.target) + "</td>";
-    html += '<td class="cell-run">' + whatToRun(lesson, prev) + editCite(ci, li, lesson, mode) + "</td>";
-    html += '<td class="cell-play">' + playbackCell(lesson, prev) + "</td></tr>";
+    html += '<td class="cell-run">' + whatToRun(lesson, prev) + editCite(ci, li, lesson, mode) + "</td></tr>";
     return html;
   }
 
@@ -1255,12 +1237,6 @@
   }
 
   document.getElementById("app").addEventListener("click", function (e) {
-    const play = e.target.closest("a.play");
-    if (play) {
-      e.preventDefault();
-      toast("Playback (prototype stub)\n" + play.getAttribute("data-file") + "\n@" + play.getAttribute("data-start"));
-      return;
-    }
     const btn = e.target.closest("button");
     if (!btn) return;
     const act = btn.getAttribute("data-act");
