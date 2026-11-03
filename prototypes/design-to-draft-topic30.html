@@ -226,6 +226,44 @@
       margin: .7rem 0 0; white-space: pre-wrap; font-family: var(--mono);
       font-size: .76rem; line-height: 1.45; color: #d6d3d1;
     }
+    .prompt-panel textarea {
+      width: 100%; min-height: 6.2rem; resize: vertical; font: inherit;
+      border: 1px solid var(--line); border-radius: 8px; padding: .55rem .7rem;
+      background: #fff;
+    }
+    body[data-variant="B"] .canvas-stage { height: 320px; }
+    body[data-variant="B"] #app { max-width: 1100px; }
+    .print-kicker { display: none; }
+
+    @media print {
+      @page { size: letter; margin: 0.5in; }
+      html, body { background: #fff !important; padding: 0; }
+      body { padding-bottom: 0; }
+      .box-proto, .switcher, .toast, .walk, .banner, .question, .changed, .record,
+      .free-play, .mode-tabs, .add-bar, .edit-tools, .picker, .foot, .origin-strip,
+      .prompt-actions, .empty-sheet { display: none !important; }
+      .box-final, .box-proto { outline: none !important; box-shadow: none; }
+      header.page, .question, #app, .walk, .record { max-width: none; padding: 0; margin: 0; }
+      #app { margin: 0; }
+      .prompt-panel { display: none !important; }
+      .print-kicker {
+        display: block; font-family: var(--serif); font-size: 1.15rem;
+        margin: 0 0 .4rem; font-weight: 650;
+      }
+      .print-canvas { break-after: page; page-break-after: always; }
+      .print-unit { break-after: avoid; }
+      .canvas-panel > h2, .canvas-panel > .hint, .canvas-panel > .pill { display: none; }
+      .canvas-stage {
+        height: 8.1in; border: 1px solid #1c1917; border-radius: 0;
+        background: #fff;
+      }
+      .class-card, .unit-top, .canvas-panel {
+        break-inside: avoid; box-shadow: none; border-radius: 0;
+      }
+      body[data-mode="draft"] .class-card { border-style: solid; }
+      .cut { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      a.play { color: #000; text-decoration: none; }
+    }
   </style>
 </head>
 <body>
@@ -243,20 +281,19 @@
   <header class="page box-proto">
     <h1>How does the designed mental map become the first ordered lesson list?</h1>
     <p class="meta">
-      Two origins for the first Build list: a unit paragraph, or a Design canvas the advisor converts.
-      First Draft is glued technique plus following drill, with class cuts. The coach adds sparring, a game, or a drill with no technique ahead.
-      One generator for that first list. The run-plan sheet stays the locked class cards.
+      B is the mix: prompt on top, Design canvas, Draft beneath. The paragraph proposes the canvas and the list together.
+      Convert still packs a hand-built canvas. Print puts the canvas on the front of a letter sheet and the unit plus Build on the back.
     </p>
   </header>
 
   <div class="question box-proto">
     <details open>
       <summary>What this prototype is checking</summary>
-      <p>The locked Design canvas sits beside the locked Draft sheet. Convert reads that canvas. A prompt is the other origin.</p>
+      <p>Stacked B. Prompt is visible. One paragraph proposes the Design canvas and the Draft under it. Print is a duplex letter packet.</p>
       <ul>
-        <li><strong>A Doors then sheet</strong> — prompt door and Design canvas; after convert the chooser collapses.</li>
-        <li><strong>B Stacked</strong> — Design canvas above the sheet.</li>
-        <li><strong>C Canvas | Draft</strong> — Design canvas on the left, Draft on the right. Default.</li>
+        <li><strong>B Prompt, canvas, Draft (spec mix)</strong> — vertical. Default.</li>
+        <li><strong>A Doors then sheet</strong> — comparison.</li>
+        <li><strong>C Canvas | Draft</strong> — comparison. Side-by-side is too tight for a wide map.</li>
       </ul>
     </details>
   </div>
@@ -469,8 +506,11 @@
       }
       return unit;
     },
-    fromPrompt: function () {
-      return PackingModel.fromDesign(PackingModel.sampleDesign());
+    fromPrompt: function (paragraph) {
+      const design = PackingModel.sampleDesign();
+      const unit = PackingModel.fromDesign(design);
+      unit.paragraph = paragraph || PARAGRAPH;
+      return { design: design, unit: unit };
     }
   };
 
@@ -583,9 +623,10 @@
     seed: function () {
       return {
         origin: null,
-        design: PackingModel.sampleDesign(),
+        paragraph: PARAGRAPH,
+        design: PackingModel.emptyDesign(),
         unit: PackingModel.emptyUnit(),
-        lastChange: "Tight waist is on the Design canvas. Convert it, or Build from the prompt."
+        lastChange: "Write a paragraph and propose, or load marks onto the canvas and convert."
       };
     },
     clone: PackingModel.clone,
@@ -599,28 +640,23 @@
         return next;
       }
       if (kind === "CONVERT_DESIGN") {
-        if (next.origin === "prompt") {
-          next.lastChange = "This unit already has a first list from the prompt. Reset to convert from Design.";
-          return next;
-        }
         if (!next.design.onMap.length && !next.design.systemsOnMap.length) {
-          next.lastChange = "The map has no named moves or systems to convert. Load Tight waist first.";
+          next.lastChange = "The map has no named moves or systems to convert. Propose from the paragraph, or load Tight waist.";
           return next;
         }
         next.unit = PackingModel.fromDesign(next.design);
+        next.unit.paragraph = next.paragraph;
         next.origin = "design";
-        next.lastChange = "Advisor converted the Design set into a first Draft of glued technique blocks.";
+        next.lastChange = "Advisor converted the Design canvas into a first Draft of glued technique blocks.";
         return next;
       }
       if (kind === "BUILD_PROMPT") {
-        if (next.origin === "design") {
-          next.lastChange = "This unit already has a first list from Design conversion. Reset to Build from a prompt.";
-          return next;
-        }
-        next.unit = PackingModel.fromPrompt();
-        next.design = PackingModel.sampleDesign();
+        if (action.paragraph != null) next.paragraph = action.paragraph;
+        const proposed = PackingModel.fromPrompt(next.paragraph);
+        next.design = proposed.design;
+        next.unit = proposed.unit;
         next.origin = "prompt";
-        next.lastChange = "Advisor built the first Draft from the unit paragraph.";
+        next.lastChange = "The paragraph proposed the Design canvas and the Draft beneath it.";
         return next;
       }
       if (!next.origin) {
@@ -641,7 +677,7 @@
   ];
   const VARIANTS = [
     { key: "A", name: "Doors then sheet" },
-    { key: "B", name: "Stacked canvas" },
+    { key: "B", name: "Prompt, canvas, Draft" },
     { key: "C", name: "Canvas | Draft" }
   ];
   const TARGETS = [
@@ -672,8 +708,8 @@
     return MODES.some(function (m) { return m.key === v; }) ? v : "draft";
   }
   function currentVariant() {
-    const v = (new URLSearchParams(location.search).get("variant") || "C").toUpperCase();
-    return VARIANTS.some(function (x) { return x.key === v; }) ? v : "C";
+    const v = (new URLSearchParams(location.search).get("variant") || "B").toUpperCase();
+    return VARIANTS.some(function (x) { return x.key === v; }) ? v : "B";
   }
   function setMode(key) {
     const url = new URL(location.href);
@@ -761,25 +797,29 @@
     "back take": { fill: "#6d28d9" }
   };
 
-  function canvasPanel(asRail) {
-    let html = '<section class="canvas-panel box-final' + (asRail ? " rail" : "") + '">';
-    html += "<h2>Design canvas</h2>";
-    html += '<span class="pill pill-gi">gi half guard</span>';
-    html += '<p class="hint">The locked mental map. Unordered. Convert writes the first Draft from these marks.</p>';
-    html += '<div id="design-canvas" class="canvas-stage" role="img" aria-label="Design canvas"></div>';
-    html += originActions();
-    html += '<details class="prompt-fold"><summary>Or build from a prompt</summary>';
-    html += '<div class="unit-para"><label>Unit paragraph</label>' + escapeHtml(PARAGRAPH) + "</div>";
-    html += '<div class="free-play"><button type="button" class="go" data-act="prompt">Build from prompt</button></div>';
-    html += "</details></section>";
+  function promptPanel() {
+    let html = '<section class="prompt-panel origin-card box-final">';
+    html += "<h2>Unit paragraph</h2>";
+    html += '<p class="hint">This prompt proposes the Design canvas and the Draft under it.</p>';
+    html += '<label class="tiny" for="prompt-text">Prompt</label>';
+    html += '<textarea id="prompt-text">' + escapeHtml(state.paragraph || "") + "</textarea>";
+    html += '<div class="free-play prompt-actions">';
+    html += '<button type="button" class="go" data-act="prompt">Propose canvas and Draft</button>';
+    html += '<button type="button" class="go secondary" data-act="load-design">Load Tight waist on canvas</button>';
+    html += '<button type="button" class="go secondary" data-act="convert">Convert canvas to Draft</button>';
+    html += '<button type="button" data-act="print">Print duplex packet</button>';
+    html += '<button type="button" data-act="reset">Reset</button></div></section>';
     return html;
   }
 
-  function originActions() {
-    let html = '<div class="free-play">';
-    html += '<button type="button" class="go secondary" data-act="load-design">Load Tight waist design</button>';
-    html += '<button type="button" class="go" data-act="convert">Convert Design to Build</button>';
-    html += '<button type="button" data-act="reset">Reset</button></div>';
+  function canvasPanel(asRail) {
+    let html = '<section class="canvas-panel print-canvas box-final' + (asRail ? " rail" : "") + '">';
+    html += '<div class="print-kicker">Design · gi half guard</div>';
+    html += "<h2>Design canvas</h2>";
+    html += '<span class="pill pill-gi">gi half guard</span>';
+    html += '<p class="hint">Unordered mental map. A prompt can propose these marks. Convert packs them into Draft.</p>';
+    html += '<div id="design-canvas" class="canvas-stage" role="img" aria-label="Design canvas"></div>';
+    html += "</section>";
     return html;
   }
 
@@ -797,15 +837,20 @@
     const host = document.getElementById("design-canvas");
     if (!host || typeof document.createElementNS !== "function") return;
     host.innerHTML = "";
-    const W = Math.max(host.clientWidth || 480, 280);
-    const H = Math.max(host.clientHeight || 400, 280);
-    const svg = svgEl("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", height: "100%" });
+    const W = 1100;
+    const H = 520;
+    const svg = svgEl("svg", {
+      viewBox: "0 0 " + W + " " + H,
+      width: "100%",
+      height: "100%",
+      preserveAspectRatio: "xMidYMid meet"
+    });
     const d = state.design;
     const cx = W * 0.36;
     const cy = H * 0.5;
     if (!d.occupancy && !d.onMap.length) {
       const t = svgEl("text", { x: W / 2, y: H / 2, fill: "#78716c", "font-size": "14", "text-anchor": "middle" });
-      t.textContent = "Load Tight waist to put named moves on the canvas.";
+      t.textContent = "Propose from the paragraph, or load Tight waist, to put named moves on the canvas.";
       svg.appendChild(t);
       host.appendChild(svg);
       return;
@@ -884,11 +929,7 @@
   }
 
   function originStack() {
-    let html = canvasPanel(false);
-    if (state.origin) {
-      html += '<p class="success">Active origin: <strong>' + escapeHtml(state.origin) + "</strong>. The other generator refuses until Reset.</p>";
-    }
-    return html;
+    return promptPanel() + canvasPanel(false);
   }
 
   function originRail() {
@@ -907,13 +948,15 @@
     const mode = currentMode();
     const modeMeta = MODES.find(function (m) { return m.key === mode; });
     const unit = state.unit;
-    let html = '<div class="unit-top box-final"><div class="row">';
+    let html = '<div class="unit-top print-unit box-final"><div class="print-kicker">Unit · gi half guard</div><div class="row">';
     html += "<h2>" + escapeHtml(unit.topic.label) + "</h2>";
     html += '<span class="pill pill-gi">' + escapeHtml(unit.topic.ruleset) + "</span>";
     html += '<span class="pill pill-' + mode + '">' + modeMeta.name + "</span>";
     if (state.origin) html += '<span class="pill pill-origin">' + escapeHtml(state.origin) + "</span>";
     html += "</div>";
     html += modeTabsHtml();
+    html += '<div class="unit-para"><label>Unit paragraph</label>' +
+      escapeHtml(unit.paragraph || state.paragraph || "") + "</div>";
     html += '<div class="unit-para"><label>Topic system (coach words)</label>' +
       escapeHtml(unit.topicSystem || "(empty until a first list exists)") + "</div>";
     html += '<p class="success"><strong>Success watch:</strong> ' + escapeHtml(unit.success) + "</p></div>";
@@ -1000,10 +1043,10 @@
     const mode = currentMode();
     const unit = state.unit;
     if (!state.origin || !unit.classes.length) {
-      return '<div class="empty-sheet box-final"><p>No first list yet. Convert the Design canvas, or open the prompt under it.</p></div>';
+      return '<div class="empty-sheet box-final"><p>No first list yet. Propose from the paragraph, or convert the canvas.</p></div>';
     }
     let html = unitChrome();
-    html += '<div class="sheet-stack box-final">';
+    html += '<div class="sheet-stack print-build box-final"><div class="print-kicker">Build · gi half guard</div>';
     unit.classes.forEach(function (klass, ci) {
       html += '<section class="class-card" data-class="' + ci + '">';
       html += '<div class="cut" data-class="' + ci + '">' + cutInner(klass, ci, mode) + "</div>";
@@ -1055,40 +1098,29 @@
 
   const SCENES = [
     {
-      name: "Convert Tight waist",
-      copy: "Tight waist is already on the Design canvas. Convert. Draft appears beside that canvas. Far-leg and the back take stay inside the trilemma. Roll-through is isolated.",
+      name: "Propose from prompt",
+      copy: "Layout B. The paragraph proposes Tight waist onto the Design canvas and the Draft under it in one step.",
       steps: [
         { label: "Reset", action: { type: "RESET" } },
-        { label: "Load Tight waist design", action: { type: "LOAD_DESIGN" } },
-        { label: "Convert Design to Build", action: { type: "CONVERT_DESIGN" } },
-        { label: "Switch to Draft", mode: "draft" }
+        { label: "Layout B", variant: "B" },
+        { label: "Propose canvas and Draft", action: { type: "BUILD_PROMPT" } }
       ]
     },
     {
-      name: "Build from prompt",
-      copy: "The unit paragraph produces the same kind of first list: glued technique blocks and class cuts. Origin is prompt.",
+      name: "Convert a hand-built canvas",
+      copy: "Load Tight waist onto the canvas only. Convert packs the Draft under it. Far-leg and the back take stay inside the trilemma.",
       steps: [
         { label: "Reset", action: { type: "RESET" } },
-        { label: "Build from prompt", action: { type: "BUILD_PROMPT" } }
-      ]
-    },
-    {
-      name: "One origin",
-      copy: "Convert from Design, then try Build from prompt. The second generator refuses until Reset.",
-      steps: [
-        { label: "Reset", action: { type: "RESET" } },
-        { label: "Load Tight waist design", action: { type: "LOAD_DESIGN" } },
-        { label: "Convert Design to Build", action: { type: "CONVERT_DESIGN" } },
-        { label: "Try Build from prompt", action: { type: "BUILD_PROMPT" } }
+        { label: "Load Tight waist on canvas", action: { type: "LOAD_DESIGN" } },
+        { label: "Convert canvas to Draft", action: { type: "CONVERT_DESIGN" } }
       ]
     },
     {
       name: "Coach adds sparring",
-      copy: "After conversion, Edit adds a positional round onto class 1. That lesson was never a map mark.",
+      copy: "After a prompt proposal, Edit adds a positional round onto class 1. That lesson was never a map mark.",
       steps: [
         { label: "Reset", action: { type: "RESET" } },
-        { label: "Load Tight waist design", action: { type: "LOAD_DESIGN" } },
-        { label: "Convert Design to Build", action: { type: "CONVERT_DESIGN" } },
+        { label: "Propose canvas and Draft", action: { type: "BUILD_PROMPT" } },
         { label: "Switch to Edit", mode: "edit" },
         {
           label: "Add positional round to class 1",
@@ -1152,7 +1184,13 @@
     if (act === "reset") { dispatch({ type: "RESET" }); setMode("draft"); return; }
     if (act === "load-design") { dispatch({ type: "LOAD_DESIGN" }); return; }
     if (act === "convert") { dispatch({ type: "CONVERT_DESIGN" }); setMode("draft"); return; }
-    if (act === "prompt") { dispatch({ type: "BUILD_PROMPT" }); setMode("draft"); return; }
+    if (act === "print") { window.print(); return; }
+    if (act === "prompt") {
+      const box = document.getElementById("prompt-text");
+      dispatch({ type: "BUILD_PROMPT", paragraph: box ? box.value : state.paragraph });
+      setMode("draft");
+      return;
+    }
     if (act === "lesson-up" || act === "lesson-down") {
       const step = UnitModel.step(state.unit.classes, ci, li, act === "lesson-up" ? -1 : 1);
       if (!step) { toast("That block is already at the edge of the unit."); return; }
@@ -1256,11 +1294,17 @@
     if (!stepBtn) return;
     const scene = SCENES[ui.scene];
     const step = scene.steps[Number(stepBtn.getAttribute("data-step"))];
+    if (step.variant) setVariant(step.variant);
     if (step.mode) setMode(step.mode);
     if (step.action) dispatch(step.action);
   });
 
+  document.getElementById("app").addEventListener("input", function (e) {
+    if (e.target && e.target.id === "prompt-text") state.paragraph = e.target.value;
+  });
+
   window.addEventListener("resize", function () { drawCanvas(); });
+  window.addEventListener("beforeprint", function () { drawCanvas(); });
   paint();
 })();
   </script>
