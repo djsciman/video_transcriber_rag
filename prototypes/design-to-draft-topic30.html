@@ -236,10 +236,10 @@
     .print-kicker { display: none; }
 
     @media print {
-      @page { size: letter portrait; margin: 0.4in; }
-      @page :first { size: letter landscape; margin: 0.35in; }
-      @page design { size: letter landscape; margin: 0.35in; }
-      @page runplan { size: letter portrait; margin: 0.4in; }
+      @page { size: letter portrait; margin: 0.5in; }
+      @page :first { size: letter landscape; margin: 0.5in; }
+      @page design { size: letter landscape; margin: 0.5in; }
+      @page runplan { size: letter portrait; margin: 0.5in; }
       html, body { background: #fff !important; padding: 0; }
       body { padding-bottom: 0; }
       .box-proto, .switcher, .toast, .walk, .banner, .question, .changed, .record,
@@ -251,12 +251,14 @@
       .prompt-panel { display: none !important; }
       .print-kicker {
         display: block; font-family: var(--serif); font-size: 12pt;
-        margin: 0 0 .25rem; font-weight: 650;
+        margin: 0 0 .2in; font-weight: 650;
       }
       .print-canvas {
         page: design;
         break-after: page;
         page-break-after: always;
+        padding: 0;
+        margin: 0;
       }
       .print-back {
         page: runplan;
@@ -266,9 +268,17 @@
       }
       .print-unit { break-after: avoid; margin-bottom: .4rem; padding: .55rem .7rem; }
       .canvas-panel > h2, .canvas-panel > .hint, .canvas-panel > .pill { display: none; }
+      body[data-variant="A"] .canvas-stage,
+      body[data-variant="B"] .canvas-stage,
+      body[data-variant="C"] .canvas-stage,
       .canvas-stage {
-        height: 7.4in; border: 1px solid #1c1917; border-radius: 0;
+        width: 100% !important;
+        height: 6.9in !important;
+        max-height: 6.9in;
+        border: 1px solid #1c1917;
+        border-radius: 0;
         background: #fff;
+        overflow: hidden;
       }
       .class-card, .unit-top, .canvas-panel, .sheet-stack {
         box-shadow: none; border-radius: 0;
@@ -859,8 +869,8 @@
     const host = document.getElementById("design-canvas");
     if (!host || typeof document.createElementNS !== "function") return;
     host.innerHTML = "";
-    const W = 1100;
-    const H = ui.printing ? 780 : 520;
+    const W = ui.printing ? 1400 : 1100;
+    const H = ui.printing ? 960 : 520;
     const svg = svgEl("svg", {
       viewBox: "0 0 " + W + " " + H,
       width: "100%",
@@ -868,7 +878,7 @@
       preserveAspectRatio: "xMidYMid meet"
     });
     const d = state.design;
-    const cx = W * 0.36;
+    const cx = ui.printing ? W * 0.38 : W * 0.36;
     const cy = H * 0.5;
     if (!d.occupancy && !d.onMap.length) {
       const t = svgEl("text", { x: W / 2, y: H / 2, fill: "#78716c", "font-size": "14", "text-anchor": "middle" });
@@ -877,7 +887,13 @@
       host.appendChild(svg);
       return;
     }
-    const layout = {
+    const layout = ui.printing ? {
+      "knee-lever": { x: W * 0.14, y: H * 0.18 },
+      "tight-waist": { x: W * 0.14, y: H * 0.78 },
+      "far-leg-come-up": { x: W * 0.84, y: H * 0.16 },
+      "roll-through": { x: W * 0.88, y: H * 0.5 },
+      "back-take-tight-waist": { x: W * 0.84, y: H * 0.84 }
+    } : {
       "knee-lever": { x: cx - W * 0.22, y: cy - H * 0.22 },
       "tight-waist": { x: cx - W * 0.24, y: cy + H * 0.2 },
       "far-leg-come-up": { x: cx + W * 0.28, y: cy - H * 0.24 },
@@ -888,7 +904,7 @@
       const el = svgEl("line", {
         x1: x1, y1: y1, x2: x2, y2: y2,
         stroke: dash ? "#ea580c" : "#d6d3d1",
-        "stroke-width": dash ? 1.6 : 1.2,
+        "stroke-width": dash ? (ui.printing ? 2.4 : 1.6) : (ui.printing ? 1.8 : 1.2),
         "stroke-dasharray": dash ? "6 4" : "0"
       });
       svg.appendChild(el);
@@ -906,28 +922,41 @@
         if (a && b) line(a.x, a.y, b.x, b.y, true);
       });
       const mx = members.reduce(function (s, id) { return s + layout[id].x; }, 0) / members.length;
-      const my = members.reduce(function (s, id) { return s + layout[id].y; }, 0) / members.length - 28;
-      const label = svgEl("text", { x: mx, y: my, fill: "#c2410c", "font-size": "11", "font-weight": "700", "text-anchor": "middle" });
+      const my = members.reduce(function (s, id) { return s + layout[id].y; }, 0) / members.length - (ui.printing ? 40 : 28);
+      const label = svgEl("text", {
+        x: mx, y: my, fill: "#c2410c",
+        "font-size": ui.printing ? "18" : "11",
+        "font-weight": "700",
+        "text-anchor": "middle"
+      });
       label.textContent = SYSTEMS[sid].label;
       svg.appendChild(label);
     });
-    function node(x, y, fill, r, label, sub) {
-      svg.appendChild(svgEl("circle", { cx: x, cy: y, r: r, fill: fill, stroke: "#fff", "stroke-width": 2 }));
-      const t = svgEl("text", { x: x, y: y + r + 14, fill: "#1c1917", "font-size": "12", "font-weight": "650", "text-anchor": "middle" });
+    function node(x, y, fill, r, label, sub, titleSize, subSize) {
+      svg.appendChild(svgEl("circle", { cx: x, cy: y, r: r, fill: fill, stroke: "#fff", "stroke-width": ui.printing ? 3 : 2 }));
+      const t = svgEl("text", {
+        x: x, y: y + r + (ui.printing ? 22 : 14), fill: "#1c1917",
+        "font-size": String(titleSize), "font-weight": "650", "text-anchor": "middle"
+      });
       t.textContent = label;
       svg.appendChild(t);
       if (sub) {
-        const s = svgEl("text", { x: x, y: y + r + 28, fill: "#78716c", "font-size": "10", "text-anchor": "middle" });
+        const s = svgEl("text", {
+          x: x, y: y + r + (ui.printing ? 42 : 28), fill: "#78716c",
+          "font-size": String(subSize), "text-anchor": "middle"
+        });
         s.textContent = sub;
         svg.appendChild(s);
       }
     }
-    node(cx, cy, "#57534e", 16, "Half guard", d.occupancy || "");
+    const titleSize = ui.printing ? 18 : 12;
+    const subSize = ui.printing ? 14 : 10;
+    node(cx, cy, "#57534e", ui.printing ? 26 : 16, "Half guard", d.occupancy || "", titleSize, subSize);
     d.onMap.forEach(function (id) {
       const m = NAMED_MOVES[id];
       const p = layout[id] || { x: cx + 80, y: cy };
       const st = TYPE_STYLE[m.moveType] || { fill: "#1d4ed8" };
-      node(p.x, p.y, st.fill, 12, m.label, m.moveType);
+      node(p.x, p.y, st.fill, ui.printing ? 20 : 12, m.label, m.moveType, titleSize, subSize);
     });
     host.appendChild(svg);
   }
@@ -1337,8 +1366,8 @@
     const back = document.querySelector(".print-back");
     if (!back) return;
     clearPrintFit();
-    const maxW = 7.7 * 96;
-    const maxH = 10.2 * 96;
+    const maxW = 7.5 * 96;
+    const maxH = 10 * 96;
     const w = Math.max(back.scrollWidth, back.offsetWidth, 1);
     const h = Math.max(back.scrollHeight, back.offsetHeight, 1);
     const s = Math.min(maxW / w, maxH / h, 1);
