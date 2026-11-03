@@ -197,13 +197,23 @@
       display: flex; flex-wrap: wrap; gap: .35rem; padding: .5rem .8rem;
       background: #fff7ed; border-bottom: 1px solid #fed7aa;
     }
-    table.sheet { width: 100%; border-collapse: collapse; font-size: .86rem; background: #fff; }
+    table.sheet { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 1rem; background: #fff; }
     table.sheet th, table.sheet td {
-      border-bottom: 1px solid var(--line); padding: .45rem .55rem; vertical-align: top; text-align: left;
+      border-bottom: 1px solid var(--line); padding: .5rem .55rem; vertical-align: top; text-align: left;
     }
     table.sheet th {
-      background: #f5f5f4; font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
+      background: #f5f5f4; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
     }
+    .col-check { width: 2.4rem; }
+    .col-lesson { width: 28%; }
+    .col-type { width: 7.2rem; }
+    .col-target { width: 20%; }
+    .col-run { width: auto; }
+    .col-play { width: 5.4rem; }
+    .cell-lesson, .cell-target { overflow-wrap: break-word; }
+    .cell-target .pill { display: block; width: fit-content; margin-bottom: .15rem; }
+    .cell-play { white-space: nowrap; }
+    .cell-run { font-size: .9rem; }
     tr.tech { background: linear-gradient(90deg, var(--tech-soft), #fff 42%); }
     tr.drill { background: linear-gradient(90deg, var(--drill-soft), #fff 42%); }
     tr.sparring { background: linear-gradient(90deg, var(--spar-soft), #fff 42%); }
@@ -250,8 +260,7 @@
       #app { margin: 0; }
       .prompt-panel { display: none !important; }
       .print-kicker {
-        display: block; font-family: var(--serif); font-size: 12pt;
-        margin: 0 0 .2in; font-weight: 650;
+        display: none;
       }
       .print-canvas {
         page: design;
@@ -262,11 +271,13 @@
       }
       .print-back {
         page: runplan;
+        width: 100%;
+      }
+      .print-back table.sheet tr {
         break-inside: avoid;
         page-break-inside: avoid;
-        transform-origin: top left;
       }
-      .print-unit { break-after: avoid; margin-bottom: .4rem; padding: .55rem .7rem; }
+      .print-unit { break-after: avoid; margin-bottom: .22rem; padding: .32rem .45rem; }
       .canvas-panel > h2, .canvas-panel > .hint, .canvas-panel > .pill { display: none; }
       body[data-variant="A"] .canvas-stage,
       body[data-variant="B"] .canvas-stage,
@@ -284,16 +295,35 @@
         box-shadow: none; border-radius: 0;
       }
       body[data-mode="draft"] .class-card { border-style: solid; }
-      .cut { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: .3rem .5rem; }
-      .cut h3 { font-size: 11pt; }
-      .print-back { font-size: 9.5pt; line-height: 1.28; }
-      .print-back table.sheet { font-size: 8.5pt; }
-      .print-back table.sheet th, .print-back table.sheet td { padding: .18rem .28rem; }
-      .print-back .unit-para { padding: .3rem .45rem; margin-top: .2rem; font-size: 9pt; max-width: none; }
-      .print-back .class-card { margin-bottom: .35rem; }
+      .cut { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: .28rem .45rem; }
+      .cut h3 { font-size: 13pt; }
+      .cut .purpose { font-size: 9.5pt; max-width: 36ch; }
+      .print-back { font-size: 11pt; line-height: 1.3; }
+      .print-back table.sheet { font-size: 10.5pt; }
+      .print-back table.sheet th { font-size: 8pt; letter-spacing: .02em; }
+      .print-back table.sheet th, .print-back table.sheet td { padding: .14rem .24rem; }
+      .print-back .col-check { width: 0.32in; }
+      .print-back .col-lesson { width: 2.1in; }
+      .print-back .col-type { width: 0.88in; }
+      .print-back .col-target { width: 1.38in; }
+      .print-back .col-play { width: 0.8in; }
+      .print-back .col-run { width: auto; }
+      .print-back .cell-lesson { font-size: 12pt; }
+      .print-back .cell-type, .print-back .cell-target, .print-back .cell-play { font-size: 10.5pt; }
+      .print-back .cell-run { font-size: 9.5pt; line-height: 1.2; }
+      .print-back .cell-target .pill { display: block; width: fit-content; margin: 0 0 .1rem; }
+      .print-back .unit-top h2 { font-size: 16pt; }
+      .print-back .unit-para,
+      .print-back .success { display: none !important; }
+      .print-back .print-unit { padding: .2rem .35rem; margin-bottom: .16rem; }
+      .print-back .class-card { margin-bottom: .18rem; }
+      .print-back tr.tech { background: #dbeafe; }
+      .print-back tr.drill { background: #fef9c3; }
+      .print-back tr.sparring { background: #ffe4e6; }
+      .print-back tr.game { background: #ede9fe; }
       .print-back .tiny { display: none; }
-      .print-back .steps { margin: .1rem 0 0; padding-left: .95rem; }
-      .print-back .pill { font-size: 7pt; padding: .04rem .32rem; }
+      .print-back .steps { margin: .06rem 0 0; padding-left: .9rem; font-size: 9.5pt; }
+      .print-back .pill { font-size: 8pt; padding: .06rem .36rem; }
       a.play { color: #000; text-decoration: none; }
     }
   </style>
@@ -1062,7 +1092,10 @@
     return html;
   }
   function tableHead(mode) {
-    let html = "<thead><tr>";
+    let html = "<colgroup>";
+    if (mode === "read" || mode === "edit") html += '<col class="col-check">';
+    html += '<col class="col-lesson"><col class="col-type"><col class="col-target"><col class="col-run"><col class="col-play">';
+    html += "</colgroup><thead><tr>";
     if (mode === "read") html += "<th>✓</th>";
     if (mode === "edit") html += "<th></th>";
     html += "<th>Lesson</th><th>Type</th><th>Target</th><th>What to run</th><th>Playback</th></tr></thead>";
@@ -1082,11 +1115,11 @@
       html += '<button type="button" class="icon-btn" data-act="lesson-down" data-class="' + ci + '" data-lesson="' + li + '">Down</button>';
       html += '<button type="button" class="icon-btn warn" data-act="remove" data-class="' + ci + '" data-lesson="' + li + '">Remove</button></td>';
     }
-    html += "<td>" + lessonTitleCell(lesson, glued) + "</td>";
-    html += "<td>" + typePill(lesson.type) + "</td>";
-    html += "<td>" + targetHtml(lesson.target) + "</td>";
-    html += "<td>" + whatToRun(lesson, prev) + editCite(ci, li, lesson, mode) + "</td>";
-    html += "<td>" + playbackCell(lesson, prev) + "</td></tr>";
+    html += '<td class="cell-lesson">' + lessonTitleCell(lesson, glued) + "</td>";
+    html += '<td class="cell-type">' + typePill(lesson.type) + "</td>";
+    html += '<td class="cell-target">' + targetHtml(lesson.target) + "</td>";
+    html += '<td class="cell-run">' + whatToRun(lesson, prev) + editCite(ci, li, lesson, mode) + "</td>";
+    html += '<td class="cell-play">' + playbackCell(lesson, prev) + "</td></tr>";
     return html;
   }
 
@@ -1356,34 +1389,12 @@
     if (e.target && e.target.id === "prompt-text") state.paragraph = e.target.value;
   });
 
-  function clearPrintFit() {
-    const back = document.querySelector(".print-back");
-    if (!back) return;
-    back.style.transform = "";
-    back.style.width = "";
-  }
-  function fitPrintBack() {
-    const back = document.querySelector(".print-back");
-    if (!back) return;
-    clearPrintFit();
-    const maxW = 7.5 * 96;
-    const maxH = 10 * 96;
-    const w = Math.max(back.scrollWidth, back.offsetWidth, 1);
-    const h = Math.max(back.scrollHeight, back.offsetHeight, 1);
-    const s = Math.min(maxW / w, maxH / h, 1);
-    if (s >= 0.995) return;
-    back.style.transformOrigin = "top left";
-    back.style.transform = "scale(" + s.toFixed(4) + ")";
-    back.style.width = (100 / s).toFixed(4) + "%";
-  }
   function preparePrint() {
     ui.printing = true;
     drawCanvas();
-    fitPrintBack();
   }
   function endPrint() {
     ui.printing = false;
-    clearPrintFit();
     drawCanvas();
   }
   window.addEventListener("resize", function () { if (!ui.printing) drawCanvas(); });
