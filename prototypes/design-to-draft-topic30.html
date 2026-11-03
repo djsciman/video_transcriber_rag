@@ -267,11 +267,16 @@
         page: runplan;
         width: 100%;
       }
-      .print-back table.sheet tr {
-        break-inside: avoid;
+      .print-back .class-card,
+      .print-back .class-card table.sheet {
+        break-inside: avoid-page;
         page-break-inside: avoid;
       }
-      .print-unit { break-after: avoid; margin-bottom: .22rem; padding: .32rem .45rem; }
+      .print-back .print-unit {
+        break-after: avoid;
+        page-break-after: avoid;
+      }
+      .print-unit { margin-bottom: .22rem; padding: .32rem .45rem; }
       .canvas-panel > h2, .canvas-panel > .hint, .canvas-panel > .pill { display: none; }
       body[data-variant="A"] .canvas-stage,
       body[data-variant="B"] .canvas-stage,
@@ -1365,12 +1370,37 @@
     if (e.target && e.target.id === "prompt-text") state.paragraph = e.target.value;
   });
 
+  function cssInPx(value) {
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:absolute;visibility:hidden;height:" + value;
+    document.body.appendChild(probe);
+    const px = probe.offsetHeight;
+    document.body.removeChild(probe);
+    return px || 960;
+  }
+  function clearClassPrintFit() {
+    document.querySelectorAll(".print-back .class-card").forEach(function (card) {
+      card.style.zoom = "";
+      card.style.pageBreakBefore = "";
+      card.style.breakBefore = "";
+    });
+  }
+  function paginateClasses() {
+    const pageH = cssInPx("10in");
+    clearClassPrintFit();
+    document.querySelectorAll(".print-back .class-card").forEach(function (card) {
+      const h = card.offsetHeight;
+      if (h > pageH) card.style.zoom = String(pageH / h);
+    });
+  }
   function preparePrint() {
     ui.printing = true;
     drawCanvas();
+    paginateClasses();
   }
   function endPrint() {
     ui.printing = false;
+    clearClassPrintFit();
     drawCanvas();
   }
   window.addEventListener("resize", function () { if (!ui.printing) drawCanvas(); });
