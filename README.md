@@ -16,6 +16,7 @@ The coach is the only user of the eventual application. Domain language lives in
 | `generate_chapters.py` | Detect title-card chapter starts, OCR titles, write sidecar CSVs, optionally embed chapters into the video |
 | `find_color_frames.py` | Lower-level HSV color-frame scanner used by chapter detection (also usable alone) |
 | `batch_panoscribe.py` | Walk a video tree and complete each transcript: speech only when missing, container chapters, and `video_file` |
+| `completeness_scan.py` | Report library completeness (combined volumes, named chapters, NFO, playback, transcripts) and write a markdown drill-down |
 
 Supporting material:
 
@@ -257,6 +258,27 @@ Options:
 
 On Windows, paths of 260+ characters are opened with the `\\?\` extended-length prefix so long mirrored corpus paths still work when Long Paths are disabled. Speech scratch JSON is written under the system temp directory so a long volume name cannot push that scratch path over the limit.
 
+### Scan library completeness
+
+Walk a video library and a mirrored transcript tree, print aggregate percents, and write a markdown drill-down of every video or instructional that does not meet the rubric:
+
+```powershell
+py -3 completeness_scan.py "path\to\video-library" "path\to\transcript-corpus"
+```
+
+Checks:
+
+| Check | Meeting means |
+| --- | --- |
+| Combined into volumes | One file per volume, not a per-chapter clip (`id-vol-ch-` names, `NN.NN - title` names, volume part files, or a Jellyfin SxxEyy file whose title is not Volume/DVD and that has fewer than two container chapters) |
+| Named chapters | Two or more container chapters with at least one title other than generic `Chapter N` |
+| Video NFO | Sidecar `.nfo` next to the video |
+| Instructional NFO | `tvshow.nfo` in that show folder under the library root |
+| Play without errors | ffprobe opens the file, and an ffmpeg sample decode at the start and midpoint reports no error |
+| Corresponding transcript | Mirrored `.json` exists under the transcript root |
+
+The drill-down is written to `completeness_scan_results_<date-time>.md` in the repository root. Pass `--output` to choose another path. Pass `--skip-decode` to open each file with ffprobe only.
+
 ## Project layout
 
 ```text
@@ -265,6 +287,7 @@ On Windows, paths of 260+ characters are opened with the `\\?\` extended-length 
 ├── GLOSSARY.md               # Domain vocabulary
 ├── README.md
 ├── batch_panoscribe.py       # Batch speech + chapter stamp
+├── completeness_scan.py      # Library completeness report
 ├── find_color_frames.py      # HSV frame matching
 ├── generate_chapters.py      # Chapter CSV + embed CLI
 ├── metadata_scraper/
@@ -279,12 +302,14 @@ On Windows, paths of 260+ characters are opened with the `\\?\` extended-length 
 │   ├── agents/               # Issue tracker, triage labels, domain docs
 │   └── volumes-awaiting-parse.md
 └── tests/
-    └── test_chapter_starts.py
+    ├── test_chapter_starts.py
+    ├── test_batch_panoscribe.py
+    └── test_completeness_scan.py
 ```
 
 ## Tests
 
-Chapter-start logic is tested with pure sample rows (no video decode):
+Chapter-start, batch, and completeness-scan logic is tested with temporary trees and stand-in probes (no ffmpeg, GPU, or real panoscribe):
 
 ```powershell
 py -3 -m unittest discover -s tests -v

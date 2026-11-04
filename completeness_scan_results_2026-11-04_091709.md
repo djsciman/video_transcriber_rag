@@ -1,0 +1,922 @@
+# Completeness scan
+
+Scanned: 2026-11-04 09:17:09
+
+- Video library: `W:\BJJ Instructional Videos Jellyfin`
+- Transcript root: `C:\Users\dumbo\Documents\GitHub\bjj_transcripts\library`
+- Videos: 508
+- Instructionals: 78
+
+## Aggregate
+
+| Check | Count | Total | Percent |
+| --- | ---: | ---: | ---: |
+| Videos combined into volumes (not split by chapters) | 440 | 508 | 86.6% |
+| Videos with named chapters | 412 | 508 | 81.1% |
+| Videos with NFO metadata | 440 | 508 | 86.6% |
+| Instructionals with NFO metadata | 76 | 78 | 97.4% |
+| Videos that do not play or open with errors | 7 | 508 | 1.4% |
+| Videos without corresponding transcripts | 185 | 508 | 36.4% |
+
+Items below do not meet the rubric. Combined volumes, named chapters, and NFO files are the expected state. Playback errors and missing transcripts are gaps.
+
+## Videos split by chapters (not combined)
+
+68 item(s).
+
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Finding Advantages within a Neutral Position.mp4`
+  - Jellyfin episode titled 'Finding Advantages within a Neutral Position' with 1 container chapter(s)
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E02 - Balancing Guard Retention with Guard Offense.mp4`
+  - Jellyfin episode titled 'Balancing Guard Retention with Guard Offense' with 1 container chapter(s)
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E03 - Practical Applications.mp4`
+  - Jellyfin episode titled 'Practical Applications' with 1 container chapter(s)
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Hook Sweeps.mp4`
+  - Jellyfin episode titled 'Hook Sweeps' with 1 container chapter(s)
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E05 - Attacking an Opponent on One Knee and Standing.mp4`
+  - Jellyfin episode titled 'Attacking an Opponent on One Knee and Standing' with 1 container chapter(s)
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E06 - Cross Collar and Bicep Guard.mp4`
+  - Jellyfin episode titled 'Cross Collar and Bicep Guard' with 1 container chapter(s)
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E07 - Ashi Garami and X Guard.mp4`
+  - Jellyfin episode titled 'Ashi Garami and X Guard' with 1 container chapter(s)
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E08 - Kouchi Gari.mp4`
+  - Jellyfin episode titled 'Kouchi Gari' with 1 container chapter(s)
+- `Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Toreando Pass.mp4`
+  - Jellyfin episode titled 'Toreando Pass' with 1 container chapter(s)
+- `Polish Power Inside Passing By Adam Wardzinski\7187341508706-06-01- Common Problems Solving. Open Guard Distraction Concepts To Get To Inside Passing Position.mp4`
+  - segmented filename (volume 6 chapter 1)
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-01- Intro.mp4`
+  - segmented filename (volume 5 chapter 1)
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-02- Inside Passing Basics. Breaking The Distance, Entering To The Inside Position.mp4`
+  - segmented filename (volume 5 chapter 2)
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-03- Inside Passing Position Problems.mp4`
+  - segmented filename (volume 5 chapter 3)
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-04- Inside Leg Work.mp4`
+  - segmented filename (volume 5 chapter 4)
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-05- Types Of Control Over Opponents Arms.mp4`
+  - segmented filename (volume 5 chapter 5)
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-06- Problem Solving - Turning Opponents Head Away.mp4`
+  - segmented filename (volume 5 chapter 6)
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-07- Working To Quarter Guard And Mount From Inside Pass Position.mp4`
+  - segmented filename (volume 5 chapter 7)
+- `Polish Power Passing By Adam Wardzinski\Season 01\extras\7187341508706-01-00- Intro _ Basic knee slide.mp4`
+  - segmented filename (volume 1 chapter 0)
+- `Polish Power Side Control By Adam Wardzinski\Season 01\extras\7187341508706-25-01- Bonus - Lapel Arm Control To The Americana Lock.mp4`
+  - segmented filename (volume 25 chapter 1)
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E02 - Sliding Collar Strangle System Overview.mp4`
+  - Jellyfin episode titled 'Sliding Collar Strangle System Overview' with 1 container chapter(s)
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E04 - Kata Juji Jime Open Guard and Spinning Juji Jime.mp4`
+  - Jellyfin episode titled 'Kata Juji Jime Open Guard and Spinning Juji Jime' with 1 container chapter(s)
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E07 - Degrading Your Opponent's Athletic Potential.mp4`
+  - Jellyfin episode titled "Degrading Your Opponent's Athletic Potential" with 1 container chapter(s)
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E08 - Two on One Method, Seat Belt Roll Method, Back Crucifix Method and others.mp4`
+  - Jellyfin episode titled 'Two on One Method, Seat Belt Roll Method, Back Crucifix Method and others' with 1 container chapter(s)
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Overview.mp4`
+  - Jellyfin episode titled 'Overview' with 1 container chapter(s)
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E03 - Juji Jime.mp4`
+  - Jellyfin episode titled 'Juji Jime' with 1 container chapter(s)
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E05 - Ezekiel Strangle.mp4`
+  - Jellyfin episode titled 'Ezekiel Strangle' with 1 container chapter(s)
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E06 - Turtle Breakdowns.mp4`
+  - Jellyfin episode titled 'Turtle Breakdowns' with 1 container chapter(s)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-01- Chokes - Paper Cut Choke.mp4`
+  - segmented filename (volume 18 chapter 1)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-02- Reverse Paper Cut Choke.mp4`
+  - segmented filename (volume 18 chapter 2)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-03- Scissor Choke.mp4`
+  - segmented filename (volume 18 chapter 3)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-04- Von Flue Choke.mp4`
+  - segmented filename (volume 18 chapter 4)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-05- North South Choke To Brabo Choke.mp4`
+  - segmented filename (volume 18 chapter 5)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-06- Far Side Lapel Choke.mp4`
+  - segmented filename (volume 18 chapter 6)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-07- Step Over Lapel Choke.mp4`
+  - segmented filename (volume 18 chapter 7)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-08- Lapel Cross Choke With Options.mp4`
+  - segmented filename (volume 18 chapter 8)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-09- Lapel Baseball Choke.mp4`
+  - segmented filename (volume 18 chapter 9)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-10- Kimura Grip To Arm Triangle And Ezekiel Choke.mp4`
+  - segmented filename (volume 18 chapter 10)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-11- Kimura Grip To Triangle From The Back.mp4`
+  - segmented filename (volume 18 chapter 11)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-01- Half Guard Pass - Classic Half Guard To 3 Quarter Mount Option 1.mp4`
+  - segmented filename (volume 19 chapter 1)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-02- Classic Half Guard To 3 Quarter Mount Option 2.mp4`
+  - segmented filename (volume 19 chapter 2)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-03- Z Guard Sprawl Pass.mp4`
+  - segmented filename (volume 19 chapter 3)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-04- Level Change In Half Guard.mp4`
+  - segmented filename (volume 19 chapter 4)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-05- Knee Shield Half To Three Quarter Mount, Conquer In The Shield.mp4`
+  - segmented filename (volume 19 chapter 5)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-06- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg.mp4`
+  - segmented filename (volume 19 chapter 6)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-07- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg 2.mp4`
+  - segmented filename (volume 19 chapter 7)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-08- Tripod Pass With Face Turn To 3 Quarter Mount.mp4`
+  - segmented filename (volume 19 chapter 8)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-09- Shin Across The Belly Half Guard Pass.mp4`
+  - segmented filename (volume 19 chapter 9)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-10- Beating The Other Hook In A Half Guard.mp4`
+  - segmented filename (volume 19 chapter 10)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-11- 3 Quarters Mount Arm Triangle.mp4`
+  - segmented filename (volume 19 chapter 11)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-12- Ezekiel Option From 3 Quarters Mount.mp4`
+  - segmented filename (volume 19 chapter 12)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-01- Hip Smashing Through Half Guard - Far Hip Knee Slide To Smash.mp4`
+  - segmented filename (volume 20 chapter 1)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-02- Knee Shield Smash.mp4`
+  - segmented filename (volume 20 chapter 2)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-03- Headquarters Position Entry And Knee Weave.mp4`
+  - segmented filename (volume 20 chapter 3)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-04- Leg Pummel To Headquarters Mount And Smash.mp4`
+  - segmented filename (volume 20 chapter 4)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-05- Conquering The Bottom Leg In The Knee In Smash.mp4`
+  - segmented filename (volume 20 chapter 5)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-06- Conquering The Bottom Leg In Reinforce In Lapel.mp4`
+  - segmented filename (volume 20 chapter 6)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-07- Inverted Half Guard To Back Take.mp4`
+  - segmented filename (volume 20 chapter 7)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-08- Inverted Half Guard Mount Escape Counter.mp4`
+  - segmented filename (volume 20 chapter 8)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-09- Inverted Half Guard To Rolling Back Take.mp4`
+  - segmented filename (volume 20 chapter 9)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-01- Smashing Through Different Guards - Smash Pass Against Half Butterfly Guard.mp4`
+  - segmented filename (volume 21 chapter 1)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-02- Countering Half Butterfly Sweep With Knee In Smash.mp4`
+  - segmented filename (volume 21 chapter 2)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-03- Knee In Smashing Against Seated Butterfly Guard.mp4`
+  - segmented filename (volume 21 chapter 3)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-04- Knee In Smash Shin To Shin Counter.mp4`
+  - segmented filename (volume 21 chapter 4)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-05- Slx Knee In Smash.mp4`
+  - segmented filename (volume 21 chapter 5)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-06- Slx Pass To Mount.mp4`
+  - segmented filename (volume 21 chapter 6)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-07- Slx Knee In Smash 2.mp4`
+  - segmented filename (volume 21 chapter 7)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-08- De La Riva Pass To Headquarters To Smash.mp4`
+  - segmented filename (volume 21 chapter 8)
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-09- Dlr Leg Drag And Knee In Smash Pass.mp4`
+  - segmented filename (volume 21 chapter 9)
+
+## Videos without named chapters
+
+96 item(s).
+
+- `Butterfly Guard Re-Discovered 2 by Adam Wardzinski\Season 01\Butterfly Guard Re-Discovered 2 by Adam Wardzinski - S01E01 - Volume 1-pt2.mp4`
+  - 0 container chapters
+- `Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher\Season 01\Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher - S01E02 - Grip Fighting.mp4`
+  - 1 container chapter(s): Volume 2
+- `Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher\Season 01\Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher - S01E03 - Motion & Breaking Stance.mp4`
+  - 1 container chapter(s): Volume 3
+- `Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher\Season 01\Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher - S01E04 - Collar Drag (Uki Waza).mp4`
+  - 1 container chapter(s): Volume 4
+- `Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher\Season 01\Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher - S01E05 - Ankle Pick (Kibisu Gaeshi).mp4`
+  - 1 container chapter(s): Volume 5
+- `Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher\Season 01\Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher - S01E06 - Snap Downs.mp4`
+  - 1 container chapter(s): Volume 6
+- `Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher\Season 01\Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher - S01E07 - Takedowns for Self Defense.mp4`
+  - 1 container chapter(s): Volume 7
+- `Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher\Season 01\Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher - S01E08 - Special Topics.mp4`
+  - 1 container chapter(s): Volume 8
+- `Finishing Leg Locks by Jacob Couch\FinishingleglocksbyJacobCouch1.mp4`
+  - 0 container chapters
+- `Finishing Leg Locks by Jacob Couch\FinishingleglocksbyJacobCouch2.mp4`
+  - 0 container chapters
+- `Finishing Leg Locks by Jacob Couch\FinishingleglocksbyJacobCouch3.mp4`
+  - 0 container chapters
+- `Finishing Leg Locks by Jacob Couch\FinishingleglocksbyJacobCouch4.mp4`
+  - 0 container chapters
+- `Half Guard Anthology by Lachlan Giles\Season 01\Half Guard Anthology by Lachlan Giles - S01E08 - Volume 8.mp4`
+  - 1 container chapter(s): 11 Z GUARD, KIMURA, AND NARRATED ROLLING
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Finding Advantages within a Neutral Position.mp4`
+  - 1 container chapter(s): Volume 1
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E02 - Balancing Guard Retention with Guard Offense.mp4`
+  - 1 container chapter(s): Volume 2
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E03 - Practical Applications.mp4`
+  - 1 container chapter(s): Volume 3
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Hook Sweeps.mp4`
+  - 1 container chapter(s): Volume 4
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E05 - Attacking an Opponent on One Knee and Standing.mp4`
+  - 1 container chapter(s): Volume 5
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E06 - Cross Collar and Bicep Guard.mp4`
+  - 1 container chapter(s): Volume 6
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E07 - Ashi Garami and X Guard.mp4`
+  - 1 container chapter(s): Volume 7
+- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E08 - Kouchi Gari.mp4`
+  - 1 container chapter(s): Volume 8
+- `Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Toreando Pass.mp4`
+  - 1 container chapter(s): Toreando Pass
+- `Polish Power Inside Passing By Adam Wardzinski\7187341508706-06-01- Common Problems Solving. Open Guard Distraction Concepts To Get To Inside Passing Position.mp4`
+  - 0 container chapters
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-01- Intro.mp4`
+  - 0 container chapters
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-02- Inside Passing Basics. Breaking The Distance, Entering To The Inside Position.mp4`
+  - 0 container chapters
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-03- Inside Passing Position Problems.mp4`
+  - 0 container chapters
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-04- Inside Leg Work.mp4`
+  - 0 container chapters
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-05- Types Of Control Over Opponents Arms.mp4`
+  - 0 container chapters
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-06- Problem Solving - Turning Opponents Head Away.mp4`
+  - 0 container chapters
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-07- Working To Quarter Guard And Mount From Inside Pass Position.mp4`
+  - 0 container chapters
+- `Polish Power Passing By Adam Wardzinski\Season 01\extras\7187341508706-01-00- Intro _ Basic knee slide.mp4`
+  - 0 container chapters
+- `Polish Power Side Control By Adam Wardzinski\Season 01\extras\7187341508706-25-01- Bonus - Lapel Arm Control To The Americana Lock.mp4`
+  - 0 container chapters
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E02 - Sliding Collar Strangle System Overview.mp4`
+  - 1 container chapter(s): Volume 2
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E04 - Kata Juji Jime Open Guard and Spinning Juji Jime.mp4`
+  - 1 container chapter(s): Volume 4
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E07 - Degrading Your Opponent's Athletic Potential.mp4`
+  - 1 container chapter(s): Volume 7
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E08 - Two on One Method, Seat Belt Roll Method, Back Crucifix Method and others.mp4`
+  - 1 container chapter(s): Volume 8
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Overview.mp4`
+  - 1 container chapter(s): Volume 1
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E03 - Juji Jime.mp4`
+  - 1 container chapter(s): Volume 3
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E05 - Ezekiel Strangle.mp4`
+  - 1 container chapter(s): Volume 5
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E06 - Turtle Breakdowns.mp4`
+  - 1 container chapter(s): Volume 6
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E01 - Volume 1.mp4`
+  - 0 container chapters
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E02 - Volume 2.mp4`
+  - 0 container chapters
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E03 - Volume 3.mp4`
+  - 0 container chapters
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E04 - Volume 4.mp4`
+  - 0 container chapters
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E05 - Volume 5.mp4`
+  - 0 container chapters
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E06 - Volume 6.mp4`
+  - 0 container chapters
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E07 - Volume 7 Rolling.mp4`
+  - 0 container chapters
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E08 - Volume 8 Rolling Commentary.mp4`
+  - 0 container chapters
+- `Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E08 - Volume 8.mp4`
+  - 1 container chapter(s): Rolling Commentary
+- `The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E08 - Volume 8.mp4`
+  - 1 container chapter(s): Submission Exposure From Scissors Sweep Explained
+- `The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol1.mp4`
+  - 0 container chapters
+- `The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol2.mp4`
+  - 0 container chapters
+- `The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol3.mp4`
+  - 0 container chapters
+- `The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol4.mp4`
+  - 0 container chapters
+- `The Hip Bump by Ryan Hall\TheHipBumpbyRyanHall3.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-01- Chokes - Paper Cut Choke.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-02- Reverse Paper Cut Choke.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-03- Scissor Choke.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-04- Von Flue Choke.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-05- North South Choke To Brabo Choke.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-06- Far Side Lapel Choke.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-07- Step Over Lapel Choke.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-08- Lapel Cross Choke With Options.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-09- Lapel Baseball Choke.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-10- Kimura Grip To Arm Triangle And Ezekiel Choke.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-11- Kimura Grip To Triangle From The Back.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-01- Half Guard Pass - Classic Half Guard To 3 Quarter Mount Option 1.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-02- Classic Half Guard To 3 Quarter Mount Option 2.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-03- Z Guard Sprawl Pass.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-04- Level Change In Half Guard.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-05- Knee Shield Half To Three Quarter Mount, Conquer In The Shield.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-06- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-07- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg 2.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-08- Tripod Pass With Face Turn To 3 Quarter Mount.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-09- Shin Across The Belly Half Guard Pass.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-10- Beating The Other Hook In A Half Guard.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-11- 3 Quarters Mount Arm Triangle.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-12- Ezekiel Option From 3 Quarters Mount.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-01- Hip Smashing Through Half Guard - Far Hip Knee Slide To Smash.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-02- Knee Shield Smash.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-03- Headquarters Position Entry And Knee Weave.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-04- Leg Pummel To Headquarters Mount And Smash.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-05- Conquering The Bottom Leg In The Knee In Smash.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-06- Conquering The Bottom Leg In Reinforce In Lapel.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-07- Inverted Half Guard To Back Take.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-08- Inverted Half Guard Mount Escape Counter.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-09- Inverted Half Guard To Rolling Back Take.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-01- Smashing Through Different Guards - Smash Pass Against Half Butterfly Guard.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-02- Countering Half Butterfly Sweep With Knee In Smash.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-03- Knee In Smashing Against Seated Butterfly Guard.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-04- Knee In Smash Shin To Shin Counter.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-05- Slx Knee In Smash.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-06- Slx Pass To Mount.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-07- Slx Knee In Smash 2.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-08- De La Riva Pass To Headquarters To Smash.mp4`
+  - 0 container chapters
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-09- Dlr Leg Drag And Knee In Smash Pass.mp4`
+  - 0 container chapters
+
+## Videos without NFO metadata
+
+68 item(s).
+
+- `Butterfly Guard Re-Discovered 2 by Adam Wardzinski\Season 01\Butterfly Guard Re-Discovered 2 by Adam Wardzinski - S01E01 - Volume 1-pt1.mp4`
+  - no sidecar .nfo
+- `Finishing Leg Locks by Jacob Couch\FinishingleglocksbyJacobCouch1.mp4`
+  - no sidecar .nfo
+- `Finishing Leg Locks by Jacob Couch\FinishingleglocksbyJacobCouch2.mp4`
+  - no sidecar .nfo
+- `Finishing Leg Locks by Jacob Couch\FinishingleglocksbyJacobCouch3.mp4`
+  - no sidecar .nfo
+- `Finishing Leg Locks by Jacob Couch\FinishingleglocksbyJacobCouch4.mp4`
+  - no sidecar .nfo
+- `Polish Power Inside Passing By Adam Wardzinski\7187341508706-06-01- Common Problems Solving. Open Guard Distraction Concepts To Get To Inside Passing Position.mp4`
+  - no sidecar .nfo
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-01- Intro.mp4`
+  - no sidecar .nfo
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-02- Inside Passing Basics. Breaking The Distance, Entering To The Inside Position.mp4`
+  - no sidecar .nfo
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-03- Inside Passing Position Problems.mp4`
+  - no sidecar .nfo
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-04- Inside Leg Work.mp4`
+  - no sidecar .nfo
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-05- Types Of Control Over Opponents Arms.mp4`
+  - no sidecar .nfo
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-06- Problem Solving - Turning Opponents Head Away.mp4`
+  - no sidecar .nfo
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-07- Working To Quarter Guard And Mount From Inside Pass Position.mp4`
+  - no sidecar .nfo
+- `Polish Power Passing By Adam Wardzinski\Season 01\extras\7187341508706-01-00- Intro _ Basic knee slide.mp4`
+  - no sidecar .nfo
+- `Polish Power Side Control By Adam Wardzinski\Season 01\extras\7187341508706-25-01- Bonus - Lapel Arm Control To The Americana Lock.mp4`
+  - no sidecar .nfo
+- `The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol1.mp4`
+  - no sidecar .nfo
+- `The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol2.mp4`
+  - no sidecar .nfo
+- `The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol3.mp4`
+  - no sidecar .nfo
+- `The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol4.mp4`
+  - no sidecar .nfo
+- `The Hip Bump by Ryan Hall\TheHipBumpbyRyanHall1.mp4`
+  - no sidecar .nfo
+- `The Hip Bump by Ryan Hall\TheHipBumpbyRyanHall2.mp4`
+  - no sidecar .nfo
+- `The Hip Bump by Ryan Hall\TheHipBumpbyRyanHall3.mp4`
+  - no sidecar .nfo
+- `The Hip Bump by Ryan Hall\TheHipBumpbyRyanHall4.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-01- Chokes - Paper Cut Choke.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-02- Reverse Paper Cut Choke.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-03- Scissor Choke.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-04- Von Flue Choke.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-05- North South Choke To Brabo Choke.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-06- Far Side Lapel Choke.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-07- Step Over Lapel Choke.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-08- Lapel Cross Choke With Options.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-09- Lapel Baseball Choke.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-10- Kimura Grip To Arm Triangle And Ezekiel Choke.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-11- Kimura Grip To Triangle From The Back.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-01- Half Guard Pass - Classic Half Guard To 3 Quarter Mount Option 1.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-02- Classic Half Guard To 3 Quarter Mount Option 2.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-03- Z Guard Sprawl Pass.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-04- Level Change In Half Guard.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-05- Knee Shield Half To Three Quarter Mount, Conquer In The Shield.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-06- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-07- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg 2.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-08- Tripod Pass With Face Turn To 3 Quarter Mount.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-09- Shin Across The Belly Half Guard Pass.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-10- Beating The Other Hook In A Half Guard.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-11- 3 Quarters Mount Arm Triangle.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-12- Ezekiel Option From 3 Quarters Mount.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-01- Hip Smashing Through Half Guard - Far Hip Knee Slide To Smash.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-02- Knee Shield Smash.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-03- Headquarters Position Entry And Knee Weave.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-04- Leg Pummel To Headquarters Mount And Smash.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-05- Conquering The Bottom Leg In The Knee In Smash.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-06- Conquering The Bottom Leg In Reinforce In Lapel.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-07- Inverted Half Guard To Back Take.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-08- Inverted Half Guard Mount Escape Counter.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-09- Inverted Half Guard To Rolling Back Take.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-01- Smashing Through Different Guards - Smash Pass Against Half Butterfly Guard.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-02- Countering Half Butterfly Sweep With Knee In Smash.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-03- Knee In Smashing Against Seated Butterfly Guard.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-04- Knee In Smash Shin To Shin Counter.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-05- Slx Knee In Smash.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-06- Slx Pass To Mount.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-07- Slx Knee In Smash 2.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-08- De La Riva Pass To Headquarters To Smash.mp4`
+  - no sidecar .nfo
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-09- Dlr Leg Drag And Knee In Smash Pass.mp4`
+  - no sidecar .nfo
+- `Worm Guard (Legacy) by Keenan Cornelius\Keenan Cornelius   The Worm Guard DVD 1 [ZofVvwJcx4k].webm`
+  - no sidecar .nfo
+- `Worm Guard (Legacy) by Keenan Cornelius\Keenan Cornelius   The Worm Guard DVD 2 [5F2YZ4hN2Y0].webm`
+  - no sidecar .nfo
+- `Worm Guard (Legacy) by Keenan Cornelius\Keenan Cornelius   The Worm Guard DVD Bonus 2 [lk9nfD8vCPk].webm`
+  - no sidecar .nfo
+- `Worm Guard (Legacy) by Keenan Cornelius\Keenan Cornelius  - The Worm Guard DVD Bonus 1 [aCzfpDzlTiU].webm`
+  - no sidecar .nfo
+
+## Instructionals without NFO metadata
+
+2 item(s).
+
+- `The Daisy Fresh Knee Slice by Andrew Wiltse`
+  - no tvshow.nfo
+- `The Polish Power System Bundle By Adam Wardzinski`
+  - no tvshow.nfo
+
+## Videos that do not play or open with errors
+
+7 item(s).
+
+- `No Gi Open Guard Volume 2 De La Riva & Waiter by Lachlan Giles\Season 01\No Gi Open Guard Volume 2 De La Riva & Waiter by Lachlan Giles - S01E05 - Volume 5.mp4`
+  - [aac @ 00000182856e0940] channel element 1.4 is not allocated
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Polish Power Inside Passing by Adam Wardzinski - S01E01 - Volume 1.mp4`
+  - [aac @ 0000020143af08c0] channel element 1.4 is not allocated
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Polish Power Inside Passing by Adam Wardzinski - S01E06 - Volume 6.mp4`
+  - [h264 @ 000001d38a4bbf80] no frame!
+[h264 @ 000001d38aaa9e80] no frame!
+[h264 @ 000001d38ab70700] no frame!
+[h264 @ 000001d38a4f9840] no frame!
+[h264 @ 000001d38a4bc880] sps_id 2 out of range
+[h264 @ 000001d38a4bc880] no frame!
+[h264 @ 000001d38a4bed00] no frame!
+[h264 @ 000001d38a4be400] no frame!
+[h264 @ 000001d38a4be880] no frame!
+[h264 @ 000001d38a4bd1c0] A non-intra slice in an IDR NAL unit.
+[h264 @ 000001d38a4bd1c0] decode_slice_header error
+[h264 @ 000001d38a4bd1c0] no frame!
+[h264 @ 000001d38a4bc400] no frame!
+[h264 @ 000001d38a4bcd40] no frame!
+[h264 @ 000001d38a4bf1c0] no frame!
+[h264 @ 000001d38a4bf640] no frame!
+[h264 @ 000001d38a4bd640] no frame!
+[h264 @ 000001d38a4bdac0] no frame!
+[h264 @ 000001d38a4bdf80] SEI type 56 size 648 truncated at 558
+[h264 @ 000001d38a4bdf80] no frame!
+- `Polish Power Side Control By Adam Wardzinski\Season 01\Polish Power Side Control by Adam Wardzinski - S01E01 - Volume 1.mp4`
+  - [aac @ 000001f524972740] channel element 1.0 is not allocated
+- `Polish Power Side Control By Adam Wardzinski\Season 01\Polish Power Side Control by Adam Wardzinski - S01E02 - Volume 2.mp4`
+  - [aac @ 0000017fe6a1fec0] channel element 1.4 is not allocated
+- `Polish Power Side Control By Adam Wardzinski\Season 01\Polish Power Side Control by Adam Wardzinski - S01E03 - Volume 3.mp4`
+  - [aac @ 00000179367f6040] channel element 1.4 is not allocated
+- `The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E02 - Volume 2.mp4`
+  - [aac @ 0000017ef05c2180] channel element 1.0 is not allocated
+
+## Videos without corresponding transcripts
+
+185 item(s).
+
+- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Polish Power Inside Passing by Adam Wardzinski - S01E01 - Volume 1.mp4`
+  - missing Polish Power Inside Passing By Adam Wardzinski\Season 01\Polish Power Inside Passing by Adam Wardzinski - S01E01 - Volume 1.json
+- `Polish Power Side Control By Adam Wardzinski\Season 01\Polish Power Side Control by Adam Wardzinski - S01E01 - Volume 1.mp4`
+  - missing Polish Power Side Control By Adam Wardzinski\Season 01\Polish Power Side Control by Adam Wardzinski - S01E01 - Volume 1.json
+- `Polish Power Side Control By Adam Wardzinski\Season 01\Polish Power Side Control by Adam Wardzinski - S01E02 - Volume 2.mp4`
+  - missing Polish Power Side Control By Adam Wardzinski\Season 01\Polish Power Side Control by Adam Wardzinski - S01E02 - Volume 2.json
+- `Precision Back Takes by Lucas Lepri\Season 01\Precision Back Takes by Lucas Lepri - S01E02 - Volume 2.mp4`
+  - missing Precision Back Takes by Lucas Lepri\Season 01\Precision Back Takes by Lucas Lepri - S01E02 - Volume 2.json
+- `Precision Back Takes by Lucas Lepri\Season 01\Precision Back Takes by Lucas Lepri - S01E03 - Volume 3.mp4`
+  - missing Precision Back Takes by Lucas Lepri\Season 01\Precision Back Takes by Lucas Lepri - S01E03 - Volume 3.json
+- `Precision Back Takes by Lucas Lepri\Season 01\Precision Back Takes by Lucas Lepri - S01E04 - Volume 4.mp4`
+  - missing Precision Back Takes by Lucas Lepri\Season 01\Precision Back Takes by Lucas Lepri - S01E04 - Volume 4.json
+- `Scientific Gripping Systems For Jiu Jitsu by Travis Stevens\Season 01\Scientific Gripping Systems For Jiu Jitsu by Travis Stevens - S01E01 - Volume 1.mp4`
+  - missing Scientific Gripping Systems For Jiu Jitsu by Travis Stevens\Season 01\Scientific Gripping Systems For Jiu Jitsu by Travis Stevens - S01E01 - Volume 1.json
+- `Scientific Gripping Systems For Jiu Jitsu by Travis Stevens\Season 01\Scientific Gripping Systems For Jiu Jitsu by Travis Stevens - S01E02 - Volume 2.mp4`
+  - missing Scientific Gripping Systems For Jiu Jitsu by Travis Stevens\Season 01\Scientific Gripping Systems For Jiu Jitsu by Travis Stevens - S01E02 - Volume 2.json
+- `Scientific Gripping Systems For Jiu Jitsu by Travis Stevens\Season 01\Scientific Gripping Systems For Jiu Jitsu by Travis Stevens - S01E03 - Volume 3.mp4`
+  - missing Scientific Gripping Systems For Jiu Jitsu by Travis Stevens\Season 01\Scientific Gripping Systems For Jiu Jitsu by Travis Stevens - S01E03 - Volume 3.json
+- `Scientific Gripping Systems For Jiu Jitsu by Travis Stevens\Season 01\Scientific Gripping Systems For Jiu Jitsu by Travis Stevens - S01E04 - Volume 4.mp4`
+  - missing Scientific Gripping Systems For Jiu Jitsu by Travis Stevens\Season 01\Scientific Gripping Systems For Jiu Jitsu by Travis Stevens - S01E04 - Volume 4.json
+- `Side Control Setups & Submissions by Bernardo Faria\Season 01\Side Control Setups & Submissions by Bernardo Faria - S01E01 - Volume 1.mp4`
+  - missing Side Control Setups & Submissions by Bernardo Faria\Season 01\Side Control Setups & Submissions by Bernardo Faria - S01E01 - Volume 1.json
+- `Side Control Setups & Submissions by Bernardo Faria\Season 01\Side Control Setups & Submissions by Bernardo Faria - S01E02 - Volume 2.mp4`
+  - missing Side Control Setups & Submissions by Bernardo Faria\Season 01\Side Control Setups & Submissions by Bernardo Faria - S01E02 - Volume 2.json
+- `Side Control Setups & Submissions by Bernardo Faria\Season 01\Side Control Setups & Submissions by Bernardo Faria - S01E03 - Volume 3.mp4`
+  - missing Side Control Setups & Submissions by Bernardo Faria\Season 01\Side Control Setups & Submissions by Bernardo Faria - S01E03 - Volume 3.json
+- `Side Control Setups & Submissions by Bernardo Faria\Season 01\Side Control Setups & Submissions by Bernardo Faria - S01E04 - Volume 4.mp4`
+  - missing Side Control Setups & Submissions by Bernardo Faria\Season 01\Side Control Setups & Submissions by Bernardo Faria - S01E04 - Volume 4.json
+- `Special K Guard by Neil Melanson\Season 01\Special K Guard by Neil Melanson - S01E01 - Volume 1.mp4`
+  - missing Special K Guard by Neil Melanson\Season 01\Special K Guard by Neil Melanson - S01E01 - Volume 1.json
+- `Special K Guard by Neil Melanson\Season 01\Special K Guard by Neil Melanson - S01E02 - Volume 2.mp4`
+  - missing Special K Guard by Neil Melanson\Season 01\Special K Guard by Neil Melanson - S01E02 - Volume 2.json
+- `Special K Guard by Neil Melanson\Season 01\Special K Guard by Neil Melanson - S01E03 - Volume 3.mp4`
+  - missing Special K Guard by Neil Melanson\Season 01\Special K Guard by Neil Melanson - S01E03 - Volume 3.json
+- `Special K Guard by Neil Melanson\Season 01\Special K Guard by Neil Melanson - S01E04 - Volume 4.mp4`
+  - missing Special K Guard by Neil Melanson\Season 01\Special K Guard by Neil Melanson - S01E04 - Volume 4.json
+- `Spider Guard Mastery by Michael Langhi\Season 01\Spider Guard Mastery by Michael Langhi - S01E01 - Volume 1.mp4`
+  - missing Spider Guard Mastery by Michael Langhi\Season 01\Spider Guard Mastery by Michael Langhi - S01E01 - Volume 1.json
+- `Spider Guard Mastery by Michael Langhi\Season 01\Spider Guard Mastery by Michael Langhi - S01E02 - Volume 2.mp4`
+  - missing Spider Guard Mastery by Michael Langhi\Season 01\Spider Guard Mastery by Michael Langhi - S01E02 - Volume 2.json
+- `Spider Guard Mastery by Michael Langhi\Season 01\Spider Guard Mastery by Michael Langhi - S01E03 - Volume 3.mp4`
+  - missing Spider Guard Mastery by Michael Langhi\Season 01\Spider Guard Mastery by Michael Langhi - S01E03 - Volume 3.json
+- `Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E01 - Volume 1.mp4`
+  - missing Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E01 - Volume 1.json
+- `Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E02 - Volume 2.mp4`
+  - missing Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E02 - Volume 2.json
+- `Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E03 - Volume 3.mp4`
+  - missing Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E03 - Volume 3.json
+- `Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E04 - Volume 4.mp4`
+  - missing Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E04 - Volume 4.json
+- `Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E05 - Volume 5.mp4`
+  - missing Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E05 - Volume 5.json
+- `Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E06 - Volume 6.mp4`
+  - missing Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E06 - Volume 6.json
+- `Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E07 - Volume 7.mp4`
+  - missing Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E07 - Volume 7.json
+- `Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E08 - Volume 8.mp4`
+  - missing Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher\Season 01\Standing2Ground Positional Dominance & Scrimmage Wrestling by John Danaher - S01E08 - Volume 8.json
+- `Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E01 - Volume 01.mp4`
+  - missing Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E01 - Volume 01.json
+- `Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E02 - Volume 02.mp4`
+  - missing Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E02 - Volume 02.json
+- `Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E03 - Volume 03.mp4`
+  - missing Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E03 - Volume 03.json
+- `Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E04 - Volume 04.mp4`
+  - missing Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E04 - Volume 04.json
+- `Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E05 - Volume 05.mp4`
+  - missing Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E05 - Volume 05.json
+- `Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E06 - Volume 06.mp4`
+  - missing Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E06 - Volume 06.json
+- `Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E07 - Volume 07.mp4`
+  - missing Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E07 - Volume 07.json
+- `Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E08 - Volume 08.mp4`
+  - missing Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E08 - Volume 08.json
+- `Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E09 - Volume 09.mp4`
+  - missing Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E09 - Volume 09.json
+- `Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E10 - Volume 10.mp4`
+  - missing Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher\Season 01\Standing2Ground Takedowns & Standing Skills For Jiu Jitsu by John Danaher - S01E10 - Volume 10.json
+- `Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E01 - Volume 1.mp4`
+  - missing Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E01 - Volume 1.json
+- `Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E02 - Volume 2.mp4`
+  - missing Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E02 - Volume 2.json
+- `Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E03 - Volume 3.mp4`
+  - missing Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E03 - Volume 3.json
+- `Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E04 - Volume 4.mp4`
+  - missing Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E04 - Volume 4.json
+- `Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E05 - Volume 5.mp4`
+  - missing Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E05 - Volume 5.json
+- `Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E06 - Volume 6.mp4`
+  - missing Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E06 - Volume 6.json
+- `Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E07 - Volume 7.mp4`
+  - missing Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E07 - Volume 7.json
+- `Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E08 - Volume 8.mp4`
+  - missing Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E08 - Volume 8.json
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E02 - Sliding Collar Strangle System Overview.mp4`
+  - missing Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E02 - Sliding Collar Strangle System Overview.json
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E04 - Kata Juji Jime Open Guard and Spinning Juji Jime.mp4`
+  - missing Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E04 - Kata Juji Jime Open Guard and Spinning Juji Jime.json
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E07 - Degrading Your Opponent's Athletic Potential.mp4`
+  - missing Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E07 - Degrading Your Opponent's Athletic Potential.json
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E08 - Two on One Method, Seat Belt Roll Method, Back Crucifix Method and others.mp4`
+  - missing Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E08 - Two on One Method, Seat Belt Roll Method, Back Crucifix Method and others.json
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Overview.mp4`
+  - missing Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Overview.json
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E03 - Juji Jime.mp4`
+  - missing Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E03 - Juji Jime.json
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E05 - Ezekiel Strangle.mp4`
+  - missing Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E05 - Ezekiel Strangle.json
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E06 - Turtle Breakdowns.mp4`
+  - missing Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E06 - Turtle Breakdowns.json
+- `Submission Escapes by Tom DeBlass\Season 01\Submission Escapes by Tom DeBlass - S01E01 - Volume 1.mp4`
+  - missing Submission Escapes by Tom DeBlass\Season 01\Submission Escapes by Tom DeBlass - S01E01 - Volume 1.json
+- `Submission Escapes by Tom DeBlass\Season 01\Submission Escapes by Tom DeBlass - S01E02 - Volume 2.mp4`
+  - missing Submission Escapes by Tom DeBlass\Season 01\Submission Escapes by Tom DeBlass - S01E02 - Volume 2.json
+- `Submission Escapes by Tom DeBlass\Season 01\Submission Escapes by Tom DeBlass - S01E03 - Volume 3.mp4`
+  - missing Submission Escapes by Tom DeBlass\Season 01\Submission Escapes by Tom DeBlass - S01E03 - Volume 3.json
+- `Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E01 - Volume 1.mp4`
+  - missing Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E01 - Volume 1.json
+- `Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E02 - Volume 2.mp4`
+  - missing Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E02 - Volume 2.json
+- `Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E03 - Volume 3.mp4`
+  - missing Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E03 - Volume 3.json
+- `Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E04 - Volume 4.mp4`
+  - missing Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E04 - Volume 4.json
+- `Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E05 - Volume 5.mp4`
+  - missing Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E05 - Volume 5.json
+- `Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E06 - Volume 6.mp4`
+  - missing Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E06 - Volume 6.json
+- `Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E07 - Volume 7.mp4`
+  - missing Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E07 - Volume 7.json
+- `Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E08 - Volume 8.mp4`
+  - missing Systematically Attacking From Half Guard by Gordon Ryan\Season 01\Systematically Attacking From Half Guard by Gordon Ryan - S01E08 - Volume 8.json
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E01 - Volume 1.mp4`
+  - missing Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E01 - Volume 1.json
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E02 - Volume 2.mp4`
+  - missing Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E02 - Volume 2.json
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E03 - Volume 3.mp4`
+  - missing Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E03 - Volume 3.json
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E04 - Volume 4.mp4`
+  - missing Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E04 - Volume 4.json
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E05 - Volume 5.mp4`
+  - missing Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E05 - Volume 5.json
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E06 - Volume 6.mp4`
+  - missing Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E06 - Volume 6.json
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E07 - Volume 7 Rolling.mp4`
+  - missing Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E07 - Volume 7 Rolling.json
+- `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E08 - Volume 8 Rolling Commentary.mp4`
+  - missing Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E08 - Volume 8 Rolling Commentary.json
+- `Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E01 - Volume 1.mp4`
+  - missing Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E01 - Volume 1.json
+- `Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E02 - Volume 2.mp4`
+  - missing Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E02 - Volume 2.json
+- `Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E03 - Volume 3.mp4`
+  - missing Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E03 - Volume 3.json
+- `Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E04 - Volume 4.mp4`
+  - missing Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E04 - Volume 4.json
+- `Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E05 - Volume 5.mp4`
+  - missing Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E05 - Volume 5.json
+- `Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E06 - Volume 6.mp4`
+  - missing Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E06 - Volume 6.json
+- `Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E07 - Volume 7.mp4`
+  - missing Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E07 - Volume 7.json
+- `Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E08 - Volume 8.mp4`
+  - missing Systematically Attacking The Guard by Gordon Ryan\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E08 - Volume 8.json
+- `The Battle Tested Half Guard by Bernardo Faria\Season 01\The Battle Tested Half Guard by Bernardo Faria - S01E01 - Volume 1.mp4`
+  - missing The Battle Tested Half Guard by Bernardo Faria\Season 01\The Battle Tested Half Guard by Bernardo Faria - S01E01 - Volume 1.json
+- `The Battle Tested Half Guard by Bernardo Faria\Season 01\The Battle Tested Half Guard by Bernardo Faria - S01E02 - Volume 2.mp4`
+  - missing The Battle Tested Half Guard by Bernardo Faria\Season 01\The Battle Tested Half Guard by Bernardo Faria - S01E02 - Volume 2.json
+- `The Battle Tested Half Guard by Bernardo Faria\Season 01\The Battle Tested Half Guard by Bernardo Faria - S01E03 - Volume 3.mp4`
+  - missing The Battle Tested Half Guard by Bernardo Faria\Season 01\The Battle Tested Half Guard by Bernardo Faria - S01E03 - Volume 3.json
+- `The Battle Tested Half Guard by Bernardo Faria\Season 01\The Battle Tested Half Guard by Bernardo Faria - S01E04 - Volume 4.mp4`
+  - missing The Battle Tested Half Guard by Bernardo Faria\Season 01\The Battle Tested Half Guard by Bernardo Faria - S01E04 - Volume 4.json
+- `The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E01 - Volume 1.mp4`
+  - missing The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E01 - Volume 1.json
+- `The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E02 - Volume 2.mp4`
+  - missing The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E02 - Volume 2.json
+- `The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E03 - Volume 3.mp4`
+  - missing The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E03 - Volume 3.json
+- `The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E04 - Volume 4.mp4`
+  - missing The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E04 - Volume 4.json
+- `The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E05 - Volume 5.mp4`
+  - missing The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E05 - Volume 5.json
+- `The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E06 - Volume 6.mp4`
+  - missing The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E06 - Volume 6.json
+- `The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E07 - Volume 7.mp4`
+  - missing The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E07 - Volume 7.json
+- `The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E08 - Volume 8.mp4`
+  - missing The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E08 - Volume 8.json
+- `The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol1.mp4`
+  - missing The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol1.json
+- `The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol2.mp4`
+  - missing The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol2.json
+- `The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol3.mp4`
+  - missing The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol3.json
+- `The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol4.mp4`
+  - missing The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol4.json
+- `The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E01 - Volume 1.mp4`
+  - missing The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E01 - Volume 1.json
+- `The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E02 - Volume 2.mp4`
+  - missing The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E02 - Volume 2.json
+- `The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E03 - Volume 3.mp4`
+  - missing The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E03 - Volume 3.json
+- `The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E04 - Volume 4.mp4`
+  - missing The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E04 - Volume 4.json
+- `The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E05 - Volume 5.mp4`
+  - missing The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E05 - Volume 5.json
+- `The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E06 - Volume 6.mp4`
+  - missing The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E06 - Volume 6.json
+- `The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E07 - Volume 7.mp4`
+  - missing The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E07 - Volume 7.json
+- `The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E08 - Volume 8.mp4`
+  - missing The Fastest Way To Increase your Submission Percentage by John Danaher\Season 01\The Fastest Way by John Danaher - S01E08 - Volume 8.json
+- `The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E01 - Front Headlock.mp4`
+  - missing The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E01 - Front Headlock.json
+- `The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E02 - Front Headlock.mp4`
+  - missing The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E02 - Front Headlock.json
+- `The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E03 - Front Headlock.mp4`
+  - missing The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E03 - Front Headlock.json
+- `The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E04 - Front Headlock.mp4`
+  - missing The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E04 - Front Headlock.json
+- `The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E05 - Front Headlock.mp4`
+  - missing The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E05 - Front Headlock.json
+- `The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E06 - Front Headlock.mp4`
+  - missing The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E06 - Front Headlock.json
+- `The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E07 - Front Headlock.mp4`
+  - missing The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E07 - Front Headlock.json
+- `The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E08 - Front Headlock.mp4`
+  - missing The Front Headlock System by John Danaher\Season 01\The Front Headlock System by John Danaher - S01E08 - Front Headlock.json
+- `The Hip Bump by Ryan Hall\TheHipBumpbyRyanHall1.mp4`
+  - missing The Hip Bump by Ryan Hall\TheHipBumpbyRyanHall1.json
+- `The Hip Bump by Ryan Hall\TheHipBumpbyRyanHall2.mp4`
+  - missing The Hip Bump by Ryan Hall\TheHipBumpbyRyanHall2.json
+- `The Hip Bump by Ryan Hall\TheHipBumpbyRyanHall3.mp4`
+  - missing The Hip Bump by Ryan Hall\TheHipBumpbyRyanHall3.json
+- `The Hip Bump by Ryan Hall\TheHipBumpbyRyanHall4.mp4`
+  - missing The Hip Bump by Ryan Hall\TheHipBumpbyRyanHall4.json
+- `The No Gi Butterfly Guard Rediscovered by Adam Wardzinski\Season 01\The No Gi Butterfly Guard Rediscovered by Adam Wardzinski - S01E01 - Volume 1.mp4`
+  - missing The No Gi Butterfly Guard Rediscovered by Adam Wardzinski\Season 01\The No Gi Butterfly Guard Rediscovered by Adam Wardzinski - S01E01 - Volume 1.json
+- `The No Gi Butterfly Guard Rediscovered by Adam Wardzinski\Season 01\The No Gi Butterfly Guard Rediscovered by Adam Wardzinski - S01E02 - Volume 2.mp4`
+  - missing The No Gi Butterfly Guard Rediscovered by Adam Wardzinski\Season 01\The No Gi Butterfly Guard Rediscovered by Adam Wardzinski - S01E02 - Volume 2.json
+- `The No Gi Butterfly Guard Rediscovered by Adam Wardzinski\Season 01\The No Gi Butterfly Guard Rediscovered by Adam Wardzinski - S01E03 - Volume 3.mp4`
+  - missing The No Gi Butterfly Guard Rediscovered by Adam Wardzinski\Season 01\The No Gi Butterfly Guard Rediscovered by Adam Wardzinski - S01E03 - Volume 3.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-01- Chokes - Paper Cut Choke.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-01- Chokes - Paper Cut Choke.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-02- Reverse Paper Cut Choke.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-02- Reverse Paper Cut Choke.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-03- Scissor Choke.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-03- Scissor Choke.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-04- Von Flue Choke.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-04- Von Flue Choke.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-05- North South Choke To Brabo Choke.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-05- North South Choke To Brabo Choke.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-06- Far Side Lapel Choke.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-06- Far Side Lapel Choke.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-07- Step Over Lapel Choke.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-07- Step Over Lapel Choke.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-08- Lapel Cross Choke With Options.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-08- Lapel Cross Choke With Options.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-09- Lapel Baseball Choke.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-09- Lapel Baseball Choke.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-10- Kimura Grip To Arm Triangle And Ezekiel Choke.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-10- Kimura Grip To Arm Triangle And Ezekiel Choke.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-11- Kimura Grip To Triangle From The Back.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-11- Kimura Grip To Triangle From The Back.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-01- Half Guard Pass - Classic Half Guard To 3 Quarter Mount Option 1.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-01- Half Guard Pass - Classic Half Guard To 3 Quarter Mount Option 1.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-02- Classic Half Guard To 3 Quarter Mount Option 2.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-02- Classic Half Guard To 3 Quarter Mount Option 2.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-03- Z Guard Sprawl Pass.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-03- Z Guard Sprawl Pass.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-04- Level Change In Half Guard.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-04- Level Change In Half Guard.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-05- Knee Shield Half To Three Quarter Mount, Conquer In The Shield.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-05- Knee Shield Half To Three Quarter Mount, Conquer In The Shield.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-06- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-06- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-07- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg 2.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-07- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg 2.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-08- Tripod Pass With Face Turn To 3 Quarter Mount.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-08- Tripod Pass With Face Turn To 3 Quarter Mount.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-09- Shin Across The Belly Half Guard Pass.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-09- Shin Across The Belly Half Guard Pass.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-10- Beating The Other Hook In A Half Guard.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-10- Beating The Other Hook In A Half Guard.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-11- 3 Quarters Mount Arm Triangle.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-11- 3 Quarters Mount Arm Triangle.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-12- Ezekiel Option From 3 Quarters Mount.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-12- Ezekiel Option From 3 Quarters Mount.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-01- Hip Smashing Through Half Guard - Far Hip Knee Slide To Smash.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-01- Hip Smashing Through Half Guard - Far Hip Knee Slide To Smash.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-02- Knee Shield Smash.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-02- Knee Shield Smash.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-03- Headquarters Position Entry And Knee Weave.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-03- Headquarters Position Entry And Knee Weave.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-04- Leg Pummel To Headquarters Mount And Smash.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-04- Leg Pummel To Headquarters Mount And Smash.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-05- Conquering The Bottom Leg In The Knee In Smash.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-05- Conquering The Bottom Leg In The Knee In Smash.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-06- Conquering The Bottom Leg In Reinforce In Lapel.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-06- Conquering The Bottom Leg In Reinforce In Lapel.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-07- Inverted Half Guard To Back Take.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-07- Inverted Half Guard To Back Take.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-08- Inverted Half Guard Mount Escape Counter.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-08- Inverted Half Guard Mount Escape Counter.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-09- Inverted Half Guard To Rolling Back Take.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-09- Inverted Half Guard To Rolling Back Take.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-01- Smashing Through Different Guards - Smash Pass Against Half Butterfly Guard.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-01- Smashing Through Different Guards - Smash Pass Against Half Butterfly Guard.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-02- Countering Half Butterfly Sweep With Knee In Smash.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-02- Countering Half Butterfly Sweep With Knee In Smash.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-03- Knee In Smashing Against Seated Butterfly Guard.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-03- Knee In Smashing Against Seated Butterfly Guard.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-04- Knee In Smash Shin To Shin Counter.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-04- Knee In Smash Shin To Shin Counter.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-05- Slx Knee In Smash.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-05- Slx Knee In Smash.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-06- Slx Pass To Mount.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-06- Slx Pass To Mount.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-07- Slx Knee In Smash 2.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-07- Slx Knee In Smash 2.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-08- De La Riva Pass To Headquarters To Smash.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-08- De La Riva Pass To Headquarters To Smash.json
+- `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-09- Dlr Leg Drag And Knee In Smash Pass.mp4`
+  - missing The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-09- Dlr Leg Drag And Knee In Smash Pass.json
+- `The Triangle Machine by Craig Jones\Season 01\The Triangle Machine by Craig Jones - S01E01 - Volume 1.mp4`
+  - missing The Triangle Machine by Craig Jones\Season 01\The Triangle Machine by Craig Jones - S01E01 - Volume 1.json
+- `The Z Guard Encyclopedia by Craig Jones\Season 01\The Z Guard Encyclopedia by Craig Jones - S01E01 - Volume 1.mp4`
+  - missing The Z Guard Encyclopedia by Craig Jones\Season 01\The Z Guard Encyclopedia by Craig Jones - S01E01 - Volume 1.json
+- `The Z Guard Encyclopedia by Craig Jones\Season 01\The Z Guard Encyclopedia by Craig Jones - S01E02 - Volume 2.mp4`
+  - missing The Z Guard Encyclopedia by Craig Jones\Season 01\The Z Guard Encyclopedia by Craig Jones - S01E02 - Volume 2.json
+- `The Z Guard Encyclopedia by Craig Jones\Season 01\The Z Guard Encyclopedia by Craig Jones - S01E03 - Volume 3.mp4`
+  - missing The Z Guard Encyclopedia by Craig Jones\Season 01\The Z Guard Encyclopedia by Craig Jones - S01E03 - Volume 3.json
+- `Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E01 - Triangles.mp4`
+  - missing Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E01 - Triangles.json
+- `Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E02 - Triangles.mp4`
+  - missing Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E02 - Triangles.json
+- `Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E03 - Triangles.mp4`
+  - missing Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E03 - Triangles.json
+- `Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E04 - Triangles.mp4`
+  - missing Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E04 - Triangles.json
+- `Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E05 - Triangles.mp4`
+  - missing Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E05 - Triangles.json
+- `Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E06 - Triangles.mp4`
+  - missing Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E06 - Triangles.json
+- `Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E07 - Triangles.mp4`
+  - missing Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E07 - Triangles.json
+- `Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E08 - Triangles.mp4`
+  - missing Triangles Enter The System by John Danaher\Season 01\Triangles Enter The System by John Danaher - S01E08 - Triangles.json
+- `Uchi Mata by Travis Stevens\Season 01\Uchi Mata by Travis Stevens - S01E01 - Volume 1.mp4`
+  - missing Uchi Mata by Travis Stevens\Season 01\Uchi Mata by Travis Stevens - S01E01 - Volume 1.json
+- `Uchi Mata by Travis Stevens\Season 01\Uchi Mata by Travis Stevens - S01E02 - Volume 2.mp4`
+  - missing Uchi Mata by Travis Stevens\Season 01\Uchi Mata by Travis Stevens - S01E02 - Volume 2.json
+- `Uchi Mata by Travis Stevens\Season 01\Uchi Mata by Travis Stevens - S01E03 - Volume 3.mp4`
+  - missing Uchi Mata by Travis Stevens\Season 01\Uchi Mata by Travis Stevens - S01E03 - Volume 3.json
+- `Under Pressure Half Butterfly Guard Mastery by Brian Glick\Season 01\Under Pressure Half Butterfly Guard Mastery by Brian Glick - S01E01 - Volume 1.mp4`
+  - missing Under Pressure Half Butterfly Guard Mastery by Brian Glick\Season 01\Under Pressure Half Butterfly Guard Mastery by Brian Glick - S01E01 - Volume 1.json
+- `Under Pressure Half Butterfly Guard Mastery by Brian Glick\Season 01\Under Pressure Half Butterfly Guard Mastery by Brian Glick - S01E02 - Volume 2.mp4`
+  - missing Under Pressure Half Butterfly Guard Mastery by Brian Glick\Season 01\Under Pressure Half Butterfly Guard Mastery by Brian Glick - S01E02 - Volume 2.json
+- `Under Pressure Half Butterfly Guard Mastery by Brian Glick\Season 01\Under Pressure Half Butterfly Guard Mastery by Brian Glick - S01E03 - Volume 3.mp4`
+  - missing Under Pressure Half Butterfly Guard Mastery by Brian Glick\Season 01\Under Pressure Half Butterfly Guard Mastery by Brian Glick - S01E03 - Volume 3.json
+- `Under Pressure Half Butterfly Guard Mastery by Brian Glick\Season 01\Under Pressure Half Butterfly Guard Mastery by Brian Glick - S01E04 - Volume 4.mp4`
+  - missing Under Pressure Half Butterfly Guard Mastery by Brian Glick\Season 01\Under Pressure Half Butterfly Guard Mastery by Brian Glick - S01E04 - Volume 4.json
+- `Worm Guard (Legacy) by Keenan Cornelius\Keenan Cornelius   The Worm Guard DVD 1 [ZofVvwJcx4k].webm`
+  - missing Worm Guard (Legacy) by Keenan Cornelius\Keenan Cornelius   The Worm Guard DVD 1 [ZofVvwJcx4k].json
+- `Worm Guard (Legacy) by Keenan Cornelius\Keenan Cornelius   The Worm Guard DVD 2 [5F2YZ4hN2Y0].webm`
+  - missing Worm Guard (Legacy) by Keenan Cornelius\Keenan Cornelius   The Worm Guard DVD 2 [5F2YZ4hN2Y0].json
+- `Worm Guard (Legacy) by Keenan Cornelius\Keenan Cornelius   The Worm Guard DVD Bonus 2 [lk9nfD8vCPk].webm`
+  - missing Worm Guard (Legacy) by Keenan Cornelius\Keenan Cornelius   The Worm Guard DVD Bonus 2 [lk9nfD8vCPk].json
+- `Worm Guard (Legacy) by Keenan Cornelius\Keenan Cornelius  - The Worm Guard DVD Bonus 1 [aCzfpDzlTiU].webm`
+  - missing Worm Guard (Legacy) by Keenan Cornelius\Keenan Cornelius  - The Worm Guard DVD Bonus 1 [aCzfpDzlTiU].json
