@@ -1,83 +1,37 @@
 # Completeness scan
 
-Scanned: 2026-11-04 09:33:47
+Scanned: 2026-11-04 14:20:40
 
 - Video library: `W:\BJJ Instructional Videos Jellyfin`
 - Transcript root: `C:\Users\dumbo\Documents\GitHub\bjj_transcripts\library`
-- Videos: 508
+- Videos: 501
 - Instructionals: 78
 
 ## Aggregate
 
 | Check | Count | Total | Percent |
 | --- | ---: | ---: | ---: |
-| Videos combined into volumes (not split by chapters) | 440 | 508 | 86.6% |
-| Videos with named chapters | 412 | 508 | 81.1% |
-| Videos with NFO metadata | 440 | 508 | 86.6% |
+| Videos combined into volumes (not split by chapters) | 456 | 501 | 91.0% |
+| Videos with named chapters | 435 | 501 | 86.8% |
+| Videos with NFO metadata | 440 | 501 | 87.8% |
 | Instructionals with NFO metadata | 76 | 78 | 97.4% |
-| Videos that play without errors | 501 | 508 | 98.6% |
-| Videos with corresponding transcripts | 323 | 508 | 63.6% |
+| Videos that play without errors | 500 | 501 | 99.8% |
+| Videos with corresponding transcripts | 315 | 501 | 62.9% |
 
 Every aggregate percent is a meeting rate. Items below do not meet the rubric.
 
 ## Videos split by chapters (not combined)
 
-68 item(s).
+45 item(s).
 
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Finding Advantages within a Neutral Position.mp4`
-  - Jellyfin episode titled 'Finding Advantages within a Neutral Position' with 1 container chapter(s)
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E02 - Balancing Guard Retention with Guard Offense.mp4`
-  - Jellyfin episode titled 'Balancing Guard Retention with Guard Offense' with 1 container chapter(s)
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E03 - Practical Applications.mp4`
-  - Jellyfin episode titled 'Practical Applications' with 1 container chapter(s)
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Hook Sweeps.mp4`
-  - Jellyfin episode titled 'Hook Sweeps' with 1 container chapter(s)
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E05 - Attacking an Opponent on One Knee and Standing.mp4`
-  - Jellyfin episode titled 'Attacking an Opponent on One Knee and Standing' with 1 container chapter(s)
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E06 - Cross Collar and Bicep Guard.mp4`
-  - Jellyfin episode titled 'Cross Collar and Bicep Guard' with 1 container chapter(s)
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E07 - Ashi Garami and X Guard.mp4`
-  - Jellyfin episode titled 'Ashi Garami and X Guard' with 1 container chapter(s)
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E08 - Kouchi Gari.mp4`
-  - Jellyfin episode titled 'Kouchi Gari' with 1 container chapter(s)
 - `Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Toreando Pass.mp4`
   - Jellyfin episode titled 'Toreando Pass' with 1 container chapter(s)
-- `Polish Power Inside Passing By Adam Wardzinski\7187341508706-06-01- Common Problems Solving. Open Guard Distraction Concepts To Get To Inside Passing Position.mp4`
-  - segmented filename (volume 6 chapter 1)
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-01- Intro.mp4`
-  - segmented filename (volume 5 chapter 1)
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-02- Inside Passing Basics. Breaking The Distance, Entering To The Inside Position.mp4`
-  - segmented filename (volume 5 chapter 2)
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-03- Inside Passing Position Problems.mp4`
-  - segmented filename (volume 5 chapter 3)
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-04- Inside Leg Work.mp4`
-  - segmented filename (volume 5 chapter 4)
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-05- Types Of Control Over Opponents Arms.mp4`
-  - segmented filename (volume 5 chapter 5)
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-06- Problem Solving - Turning Opponents Head Away.mp4`
-  - segmented filename (volume 5 chapter 6)
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-07- Working To Quarter Guard And Mount From Inside Pass Position.mp4`
-  - segmented filename (volume 5 chapter 7)
 - `Polish Power Passing By Adam Wardzinski\Season 01\extras\7187341508706-01-00- Intro _ Basic knee slide.mp4`
   - segmented filename (volume 1 chapter 0)
 - `Polish Power Side Control By Adam Wardzinski\Season 01\extras\7187341508706-25-01- Bonus - Lapel Arm Control To The Americana Lock.mp4`
   - segmented filename (volume 25 chapter 1)
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E02 - Sliding Collar Strangle System Overview.mp4`
-  - Jellyfin episode titled 'Sliding Collar Strangle System Overview' with 1 container chapter(s)
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E04 - Kata Juji Jime Open Guard and Spinning Juji Jime.mp4`
-  - Jellyfin episode titled 'Kata Juji Jime Open Guard and Spinning Juji Jime' with 1 container chapter(s)
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E07 - Degrading Your Opponent's Athletic Potential.mp4`
-  - Jellyfin episode titled "Degrading Your Opponent's Athletic Potential" with 1 container chapter(s)
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E08 - Two on One Method, Seat Belt Roll Method, Back Crucifix Method and others.mp4`
-  - Jellyfin episode titled 'Two on One Method, Seat Belt Roll Method, Back Crucifix Method and others' with 1 container chapter(s)
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Overview.mp4`
-  - Jellyfin episode titled 'Overview' with 1 container chapter(s)
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E03 - Juji Jime.mp4`
-  - Jellyfin episode titled 'Juji Jime' with 1 container chapter(s)
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E05 - Ezekiel Strangle.mp4`
-  - Jellyfin episode titled 'Ezekiel Strangle' with 1 container chapter(s)
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E06 - Turtle Breakdowns.mp4`
-  - Jellyfin episode titled 'Turtle Breakdowns' with 1 container chapter(s)
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\.Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Overview.chapters.tmp.mp4`
+  - Jellyfin episode titled '.Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Overview.chapters.tmp' with 0 container chapter(s)
 - `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-01- Chokes - Paper Cut Choke.mp4`
   - segmented filename (volume 18 chapter 1)
 - `The Polish Power System Bundle By Adam Wardzinski\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-02- Reverse Paper Cut Choke.mp4`
@@ -163,24 +117,10 @@ Every aggregate percent is a meeting rate. Items below do not meet the rubric.
 
 ## Videos without named chapters
 
-96 item(s).
+66 item(s).
 
 - `Butterfly Guard Re-Discovered 2 by Adam Wardzinski\Season 01\Butterfly Guard Re-Discovered 2 by Adam Wardzinski - S01E01 - Volume 1-pt2.mp4`
   - 0 container chapters
-- `Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher\Season 01\Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher - S01E02 - Grip Fighting.mp4`
-  - 1 container chapter(s): Volume 2
-- `Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher\Season 01\Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher - S01E03 - Motion & Breaking Stance.mp4`
-  - 1 container chapter(s): Volume 3
-- `Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher\Season 01\Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher - S01E04 - Collar Drag (Uki Waza).mp4`
-  - 1 container chapter(s): Volume 4
-- `Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher\Season 01\Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher - S01E05 - Ankle Pick (Kibisu Gaeshi).mp4`
-  - 1 container chapter(s): Volume 5
-- `Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher\Season 01\Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher - S01E06 - Snap Downs.mp4`
-  - 1 container chapter(s): Volume 6
-- `Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher\Season 01\Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher - S01E07 - Takedowns for Self Defense.mp4`
-  - 1 container chapter(s): Volume 7
-- `Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher\Season 01\Feet To Floor Volume 1 Fundamental Standing Skills by John Danaher - S01E08 - Special Topics.mp4`
-  - 1 container chapter(s): Volume 8
 - `Finishing Leg Locks by Jacob Couch\FinishingleglocksbyJacobCouch1.mp4`
   - 0 container chapters
 - `Finishing Leg Locks by Jacob Couch\FinishingleglocksbyJacobCouch2.mp4`
@@ -191,60 +131,15 @@ Every aggregate percent is a meeting rate. Items below do not meet the rubric.
   - 0 container chapters
 - `Half Guard Anthology by Lachlan Giles\Season 01\Half Guard Anthology by Lachlan Giles - S01E08 - Volume 8.mp4`
   - 1 container chapter(s): 11 Z GUARD, KIMURA, AND NARRATED ROLLING
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Finding Advantages within a Neutral Position.mp4`
-  - 1 container chapter(s): Volume 1
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E02 - Balancing Guard Retention with Guard Offense.mp4`
-  - 1 container chapter(s): Volume 2
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E03 - Practical Applications.mp4`
-  - 1 container chapter(s): Volume 3
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Hook Sweeps.mp4`
-  - 1 container chapter(s): Volume 4
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E05 - Attacking an Opponent on One Knee and Standing.mp4`
-  - 1 container chapter(s): Volume 5
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E06 - Cross Collar and Bicep Guard.mp4`
-  - 1 container chapter(s): Volume 6
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E07 - Ashi Garami and X Guard.mp4`
-  - 1 container chapter(s): Volume 7
-- `Open Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Open Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E08 - Kouchi Gari.mp4`
-  - 1 container chapter(s): Volume 8
 - `Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Toreando Pass.mp4`
   - 1 container chapter(s): Toreando Pass
-- `Polish Power Inside Passing By Adam Wardzinski\7187341508706-06-01- Common Problems Solving. Open Guard Distraction Concepts To Get To Inside Passing Position.mp4`
-  - 0 container chapters
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-01- Intro.mp4`
-  - 0 container chapters
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-02- Inside Passing Basics. Breaking The Distance, Entering To The Inside Position.mp4`
-  - 0 container chapters
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-03- Inside Passing Position Problems.mp4`
-  - 0 container chapters
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-04- Inside Leg Work.mp4`
-  - 0 container chapters
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-05- Types Of Control Over Opponents Arms.mp4`
-  - 0 container chapters
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-06- Problem Solving - Turning Opponents Head Away.mp4`
-  - 0 container chapters
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-07- Working To Quarter Guard And Mount From Inside Pass Position.mp4`
-  - 0 container chapters
 - `Polish Power Passing By Adam Wardzinski\Season 01\extras\7187341508706-01-00- Intro _ Basic knee slide.mp4`
   - 0 container chapters
 - `Polish Power Side Control By Adam Wardzinski\Season 01\extras\7187341508706-25-01- Bonus - Lapel Arm Control To The Americana Lock.mp4`
   - 0 container chapters
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E02 - Sliding Collar Strangle System Overview.mp4`
-  - 1 container chapter(s): Volume 2
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E04 - Kata Juji Jime Open Guard and Spinning Juji Jime.mp4`
-  - 1 container chapter(s): Volume 4
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E07 - Degrading Your Opponent's Athletic Potential.mp4`
-  - 1 container chapter(s): Volume 7
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E08 - Two on One Method, Seat Belt Roll Method, Back Crucifix Method and others.mp4`
-  - 1 container chapter(s): Volume 8
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Overview.mp4`
-  - 1 container chapter(s): Volume 1
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E03 - Juji Jime.mp4`
-  - 1 container chapter(s): Volume 3
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E05 - Ezekiel Strangle.mp4`
-  - 1 container chapter(s): Volume 5
-- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E06 - Turtle Breakdowns.mp4`
-  - 1 container chapter(s): Volume 6
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\.Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Overview.chapters.tmp.mp4`
+  - W:\BJJ Instructional Videos Jellyfin\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\.Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Overview.chapters.tmp.mp4: No such file or directory
+  - 0 container chapters
 - `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E01 - Volume 1.mp4`
   - 0 container chapters
 - `Systematically Attacking From Open Guard Seated Position by Gordon Ryan\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E02 - Volume 2.mp4`
@@ -360,7 +255,7 @@ Every aggregate percent is a meeting rate. Items below do not meet the rubric.
 
 ## Videos without NFO metadata
 
-68 item(s).
+61 item(s).
 
 - `Butterfly Guard Re-Discovered 2 by Adam Wardzinski\Season 01\Butterfly Guard Re-Discovered 2 by Adam Wardzinski - S01E01 - Volume 1-pt1.mp4`
   - no sidecar .nfo
@@ -372,25 +267,11 @@ Every aggregate percent is a meeting rate. Items below do not meet the rubric.
   - no sidecar .nfo
 - `Finishing Leg Locks by Jacob Couch\FinishingleglocksbyJacobCouch4.mp4`
   - no sidecar .nfo
-- `Polish Power Inside Passing By Adam Wardzinski\7187341508706-06-01- Common Problems Solving. Open Guard Distraction Concepts To Get To Inside Passing Position.mp4`
-  - no sidecar .nfo
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-01- Intro.mp4`
-  - no sidecar .nfo
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-02- Inside Passing Basics. Breaking The Distance, Entering To The Inside Position.mp4`
-  - no sidecar .nfo
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-03- Inside Passing Position Problems.mp4`
-  - no sidecar .nfo
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-04- Inside Leg Work.mp4`
-  - no sidecar .nfo
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-05- Types Of Control Over Opponents Arms.mp4`
-  - no sidecar .nfo
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-06- Problem Solving - Turning Opponents Head Away.mp4`
-  - no sidecar .nfo
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Volume 1\7187341508706-05-07- Working To Quarter Guard And Mount From Inside Pass Position.mp4`
-  - no sidecar .nfo
 - `Polish Power Passing By Adam Wardzinski\Season 01\extras\7187341508706-01-00- Intro _ Basic knee slide.mp4`
   - no sidecar .nfo
 - `Polish Power Side Control By Adam Wardzinski\Season 01\extras\7187341508706-25-01- Bonus - Lapel Arm Control To The Americana Lock.mp4`
+  - no sidecar .nfo
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\.Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Overview.chapters.tmp.mp4`
   - no sidecar .nfo
 - `The Daisy Fresh Knee Slice by Andrew Wiltse\AndrewWiltseKneeSliceVol1.mp4`
   - no sidecar .nfo
@@ -510,45 +391,14 @@ Every aggregate percent is a meeting rate. Items below do not meet the rubric.
 
 ## Videos that do not play or open with errors
 
-7 item(s).
+1 item(s).
 
-- `No Gi Open Guard Volume 2 De La Riva & Waiter by Lachlan Giles\Season 01\No Gi Open Guard Volume 2 De La Riva & Waiter by Lachlan Giles - S01E05 - Volume 5.mp4`
-  - [aac @ 00000254ea860940] channel element 1.4 is not allocated
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Polish Power Inside Passing by Adam Wardzinski - S01E01 - Volume 1.mp4`
-  - [aac @ 000002516f4808c0] channel element 1.4 is not allocated
-- `Polish Power Inside Passing By Adam Wardzinski\Season 01\Polish Power Inside Passing by Adam Wardzinski - S01E06 - Volume 6.mp4`
-  - [h264 @ 0000020b7c61cd40] no frame!
-[h264 @ 0000020b7c7caa80] no frame!
-[h264 @ 0000020b7c890700] no frame!
-[h264 @ 0000020b7c659840] no frame!
-[h264 @ 0000020b7c61e880] sps_id 2 out of range
-[h264 @ 0000020b7c61e880] no frame!
-[h264 @ 0000020b7c61d1c0] no frame!
-[h264 @ 0000020b7c61ed00] no frame!
-[h264 @ 0000020b7c61f1c0] no frame!
-[h264 @ 0000020b7c61d640] A non-intra slice in an IDR NAL unit.
-[h264 @ 0000020b7c61d640] decode_slice_header error
-[h264 @ 0000020b7c61d640] no frame!
-[h264 @ 0000020b7c61f640] no frame!
-[h264 @ 0000020b7c61bf80] no frame!
-[h264 @ 0000020b7c61dac0] no frame!
-[h264 @ 0000020b7c61df80] no frame!
-[h264 @ 0000020b7c61e400] no frame!
-[h264 @ 0000020b7c61c400] no frame!
-[h264 @ 0000020b7c61c880] SEI type 56 size 648 truncated at 558
-[h264 @ 0000020b7c61c880] no frame!
-- `Polish Power Side Control By Adam Wardzinski\Season 01\Polish Power Side Control by Adam Wardzinski - S01E01 - Volume 1.mp4`
-  - [aac @ 0000021317542740] channel element 1.0 is not allocated
-- `Polish Power Side Control By Adam Wardzinski\Season 01\Polish Power Side Control by Adam Wardzinski - S01E02 - Volume 2.mp4`
-  - [aac @ 000002a177e1fec0] channel element 1.4 is not allocated
-- `Polish Power Side Control By Adam Wardzinski\Season 01\Polish Power Side Control by Adam Wardzinski - S01E03 - Volume 3.mp4`
-  - [aac @ 000002a9092d6040] channel element 1.4 is not allocated
-- `The Collar and Sleeve System Part One by Mikey Musumeci\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E02 - Volume 2.mp4`
-  - [aac @ 000001f6c8c32180] channel element 1.0 is not allocated
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\.Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Overview.chapters.tmp.mp4`
+  - W:\BJJ Instructional Videos Jellyfin\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\.Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Overview.chapters.tmp.mp4: No such file or directory
 
 ## Videos without corresponding transcripts
 
-185 item(s).
+186 item(s).
 
 - `Polish Power Inside Passing By Adam Wardzinski\Season 01\Polish Power Inside Passing by Adam Wardzinski - S01E01 - Volume 1.mp4`
   - missing Polish Power Inside Passing By Adam Wardzinski\Season 01\Polish Power Inside Passing by Adam Wardzinski - S01E01 - Volume 1.json
@@ -644,6 +494,8 @@ Every aggregate percent is a meeting rate. Items below do not meet the rubric.
   - missing Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E07 - Volume 7.json
 - `Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E08 - Volume 8.mp4`
   - missing Standing2Ground Upper Body Takedowns by John Danaher\Season 01\Standing2Ground Upper Body Takedowns by John Danaher - S01E08 - Volume 8.json
+- `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\.Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Overview.chapters.tmp.mp4`
+  - missing Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\.Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Overview.chapters.tmp.json
 - `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E02 - Sliding Collar Strangle System Overview.mp4`
   - missing Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E02 - Sliding Collar Strangle System Overview.json
 - `Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher\Season 01\S01E04 - Kata Juji Jime Open Guard and Spinning Juji Jime.mp4`

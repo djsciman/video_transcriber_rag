@@ -40,11 +40,15 @@ def _clock_to_ms(text: str) -> int | None:
         hours = 0
     else:
         hours, minutes, seconds = nums
+        # Spreadsheet exports dump mm:ss as hh:mm:ss (40:15:00 is 40:15).
+        if hours > 23 and seconds == 0:
+            minutes, seconds = hours, minutes
+            hours = 0
     return ((hours * 3600) + (minutes * 60) + seconds) * 1000
 
 
 def parse_timestamp_ms(raw: str) -> int | None:
-    text = raw.strip()
+    text = raw.strip().replace(";", ":")
     # Ranges are "0 - 11:55" or, on some pages, "0- 2:44".
     if "-" in text:
         left, right = re.split(r"\s*-\s*", text, maxsplit=1)
@@ -69,6 +73,12 @@ def html_url_for(product_url: str) -> str:
     if path.endswith(".json"):
         path = path[: -len(".json")]
     return urlunparse(("https", parsed.netloc, path, "", "", ""))
+
+
+def course_content_url_for(product_url: str) -> str:
+    """Shopify alternate template with Course Content ``figure.table`` rows."""
+    parsed = urlparse(html_url_for(product_url))
+    return urlunparse(("https", parsed.netloc, parsed.path, "", "view=course-content-v2", ""))
 
 
 def _parse_premiered(value: str | None) -> date | None:
@@ -243,31 +253,161 @@ def parse_description_volumes(html: str) -> list[Volume]:
     return volumes
 
 
+def _course_row(cells: list[str]) -> Chapter | None:
+    """Read a two-cell course-content row as title + start time.
+
+    Usual layout is title then stamp. Some Danaher pages reverse that
+    (stamp or '0 - 3:32' range in the first cell, title in the second).
+    """
+    left, right = cells[0], cells[1]
+    if left.upper() == "CHAPTER TITLE" or right.upper() == "CHAPTER TITLE":
+        return None
+    left_ms = parse_timestamp_ms(left)
+    right_ms = parse_timestamp_ms(right)
+    if left_ms is not None and right_ms is None:
+        title, start_ms = right, left_ms
+    elif right_ms is not None:
+        title, start_ms = left, right_ms
+    else:
+        return None
+    title = _chapter_title(title)
+    if not title:
+        return None
+    return Chapter(title=title, start_ms=start_ms)
+
+
+def _promote_hour_minute_stamps(chapters: list[Chapter]) -> list[Chapter]:
+    """Treat a later ``1:44`` as 1:44:00 when mm:ss would jump backwards.
+
+    Some Danaher tables mix ``1:15:45`` with ``1:44`` meaning one hour
+    forty-four minutes, not one minute forty-four seconds.
+    """
+    if not chapters:
+        return chapters
+    out: list[Chapter] = []
+    prev = -1
+    for chapter in chapters:
+        start = chapter.start_ms
+        if 0 <= start < prev:
+            total_sec = start // 1000
+            minutes, seconds = divmod(total_sec, 60)
+            if minutes <= 9:
+                promoted = ((minutes * 3600) + (seconds * 60)) * 1000
+                if promoted > prev:
+                    start = promoted
+        if start != chapter.start_ms:
+            chapter = Chapter(title=chapter.title, start_ms=start)
+        out.append(chapter)
+        if start > prev:
+            prev = start
+    return out
+
+
+def _demote_excel_hour_stamps(chapters: list[Chapter]) -> list[Chapter]:
+    """Treat ``17:04:00`` as 17:04 when a later Excel ``24:59:00`` is smaller.
+
+    Hours 1-23 with seconds 0 parse as H:MM:SS. In a mm:ss spreadsheet dump
+    they are 17:04, and a later ``24:59:00`` (already demoted) exposes that.
+    """
+    if len(chapters) < 2:
+        return chapters
+    starts = [chapter.start_ms for chapter in chapters]
+    out: list[Chapter] = []
+    for index, chapter in enumerate(chapters):
+        start = starts[index]
+        hours, rem = divmod(start // 1000, 3600)
+        minutes, seconds = divmod(rem, 60)
+        later_smaller = [value for value in starts[index + 1 :] if value < start]
+        if seconds == 0 and 1 <= hours <= 23 and later_smaller:
+            as_mmss = (hours * 60 + minutes) * 1000
+            prev = out[-1].start_ms if out else -1
+            nxt = min(later_smaller)
+            if prev < as_mmss < nxt:
+                start = as_mmss
+                starts[index] = start
+        if start != chapter.start_ms:
+            chapter = Chapter(title=chapter.title, start_ms=start)
+        out.append(chapter)
+    return out
+
+
+def _repair_jumped_excel_stamps(chapters: list[Chapter]) -> list[Chapter]:
+    """Fix ``8:06:00`` between ``53:14:00`` and ``1:02:38``.
+
+    Excel dumps mm:ss as hh:mm:ss. A dropped tens digit turns 58:06 into
+    8:06:00 (eight hours), which jumps past the next chapter.
+    """
+    if len(chapters) < 2:
+        return chapters
+    out = list(chapters)
+    for index, chapter in enumerate(out):
+        nxt = out[index + 1].start_ms if index + 1 < len(out) else None
+        prev = out[index - 1].start_ms if index else -1
+        start = chapter.start_ms
+        if nxt is None or start <= nxt:
+            continue
+        total_sec = start // 1000
+        hours, rem = divmod(total_sec, 3600)
+        minutes, seconds = divmod(rem, 60)
+        if seconds != 0 or hours == 0 or hours > 23:
+            continue
+        candidates = [(hours * 60 + minutes) * 1000]
+        if prev > 0:
+            prev_min = (prev // 1000) // 60
+            tens = (prev_min % 60) // 10
+            candidates.append(((tens * 10 + hours) * 60 + minutes) * 1000)
+        for candidate in candidates:
+            if prev < candidate < nxt:
+                out[index] = Chapter(title=chapter.title, start_ms=candidate)
+                break
+    return out
+
+
+def _normalize_stamps(chapters: list[Chapter]) -> list[Chapter]:
+    return _repair_jumped_excel_stamps(
+        _demote_excel_hour_stamps(_promote_hour_minute_stamps(chapters))
+    )
+
+
+def _chapters_from_table(table) -> list[Chapter]:
+    chapters: list[Chapter] = []
+    for row in table.select("tr"):
+        cells = [c.get_text(" ", strip=True) for c in row.find_all(["td", "th"])]
+        if len(cells) < 2:
+            continue
+        chapter = _course_row(cells)
+        if chapter is None:
+            continue
+        chapters.append(chapter)
+    return _normalize_stamps(chapters)
+
+
 def parse_course_content(html: str) -> list[Volume]:
     soup = BeautifulSoup(html, "lxml")
     accordion = soup.select_one(".product__course-content-accordion")
-    if accordion is None:
-        return []
     volumes: list[Volume] = []
-    for heading in accordion.select("h3.product__course-title"):
-        name = heading.get_text(" ", strip=True)
-        name = re.sub(r"\s+", " ", name).strip()
-        block = heading.find_next_sibling("div", class_="product__course-content")
-        if block is None:
-            continue
-        chapters: list[Chapter] = []
-        for row in block.select("table tr"):
-            cells = [c.get_text(" ", strip=True) for c in row.find_all(["td", "th"])]
-            if len(cells) < 2:
+    if accordion is not None:
+        for heading in accordion.select("h3.product__course-title"):
+            name = heading.get_text(" ", strip=True)
+            name = re.sub(r"\s+", " ", name).strip()
+            block = heading.find_next_sibling("div", class_="product__course-content")
+            if block is None:
                 continue
-            title, stamp = cells[0], cells[1]
-            if title.upper() == "CHAPTER TITLE":
-                continue
-            start_ms = parse_timestamp_ms(stamp)
-            if start_ms is None or not title:
-                continue
-            chapters.append(Chapter(title=title, start_ms=start_ms))
-        volumes.append(Volume(name=name or f"Volume {len(volumes) + 1}", chapters=tuple(chapters)))
+            chapters: list[Chapter] = []
+            for table in block.select("table"):
+                chapters.extend(_chapters_from_table(table))
+            chapters = _normalize_stamps(chapters)
+            volumes.append(Volume(name=name or f"Volume {len(volumes) + 1}", chapters=tuple(chapters)))
+        if volumes:
+            return volumes
+    # Shopify course-content-v2 (and pasted HTML) uses figure.table without accordion.
+    for figure in soup.select("figure.table"):
+        chapters = []
+        for table in figure.select("table"):
+            chapters.extend(_chapters_from_table(table))
+        chapters = _normalize_stamps(chapters)
+        if chapters:
+            volumes.append(Volume(name=f"Volume {len(volumes) + 1}", chapters=tuple(chapters)))
     return volumes
 
 
@@ -305,5 +445,5 @@ class BjjFanaticsScraper:
         ua = user_agent or DEFAULT_USER_AGENT
         html_url = html_url_for(url)
         data = fetch_json(json_url_for(html_url), user_agent=ua)
-        html = fetch_text(html_url, user_agent=ua)
+        html = fetch_text(course_content_url_for(html_url), user_agent=ua)
         return product_from_payloads(data, html, html_url)
