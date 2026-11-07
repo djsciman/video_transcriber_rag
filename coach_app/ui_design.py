@@ -8,6 +8,7 @@ from dataclasses import replace
 from urllib.parse import urlencode
 
 from coach_app.app import Screen, add_screen, render_shell
+from coach_app.build import DRAFT_COLUMNS, BuildAdvisor, convert, propose
 from coach_app.design import (
     ADD_WALK,
     AddWalk,
@@ -23,9 +24,13 @@ from coach_app.design import (
 )
 from coach_app.store import CuratedStore
 
+_EMPTY_CONVERT = "The map has no named moves or systems to convert."
+_ADVISOR = BuildAdvisor()
+
 _STYLE = """
 <style>
 .page { max-width: none; width: 100%; }
+.design-stack { display: flex; flex-direction: column; gap: 0.7rem; }
 .design-layout { display: grid; grid-template-columns: minmax(16rem, 22rem) 1fr; gap: 0.7rem; align-items: start; }
 @media (max-width: 900px) { .design-layout { grid-template-columns: 1fr; } }
 .row-form { margin: 0 0 0.25rem; }
@@ -38,9 +43,9 @@ _STYLE = """
 .catalog-crumbs .sep { color: var(--muted); font-size: 0.78rem; }
 .map-stage {
   background: #fff; border: 1px solid var(--line); border-radius: 14px;
-  min-height: 70vh; height: calc(100vh - 11rem); overflow: hidden; position: relative;
+  min-height: 42vh; height: 46vh; overflow: hidden; position: relative;
 }
-.map-stage svg { width: 100%; height: calc(100vh - 14.5rem); min-height: 36rem; cursor: crosshair; display: block; }
+.map-stage svg { width: 100%; height: calc(46vh - 3.5rem); min-height: 22rem; cursor: crosshair; display: block; }
 .graph-toolbar {
   display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 1rem;
   padding: 0.45rem 0.7rem; border-bottom: 1px solid var(--line); background: #fff;
@@ -56,6 +61,46 @@ _STYLE = """
 .cite { display: block; font-size: 0.86rem; margin: 0.25rem 0; }
 textarea { font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 0.35rem 0.55rem; width: 100%; min-height: 4.5rem; }
 .hint { color: var(--muted); font-size: 0.78rem; margin: 0.25rem 0 0.45rem; }
+.prompt-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.prompt-panel .row-form button { width: auto; }
+.class-card {
+  background: var(--paper); border: 2px dashed var(--line); border-radius: 14px;
+  overflow: hidden; margin: 0 0 1rem;
+}
+.class-card .cut {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem 1rem;
+  padding: 0.7rem 1rem; background: #1c1917; color: #fafaf9;
+}
+.class-card .cut .n { font-size: 0.72rem; color: #a8a29e; }
+.class-card .cut h3 {
+  margin: 0; font-size: 1.05rem; font-family: var(--serif);
+  color: #fafaf9; text-transform: none; letter-spacing: 0;
+}
+.class-card .purpose { color: #a8a29e; font-size: 0.85rem; margin-left: auto; }
+table.sheet { width: 100%; border-collapse: collapse; table-layout: fixed; background: #fff; }
+table.sheet th, table.sheet td {
+  border-bottom: 1px solid var(--line); padding: 0.5rem 0.55rem; vertical-align: top; text-align: left;
+}
+table.sheet th {
+  background: #f5f5f4; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
+}
+.col-lesson { width: 32%; }
+.col-type { width: 7.2rem; }
+.col-target { width: 22%; }
+.col-run { width: auto; }
+tr.tech { background: linear-gradient(90deg, #dbeafe, #fff 42%); }
+tr.drill { background: linear-gradient(90deg, #fef9c3, #fff 42%); }
+tr.glued td:first-child { box-shadow: inset 4px 0 0 #fb923c; }
+.pill-tech { background: #dbeafe; color: #1e3a8a; }
+.pill-drill { background: #fef9c3; color: #854d0e; }
+.pill-sys { background: #ccfbf1; color: #0f766e; }
+.pill-move { background: #dbeafe; color: #1d4ed8; }
+.pill-glue { background: #ffedd5; color: #9a3412; }
+.pill-draft { background: #fef3c7; color: #92400e; }
+.reason { color: var(--accent); font-weight: 650; }
+.steps { margin: 0.3rem 0 0; padding-left: 1.1rem; }
+.steps li { margin: 0.2rem 0; }
+.tiny { color: var(--muted); font-size: 0.78rem; display: block; }
 </style>
 """
 
@@ -81,11 +126,14 @@ def get_design(store: CuratedStore, fields: dict[str, list[str]] | None = None) 
     session = bundle["session"]
     body = (
         _STYLE
+        + '<div class="design-stack">\n'
+        + _prompt_panel(name, ruleset, bundle)
         + '<div class="design-layout">\n'
         + _walk_panel(store, session, name, ruleset, bundle)
         + _map_panel(store, session, name, ruleset, bundle)
         + "</div>\n"
-        + _handoff_panel(store, session)
+        + _draft_panel(store, bundle)
+        + "</div>\n"
         + _map_script()
     )
     title = f"Design · {name}" if name else "Design"
@@ -97,7 +145,21 @@ def post_design(store: CuratedStore, fields: dict[str, list[str]]) -> str:
     bundle = _bundle(store, name, ruleset)
     session = bundle["session"]
     action = _field(fields, "action")
-    if action == "start":
+    if action == "propose":
+        result = propose(store, session, _field(fields, "paragraph"), _ADVISOR)
+        bundle["session"] = result.session
+        bundle["paragraph"] = result.paragraph
+        bundle["draft"] = result.draft
+        bundle["convert_reason"] = ""
+        bundle["adding"] = False
+    elif action == "convert":
+        result = convert(store, session, _ADVISOR)
+        if result.draft is None:
+            bundle["convert_reason"] = _EMPTY_CONVERT
+        else:
+            bundle["draft"] = result.draft
+            bundle["convert_reason"] = ""
+    elif action == "start":
         bundle["session"] = replace(session, walk=AddWalk(), selected_id="")
         bundle["adding"] = True
     elif action == "reset":
@@ -149,6 +211,9 @@ def _bundle(store: CuratedStore, name: str, ruleset: str) -> dict:
             "session": open_design(topic_name=name, topic_ruleset=ruleset),
             "notes": {},
             "adding": False,
+            "paragraph": "",
+            "draft": None,
+            "convert_reason": "",
         }
         table[key] = held
     return held
@@ -440,31 +505,152 @@ def _edit_panel(store, session, name, ruleset, bundle) -> str:
     )
 
 
-def _handoff_panel(store, session) -> str:
-    named = []
-    systems = []
-    occupancy = ""
-    for mark in session.marks:
-        if mark.kind == "named move":
-            named.append(html.escape(_mark_label(store, mark)))
-        elif mark.kind == "system":
-            systems.append(html.escape(_mark_label(store, mark)))
-        elif mark.kind == "occupancy":
-            occupancy = html.escape(mark.target)
-    named_html = "".join(f"<li>{item}</li>" for item in named) or '<li class="empty">None.</li>'
-    sys_html = "".join(f"<li>{item}</li>" for item in systems) or '<li class="empty">None.</li>'
-    occ_html = occupancy or "Not chosen"
+def _prompt_panel(name, ruleset, bundle) -> str:
+    paragraph = html.escape(bundle.get("paragraph") or "")
     return (
-        '<section class="panel" id="handoff">\n'
-        "<h2>What Design hands to Build</h2>\n"
-        f"<p>Occupancy: {occ_html}</p>\n"
-        "<h3>Named moves</h3>\n"
-        f"<ul>{named_html}</ul>\n"
-        "<h3>Systems</h3>\n"
-        f"<ul>{sys_html}</ul>\n"
-        '<p class="hint">Design writes no class cuts. Build packs later.</p>\n'
+        '<section class="panel prompt-panel" id="unit-prompt">\n'
+        "<h2>Unit paragraph</h2>\n"
+        '<p class="hint">This prompt proposes the Design canvas and the Draft under it.</p>\n'
+        '<form id="propose-draft" method="post" action="/design">\n'
+        f"{_topic_hidden(name, ruleset)}"
+        '<input type="hidden" name="action" value="propose">\n'
+        '<label for="prompt-text">Prompt</label>\n'
+        f'<textarea id="prompt-text" name="paragraph">{paragraph}</textarea>\n'
+        '<div class="prompt-actions">'
+        '<button type="submit">Propose canvas and Draft</button>'
+        "</div>\n"
+        "</form>\n"
+        '<form id="convert-draft" class="row-form" method="post" action="/design">\n'
+        f"{_topic_hidden(name, ruleset)}"
+        '<input type="hidden" name="action" value="convert">\n'
+        '<button type="submit">Convert canvas to Draft</button>\n'
+        "</form>\n"
         "</section>\n"
     )
+
+
+def _draft_panel(store, bundle) -> str:
+    reason = bundle.get("convert_reason") or ""
+    draft = bundle.get("draft")
+    reason_html = (
+        f'<p class="reason" id="convert-reason">{html.escape(reason)}</p>\n' if reason else ""
+    )
+    if draft is None or not draft.classes:
+        body = (
+            reason_html
+            + '<p class="empty">No first list yet. Propose from the paragraph, or convert the canvas.</p>\n'
+        )
+    else:
+        body = reason_html + "".join(
+            _class_card(store, packed, index)
+            for index, packed in enumerate(draft.classes)
+        )
+    return (
+        '<section class="panel" id="draft">\n'
+        "<h2>Draft</h2>\n"
+        '<span class="pill pill-draft">Build proposal</span>\n'
+        f"{body}"
+        "</section>\n"
+    )
+
+
+def _class_card(store, packed, index: int) -> str:
+    lessons = packed.lessons
+    rows = []
+    for i, lesson in enumerate(lessons):
+        prev = lessons[i - 1] if i else None
+        nxt = lessons[i + 1] if i + 1 < len(lessons) else None
+        glued = _glued(lesson, nxt) or _follows(prev, lesson)
+        follow = _follows(prev, lesson)
+        kind = html.escape(lesson.kind)
+        row_kind = "tech" if lesson.kind == "technique" else kind
+        rows.append(
+            f'<tr class="{row_kind}{" glued" if glued else ""}">'
+            f'<td class="cell-lesson">{_lesson_cell(store, lesson, _glued(lesson, nxt), follow)}</td>'
+            f'<td class="cell-type"><span class="pill pill-{row_kind}">{kind}</span></td>'
+            f'<td class="cell-target">{_target_cell(store, lesson)}</td>'
+            f'<td class="cell-run">{_what_to_run(store, lesson)}</td>'
+            "</tr>"
+        )
+    heads = "".join(f"<th>{html.escape(column)}</th>" for column in DRAFT_COLUMNS)
+    purpose = html.escape(packed.class_record.purpose) if packed.class_record.purpose else ""
+    return (
+        f'<div class="class-card" data-class="{index}">\n'
+        '<div class="cut">'
+        '<span class="n">CUT</span>'
+        f"<h3>Class {index + 1}</h3>"
+        f'<div class="purpose">{purpose}</div>'
+        "</div>\n"
+        '<table class="sheet">\n'
+        '<colgroup><col class="col-lesson"><col class="col-type">'
+        '<col class="col-target"><col class="col-run"></colgroup>\n'
+        f"<thead><tr>{heads}</tr></thead>\n"
+        f"<tbody>{''.join(rows)}</tbody>\n"
+        "</table>\n"
+        "</div>\n"
+    )
+
+
+def _glued(lesson, nxt) -> bool:
+    return (
+        nxt is not None
+        and lesson.kind == "technique"
+        and nxt.kind == "drill"
+        and nxt.target == lesson.target
+    )
+
+
+def _follows(prev, lesson) -> bool:
+    return (
+        prev is not None
+        and prev.kind == "technique"
+        and lesson.kind == "drill"
+        and prev.target == lesson.target
+    )
+
+
+def _lesson_cell(store, lesson, glue: bool, follow: bool) -> str:
+    name = html.escape(_target_name(store, lesson.target))
+    title = f"{name} drill" if lesson.kind == "drill" else name
+    extra = ""
+    if glue:
+        extra += ' <span class="pill pill-glue">+ drill</span>'
+    if follow:
+        extra += ' <span class="pill pill-glue">follows technique</span>'
+    return f"<strong>{title}</strong>{extra}"
+
+
+def _target_cell(store, lesson) -> str:
+    node = store.enrichment_node(lesson.target) if lesson.target else None
+    kind = "system" if node is not None and node.kind == "system" else "named move"
+    pill = "sys" if kind == "system" else "move"
+    label = html.escape(node.name if node is not None else lesson.target)
+    return (
+        f'<span class="pill pill-{pill}">{html.escape(kind)}</span> '
+        f"<strong>{label}</strong>"
+    )
+
+
+def _what_to_run(store, lesson) -> str:
+    if lesson.kind == "technique":
+        bullets = []
+        for citation_id in lesson.citations:
+            citation = store.citation(citation_id)
+            if citation is not None:
+                bullets.extend(citation.step_bullets)
+        if not bullets:
+            return '<span class="tiny">No citations chosen yet.</span>'
+        items = "".join(f"<li>{html.escape(bullet)}</li>" for bullet in bullets)
+        return f'<ul class="steps">{items}</ul>'
+    if lesson.kind == "drill":
+        job = html.escape(lesson.partner_job) if lesson.partner_job else ""
+        return f'<span class="tiny">Partner job</span><div>{job}</div>'
+    return ""
+
+
+def _target_name(store, target_id: str) -> str:
+    node = store.enrichment_node(target_id) if target_id else None
+    return node.name if node is not None else target_id
 
 
 def _payload(store, session, bundle, adding: bool) -> dict:

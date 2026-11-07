@@ -11,9 +11,12 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from coach_app.app import CoachApp
+from coach_app.build import BuildAdvisor, convert, propose
 from coach_app.design import ADD_WALK, citations_on_mark, walk_options
-from coach_app.store import Citation, CuratedStore
+from coach_app.placement import put_catalog_system
+from coach_app.store import Citation, CuratedStore, EnrichmentNode
 from coach_app.ui_design import design_session
+from tests.test_build import TIGHT_WAIST_PARAGRAPH
 
 
 class _Page(HTMLParser):
@@ -154,6 +157,44 @@ def _open_topic(app: CoachApp, name: str = "Tight waist", ruleset: str = "gi") -
     _post(app.url.rstrip("/") + "/topics", {"name": name, "ruleset": ruleset})
 
 
+def _install_tight_waist(store: CuratedStore) -> None:
+    if any(
+        node.kind == "named move" and node.name == "Knee lever"
+        for node in store.enrichment_nodes()
+    ):
+        return
+
+    def named_move(name, type_of_move, end_id, start_id="half-guard"):
+        return store.put_enrichment_node(
+            EnrichmentNode(
+                kind="named move",
+                name=name,
+                start_id=start_id,
+                type_of_move=type_of_move,
+                end_id=end_id,
+            )
+        )
+
+    named_move("Knee lever", "transition", "half-guard")
+    named_move("Tight waist", "transition", "half-guard")
+    named_move("Far-leg come-up", "sweep", "side-control")
+    named_move("Roll-through sweep", "sweep", "side-control")
+    named_move("Back take from tight waist", "back-take", "back-control")
+    put_catalog_system(
+        store,
+        "Tight waist trilemma",
+        (
+            _named(store, "Far-leg come-up").id,
+            _named(store, "Roll-through sweep").id,
+            _named(store, "Back take from tight waist").id,
+        ),
+    )
+
+
+def _link(store: CuratedStore, named_move, **fields) -> Citation:
+    return store.put_citation(Citation(named_move_id=named_move.id, **fields))
+
+
 def test_design_is_on_the_nav_without_prototype_chrome(tmp_path):
     with CoachApp(tmp_path) as app:
         home = _Page(_get(app.url))
@@ -163,6 +204,14 @@ def test_design_is_on_the_nav_without_prototype_chrome(tmp_path):
     assert any(href == "/design" and label == "Design" for href, label in home.links)
     assert "add-walk" in page.sections
     assert "map-stage" in page.sections or "design-map" in page.markup
+    assert "unit-prompt" in page.sections or 'id="unit-prompt"' in page.markup
+    assert "draft" in page.sections or 'id="draft"' in page.markup
+    prompt_at = page.markup.find('id="unit-prompt"')
+    canvas_at = page.markup.find('id="map-stage"')
+    draft_at = page.markup.find('id="draft"')
+    assert 0 <= prompt_at < canvas_at < draft_at
+    assert "Propose canvas and Draft" in page.markup
+    assert "Convert canvas to Draft" in page.markup
     assert "Recenter" in page.markup
     assert "Zoom" in page.markup
     assert "Reset marks" in page.markup
@@ -374,14 +423,205 @@ def test_design_screen_calls_domain_apis_and_skips_prototype_html():
     assert "citations_on_mark" in source
     assert "choose_citation" in source
     assert "ADD_WALK" in source
+    assert "propose(" in source
+    assert "convert(" in source
+    assert "BuildAdvisor" in source
     assert "put_class" not in source
     assert "put_lesson" not in source
     assert "put_enrichment_node" not in source
-    assert "convert(" not in source
     assert "prototypes" not in folded
     assert "unit-design-topic28" not in folded
+    assert "design-to-draft-topic30" not in folded
     assert "playwright" not in folded
     assert "selenium" not in folded
     assert "react" not in folded
     assert "vue" not in folded
     assert "d3" not in folded
+    assert "playback" not in folded
+
+
+def test_propose_fills_canvas_and_draft_from_the_unit_paragraph(tmp_path):
+    with CoachApp(tmp_path) as app:
+        _open_topic(app)
+        _install_tight_waist(app.store)
+        knee = _named(app.store, "Knee lever")
+        cite = _link(
+            app.store,
+            knee,
+            movement="Knee lever from half guard",
+            step_bullets=(
+                "inside foot place next to their inside knee",
+                "cut the knee through to mount",
+            ),
+        )
+        url = _design(app)
+        page = _Page(
+            _post(
+                url,
+                {
+                    **_form(_Page(_get(url)), "propose-draft")["inputs"],
+                    "paragraph": TIGHT_WAIST_PARAGRAPH,
+                    "action": "propose",
+                },
+            )
+        )
+        session = design_session(app.store, "Tight waist", "gi")
+        draft_html = page.sections.get("draft", page.text)
+        named = {
+            app.store.enrichment_node(mark.target).name
+            for mark in session.marks
+            if mark.kind == "named move"
+        }
+        packed = [
+            packed
+            for packed in app.store.classes()
+        ]
+        lessons = list(app.store.lessons())
+
+    assert named >= {
+        "Knee lever",
+        "Tight waist",
+        "Far-leg come-up",
+        "Roll-through sweep",
+        "Back take from tight waist",
+    }
+    assert any(
+        app.store.enrichment_node(mark.target).name == "Tight waist trilemma"
+        for mark in session.marks
+        if mark.kind == "system"
+    )
+    assert "Knee lever" in page.markup
+    assert "Tight waist trilemma" in page.markup
+    assert TIGHT_WAIST_PARAGRAPH in page.markup
+    units = [
+        unit
+        for unit in CuratedStore.open(tmp_path).units()
+        if unit.topic_name == "Tight waist" and unit.topic_ruleset == "gi"
+    ]
+    assert len(units) == 1
+    assert units[0].paragraph == TIGHT_WAIST_PARAGRAPH
+    store = CuratedStore.open(tmp_path)
+    assert len(store.classes()) == 2
+    assert store.lessons()
+    assert cite.id in {cid for lesson in store.lessons() for cid in lesson.citations}
+    assert "inside foot place next to their inside knee" in draft_html
+    assert "cut the knee through to mount" in draft_html
+    assert "Coach fills the partner job." in draft_html
+    assert "Playback" not in draft_html
+    assert "contenteditable" not in page.markup.casefold()
+    assert 'border-style: dashed' in page.markup or "dashed" in page.markup
+    assert "class-card" in page.markup
+    assert packed and lessons
+    techniques = [lesson for lesson in store.lessons() if lesson.kind == "technique"]
+    assert _named(store, "Knee lever").id in {lesson.target for lesson in techniques}
+    assert propose is not None
+    assert BuildAdvisor is not None
+
+
+def test_convert_packs_a_hand_built_canvas_and_refuses_an_empty_map(tmp_path):
+    with CoachApp(tmp_path) as app:
+        _open_topic(app)
+        url = _design(app)
+        empty = _Page(
+            _post(
+                url,
+                {
+                    **_form(_Page(_get(url)), "convert-draft")["inputs"],
+                    "action": "convert",
+                },
+            )
+        )
+        empty_store = list(app.store.classes()), list(app.store.lessons())
+        old_school = _named(app.store, "Old school sweep")
+        page = _Page(_get(url))
+        for form_id in (
+            "family-guard",
+            "position-half-guard",
+            "occupancy-bottom",
+            "type-sweep",
+            "end-side-control",
+            f"named-move-{old_school.id}",
+        ):
+            page = _Page(_post(url, _form(page, form_id)["inputs"]))
+        packed = _Page(
+            _post(
+                url,
+                {
+                    **_form(page, "convert-draft")["inputs"],
+                    "action": "convert",
+                },
+            )
+        )
+        session = design_session(app.store, "Tight waist", "gi")
+        draft_html = packed.sections.get("draft", packed.text)
+
+    assert empty_store == ([], [])
+    assert "no named moves or systems" in empty.markup.casefold()
+    assert "Old school sweep" in packed.markup
+    assert ("named move", old_school.id) in _mark_keys(session)
+    store = CuratedStore.open(tmp_path)
+    assert any(lesson.target == old_school.id for lesson in store.lessons())
+    techniques = [lesson for lesson in store.lessons() if lesson.kind == "technique"]
+    drills = [lesson for lesson in store.lessons() if lesson.kind == "drill"]
+    assert techniques and drills
+    assert techniques[0].target == drills[0].target
+    assert "Coach fills the partner job." in draft_html
+    assert "Playback" not in draft_html
+    assert convert is not None
+
+
+def test_first_draft_is_glued_dashed_class_cards_without_edit_or_playback(tmp_path):
+    with CoachApp(tmp_path) as app:
+        _open_topic(app)
+        _install_tight_waist(app.store)
+        url = _design(app)
+        page = _Page(
+            _post(
+                url,
+                {
+                    "name": "Tight waist",
+                    "ruleset": "gi",
+                    "action": "propose",
+                    "paragraph": TIGHT_WAIST_PARAGRAPH,
+                },
+            )
+        )
+        draft_html = page.sections.get("draft", page.text)
+        store = app.store
+        packed_classes = store.classes()
+        lessons = store.lessons()
+        names = []
+        for lesson in lessons:
+            if lesson.kind != "technique":
+                continue
+            node = store.enrichment_node(lesson.target)
+            names.append(node.name if node is not None else lesson.target)
+
+    assert len(packed_classes) == 2
+    assert names == [
+        "Knee lever",
+        "Tight waist",
+        "Tight waist trilemma",
+        "Roll-through sweep",
+    ]
+    assert "Far-leg come-up" not in names
+    assert "Back take from tight waist" not in names
+    assert "Far-leg come-up" not in draft_html
+    assert "Tight waist trilemma" in draft_html
+    assert "Roll-through sweep" in draft_html
+    assert "class-card" in page.markup
+    assert "dashed" in page.markup
+    assert "<th>Lesson</th>" in page.markup or ">Lesson</th>" in page.markup
+    assert "What to run" in draft_html or "What to run" in page.markup
+    assert "Playback" not in page.markup
+    assert "contenteditable" not in page.markup.casefold()
+    assert "Add: " not in draft_html
+    assert 'class="tech' in page.markup
+    assert 'class="drill' in page.markup
+    for lesson in lessons:
+        if lesson.kind == "drill":
+            assert lesson.partner_job
+            assert lesson.partner_job in draft_html
+        if lesson.kind == "technique":
+            assert lesson.partner_job == ""
+    assert "Partner job" in draft_html
