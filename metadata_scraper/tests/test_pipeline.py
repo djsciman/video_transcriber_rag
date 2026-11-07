@@ -409,6 +409,27 @@ def test_nested_bundle_is_left_out_of_organize(tmp_path: Path):
         )
 
 
+def test_csv_product_url_is_auto_accepted_without_tty(tmp_path: Path, monkeypatch):
+    csv_url = "https://bjjfanatics.com/products/the-half-guard-anthology"
+    monkeypatch.setattr("bjj_organizer.pipeline.lookup_candidates", lambda *args, **kwargs: [])
+    monkeypatch.setattr("bjj_organizer.pipeline.csv_hint_url", lambda folder: csv_url)
+
+    class _Stdin:
+        def isatty(self) -> bool:
+            return False
+
+        def readline(self) -> str:
+            raise AssertionError("CSV URL must not prompt")
+
+    url = lookup_season_url(
+        tmp_path,
+        "Half Guard Anthology",
+        1,
+        RuntimeOptions(stdin=_Stdin(), stderr=__import__("io").StringIO()),
+    )
+    assert url == csv_url
+
+
 def test_season_lookup_drops_bundle_url(tmp_path: Path, monkeypatch):
     hits = [
         ProductHit("Go Further Faster Bundle by John Danaher", "https://example.com/bundle", 0.95),
