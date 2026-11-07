@@ -50,7 +50,7 @@ Supporting material:
 - `tests/` — pipeline tests (no ffmpeg, GPU, or real panoscribe) and `coach_app` tests at the store facade
 - `metadata_scraper/tests/` — pytest suite for scrape, match, NFO, layout, and organize
 
-Video files and transcript JSON typically live **outside** this repo. The curated store in this package is an in-process object; persistence is not part of the public API.
+Video files and transcript JSON typically live **outside** this repo. `CuratedStore()` is in-memory. `CuratedStore.open(location)` is a persisted store: a later runtime loads the same records, video root, and transcript folder without an import step. The first runtime imports the consensus enrichment seed; later runtimes keep catalog edits.
 
 ## Prerequisites
 
@@ -126,6 +126,12 @@ seed = json.loads(
     Path("docs/enrichment-seed/seed.json").read_text(encoding="utf-8")
 )
 store.import_enrichment_seed(seed)
+
+# A later runtime is a new store pointed at the same local location:
+# store = CuratedStore.open(r"path\to\curated-store")
+# That first runtime imports the consensus seed; later runtimes keep catalog edits.
+# store.set_video_root(r"path\to\video-library")
+# store.set_transcript_folder("Half Guard Passing and Dynamic Pins")
 
 raw = json.loads(Path(r"path\to\transcript.json").read_text(encoding="utf-8"))
 cleaned = cleanup_volume(raw)
@@ -483,7 +489,7 @@ The pipeline writes the raw corpus. `coach_app` is the advising package that adm
 
 ## Notes and limits
 
-- `coach_app` is a library, not a CLI. `CuratedStore` is in-process; this package does not name a database engine or an application framework.
+- `coach_app` is a library, not a CLI. `CuratedStore.open(location)` is a persisted store so a later runtime loads the same records. This package does not name a database engine or an application framework.
 - Throwaway prototypes under `prototypes/` are not product code.
 - Close the target video in players before `py -m bjj_pipeline chapters --apply`, pipeline `--embed`, or `py -m bjj_pipeline organize --apply`, or Windows may refuse to replace the file.
 - Old script paths (`generate_chapters.py`, `batch_panoscribe.py`, `completeness_scan.py`, `find_color_frames.py`, `metadata_scraper/run_pipeline.py`, `organize_instructional.py`, `match_bjjfanatics.py`) still run for one cycle and print a deprecation line on stderr.

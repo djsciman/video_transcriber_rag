@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import pickle
 from dataclasses import dataclass, replace
 from pathlib import Path
 
@@ -179,9 +181,25 @@ class CuratedStore:
         self._unit_histories: dict[str, UnitHistory] = {}
         self._next_id = 1
         self._seed_imported = False
+        self._location = None
+        self._hold_persist = False
+        self._video_root = None
+        self._transcript_folder = None
+
+    @classmethod
+    def open(cls, location) -> CuratedStore:
+        """Load a persisted store; the first runtime imports the consensus seed."""
+        store = cls()
+        store._location = Path(location)
+        store._location.mkdir(parents=True, exist_ok=True)
+        store._restore()
+        if not store._seed_imported:
+            store._import_committed_seed()
+        return store
 
     def put_instructional(self, instructional: Instructional) -> Instructional:
         self._instructionals[instructional.name] = instructional
+        self._persist()
         return instructional
 
     def instructional(self, name: str) -> Instructional | None:
@@ -192,6 +210,7 @@ class CuratedStore:
 
     def put_volume(self, volume: Volume) -> Volume:
         self._volumes[(volume.instructional, volume.video_file_name)] = volume
+        self._persist()
         return volume
 
     def volume(self, instructional: str, video_file_name: str) -> Volume | None:
@@ -270,11 +289,27 @@ class CuratedStore:
             cleaned_statement=cleaned,
         )
         self._citations[updated.id] = updated
+        self._persist()
         return updated
 
     def remove(self, citation) -> None:
         citation_id = citation.id if isinstance(citation, Citation) else citation
         self._citations.pop(citation_id, None)
+        self._persist()
+
+    def set_video_root(self, video_root) -> None:
+        self._video_root = None if video_root is None else str(video_root)
+        self._persist()
+
+    def video_root(self) -> str | None:
+        return self._video_root
+
+    def set_transcript_folder(self, transcript_folder) -> None:
+        self._transcript_folder = transcript_folder
+        self._persist()
+
+    def transcript_folder(self) -> str | None:
+        return self._transcript_folder
 
     def resolve_playback(
         self,
@@ -294,6 +329,7 @@ class CuratedStore:
 
     def put_topic(self, topic: Topic) -> Topic:
         self._topics[(topic.name, topic.ruleset)] = topic
+        self._persist()
         return topic
 
     def topic(self, name: str, ruleset: str) -> Topic | None:
@@ -323,12 +359,14 @@ class CuratedStore:
                 and history.unit.topic_ruleset == ruleset
             ):
                 self._unit_histories.pop(history.id, None)
+        self._persist()
 
     def put_other_ruleset_choice(
         self, choice: OtherRulesetChoice
     ) -> OtherRulesetChoice:
         key = (choice.topic_name, choice.topic_ruleset, choice.instructional)
         self._other_ruleset[key] = choice
+        self._persist()
         return choice
 
     def other_ruleset_choice(
@@ -344,6 +382,7 @@ class CuratedStore:
             set_aside.earlier_topic_ruleset,
         )
         self._set_asides[key] = set_aside
+        self._persist()
         return set_aside
 
     def set_asides(self, topic_name: str, topic_ruleset: str) -> tuple[SetAside, ...]:
@@ -364,6 +403,7 @@ class CuratedStore:
             (topic_name, topic_ruleset, earlier_topic_name, earlier_topic_ruleset),
             None,
         )
+        self._persist()
 
     def put_enrichment_node(self, node: EnrichmentNode) -> EnrichmentNode:
         return self._put_identified(self._enrichment_nodes, self._with_occupancy(node))
@@ -377,65 +417,70 @@ class CuratedStore:
     def import_enrichment_seed(self, seed: dict) -> None:
         if self._seed_imported:
             return
-        catalog = unify_seed(seed)
-        positions = {item["id"]: item for item in catalog["positions"]}
-        submissions = {item["id"]: item for item in catalog["submissions"]}
-        for item in catalog["positions"]:
-            self.put_enrichment_node(
-                EnrichmentNode(
-                    kind="position",
-                    name=item["label"],
-                    id=item["id"],
-                    family=item.get("family") or "other",
-                    aliases=aliases_of(item),
-                    cross_refs=names_from_cross_refs(item),
-                )
-            )
-        for item in catalog["submissions"]:
-            self.put_enrichment_node(
-                EnrichmentNode(
-                    kind="submission",
-                    name=item["label"],
-                    id=item["id"],
-                    aliases=aliases_of(item),
-                    cross_refs=names_from_cross_refs(item),
-                )
-            )
-        for item in catalog["move_types"]:
-            self.put_enrichment_node(
-                EnrichmentNode(
-                    kind="type of move",
-                    name=item["label"],
-                    id=item["id"],
-                )
-            )
-        for path in catalog["paths"]:
-            start_family = family_of(positions, path["start"])
-            end_id = path["end"]
-            end_kind = "submission" if end_id in submissions else "position"
-            end_family = family_of(positions, end_id)
-            start_side, end_side = occupancy_for(
-                path["move_type"], start_family, end_kind, end_family
-            )
-            for leaf in path.get("leaves") or ():
+        self._hold_persist = True
+        try:
+            catalog = unify_seed(seed)
+            positions = {item["id"]: item for item in catalog["positions"]}
+            submissions = {item["id"]: item for item in catalog["submissions"]}
+            for item in catalog["positions"]:
                 self.put_enrichment_node(
                     EnrichmentNode(
-                        kind="named move",
-                        name=leaf["name"],
-                        id=self._named_move_id(
-                            path["start"], path["move_type"], end_id, leaf["name"]
-                        ),
-                        ruleset=leaf.get("ruleset") or "both",
-                        start_id=path["start"],
-                        type_of_move=path["move_type"],
-                        end_id=end_id,
-                        start_occupancy=start_side,
-                        end_occupancy=end_side,
-                        aliases=aliases_of(leaf),
-                        cross_refs=names_from_cross_refs(leaf),
+                        kind="position",
+                        name=item["label"],
+                        id=item["id"],
+                        family=item.get("family") or "other",
+                        aliases=aliases_of(item),
+                        cross_refs=names_from_cross_refs(item),
                     )
                 )
-        self._seed_imported = True
+            for item in catalog["submissions"]:
+                self.put_enrichment_node(
+                    EnrichmentNode(
+                        kind="submission",
+                        name=item["label"],
+                        id=item["id"],
+                        aliases=aliases_of(item),
+                        cross_refs=names_from_cross_refs(item),
+                    )
+                )
+            for item in catalog["move_types"]:
+                self.put_enrichment_node(
+                    EnrichmentNode(
+                        kind="type of move",
+                        name=item["label"],
+                        id=item["id"],
+                    )
+                )
+            for path in catalog["paths"]:
+                start_family = family_of(positions, path["start"])
+                end_id = path["end"]
+                end_kind = "submission" if end_id in submissions else "position"
+                end_family = family_of(positions, end_id)
+                start_side, end_side = occupancy_for(
+                    path["move_type"], start_family, end_kind, end_family
+                )
+                for leaf in path.get("leaves") or ():
+                    self.put_enrichment_node(
+                        EnrichmentNode(
+                            kind="named move",
+                            name=leaf["name"],
+                            id=self._named_move_id(
+                                path["start"], path["move_type"], end_id, leaf["name"]
+                            ),
+                            ruleset=leaf.get("ruleset") or "both",
+                            start_id=path["start"],
+                            type_of_move=path["move_type"],
+                            end_id=end_id,
+                            start_occupancy=start_side,
+                            end_occupancy=end_side,
+                            aliases=aliases_of(leaf),
+                            cross_refs=names_from_cross_refs(leaf),
+                        )
+                    )
+            self._seed_imported = True
+        finally:
+            self._hold_persist = False
+            self._persist()
 
     def search_enrichment(self, query: str) -> tuple[EnrichmentNode, ...]:
         needle = query.strip().casefold()
@@ -486,6 +531,7 @@ class CuratedStore:
         node = self._enrichment_nodes[node_id]
         renamed = replace(node, name=name)
         self._enrichment_nodes[node_id] = renamed
+        self._persist()
         return renamed
 
     def move_enrichment_node(
@@ -507,6 +553,7 @@ class CuratedStore:
         )
         moved = self._with_occupancy(moved)
         self._enrichment_nodes[node_id] = moved
+        self._persist()
         return moved
 
     def delete_enrichment_node(self, node_id: str) -> None:
@@ -529,6 +576,7 @@ class CuratedStore:
         for citation in list(self._citations.values()):
             if citation.named_move_id in dropped:
                 self._citations[citation.id] = replace(citation, named_move_id="")
+        self._persist()
 
     def put_unit(self, unit: Unit) -> Unit:
         stored = self._put_identified(self._units, unit)
@@ -539,6 +587,7 @@ class CuratedStore:
                 and other.topic_ruleset == stored.topic_ruleset
             ):
                 self._drop_unit(other.id)
+        self._persist()
         return stored
 
     def unit(self, unit_id: str) -> Unit | None:
@@ -577,6 +626,7 @@ class CuratedStore:
 
     def delete_custom_lesson(self, custom_id: str) -> None:
         self._custom_lessons.pop(custom_id, None)
+        self._persist()
 
     def put_unit_history(self, history: UnitHistory) -> UnitHistory:
         return self._put_identified(self._unit_histories, history)
@@ -609,7 +659,65 @@ class CuratedStore:
     def _put_identified(self, bag: dict[str, object], record):
         stored = record if record.id else replace(record, id=self._allocate_id())
         bag[stored.id] = stored
+        self._persist()
         return stored
+
+    def _persist(self) -> None:
+        if self._location is None or self._hold_persist:
+            return
+        payload = {
+            "instructionals": self._instructionals,
+            "volumes": self._volumes,
+            "citations": self._citations,
+            "topics": self._topics,
+            "other_ruleset": self._other_ruleset,
+            "set_asides": self._set_asides,
+            "enrichment_nodes": self._enrichment_nodes,
+            "units": self._units,
+            "classes": self._classes,
+            "lessons": self._lessons,
+            "custom_lessons": self._custom_lessons,
+            "unit_histories": self._unit_histories,
+            "next_id": self._next_id,
+            "seed_imported": self._seed_imported,
+            "video_root": self._video_root,
+            "transcript_folder": self._transcript_folder,
+        }
+        target = self._location / "state"
+        scratch = self._location / "state.tmp"
+        scratch.write_bytes(pickle.dumps(payload))
+        scratch.replace(target)
+
+    def _import_committed_seed(self) -> None:
+        seed_path = (
+            Path(__file__).resolve().parents[1]
+            / "docs"
+            / "enrichment-seed"
+            / "seed.json"
+        )
+        self.import_enrichment_seed(json.loads(seed_path.read_text(encoding="utf-8")))
+
+    def _restore(self) -> None:
+        target = self._location / "state"
+        if not target.is_file():
+            return
+        payload = pickle.loads(target.read_bytes())
+        self._instructionals = payload.get("instructionals", {})
+        self._volumes = payload.get("volumes", {})
+        self._citations = payload.get("citations", {})
+        self._topics = payload.get("topics", {})
+        self._other_ruleset = payload.get("other_ruleset", {})
+        self._set_asides = payload.get("set_asides", {})
+        self._enrichment_nodes = payload.get("enrichment_nodes", {})
+        self._units = payload.get("units", {})
+        self._classes = payload.get("classes", {})
+        self._lessons = payload.get("lessons", {})
+        self._custom_lessons = payload.get("custom_lessons", {})
+        self._unit_histories = payload.get("unit_histories", {})
+        self._next_id = payload.get("next_id", 1)
+        self._seed_imported = payload.get("seed_imported", False)
+        self._video_root = payload.get("video_root")
+        self._transcript_folder = payload.get("transcript_folder")
 
     def _allocate_id(self) -> str:
         allocated = str(self._next_id)
