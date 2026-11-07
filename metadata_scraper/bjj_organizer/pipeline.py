@@ -167,6 +167,10 @@ def lookup_season_url(
     exclude_urls: set[str] | None = None,
     hint_folder: Path | None = None,
 ) -> str:
+    blocked = exclude_urls or set()
+    hint = csv_hint_url(hint_folder or folder)
+    if hint and hint not in blocked:
+        return hint
     label = folder.name
     if season_count > 1 and source_name and not is_generic_season_name(source_name):
         label = f"{folder.name} {source_name}"
@@ -176,13 +180,7 @@ def lookup_season_url(
         seen = {hit.url for hit in hits}
         hits.extend(hit for hit in extra if hit.url not in seen)
         hits.sort(key=lambda hit: hit.score, reverse=True)
-    blocked = exclude_urls or set()
     hits = [hit for hit in hits if hit.url not in blocked]
-    hint = csv_hint_url(hint_folder or folder)
-    if hint and hint not in blocked and all(hit.url != hint for hit in hits):
-        from .fanatics_search import ProductHit
-
-        hits.insert(0, ProductHit(title="(from bjjfanatics_matches.csv)", url=hint, score=1.0))
     stdin = options.stdin if options.stdin is not None else sys.stdin
     stderr = options.stderr if options.stderr is not None else sys.stderr
     url = confirm_product_url(label, hits, stdin, stderr)
