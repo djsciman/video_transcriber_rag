@@ -1,12 +1,14 @@
 # video_transcriber_rag
 
-Tools and domain work for turning BJJ instructional videos into a searchable speech corpus, then into a coach-only advising application.
+Two pieces of work for the same coach: a **corpus-prep pipeline** that organizes local BJJ instructionals and transcribes their speech, and a **coach-only advising package** (`coach_app`) that curates those transcripts into a local store and helps the coach teach one topic through to performance under resistance.
 
-This repository currently focuses on the **pipeline that prepares that corpus**: organizing local instructionals against [BJJ Fanatics](https://bjjfanatics.com/) product pages (`metadata_scraper/`), detecting and embedding chapter markers on volumes, batch-transcribing speech with [panoscribe](https://pypi.org/project/panoscribe/), and keeping glossary and architecture decisions for the coaching advisor that will read the curated store.
-
-The coach is the only user of the eventual application. Domain language lives in [`GLOSSARY.md`](GLOSSARY.md). Specs and open questions live as [GitHub issues](https://github.com/djsciman/video_transcriber_rag/issues) (map issue [#1](https://github.com/djsciman/video_transcriber_rag/issues/1)).
+The coach is the only person who uses the application. Students never query it. Domain language lives in [`GLOSSARY.md`](GLOSSARY.md). Architecture decisions live in [`docs/adr/`](docs/adr/). The written spec is [issue #52](https://github.com/djsciman/video_transcriber_rag/issues/52).
 
 ## What this repo does
+
+### Corpus-prep pipeline (`bjj_pipeline`)
+
+Organizes local instructionals against [BJJ Fanatics](https://bjjfanatics.com/) product pages, detects and embeds chapter markers on volumes, and batch-transcribes speech with [panoscribe](https://pypi.org/project/panoscribe/). A volume is in the **corpus** as soon as it is transcribed. It reaches the **curated store** only after the coach accepts citations.
 
 | Command | Purpose |
 |--------|---------|
@@ -17,16 +19,38 @@ The coach is the only user of the eventual application. Domain language lives in
 | `py -3 -m bjj_pipeline transcribe` | Walk a video tree and complete each transcript: speech only when missing, container chapters, and `video_file` |
 | `py -3 -m bjj_pipeline scan` | Report library completeness (combined volumes, named chapters, NFO, playback, transcripts) and write a markdown drill-down |
 
+### Coach-only advising (`coach_app`)
+
+Python package imported from the repository root. There is no CLI yet. One [`CuratedStore`](coach_app/store.py) is the seam: the coach writes records, the **advisor** reads them. Tests inject a stand-in advisor; they do not name a vendor.
+
+| Module | Purpose |
+|--------|---------|
+| `coach_app.store` | Local curated-store facade (instructionals, volumes, citations, topics, enrichment, units) |
+| `coach_app.cleanup` | Nest speech under real chapters on a raw volume. Writes nothing to the store |
+| `coach_app.statements` | Propose cleaned statements from a cleaned volume. Writes nothing to the store |
+| `coach_app.citations` | Instructional ruleset, statement edits, playback path |
+| `coach_app.enrichment` | Unify the enrichment seed; occupancy for named-move paths |
+| `coach_app.topics` | Open or remove a topic; mark and welcome other-ruleset showings |
+| `coach_app.placement` | Place citations on named moves; coach-authored citations |
+| `coach_app.briefing` | Briefing memo for a topic (same-ruleset citations, caveats, disagreement) |
+| `coach_app.system` | Choose how the topic is taught; set-asides; live-read system conflicts |
+| `coach_app.design` | Design the unit on the mental map (named moves, systems, occupancy) |
+| `coach_app.build` | Pack the map into a first Draft of classes and lessons |
+| `coach_app.edit` | Edit the unit sheet (add, remove, drag, purpose lines) |
+| `coach_app.library` | Custom lessons and unit history (copy to re-teach) |
+| `coach_app.print_packet` | Duplex packet as page records (no PDF renderer in this package) |
+
 Supporting material:
 
 - `GLOSSARY.md` — coaching and instructional vocabulary
 - `docs/adr/` — architecture decision records
+- `docs/enrichment-seed/` — consensus seed imported into the live catalog
 - `docs/volumes-awaiting-parse.md` — raw corpus volumes not yet curated
 - `docs/agents/` — how agents use the issue tracker, labels, and domain docs
-- `tests/` — unit tests for chapter-start detection and batch completion (no ffmpeg, GPU, or real panoscribe)
-- `metadata_scraper/tests/` — pytest suite for scrape, match, NFO, layout, and organize pipelines
+- `tests/` — pipeline tests (no ffmpeg, GPU, or real panoscribe) and `coach_app` tests at the store facade
+- `metadata_scraper/tests/` — pytest suite for scrape, match, NFO, layout, and organize
 
-Video files and transcript JSON typically live **outside** this repo.
+Video files and transcript JSON typically live **outside** this repo. The curated store in this package is an in-process object; persistence is not part of the public API.
 
 ## Prerequisites
 
@@ -46,7 +70,9 @@ py -3 -m pip install -e ".[all]"
 
 `transcribe` pulls in `numpy`, `opencv-python-headless`, `rapidocr`, and `panoscribe`. `panoscribe` also pulls in faster-whisper (and typically needs a CUDA-capable GPU for comfortable speed; CPU works but is slow). Chapter title OCR uses RapidOCR; speech OCR in panoscribe is off by default in the batch command.
 
-`organize` pulls in `beautifulsoup4`, `lxml`, and `pytest`. The scraper talks to BJJ Fanatics over HTTPS; ffmpeg is used when concatenating chapter files into volumes or remuxing chapter markers.
+`organize` pulls in `beautifulsoup4` and `lxml`. The scraper talks to BJJ Fanatics over HTTPS; ffmpeg is used when concatenating chapter files into volumes or remuxing chapter markers.
+
+`coach_app` needs only the standard library at import time. Tests use `pytest` (`py -3 -m pip install pytest`, also listed in `metadata_scraper/requirements.txt`).
 
 ## Getting started
 
@@ -73,11 +99,124 @@ py -3 -m pip install -e ".[all]"
 5. Run the unit tests:
 
    ```powershell
-   py -3 -m unittest discover -s tests -v
+   py -3 -m pytest tests -q
    py -3 -m pytest metadata_scraper -c metadata_scraper\pytest.ini -v
    ```
 
-## Typical workflow
+`coach_app` has no install extra. Import it from the repository root. Install `pytest` if it is missing: `py -3 -m pip install pytest`.
+
+## Coach-only advising
+
+The pipeline leaves completed volume JSON on disk. `coach_app` reads that JSON, proposes cleaned statements, and admits citations the coach accepts into `CuratedStore`. Later steps (topic, briefing, Design, Build, Edit, print) all go through that store.
+
+### Curation from a raw volume
+
+`cleanup_volume` turns completed corpus JSON into a part list. `propose_statements` asks the advisor to draft cleaned statements and returns them without writing the store. `store.accept` is the write.
+
+```python
+import json
+from pathlib import Path
+
+from coach_app.cleanup import cleanup_volume
+from coach_app.statements import StatementDrafter, propose_statements
+from coach_app.store import CuratedStore
+
+store = CuratedStore()
+seed = json.loads(
+    Path("docs/enrichment-seed/seed.json").read_text(encoding="utf-8")
+)
+store.import_enrichment_seed(seed)
+
+raw = json.loads(Path(r"path\to\transcript.json").read_text(encoding="utf-8"))
+cleaned = cleanup_volume(raw)
+proposals = propose_statements(
+    cleaned, StatementDrafter(), instructor="Instructor Name"
+)
+if proposals:
+    citation = store.accept(
+        proposals[0],
+        instructional="Instructional Name",
+        video_file=raw["video_file"],
+        ruleset="gi",
+    )
+    store.correct(citation, movement="Closed guard")
+```
+
+`StatementDrafter` is the in-repo stand-in that drafts from the cleaned part. Tests inject their own advisor. Replace that collaborator when you wire a real advisor; keep the `draft(...)` shape the tests use.
+
+Correct and remove after accept:
+
+```python
+store.correct(citation, step_bullets=("Frame the far hip.", "Cut the knee."))
+store.remove(citation)
+```
+
+Playback uses the volume file name on the citation plus a video root and the transcript folder:
+
+```python
+playback = store.resolve_playback(
+    citation,
+    citation.showings[0],
+    video_root=r"path\to\video-library",
+    transcript_folder=r"path\to\transcript-corpus\that-show",
+)
+# playback.path, playback.speech_start, playback.available
+```
+
+### Topic, placement, briefing, Design, Build
+
+```python
+from coach_app.briefing import BriefingAdvisor, brief_topic
+from coach_app.build import BuildAdvisor, convert
+from coach_app.design import add_named_move, open_design
+from coach_app.edit import class_cards, open_sheet
+from coach_app.placement import PlacementAdvisor, enter_citations
+from coach_app.print_packet import packet
+from coach_app.system import choose_system
+from coach_app.topics import open_topic
+
+topic = open_topic(store, "Closed guard", "gi")
+stored, placement = enter_citations(
+    store, store.citations(), PlacementAdvisor()
+)
+memo = brief_topic(store, topic.name, topic.ruleset, BriefingAdvisor())
+choose_system(store, topic, "tight waist")
+
+named = next(
+    node
+    for node in store.search_enrichment("hip bump")
+    if node.kind == "named move"
+)
+session = open_design(topic_name=topic.name, topic_ruleset=topic.ruleset)
+session = add_named_move(store, session, named.id)
+result = convert(store, session, BuildAdvisor())
+if result.draft is not None:
+    sheet = open_sheet(store, result.draft, mode="edit")
+    cards = class_cards(store, sheet)
+    pages = packet(session, sheet, store)
+```
+
+`enter_citations`, `brief_topic`, and `convert` take an advisor collaborator. The classes above are the in-repo stand-ins the tests use. `class_cards` is the class-card layout. `packet` returns page records (canvas landscape, then one portrait class card per class); rendering a PDF is out of this package. `convert` writes a Draft when the map is packable.
+
+Search and browse the live enrichment catalog (the seed is copied once; later coach edits stay on the store):
+
+```python
+store.search_enrichment("hip bump")
+store.browse_hierarchy()  # starting positions
+store.rename_enrichment_node(node_id, "Hip bump sweep")
+```
+
+Custom lessons save when placed on a unit. Unit history is a snapshot the coach can copy to re-teach (`coach_app.library`).
+
+### Coach-app tests
+
+Tests assert through the public facade. They use fixtures and a stand-in advisor. They do not open video, run speech, or drive a browser.
+
+```powershell
+py -3 -m pytest tests/test_curated_store.py tests/test_cleanup.py tests/test_propose_statements.py tests/test_enrichment.py tests/test_citations.py tests/test_topics.py tests/test_placement.py tests/test_briefing.py tests/test_system.py tests/test_design.py tests/test_build.py tests/test_edit.py tests/test_library.py tests/test_print_packet.py -q
+```
+
+## Typical pipeline workflow
 
 Order is **match → organize (concat into volumes) → detect if needed → transcribe**.
 
@@ -134,7 +273,7 @@ py -3 -m bjj_pipeline chapters --apply "path\to\Season 01\S01E01 - Volume 1.webm
 
 Pipeline `--embed` is the same visual remux, still opt-in after `--apply`.
 
-## Usage
+## Pipeline usage
 
 All commands below are run from the repository root. On Windows prefer `py -3`; bare `python` may be the Windows Store stub.
 
@@ -300,45 +439,52 @@ The drill-down is written to `completeness_scan_results_<date-time>.md` in the r
 ├── AGENTS.md                 # Pointers for coding agents
 ├── GLOSSARY.md               # Domain vocabulary
 ├── README.md
-├── pyproject.toml            # extras: organize, transcribe, all
+├── pyproject.toml            # extras: organize, transcribe, all (installs bjj_pipeline)
 ├── bjj_pipeline/             # py -m bjj_pipeline match|organize|chapters|scan|transcribe|run
 │   ├── organizer/            # Scrape, match, NFO, concat
 │   ├── run_pipeline.py
 │   ├── generate_chapters.py
 │   ├── batch_panoscribe.py
 │   └── completeness_scan.py
+├── coach_app/                # Coach-only advising; import from repo root
+│   ├── store.py              # CuratedStore facade
+│   ├── cleanup.py
+│   ├── statements.py
+│   └── ...                   # topics, placement, briefing, design, build, edit, library, print
 ├── metadata_scraper/         # One-cycle shims + organizer tests
 │   └── tests/
 ├── docs/
 │   ├── adr/                  # Accepted decisions
 │   ├── agents/               # Issue tracker, triage labels, domain docs
+│   ├── enrichment-seed/      # seed.json imported into the live catalog
 │   └── volumes-awaiting-parse.md
-└── tests/
-    ├── test_bjj_pipeline.py
-    ├── test_chapter_starts.py
-    ├── test_batch_panoscribe.py
-    └── test_completeness_scan.py
+└── tests/                    # Pipeline tests and coach_app facade tests
 ```
+
+`pyproject.toml` installs `bjj_pipeline`. `coach_app` is a sibling package used from the repository root; it is not an install extra yet.
 
 ## Tests
 
-Chapter-start, batch, and completeness-scan logic is tested with temporary trees and stand-in probes (no ffmpeg, GPU, or real panoscribe):
+Pipeline tests use temporary trees and stand-in probes (no ffmpeg, GPU, or real panoscribe). Coach-app tests use fixtures and a stand-in advisor (no video, speech, or browser):
 
 ```powershell
-py -3 -m unittest discover -s tests -v
-py -3 -m pytest tests/test_bjj_pipeline.py metadata_scraper -c metadata_scraper\pytest.ini -v
+py -3 -m pytest tests -q
+py -3 -m pytest metadata_scraper -c metadata_scraper\pytest.ini -v
 ```
 
 ## Domain and design docs
 
 - **[`GLOSSARY.md`](GLOSSARY.md)** — use these terms (instructor, volume, chapter, citation, curated store, topic, system, …) in issues and code talk.
 - **[`docs/adr/`](docs/adr/)** — [ADR 0001](docs/adr/0001-sample-a-volume-once-for-chapter-starts.md): sample each volume once when detecting chapter starts. [ADR 0002](docs/adr/0002-skip-pipeline-stage-when-artifact-exists.md): skip a finished stage unless forced.
+- **[`docs/enrichment-seed/`](docs/enrichment-seed/)** — consensus seed for hierarchy browse and dimensional search. Import once into `CuratedStore`; later edits stay on the live catalog.
 - **[`docs/agents/`](docs/agents/)** — GitHub issues via `gh`, triage labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`), and how agents should read the glossary before exploring.
 
-The advising application (curated store, citations, topics) is specified on the issue map; this repo’s scripts feed the raw corpus that curation later admits.
+The pipeline writes the raw corpus. `coach_app` is the advising package that admits volumes into the curated store.
 
 ## Notes and limits
 
+- `coach_app` is a library, not a CLI. `CuratedStore` is in-process; this package does not name a database engine or an application framework.
+- Throwaway prototypes under `prototypes/` are not product code.
 - Close the target video in players before `py -m bjj_pipeline chapters --apply`, pipeline `--embed`, or `py -m bjj_pipeline organize --apply`, or Windows may refuse to replace the file.
 - Old script paths (`generate_chapters.py`, `batch_panoscribe.py`, `completeness_scan.py`, `find_color_frames.py`, `metadata_scraper/run_pipeline.py`, `organize_instructional.py`, `match_bjjfanatics.py`) still run for one cycle and print a deprecation line on stderr.
 - `py -m bjj_pipeline match` takes `--library` and `--output`; it does not hardcode a disk path.
