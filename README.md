@@ -8,15 +8,14 @@ The coach is the only user of the eventual application. Domain language lives in
 
 ## What this repo does
 
-| Script | Purpose |
+| Command | Purpose |
 |--------|---------|
-| `metadata_scraper/run_pipeline.py` | One command: match, organize, detect, transcribe (skip finished work; `--apply` to write) |
-| `metadata_scraper/organize_instructional.py` | Scrape a BJJ Fanatics product page and reorganize a local folder as a Jellyfin/TMM TV show (NFO, artwork, volumes, named chapters) |
-| `metadata_scraper/match_bjjfanatics.py` | Match local folder names to BJJ Fanatics product URLs and write `bjjfanatics_matches.csv` |
-| `generate_chapters.py` | Detect title-card chapter starts, OCR titles, write sidecar CSVs, optionally embed chapters into the video |
-| `find_color_frames.py` | Lower-level HSV color-frame scanner used by chapter detection (also usable alone) |
-| `batch_panoscribe.py` | Walk a video tree and complete each transcript: speech only when missing, container chapters, and `video_file` |
-| `completeness_scan.py` | Report library completeness (combined volumes, named chapters, NFO, playback, transcripts) and write a markdown drill-down |
+| `py -3 -m bjj_pipeline run` | One command: match, organize, detect, transcribe (skip finished work; `--apply` to write) |
+| `py -3 -m bjj_pipeline organize` | Scrape a BJJ Fanatics product page and reorganize a local folder as a Jellyfin/TMM TV show (NFO, artwork, volumes, named chapters) |
+| `py -3 -m bjj_pipeline match` | Match local folder names to BJJ Fanatics product URLs and write `bjjfanatics_matches.csv` |
+| `py -3 -m bjj_pipeline chapters` | Detect title-card chapter starts, OCR titles, write sidecar CSVs, optionally embed chapters into the video |
+| `py -3 -m bjj_pipeline transcribe` | Walk a video tree and complete each transcript: speech only when missing, container chapters, and `video_file` |
+| `py -3 -m bjj_pipeline scan` | Report library completeness (combined volumes, named chapters, NFO, playback, transcripts) and write a markdown drill-down |
 
 Supporting material:
 
@@ -39,21 +38,15 @@ Video files and transcript JSON typically live **outside** this repo.
 
 ### Python packages
 
-Install the corpus pipeline from [`requirements.txt`](requirements.txt):
+Install the pipeline package with extras. `organize` is scrape/NFO/concat; `transcribe` is speech and title-card OCR; `all` is both:
 
 ```powershell
-py -3 -m pip install -r requirements.txt
+py -3 -m pip install -e ".[all]"
 ```
 
-That pulls in `numpy`, `opencv-python-headless`, `rapidocr`, and `panoscribe`. `panoscribe` also pulls in faster-whisper (and typically needs a CUDA-capable GPU for comfortable speed; CPU works but is slow). Chapter title OCR uses RapidOCR; speech OCR in panoscribe is off by default in the batch script.
+`transcribe` pulls in `numpy`, `opencv-python-headless`, `rapidocr`, and `panoscribe`. `panoscribe` also pulls in faster-whisper (and typically needs a CUDA-capable GPU for comfortable speed; CPU works but is slow). Chapter title OCR uses RapidOCR; speech OCR in panoscribe is off by default in the batch command.
 
-Install the library organizer from [`metadata_scraper/requirements.txt`](metadata_scraper/requirements.txt):
-
-```powershell
-py -3 -m pip install -r metadata_scraper\requirements.txt
-```
-
-That pulls in `beautifulsoup4`, `lxml`, and `pytest`. The scraper talks to BJJ Fanatics over HTTPS; ffmpeg is used when concatenating chapter files into volumes or remuxing chapter markers.
+`organize` pulls in `beautifulsoup4`, `lxml`, and `pytest`. The scraper talks to BJJ Fanatics over HTTPS; ffmpeg is used when concatenating chapter files into volumes or remuxing chapter markers.
 
 ## Getting started
 
@@ -66,11 +59,10 @@ That pulls in `beautifulsoup4`, `lxml`, and `pytest`. The scraper talks to BJJ F
    ffprobe -version
    ```
 
-3. Install the Python packages (corpus pipeline, then organizer):
+3. Install the Python packages:
 
    ```powershell
-   py -3 -m pip install -r requirements.txt
-   py -3 -m pip install -r metadata_scraper\requirements.txt
+   py -3 -m pip install -e ".[all]"
    ```
 4. Confirm panoscribe (for transcription):
 
@@ -96,13 +88,13 @@ One command walks top-level instructional folders. Default stages are **match, o
 Dry-run a library (prints SKIP / RUN / FAIL; writes nothing; does not decode or Whisper):
 
 ```powershell
-py -3 metadata_scraper\run_pipeline.py --library "path\to\instructionals" --corpus "path\to\transcript-corpus"
+py -3 -m bjj_pipeline run --library "path\to\instructionals" --corpus "path\to\transcript-corpus"
 ```
 
 Apply match, organize, detect, and transcribe. `--embed` is a separate flag for visual sidecar remux; `--apply` does not embed.
 
 ```powershell
-py -3 metadata_scraper\run_pipeline.py --library "path\to\instructionals" --corpus "path\to\transcript-corpus" --apply
+py -3 -m bjj_pipeline run --library "path\to\instructionals" --corpus "path\to\transcript-corpus" --apply
 ```
 
 | Flag | Meaning |
@@ -129,15 +121,15 @@ Organize concatenates per-chapter downloads into volumes (Fanatics titles; start
 
 Transcribe walks the **post-organize** tree (combined volumes under `Season ##`). Corpus JSON mirrors that tree under `--corpus`. A corpus written from pre-concat chapter files is not skip-stable after concat.
 
-Repair of an already-organized show stays `organize_instructional.py --repair`; it is not a pipeline stage.
+Repair of an already-organized show stays `py -3 -m bjj_pipeline organize --repair`; it is not a pipeline stage.
 
 ### Detect if needed
 
 The pipeline detect stage is the default walk: one start-and-title sample per volume, sidecar only. Review the CSVs, then optionally embed. For a single volume outside the pipeline:
 
 ```powershell
-py -3 generate_chapters.py "path\to\Season 01\S01E01 - Volume 1.webm" 000000
-py -3 generate_chapters.py --apply "path\to\Season 01\S01E01 - Volume 1.webm"
+py -3 -m bjj_pipeline chapters "path\to\Season 01\S01E01 - Volume 1.webm" 000000
+py -3 -m bjj_pipeline chapters --apply "path\to\Season 01\S01E01 - Volume 1.webm"
 ```
 
 Pipeline `--embed` is the same visual remux, still opt-in after `--apply`.
@@ -146,26 +138,26 @@ Pipeline `--embed` is the same visual remux, still opt-in after `--apply`.
 
 All commands below are run from the repository root. On Windows prefer `py -3`; bare `python` may be the Windows Store stub.
 
-### Organize instructionals (`metadata_scraper`)
+### Organize instructionals
 
-`organize_instructional.py` scrapes a BJJ Fanatics product page and reorganizes a local show folder for Jellyfin / TinyMediaManager: `tvshow.nfo`, posters, `Season ##` folders, episode NFO, and (when timestamps exist) named chapter markers. Default is a dry-run.
+`py -3 -m bjj_pipeline organize` scrapes a BJJ Fanatics product page and reorganizes a local show folder for Jellyfin / TinyMediaManager: `tvshow.nfo`, posters, `Season ##` folders, episode NFO, and (when timestamps exist) named chapter markers. Default is a dry-run.
 
 Dry-run one show (searches Fanatics and asks you to confirm the URL in a terminal):
 
 ```powershell
-py -3 metadata_scraper\organize_instructional.py --folder "path\to\Show Title by Instructor"
+py -3 -m bjj_pipeline organize --folder "path\to\Show Title by Instructor"
 ```
 
 Pass the product URL when you already know it:
 
 ```powershell
-py -3 metadata_scraper\organize_instructional.py --folder "path\to\Show Title by Instructor" --url "https://bjjfanatics.com/products/the-handle"
+py -3 -m bjj_pipeline organize --folder "path\to\Show Title by Instructor" --url "https://bjjfanatics.com/products/the-handle"
 ```
 
 Write files:
 
 ```powershell
-py -3 metadata_scraper\organize_instructional.py --folder "path\to\Show Title by Instructor" --url "https://bjjfanatics.com/products/the-handle" --apply
+py -3 -m bjj_pipeline organize --folder "path\to\Show Title by Instructor" --url "https://bjjfanatics.com/products/the-handle" --apply
 ```
 
 One product URL per instructional folder (not keyed per-season URLs). Chapter downloads are always concatenated into volumes with Fanatics chapter titles when names exist (starts from each source file's duration). Leftover bundle folders with several instructionals inside are not organized as one show.
@@ -188,20 +180,20 @@ Useful flags:
 Repair an already-organized show (checklist on stderr; confirm letters, or pass `--repair-steps`):
 
 ```powershell
-py -3 metadata_scraper\organize_instructional.py --folder "path\to\Show Title by Instructor" --repair
-py -3 metadata_scraper\organize_instructional.py --folder "path\to\Show Title by Instructor" --repair --repair-steps all
+py -3 -m bjj_pipeline organize --folder "path\to\Show Title by Instructor" --repair
+py -3 -m bjj_pipeline organize --folder "path\to\Show Title by Instructor" --repair --repair-steps all
 ```
 
 Repair letters: **B** show NFO and artwork, **C** season folders, **D** combine chapter clips, **E** write chapter markers, **F** rename episodes and write episode NFO, **G** move leftovers into `extras/`.
 
 ### Match folders to Fanatics URLs
 
-`match_bjjfanatics.py` searches BJJ Fanatics for each top-level folder under `--library` and writes `folder_path,product_url` CSV to `--output`. Folders that already have a product URL in that CSV are skipped unless `--force`. The pipeline command uses the same CSV as organize's product URL (no confirm prompt). Matching prefers the specific instructional product over a store listing titled as a bundle.
+`py -3 -m bjj_pipeline match` searches BJJ Fanatics for each top-level folder under `--library` and writes `folder_path,product_url` CSV to `--output`. Folders that already have a product URL in that CSV are skipped unless `--force`. The pipeline command uses the same CSV as organize's product URL (no confirm prompt). Matching prefers the specific instructional product over a store listing titled as a bundle.
 
 ```powershell
-py -3 metadata_scraper\match_bjjfanatics.py --library "path\to\instructionals" --output "path\to\bjjfanatics_matches.csv"
-py -3 metadata_scraper\match_bjjfanatics.py --library "path\to\instructionals" --output "path\to\bjjfanatics_matches.csv" --force
-py -3 metadata_scraper\match_bjjfanatics.py --library "path\to\instructionals" --output "path\to\bjjfanatics_matches.csv" --subfolders
+py -3 -m bjj_pipeline match --library "path\to\instructionals" --output "path\to\bjjfanatics_matches.csv"
+py -3 -m bjj_pipeline match --library "path\to\instructionals" --output "path\to\bjjfanatics_matches.csv" --force
+py -3 -m bjj_pipeline match --library "path\to\instructionals" --output "path\to\bjjfanatics_matches.csv" --subfolders
 ```
 
 `--subfolders` also matches one level of child folders (search name is `parent child` so names like `Season 1` still match the series). The pipeline default walk is top-level folders only.
@@ -211,7 +203,7 @@ py -3 metadata_scraper\match_bjjfanatics.py --library "path\to\instructionals" -
 Scan a video for title cards and write sidecar CSVs (no remux yet):
 
 ```powershell
-py -3 generate_chapters.py "path\to\Volume 1.webm" 000000
+py -3 -m bjj_pipeline chapters "path\to\Volume 1.webm" 000000
 ```
 
 Useful detection options:
@@ -231,13 +223,13 @@ An existing `<stem>_chapters.csv` skips the scan unless `--force`. Container-cha
 Embed existing sidecars (skips rescan when the chapter CSV is present):
 
 ```powershell
-py -3 generate_chapters.py --apply "path\to\Volume 1.webm"
+py -3 -m bjj_pipeline chapters --apply "path\to\Volume 1.webm"
 ```
 
 Detect and embed in one step when the chapter CSV is missing:
 
 ```powershell
-py -3 generate_chapters.py "path\to\Volume 1.webm" 000000 --apply
+py -3 -m bjj_pipeline chapters "path\to\Volume 1.webm" 000000 --apply
 ```
 
 Outputs next to the video:
@@ -252,13 +244,13 @@ Embedding copies streams (no re-encode) and replaces the original only after ffp
 Standalone corner-pixel HSV scan (debugging / picking a hex):
 
 ```powershell
-py -3 find_color_frames.py "path\to\Volume 1.webm" 000000
+py -3 -m bjj_pipeline.find_color_frames "path\to\Volume 1.webm" 000000
 ```
 
 ### Batch-transcribe a video tree
 
 ```powershell
-py -3 batch_panoscribe.py "path\to\videos" "path\to\transcript-corpus"
+py -3 -m bjj_pipeline transcribe "path\to\videos" "path\to\transcript-corpus"
 ```
 
 Behavior:
@@ -288,7 +280,7 @@ On Windows, paths of 260+ characters are opened with the `\\?\` extended-length 
 Walk a video library and a mirrored transcript tree, print aggregate percents, and write a markdown drill-down of every video or instructional that does not meet the rubric:
 
 ```powershell
-py -3 completeness_scan.py "path\to\video-library" "path\to\transcript-corpus"
+py -3 -m bjj_pipeline scan "path\to\video-library" "path\to\transcript-corpus"
 ```
 
 Checks:
@@ -311,22 +303,21 @@ The drill-down is written to `completeness_scan_results_<date-time>.md` in the r
 ├── AGENTS.md                 # Pointers for coding agents
 ├── GLOSSARY.md               # Domain vocabulary
 ├── README.md
-├── batch_panoscribe.py       # Batch speech + chapter stamp
-├── completeness_scan.py      # Library completeness report
-├── find_color_frames.py      # HSV frame matching
-├── generate_chapters.py      # Chapter CSV + embed CLI
-├── metadata_scraper/
-│   ├── run_pipeline.py       # One command: match, organize, detect, transcribe
-│   ├── organize_instructional.py
-│   ├── match_bjjfanatics.py
-│   ├── requirements.txt
-│   ├── bjj_organizer/        # Scrape, match, NFO, concat
+├── pyproject.toml            # extras: organize, transcribe, all
+├── bjj_pipeline/             # py -m bjj_pipeline match|organize|chapters|scan|transcribe|run
+│   ├── organizer/            # Scrape, match, NFO, concat
+│   ├── run_pipeline.py
+│   ├── generate_chapters.py
+│   ├── batch_panoscribe.py
+│   └── completeness_scan.py
+├── metadata_scraper/         # One-cycle shims + organizer tests
 │   └── tests/
 ├── docs/
 │   ├── adr/                  # Accepted decisions
 │   ├── agents/               # Issue tracker, triage labels, domain docs
 │   └── volumes-awaiting-parse.md
 └── tests/
+    ├── test_bjj_pipeline.py
     ├── test_chapter_starts.py
     ├── test_batch_panoscribe.py
     └── test_completeness_scan.py
@@ -338,12 +329,7 @@ Chapter-start, batch, and completeness-scan logic is tested with temporary trees
 
 ```powershell
 py -3 -m unittest discover -s tests -v
-```
-
-Organizer tests use HTML/JSON fixtures (no live Fanatics, ffmpeg, or library paths):
-
-```powershell
-py -3 -m pytest metadata_scraper -c metadata_scraper\pytest.ini -v
+py -3 -m pytest tests/test_bjj_pipeline.py metadata_scraper -c metadata_scraper\pytest.ini -v
 ```
 
 ## Domain and design docs
@@ -356,12 +342,13 @@ The advising application (curated store, citations, topics) is specified on the 
 
 ## Notes and limits
 
-- Close the target video in players before `generate_chapters.py --apply`, pipeline `--embed`, or `organize_instructional.py --apply`, or Windows may refuse to replace the file.
-- `match_bjjfanatics.py` takes `--library` and `--output`; it does not hardcode a disk path.
-- `organize_instructional.py` without `--url` needs a terminal so it can confirm a Fanatics lookup, unless a matching row in `bjjfanatics_matches.csv` already has a product URL (the pipeline uses that URL with no prompt).
+- Close the target video in players before `py -m bjj_pipeline chapters --apply`, pipeline `--embed`, or `py -m bjj_pipeline organize --apply`, or Windows may refuse to replace the file.
+- Old script paths (`generate_chapters.py`, `batch_panoscribe.py`, `completeness_scan.py`, `find_color_frames.py`, `metadata_scraper/run_pipeline.py`, `organize_instructional.py`, `match_bjjfanatics.py`) still run for one cycle and print a deprecation line on stderr.
+- `py -m bjj_pipeline match` takes `--library` and `--output`; it does not hardcode a disk path.
+- `py -m bjj_pipeline organize` without `--url` needs a terminal so it can confirm a Fanatics lookup, unless a matching row in `bjjfanatics_matches.csv` already has a product URL (the pipeline uses that URL with no prompt).
 - Automatic title-card detection can miss plates held for less than about one second.
 - A hex plate that fails coverage can fall back to a dark-saturated pixel test (high saturation, low value).
-- `batch_panoscribe.py` treats two videos that differ only by extension and would share one JSON path as a failure (nothing written for that pair).
+- `py -m bjj_pipeline transcribe` treats two videos that differ only by extension and would share one JSON path as a failure (nothing written for that pair).
 - Corpus JSON and video roots are machine-local; they are not committed here.
 
 ## License
