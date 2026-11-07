@@ -10,6 +10,7 @@ from coach_app.app import Screen, add_screen, render_shell
 from coach_app.cleanup import cleanup_volume
 from coach_app.statements import StatementDrafter, propose_statements
 from coach_app.store import Citation, CuratedStore, Showing
+from coach_app.topics import OTHER_RULESET_CAVEAT, mark_other_ruleset_showing
 
 _STYLE = """
 .cite-list { list-style: none; padding: 0; margin: 0; }
@@ -24,6 +25,23 @@ a.play { color: var(--accent); text-decoration: underline; text-underline-offset
 .untitled { font-weight: 650; }
 textarea { font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: .35rem .55rem; width: 100%; min-height: 4.5rem; }
 .actions { display: flex; gap: .45rem; margin-top: .45rem; }
+.caveat-box {
+  background: #fef9c3;
+  border: 1px solid #fde047;
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  margin: .45rem 0 0;
+  max-width: 72ch;
+}
+.pill {
+  display: inline-block;
+  border-radius: 999px;
+  padding: .12rem .55rem;
+  font-size: .78rem;
+  font-weight: 650;
+  margin-right: .35rem;
+}
+.pill-caveat { background: #fef9c3; color: #854d0e; border: 1px solid #ca8a04; }
 """
 
 
@@ -55,6 +73,8 @@ def post_curate(store: CuratedStore, fields: dict[str, list[str]]) -> str:
         _correct_accepted(store, fields)
     elif action == "remove":
         _remove_accepted(store, fields)
+    elif action == "mark":
+        _mark_aside(store, fields)
     return "/curate"
 
 
@@ -132,6 +152,28 @@ def _remove_accepted(store: CuratedStore, fields: dict[str, list[str]]) -> None:
     citation_id = _field(fields, "citation_id")
     if citation_id:
         store.remove(citation_id)
+
+
+def _mark_aside(store: CuratedStore, fields: dict[str, list[str]]) -> None:
+    citation = store.citation(_field(fields, "citation_id"))
+    if citation is None:
+        return
+    try:
+        timestamp = float(_field(fields, "timestamp"))
+    except ValueError:
+        return
+    playback_link = _field(fields, "playback_link") or None
+    showing = None
+    for item in citation.showings:
+        if item.timestamp != timestamp:
+            continue
+        if playback_link is not None and item.playback_link != playback_link:
+            continue
+        showing = item
+        break
+    if showing is None:
+        return
+    mark_other_ruleset_showing(store, citation, showing)
 
 
 def _picker(session: dict) -> str:
@@ -298,18 +340,8 @@ def _accepted(store: CuratedStore, session: dict) -> str:
 
 def _accepted_card(store: CuratedStore, citation: Citation) -> str:
     bullets = citation.step_bullets
-    details = tuple(
-        {"speech_start": showing.timestamp}
-        for showing in citation.showings
-    )
-    play = _playback_lines(
-        store,
-        volume=citation.volume or "",
-        details=details,
-        movement=citation.movement,
-        chapter=citation.chapter or "",
-        instructor=citation.instructor or "",
-        instructional=citation.instructional or "",
+    play = "\n".join(
+        _showing_block(store, citation, showing) for showing in citation.showings
     )
     meta = " · ".join(
         part
@@ -340,6 +372,38 @@ def _accepted_card(store: CuratedStore, citation: Citation) -> str:
         "</form>\n"
         "</li>\n"
     )
+
+
+def _showing_block(store: CuratedStore, citation: Citation, showing: Showing) -> str:
+    play = _playback_lines(
+        store,
+        volume=citation.volume or "",
+        details=({"speech_start": showing.timestamp},),
+        movement=citation.movement,
+        chapter=citation.chapter or "",
+        instructor=citation.instructor or "",
+        instructional=citation.instructional or "",
+    )
+    playback_link = showing.playback_link or ""
+    mark = (
+        '<form method="post" action="/curate">\n'
+        '<input type="hidden" name="action" value="mark">\n'
+        f'<input type="hidden" name="citation_id" value="{escape(citation.id, quote=True)}">\n'
+        f'<input type="hidden" name="timestamp" value="{escape(str(showing.timestamp), quote=True)}">\n'
+        f'<input type="hidden" name="playback_link" value="{escape(playback_link, quote=True)}">\n'
+        '<button type="submit">Mark other-ruleset aside</button>\n'
+        "</form>\n"
+    )
+    caveat = getattr(showing, "caveat", "") or ""
+    caveat_box = ""
+    if caveat:
+        caveat_box = (
+            '<div class="caveat-box">'
+            '<span class="pill pill-caveat">caveat</span> '
+            f"{escape(caveat or OTHER_RULESET_CAVEAT)}"
+            "</div>\n"
+        )
+    return f"{play}\n{mark}{caveat_box}"
 
 
 def _playback_lines(
