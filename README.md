@@ -10,7 +10,7 @@ The coach is the only user of the eventual application. Domain language lives in
 
 | Script | Purpose |
 |--------|---------|
-| `metadata_scraper/run_pipeline.py` | One command: match, organize, transcribe (skip finished work; `--apply` to write) |
+| `metadata_scraper/run_pipeline.py` | One command: match, organize, detect, transcribe (skip finished work; `--apply` to write) |
 | `metadata_scraper/organize_instructional.py` | Scrape a BJJ Fanatics product page and reorganize a local folder as a Jellyfin/TMM TV show (NFO, artwork, volumes, named chapters) |
 | `metadata_scraper/match_bjjfanatics.py` | Match local folder names to BJJ Fanatics product URLs and write `bjjfanatics_matches.csv` |
 | `generate_chapters.py` | Detect title-card chapter starts, OCR titles, write sidecar CSVs, optionally embed chapters into the video |
@@ -95,13 +95,13 @@ Dry-run a library (prints SKIP / RUN / FAIL; writes nothing; does not decode or 
 py -3 metadata_scraper\run_pipeline.py --library "path\to\instructionals" --corpus "path\to\transcript-corpus"
 ```
 
-Apply match, organize, and transcribe. Title-card detect is not selected yet. `--embed` is a separate flag for visual sidecar remux; `--apply` does not embed.
+Apply match, organize, detect, and transcribe. `--embed` is a separate flag for visual sidecar remux; `--apply` does not embed.
 
 ```powershell
 py -3 metadata_scraper\run_pipeline.py --library "path\to\instructionals" --corpus "path\to\transcript-corpus" --apply
 ```
 
-`--force` re-runs every selected stage. `--force-stage match|organize|transcribe` re-runs only that unit. A CSV product URL is used as the organize URL with no yes/no prompt. Missing URL outside a terminal fails that instructional's organize.
+`--force` re-runs every selected stage. `--force-stage match|organize|detect|transcribe` re-runs only that unit. A CSV product URL is used as the organize URL with no yes/no prompt. Missing URL outside a terminal fails that instructional's organize.
 
 ### Organize a local instructional library one show at a time
 

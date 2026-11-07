@@ -50,6 +50,7 @@ def _standins():
 def _run(library: Path, corpus: Path, *, apply: bool = False, **kwargs):
     calls, match, organize, detect, transcribe = _standins()
     buf = io.StringIO()
+    kwargs.setdefault("chapter_count", lambda _video: 0)
     code = run_pipeline.run(
         library,
         corpus,
@@ -65,7 +66,7 @@ def _run(library: Path, corpus: Path, *, apply: bool = False, **kwargs):
     return code, buf.getvalue(), calls
 
 
-def test_apply_runs_match_organize_transcribe_not_detect(tmp_path: Path):
+def test_apply_runs_match_organize_detect_transcribe(tmp_path: Path):
     library = tmp_path / "lib"
     library.mkdir()
     show = _show(library, "Half Guard Anthology")
@@ -78,7 +79,8 @@ def test_apply_runs_match_organize_transcribe_not_detect(tmp_path: Path):
     assert [item["folder"].name for item in calls["organize"]] == [show.name]
     assert calls["organize"][0]["apply"] is True
     assert calls["organize"][0]["url"] == "https://bjjfanatics.com/products/half-guard"
-    assert calls["detect"] == []
+    assert [item["video"].name for item in calls["detect"]] == ["S01E01 - Volume 1.mp4"]
+    assert calls["detect"][0]["apply"] is False
     assert [item["video"].name for item in calls["transcribe"]] == ["S01E01 - Volume 1.mp4"]
     matches = library / "bjjfanatics_matches.csv"
     assert matches.is_file()
@@ -89,6 +91,7 @@ def test_apply_runs_match_organize_transcribe_not_detect(tmp_path: Path):
     assert "RUN" in out
     assert "match" in out.lower()
     assert "organize" in out.lower()
+    assert "detect" in out.lower()
     assert "transcribe" in out.lower()
 
 
@@ -110,6 +113,7 @@ def test_dry_run_writes_nothing_and_does_not_transcribe(tmp_path: Path):
     after = {p.relative_to(show): p.stat().st_mtime_ns for p in show.rglob("*")}
     assert after == before
     assert "RUN" in out
+    assert "detect" in out.lower()
     assert "FAIL" not in out
 
 
@@ -152,11 +156,12 @@ def test_skip_when_artifacts_exist(tmp_path: Path):
     out_json.parent.mkdir(parents=True)
     out_json.write_text('{"segments": []}', encoding="utf-8")
 
-    code, out, calls = _run(library, corpus, apply=True)
+    code, out, calls = _run(library, corpus, apply=True, chapter_count=lambda _video: 2)
 
     assert code == 0
     assert calls["match"] == []
     assert calls["organize"] == []
+    assert calls["detect"] == []
     assert calls["transcribe"] == []
     assert "SKIP" in out
     assert "FAIL" not in out
@@ -183,7 +188,8 @@ def test_force_reruns_all_selected_stages(tmp_path: Path):
     assert calls["match"]
     assert calls["organize"]
     assert calls["transcribe"]
-    assert calls["detect"] == []
+    assert calls["detect"]
+    assert calls["detect"][0]["apply"] is False
     assert "RUN" in out
 
 
@@ -206,11 +212,14 @@ def test_force_stage_reruns_only_that_unit(tmp_path: Path):
     out_json.parent.mkdir(parents=True)
     out_json.write_text('{"segments": []}', encoding="utf-8")
 
-    code, out, calls = _run(library, corpus, apply=True, force_stage="organize")
+    code, out, calls = _run(
+        library, corpus, apply=True, force_stage="organize", chapter_count=lambda _video: 2
+    )
 
     assert code == 0
     assert calls["match"] == []
     assert calls["organize"]
+    assert calls["detect"] == []
     assert calls["transcribe"] == []
     assert "organize" in out.lower()
 
@@ -255,6 +264,7 @@ def test_missing_url_outside_terminal_fails_organize(tmp_path: Path):
         organize=organize,
         detect=detect,
         transcribe=transcribe,
+        chapter_count=lambda _video: 0,
         stdout=buf,
         isatty=False,
     )
@@ -367,7 +377,8 @@ def test_apply_does_not_embed_without_flag(tmp_path: Path):
     code, out, calls = _run(library, corpus, apply=True)
 
     assert code == 0
-    assert calls["detect"] == []
+    assert calls["detect"]
+    assert all(item["apply"] is False for item in calls["detect"])
     assert "embed" not in out.lower()
 
 
@@ -389,8 +400,8 @@ def test_embed_flag_is_separate_from_apply(tmp_path: Path):
     code, out, calls = _run(library, corpus, apply=True, embed=True)
 
     assert code == 0
-    assert calls["detect"]
-    assert calls["detect"][0]["apply"] is True
+    assert any(item["apply"] is False for item in calls["detect"])
+    assert any(item["apply"] is True for item in calls["detect"])
     assert "embed" in out.lower()
 
 
@@ -414,6 +425,7 @@ def test_failed_stage_exits_1(tmp_path: Path):
         organize=boom,
         detect=detect,
         transcribe=transcribe,
+        chapter_count=lambda _video: 0,
         stdout=buf,
         isatty=False,
     )
@@ -450,6 +462,7 @@ def test_transcribe_walks_post_organize_volumes_not_pre_concat_clips(tmp_path: P
         organize=organize_to_volume,
         detect=detect,
         transcribe=transcribe,
+        chapter_count=lambda _video: 0,
         stdout=buf,
         isatty=False,
     )
@@ -458,6 +471,7 @@ def test_transcribe_walks_post_organize_volumes_not_pre_concat_clips(tmp_path: P
     names = [item["video"].name for item in calls["transcribe"]]
     assert names == ["S01E01 - Volume 1.mp4"]
     assert "01 - Intro.mp4" not in names
+    assert [item["video"].name for item in calls["detect"]] == ["S01E01 - Volume 1.mp4"]
 
 
 def test_parser_omitting_apply_is_dry_run():
@@ -468,3 +482,164 @@ def test_parser_omitting_apply_is_dry_run():
     assert args.embed is False
     assert args.force is False
     assert args.force_stage is None
+
+
+def _organized_show(library: Path, name: str, videos: list[str]) -> Path:
+    show = library / name
+    season = show / "Season 01"
+    season.mkdir(parents=True)
+    (show / "tvshow.nfo").write_text("<tvshow/>", encoding="utf-8")
+    for filename in videos:
+        (season / filename).write_bytes(b"fake-video")
+    matches = library / "bjjfanatics_matches.csv"
+    matches.write_text(
+        f"folder_path,product_url\n{show.resolve()},https://bjjfanatics.com/products/half-guard\n",
+        encoding="utf-8",
+    )
+    return show
+
+
+def test_detect_skips_when_container_has_chapters(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(library, "Half Guard Anthology", ["S01E01 - Volume 1.mp4"])
+    corpus = tmp_path / "corpus"
+    probed: list[str] = []
+
+    def chapter_count(video: Path) -> int:
+        probed.append(video.name)
+        return 4
+
+    code, out, calls = _run(library, corpus, apply=True, chapter_count=chapter_count)
+
+    assert code == 0
+    assert probed == ["S01E01 - Volume 1.mp4"]
+    assert calls["detect"] == []
+    assert "SKIP" in out
+    assert "detect" in out.lower()
+    assert show.name in out
+
+
+def test_detect_skips_when_sidecar_exists(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    _organized_show(library, "Half Guard Anthology", ["S01E01 - Volume 1.mp4"])
+    video = library / "Half Guard Anthology" / "Season 01" / "S01E01 - Volume 1.mp4"
+    sidecar = video.with_name(f"{video.stem}_chapters.csv")
+    sidecar.write_text("Chapter,StartTimestamp,EndTimestamp\n", encoding="utf-8")
+    corpus = tmp_path / "corpus"
+
+    code, out, calls = _run(library, corpus, apply=True)
+
+    assert code == 0
+    assert calls["detect"] == []
+    assert "SKIP" in out
+    assert "detect" in out.lower()
+    assert sidecar.read_text(encoding="utf-8") == "Chapter,StartTimestamp,EndTimestamp\n"
+
+
+def test_force_reruns_detect_when_sidecar_exists(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    _organized_show(library, "Half Guard Anthology", ["S01E01 - Volume 1.mp4"])
+    video = library / "Half Guard Anthology" / "Season 01" / "S01E01 - Volume 1.mp4"
+    (video.with_name(f"{video.stem}_chapters.csv")).write_text("old\n", encoding="utf-8")
+    corpus = tmp_path / "corpus"
+
+    code, out, calls = _run(library, corpus, apply=True, force=True)
+
+    assert code == 0
+    assert [item["video"].name for item in calls["detect"]] == ["S01E01 - Volume 1.mp4"]
+    assert calls["detect"][0]["force"] is True
+    assert calls["detect"][0]["apply"] is False
+    assert "RUN" in out
+
+
+def test_force_does_not_detect_when_container_has_chapters(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    _organized_show(library, "Half Guard Anthology", ["S01E01 - Volume 1.mp4"])
+    corpus = tmp_path / "corpus"
+
+    code, out, calls = _run(
+        library, corpus, apply=True, force=True, chapter_count=lambda _video: 3
+    )
+
+    assert code == 0
+    assert calls["detect"] == []
+    assert "SKIP" in out
+    assert "detect" in out.lower()
+
+
+def test_uncombined_chapter_file_season_warns_and_skips_detect(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    _organized_show(
+        library,
+        "Collar Sleeve",
+        ["01.01 - Intro.mp4", "01.02 - Collar And Sleeve.mp4", "01.03 - Finish.mp4"],
+    )
+    corpus = tmp_path / "corpus"
+
+    code, out, calls = _run(library, corpus, apply=True)
+
+    assert code == 0
+    assert calls["detect"] == []
+    assert "WARN" in out
+    assert "uncombined" in out.lower()
+    assert "SKIP" in out
+    assert "detect" in out.lower()
+
+
+def test_force_stage_detect_runs_on_uncombined_season(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    _organized_show(
+        library,
+        "Collar Sleeve",
+        ["01.01 - Intro.mp4", "01.02 - Collar And Sleeve.mp4"],
+    )
+    corpus = tmp_path / "corpus"
+
+    code, out, calls = _run(library, corpus, apply=True, force_stage="detect")
+
+    assert code == 0
+    names = [item["video"].name for item in calls["detect"]]
+    assert names == ["01.01 - Intro.mp4", "01.02 - Collar And Sleeve.mp4"]
+    assert all(item["apply"] is False for item in calls["detect"])
+    assert all(item["force"] is True for item in calls["detect"])
+    assert calls["organize"] == []
+    assert "RUN" in out
+
+
+def test_detect_is_one_invocation_per_volume(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    _organized_show(
+        library,
+        "Half Guard Anthology",
+        ["S01E01 - Volume 1.mp4", "S01E02 - Volume 2.mp4"],
+    )
+    corpus = tmp_path / "corpus"
+
+    code, out, calls = _run(library, corpus, apply=True)
+
+    assert code == 0
+    names = [item["video"].name for item in calls["detect"]]
+    assert names == ["S01E01 - Volume 1.mp4", "S01E02 - Volume 2.mp4"]
+    assert all(item["apply"] is False for item in calls["detect"])
+
+
+def test_parser_force_stage_includes_detect():
+    args = run_pipeline.build_parser().parse_args(
+        [
+            "--library",
+            r"D:\instructionals",
+            "--corpus",
+            r"D:\corpus",
+            "--force-stage",
+            "detect",
+        ]
+    )
+    assert args.force_stage == "detect"
+    assert run_pipeline.DEFAULT_STAGES == ("match", "organize", "detect", "transcribe")
