@@ -1,0 +1,1 @@
+"""Coach-only advising application."""
