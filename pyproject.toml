@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bjj-pipeline"
+version = "0.1.0"
+description = "Organize BJJ instructionals into volumes and a speech corpus."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+organize = [
+    "beautifulsoup4>=4.12",
+    "lxml>=5.0",
+]
+transcribe = [
+    "numpy",
+    "opencv-python-headless",
+    "rapidocr",
+    "panoscribe",
+]
+all = [
+    "bjj-pipeline[organize,transcribe]",
+]
+
+[project.scripts]
+bjj-pipeline = "bjj_pipeline.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["bjj_pipeline*"]

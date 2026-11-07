@@ -9,10 +9,9 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Callable
-from unittest.mock import patch
 
 import batch_panoscribe
 
@@ -84,6 +83,7 @@ def _run(
     speech=None,
     chapters=None,
     ocr: bool = False,
+    force: bool = False,
     speech_available: bool | None = True,
     chapter_available: bool | None = True,
     count_hotword_tokens: Callable[[str], int] | None = None,
@@ -94,6 +94,7 @@ def _run(
             input_dir,
             output_dir,
             ocr=ocr,
+            force=force,
             speech_command=speech,
             chapter_command=chapters,
             speech_available=speech_available,
@@ -278,6 +279,36 @@ class KeepSpeechTest(unittest.TestCase):
             self.assertEqual(status, 0)
             self.assertEqual(speech_calls, [])
             self.assertIn("Unchanged: 1", out)
+
+    def test_force_re_runs_speech_on_empty_segments_list(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_video(root / "in" / "Vol1.mp4")
+            dest = root / "out" / "Vol1.json"
+            dest.parent.mkdir(parents=True)
+            dest.write_text(
+                json.dumps(
+                    {
+                        "video_file": "Vol1.mp4",
+                        "chapters": [],
+                        "language": "en",
+                        "segments": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            speech_calls: list = []
+            status, out = _run(
+                root / "in",
+                root / "out",
+                force=True,
+                speech=_speech_writer(calls=speech_calls),
+                chapters=_chapter_reader([]),
+            )
+            self.assertEqual(status, 0)
+            self.assertEqual(len(speech_calls), 1)
+            self.assertEqual(_read_json(dest)["segments"][0]["text"], "hello")
+            self.assertIn("Updated: 1", out)
 
     def test_missing_segments_requests_speech_and_keeps_other_fields(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -971,13 +1002,21 @@ class ExtractChaptersUtf8Test(unittest.TestCase):
 
         real_run = subprocess.run
 
-        def fake_run(cmd, **kwargs):
+        def fake_command(cmd):
             self.assertEqual(cmd[0], "ffprobe")
             child = "import sys; sys.stdout.buffer.write(" + repr(raw) + ")"
-            return real_run([sys.executable, "-c", child], **kwargs)
+            return real_run(
+                [sys.executable, "-c", child],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
 
-        with patch.object(batch_panoscribe.subprocess, "run", fake_run):
-            chapters = batch_panoscribe.extract_chapters(Path("unused.mp4"))
+        chapters = batch_panoscribe.extract_chapters(
+            Path("unused.mp4"),
+            command=fake_command,
+        )
 
         self.assertEqual(
             chapters,
@@ -985,20 +1024,70 @@ class ExtractChaptersUtf8Test(unittest.TestCase):
         )
 
 
+class ForceSpeechTest(unittest.TestCase):
+    def test_force_re_runs_speech_only_in_one_transcript_write(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_video(root / "in" / "Vol1.mp4")
+            dest = root / "out" / "Vol1.json"
+            dest.parent.mkdir(parents=True)
+            dest.write_text(
+                json.dumps(
+                    {
+                        "video_file": "Vol1.mp4",
+                        "chapters": [{"title": "Old", "start": 0.0, "end": 1.0}],
+                        "language": "en",
+                        "segments": [{"start": 0.0, "end": 1.0, "text": "kept"}],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            speech_calls: list = []
+            chapter_calls: list = []
+            status, out = _run(
+                root / "in",
+                root / "out",
+                force=True,
+                speech=_speech_writer(
+                    segments=[
+                        {
+                            "start": 0.0,
+                            "end": 2.0,
+                            "text": "new",
+                            "source": "SPEECH",
+                        }
+                    ],
+                    calls=speech_calls,
+                ),
+                chapters=_chapter_reader(
+                    [{"title": "New", "start": 0.0, "end": 2.0}],
+                    calls=chapter_calls,
+                ),
+            )
+            self.assertEqual(status, 0)
+            self.assertEqual(len(speech_calls), 1)
+            self.assertEqual(chapter_calls, ["Vol1.mp4"])
+            data = _read_json(dest)
+            self.assertEqual(data["segments"][0]["text"], "new")
+            self.assertEqual(data["chapters"], [{"title": "New", "start": 0.0, "end": 2.0}])
+            self.assertEqual(data["video_file"], "Vol1.mp4")
+            self.assertIn("Updated: 1", out)
+
+
 class CliOptionsTest(unittest.TestCase):
-    def test_force_and_stamp_options_removed(self):
+    def test_force_is_re_speech_and_stamp_options_stay_removed(self):
         parser = batch_panoscribe.build_parser()
-        option_strings = {
-            opt
-            for action in parser._actions
-            for opt in (action.option_strings or [])
-        }
-        self.assertNotIn("--force", option_strings)
-        self.assertNotIn("--stamp-video-file", option_strings)
-        self.assertNotIn("--transcribe", option_strings)
-        self.assertNotIn("--no-transcribe", option_strings)
-        self.assertIn("--ocr", option_strings)
-        self.assertIn("--no-ocr", option_strings)
+        args = parser.parse_args(["in", "out", "--force", "--ocr"])
+        self.assertTrue(args.force)
+        self.assertTrue(args.ocr)
+        with self.assertRaises(SystemExit), redirect_stderr(io.StringIO()):
+            parser.parse_args(["in", "out", "--stamp-video-file"])
+        with self.assertRaises(SystemExit), redirect_stderr(io.StringIO()):
+            parser.parse_args(["in", "out", "--transcribe"])
+        with self.assertRaises(SystemExit), redirect_stderr(io.StringIO()):
+            parser.parse_args(["in", "out", "--no-transcribe"])
+        off = parser.parse_args(["in", "out", "--no-ocr"])
+        self.assertFalse(off.ocr)
 
 
 if __name__ == "__main__":
