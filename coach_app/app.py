@@ -146,6 +146,7 @@ add_screen(Screen("home", "/", "Home", get=render_home))
 add_screen(Screen("settings", "/settings", "", post=save_settings))
 import coach_app.ui_topics
 import coach_app.ui_curate  # noqa: E402
+from coach_app import ui_finder
 
 
 class CoachApp:
