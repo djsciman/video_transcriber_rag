@@ -50,6 +50,7 @@ def test_subcommand_help_exits_0(command: str):
 def test_package_help_lists_subcommands():
     proc = _module("--help")
     assert proc.returncode == 0
+    assert "py -3 -m bjj_pipeline" in proc.stdout
     for command in SUBCOMMANDS:
         assert command in proc.stdout
 
@@ -65,7 +66,7 @@ def test_old_script_prints_deprecation_and_still_helps(path: Path, command: str)
     )
     assert proc.returncode == 0
     assert "deprecated" in proc.stderr.lower()
-    assert "bjj_pipeline" in proc.stderr
+    assert "py -3 -m bjj_pipeline" in proc.stderr
     assert proc.stdout
 
 
@@ -81,6 +82,7 @@ def test_pyproject_declares_organize_transcribe_all_extras():
     transcribe = " ".join(extras["transcribe"]).lower()
     assert "beautifulsoup4" in organize
     assert "lxml" in organize
+    assert "pytest" not in organize
     transcribe_need = ("numpy", "opencv", "rapidocr", "panoscribe")
     for name in transcribe_need:
         assert name in transcribe

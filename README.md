@@ -193,10 +193,7 @@ Repair letters: **B** show NFO and artwork, **C** season folders, **D** combine 
 ```powershell
 py -3 -m bjj_pipeline match --library "path\to\instructionals" --output "path\to\bjjfanatics_matches.csv"
 py -3 -m bjj_pipeline match --library "path\to\instructionals" --output "path\to\bjjfanatics_matches.csv" --force
-py -3 -m bjj_pipeline match --library "path\to\instructionals" --output "path\to\bjjfanatics_matches.csv" --subfolders
 ```
-
-`--subfolders` also matches one level of child folders (search name is `parent child` so names like `Season 1` still match the series). The pipeline default walk is top-level folders only.
 
 ### Detect and embed chapters
 

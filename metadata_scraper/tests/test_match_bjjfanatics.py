@@ -1,6 +1,8 @@
 import csv
 from pathlib import Path
 
+import pytest
+
 import match_bjjfanatics
 
 
@@ -25,6 +27,15 @@ def test_parser_takes_library_and_output_paths():
     assert args.library == Path(r"D:\instructionals")
     assert args.output == Path(r"D:\matches.csv")
     assert args.force is False
+    assert not hasattr(args, "subfolders")
+
+
+def test_parser_rejects_subfolders():
+    parser = match_bjjfanatics.build_parser()
+    with pytest.raises(SystemExit):
+        parser.parse_args(
+            ["--library", r"D:\instructionals", "--output", r"D:\matches.csv", "--subfolders"]
+        )
 
 
 def test_existing_product_url_is_skipped(tmp_path: Path, capsys):

@@ -1,4 +1,4 @@
-"""py -m bjj_pipeline match|organize|chapters|scan|transcribe|run"""
+"""py -3 -m bjj_pipeline match|organize|chapters|scan|transcribe|run"""
 
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else list(argv)
     if not argv or argv[0] in {"-h", "--help"}:
         sys.stdout.write(
-            "usage: python -m bjj_pipeline "
+            "usage: py -3 -m bjj_pipeline "
             f"{{{ '|'.join(COMMANDS) }}} ...\n"
         )
         sys.stdout.write("\nSubcommands:\n")

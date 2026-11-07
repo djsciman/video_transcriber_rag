@@ -1,4 +1,4 @@
-"""Deprecated shim. Use `py -m bjj_pipeline scan`."""
+"""Deprecated shim. Use `py -3 -m bjj_pipeline scan`."""
 
 from __future__ import annotations
 
@@ -10,6 +10,6 @@ if __name__ != "__main__":
     sys.modules[__name__] = _impl
 else:
     sys.stderr.write(
-        "deprecated: completeness_scan.py is a shim; use `py -m bjj_pipeline scan`\n"
+        "deprecated: completeness_scan.py is a shim; use `py -3 -m bjj_pipeline scan`\n"
     )
     raise SystemExit(_impl.main())

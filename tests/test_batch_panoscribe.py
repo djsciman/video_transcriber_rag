@@ -9,7 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Callable
 
@@ -1077,17 +1077,17 @@ class ForceSpeechTest(unittest.TestCase):
 class CliOptionsTest(unittest.TestCase):
     def test_force_is_re_speech_and_stamp_options_stay_removed(self):
         parser = batch_panoscribe.build_parser()
-        option_strings = {
-            opt
-            for action in parser._actions
-            for opt in (action.option_strings or [])
-        }
-        self.assertIn("--force", option_strings)
-        self.assertNotIn("--stamp-video-file", option_strings)
-        self.assertNotIn("--transcribe", option_strings)
-        self.assertNotIn("--no-transcribe", option_strings)
-        self.assertIn("--ocr", option_strings)
-        self.assertIn("--no-ocr", option_strings)
+        args = parser.parse_args(["in", "out", "--force", "--ocr"])
+        self.assertTrue(args.force)
+        self.assertTrue(args.ocr)
+        with self.assertRaises(SystemExit), redirect_stderr(io.StringIO()):
+            parser.parse_args(["in", "out", "--stamp-video-file"])
+        with self.assertRaises(SystemExit), redirect_stderr(io.StringIO()):
+            parser.parse_args(["in", "out", "--transcribe"])
+        with self.assertRaises(SystemExit), redirect_stderr(io.StringIO()):
+            parser.parse_args(["in", "out", "--no-transcribe"])
+        off = parser.parse_args(["in", "out", "--no-ocr"])
+        self.assertFalse(off.ocr)
 
 
 if __name__ == "__main__":

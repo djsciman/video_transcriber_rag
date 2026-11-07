@@ -137,6 +137,55 @@ def test_volume_plan_keeps_scrape_chapter_titles(tmp_path: Path):
     assert len(first.concat_sources) == 1
 
 
+def test_existing_container_chapters_skip_fanatics_remux(tmp_path: Path, monkeypatch):
+    show = tmp_path / "Magic Guard Passing by Travis Stevens"
+    show.mkdir()
+    source = show / "MagicGuardPassingbyTravisStevensVol1.mp4"
+    source.write_bytes(b"x")
+    product = _product(
+        "Magic Guard Passing by Travis Stevens",
+        "Travis Stevens",
+        1,
+        1,
+        "https://example.com/magic",
+        chapters_each=3,
+    )
+
+    def scrape(url: str, user_agent: str | None = None) -> Product:
+        return product
+
+    plan = build_plan(
+        show,
+        ["https://example.com/magic"],
+        RuntimeOptions(),
+        scrape_product=scrape,
+    )
+    remux_calls: list[str] = []
+    probed: list[str] = []
+
+    monkeypatch.setattr("bjj_organizer.pipeline._tool", lambda name, explicit=None: name)
+
+    def fake_count(path, ffprobe, command=None):
+        probed.append(Path(path).name)
+        return 4
+
+    def fake_remux(*args, **kwargs):
+        remux_calls.append("remux")
+        raise AssertionError("must not remux Fanatics markers over container chapters")
+
+    monkeypatch.setattr("bjj_organizer.pipeline.probe_chapter_count", fake_count)
+    monkeypatch.setattr("bjj_organizer.pipeline.remux_with_chapters", fake_remux)
+
+    apply_plan(plan, RuntimeOptions())
+
+    assert remux_calls == []
+    assert probed == [source.name]
+    season = show / "Season 01"
+    dests = list(season.glob("*.mp4"))
+    assert len(dests) == 1
+    assert dests[0].read_bytes() == b"x"
+
+
 def test_segmented_plan_groups_chapter_files_into_volumes(tmp_path: Path):
     show = tmp_path / "Mikey Musumeci The Collar and Sleeve System Pt 1"
     show.mkdir()

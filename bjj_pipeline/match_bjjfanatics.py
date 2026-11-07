@@ -36,20 +36,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Re-search folders that already have a product URL in the output CSV.",
     )
-    parser.add_argument(
-        "--subfolders",
-        action="store_true",
-        help="Also match one level of subfolders under each top-level folder.",
-    )
     return parser
 
 
-def collect_folders(library: Path, include_subfolders: bool) -> list[tuple[Path, str]]:
-    """Return (folder_path, search_name) pairs.
-
-    search_name is the folder name, or 'parent child' for subfolders so
-    names like 'Season 1' still match the parent series.
-    """
+def collect_folders(library: Path) -> list[tuple[Path, str]]:
+    """Return (folder_path, search_name) pairs for top-level instructional folders."""
     items: list[tuple[Path, str]] = []
     if not library.is_dir():
         return items
@@ -63,14 +54,6 @@ def collect_folders(library: Path, include_subfolders: bool) -> list[tuple[Path,
     )
     for top in tops:
         items.append((top, top.name))
-        if not include_subfolders:
-            continue
-        subs = sorted(
-            (child for child in top.iterdir() if child.is_dir()),
-            key=lambda path: path.name.lower(),
-        )
-        for sub in subs:
-            items.append((sub, f"{top.name} {sub.name}"))
     return items
 
 
@@ -103,7 +86,7 @@ def main(
     args = build_parser().parse_args(argv)
     live = search is None
     search_fn = search or search_products
-    folders = collect_folders(args.library, include_subfolders=args.subfolders)
+    folders = collect_folders(args.library)
     existing = {} if args.force else _load_existing(args.output)
     rows: list[dict[str, str]] = []
     for i, (folder_path, search_name) in enumerate(folders, start=1):
