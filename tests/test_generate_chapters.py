@@ -107,13 +107,10 @@ class DetectSkipTest(unittest.TestCase):
 class DetectCliOptionsTest(unittest.TestCase):
     def test_force_flag_is_present(self):
         parser = generate_chapters.build_parser()
-        option_strings = {
-            opt
-            for action in parser._actions
-            for opt in (action.option_strings or [])
-        }
-        self.assertIn("--force", option_strings)
-        self.assertIn("--apply", option_strings)
+        forced = parser.parse_args(["Vol1.mp4", "--force"])
+        applied = parser.parse_args(["Vol1.mp4", "--apply"])
+        self.assertTrue(forced.force)
+        self.assertTrue(applied.apply)
 
 
 if __name__ == "__main__":

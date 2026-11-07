@@ -1,4 +1,4 @@
-"""Deprecated shim. Use `py -m bjj_pipeline.find_color_frames`."""
+"""Deprecated shim. Use `py -3 -m bjj_pipeline.find_color_frames`."""
 
 from __future__ import annotations
 
@@ -11,6 +11,6 @@ if __name__ != "__main__":
 else:
     sys.stderr.write(
         "deprecated: find_color_frames.py is a shim; "
-        "use `py -m bjj_pipeline.find_color_frames`\n"
+        "use `py -3 -m bjj_pipeline.find_color_frames`\n"
     )
     raise SystemExit(_impl.main())

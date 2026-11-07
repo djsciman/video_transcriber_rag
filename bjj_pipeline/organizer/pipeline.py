@@ -12,7 +12,12 @@ from datetime import date
 from pathlib import Path
 
 from .artwork import product_fanart, product_poster, write_posters
-from .chapters import chapters_have_timeline, probe_chapter_titles, remux_with_chapters
+from .chapters import (
+    chapters_have_timeline,
+    probe_chapter_count,
+    probe_chapter_titles,
+    remux_with_chapters,
+)
 from .concat import concat_with_chapters
 from .errors import MatchError, UsageError
 from .fanatics_search import csv_hint_url, lookup_candidates
@@ -758,13 +763,18 @@ def _place_single_file(
     ffmpeg: str | None,
     ffprobe: str | None,
 ) -> None:
-    if options.container == "mkv" and not _wants_chapter_remux(episode, options):
+    wants_remux = _wants_chapter_remux(episode, options)
+    if wants_remux:
+        assert ffprobe
+        if probe_chapter_count(source, ffprobe) > 0:
+            wants_remux = False
+    if options.container == "mkv" and not wants_remux:
         assert ffmpeg and ffprobe
         remux_copy(source, dest, ffmpeg, ffprobe)
         if source.exists() and source.resolve() != dest.resolve():
             source.unlink()
         return
-    if _wants_chapter_remux(episode, options):
+    if wants_remux:
         assert ffmpeg and ffprobe
         remux_with_chapters(
             source,

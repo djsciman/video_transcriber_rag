@@ -214,7 +214,7 @@ def run(
     csv_rows = _load_csv(matches_path)
     failed = False
 
-    folders = [folder for folder, _name in collect_folders(library, include_subfolders=False)]
+    folders = [folder for folder, _name in collect_folders(library)]
     for folder in folders:
         key = str(folder.resolve())
         url = _csv_url(csv_rows, folder)
@@ -243,11 +243,9 @@ def run(
             done = _organize_done(folder)
             if done and not redo:
                 _print(stdout, "SKIP", "organize", folder.name)
-            elif not url and not tty and (apply or "match" not in selected):
+            elif not url and not tty:
                 _print(stdout, "FAIL", "organize", folder.name, "no product URL")
                 failed = True
-            elif not url and not apply:
-                _print(stdout, "RUN", "organize", folder.name)
             else:
                 try:
                     code = organize_fn(folder, url or None, apply=apply)
@@ -318,7 +316,7 @@ def run(
                 output = _transcript_path(library, corpus, video)
                 done = _transcript_done(output)
                 label = _rel(library, video)
-                if done and not redo:
+                if done and not redo and not apply:
                     _print(stdout, "SKIP", "transcribe", label)
                     continue
                 if not apply:
@@ -333,6 +331,8 @@ def run(
                     if code:
                         _print(stdout, "FAIL", "transcribe", label)
                         failed = True
+                    elif done and not redo:
+                        _print(stdout, "SKIP", "transcribe", label)
                     else:
                         _print(stdout, "RUN", "transcribe", label)
 

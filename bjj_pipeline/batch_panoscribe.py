@@ -146,10 +146,13 @@ def output_path_for(video: Path, input_dir: Path, output_dir: Path) -> Path:
 
 
 def walk_videos(input_dir: Path) -> list[Path]:
-    """Return video files under ``input_dir``, using extended paths on Windows."""
+    """Return volume videos under ``input_dir``, skipping Jellyfin extra dirs."""
+    from .organizer.layout import IGNORE_DIR_NAMES
+
     root = io_path(input_dir)
     videos: list[Path] = []
-    for dirpath, _dirnames, filenames in os.walk(root):
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [name for name in dirnames if name.lower() not in IGNORE_DIR_NAMES]
         for name in filenames:
             path = Path(dirpath) / name
             if is_video(path):

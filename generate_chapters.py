@@ -1,4 +1,4 @@
-"""Deprecated shim. Use `py -m bjj_pipeline chapters`."""
+"""Deprecated shim. Use `py -3 -m bjj_pipeline chapters`."""
 
 from __future__ import annotations
 
@@ -10,6 +10,6 @@ if __name__ != "__main__":
     sys.modules[__name__] = _impl
 else:
     sys.stderr.write(
-        "deprecated: generate_chapters.py is a shim; use `py -m bjj_pipeline chapters`\n"
+        "deprecated: generate_chapters.py is a shim; use `py -3 -m bjj_pipeline chapters`\n"
     )
     raise SystemExit(_impl.main())
