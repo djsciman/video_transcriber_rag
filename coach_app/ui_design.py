@@ -551,7 +551,8 @@ def _draft_panel(store, bundle, name="", ruleset="") -> str:
         modes = (
             '<p class="sheet-modes">'
             f'<a href="/sheet?{query}&amp;mode=read">Read</a> '
-            f'<a href="/sheet?{query}&amp;mode=edit">Edit</a>'
+            f'<a href="/sheet?{query}&amp;mode=edit">Edit</a> '
+            f'<a href="/print?{query}">Print duplex packet</a>'
             "</p>\n"
         )
     return (

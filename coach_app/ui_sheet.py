@@ -216,11 +216,18 @@ def _sheet_section(store, sheet, ui, name, ruleset, session) -> str:
         )
         if mode == "edit":
             body += _add_panel(store, ui, name, ruleset, session)
+    print_href = ""
+    if name and ruleset:
+        print_href = (
+            '<p class="sheet-modes">'
+            f'<a href="/print?{urlencode({"name": name, "ruleset": ruleset})}">'
+            "Print duplex packet</a></p>\n"
+        )
     return (
         f'<section class="panel sheet" id="sheet" data-mode="{html.escape(mode, quote=True)}">\n'
         f'<h2>Unit sheet</h2>\n'
         f'<span class="pill pill-{html.escape(mode)}">{html.escape(mode.title())}</span>\n'
-        f"{tabs}{body}"
+        f"{print_href}{tabs}{body}"
         "</section>\n"
     )
 

@@ -152,6 +152,7 @@ import coach_app.ui_briefing
 import coach_app.ui_design
 import coach_app.ui_sheet
 import coach_app.ui_library
+import coach_app.ui_print
 
 
 class CoachApp:
