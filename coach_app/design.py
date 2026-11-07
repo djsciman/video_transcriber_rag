@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 
 from coach_app.placement import citations_for_design_mark
+from coach_app.store import system_members
 
 ADD_WALK = ("family", "position", "occupancy", "type", "end", "named move")
 
@@ -65,6 +66,7 @@ class DesignMark:
     occupancy: str = ""
     type_of_move: str = ""
     end_id: str = ""
+    members: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -311,16 +313,17 @@ def add_named_move(store, session: DesignSession, named_move_id) -> DesignSessio
 
 def add_system(store, session: DesignSession, system_id) -> DesignSession:
     node = _catalog_node(store, system_id, "system")
-    if node is None or len(node.aliases) < 2:
+    members = system_members(node)
+    if node is None or len(members) < 2:
         return session
     updated = session
-    for member_id in node.aliases:
+    for member_id in members:
         updated = add_named_move(store, updated, member_id)
     if any(mark.kind == "system" and mark.target == node.id for mark in updated.marks):
         return updated
     marks, next_id = _append_mark(
         updated,
-        DesignMark(kind="system", target=node.id),
+        DesignMark(kind="system", target=node.id, members=members),
     )
     return replace(updated, marks=marks, next_id=next_id)
 
@@ -481,7 +484,8 @@ def _drop_systems_missing_members(marks: tuple[DesignMark, ...]) -> tuple[Design
         if mark.kind != "system":
             kept.append(mark)
             continue
-        if len(on_map) >= 2:
+        members = tuple(member for member in mark.members if member)
+        if members and all(member in on_map for member in members):
             kept.append(mark)
     return tuple(kept)
 

@@ -39,13 +39,7 @@ def open_topic(store: CuratedStore, name: str, ruleset: str) -> Topic | None:
 
 def remove_topic(store: CuratedStore, name: str, ruleset: str) -> None:
     kept = name.rstrip(" ")
-    store._topics.pop((kept, ruleset), None)
-    for key in list(store._other_ruleset):
-        if key[0] == kept and key[1] == ruleset:
-            store._other_ruleset.pop(key, None)
-    for key in list(store._set_asides):
-        if key[0] == kept and key[1] == ruleset:
-            store._set_asides.pop(key, None)
+    store.remove_topic(kept, ruleset)
 
 
 def same_ruleset_citations(store: CuratedStore, topic: Topic) -> tuple[Citation, ...]:

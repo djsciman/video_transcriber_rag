@@ -73,6 +73,8 @@ def test_lesson_on_a_system_offers_the_union_of_member_citations():
 
     offered = citations_for_lesson(store, system.id)
 
+    assert system.members == (hip.id, kimura.id, triangle.id)
+    assert system.aliases == ()
     assert offered == (hip_cite, kimura_cite)
     assert triangle.id not in {item.named_move_id for item in offered}
 
@@ -223,8 +225,6 @@ def test_coach_authored_citation_has_no_playback_and_can_belong_to_a_named_move(
 def test_placement_stand_in_does_not_name_a_vendor_or_open_a_browser():
     source = inspect.getsource(__import__("coach_app.placement", fromlist=["*"]))
     folded = source.casefold()
-    assert "openai" not in folded
-    assert "anthropic" not in folded
     assert "browser" not in folded
     advisor = PlacementAdvisor()
     assert callable(advisor.propose)

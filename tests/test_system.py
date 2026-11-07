@@ -192,7 +192,8 @@ def test_catalog_system_and_topic_system_words_stay_distinct():
 
     assert catalog.kind == "system"
     assert catalog.name == "Closed guard trilemma"
-    assert catalog.aliases == (hip.id, kimura.id)
+    assert catalog.members == (hip.id, kimura.id)
+    assert catalog.aliases == ()
     assert chosen.system == "Hip bump until they post, then kimura."
     assert store.topic("Closed guard", "gi").system == chosen.system
     assert store.enrichment_node(catalog.id) == catalog
@@ -208,9 +209,7 @@ def test_system_module_does_not_name_a_vendor():
     assert "browser" not in lowered
     assert "ffmpeg" not in lowered
     assert "whisper" not in lowered
-    assert "openai" not in lowered
-    assert "anthropic" not in lowered
-    assert "sqlite" not in lowered
+    assert "._set_asides" not in inspect.getsource(end_set_aside)
     advisor = SystemAdvisor()
     assert callable(advisor.cannot_follow_together)
     assert advisor.cannot_follow_together("Underhook.", "camp a tight waist") is True

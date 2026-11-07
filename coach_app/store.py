@@ -97,6 +97,7 @@ class EnrichmentNode:
     end_occupancy: str = ""
     aliases: tuple[str, ...] = ()
     cross_refs: tuple[str, ...] = ()
+    members: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -110,6 +111,7 @@ class Unit:
 @dataclass(frozen=True)
 class Class:
     purpose: str = ""
+    unit_id: str = ""
     id: str = ""
 
 
@@ -121,7 +123,14 @@ class Lesson:
     partner_job: str = ""
     scenario: str = ""
     condition: str = ""
+    class_id: str = ""
     id: str = ""
+
+
+@dataclass(frozen=True)
+class PackedClass:
+    class_record: Class
+    lessons: tuple[Lesson, ...]
 
 
 @dataclass(frozen=True)
@@ -133,7 +142,23 @@ class CustomLesson:
 @dataclass(frozen=True)
 class UnitHistory:
     unit: Unit
+    classes: tuple[PackedClass, ...] = ()
     id: str = ""
+
+
+def validate_lesson_connection(*, named_move_id: str = "", system_id: str = "") -> None:
+    has_named_move = bool(str(named_move_id or "").strip())
+    has_system = bool(str(system_id or "").strip())
+    if has_named_move == has_system:
+        raise ValueError(
+            "A lesson connects to exactly one named move or exactly one catalog system."
+        )
+
+
+def system_members(node: EnrichmentNode | None) -> tuple[str, ...]:
+    if node is None:
+        return ()
+    return tuple(member for member in node.members if member)
 
 
 class CuratedStore:
@@ -277,6 +302,28 @@ class CuratedStore:
     def topics(self) -> tuple[Topic, ...]:
         return tuple(self._topics.values())
 
+    def remove_topic(self, name: str, ruleset: str) -> None:
+        self._topics.pop((name, ruleset), None)
+        for key in list(self._other_ruleset):
+            if key[0] == name and key[1] == ruleset:
+                self._other_ruleset.pop(key, None)
+        for key in list(self._set_asides):
+            topic_name, topic_ruleset, earlier_name, earlier_ruleset = key
+            if (topic_name, topic_ruleset) == (name, ruleset) or (
+                earlier_name,
+                earlier_ruleset,
+            ) == (name, ruleset):
+                self._set_asides.pop(key, None)
+        for unit in list(self._units.values()):
+            if unit.topic_name == name and unit.topic_ruleset == ruleset:
+                self._drop_unit(unit.id)
+        for history in list(self._unit_histories.values()):
+            if (
+                history.unit.topic_name == name
+                and history.unit.topic_ruleset == ruleset
+            ):
+                self._unit_histories.pop(history.id, None)
+
     def put_other_ruleset_choice(
         self, choice: OtherRulesetChoice
     ) -> OtherRulesetChoice:
@@ -304,6 +351,18 @@ class CuratedStore:
             record
             for (name, ruleset, *_rest), record in self._set_asides.items()
             if name == topic_name and ruleset == topic_ruleset
+        )
+
+    def end_set_aside(
+        self,
+        topic_name: str,
+        topic_ruleset: str,
+        earlier_topic_name: str,
+        earlier_topic_ruleset: str,
+    ) -> None:
+        self._set_asides.pop(
+            (topic_name, topic_ruleset, earlier_topic_name, earlier_topic_ruleset),
+            None,
         )
 
     def put_enrichment_node(self, node: EnrichmentNode) -> EnrichmentNode:
@@ -472,7 +531,15 @@ class CuratedStore:
                 self._citations[citation.id] = replace(citation, named_move_id="")
 
     def put_unit(self, unit: Unit) -> Unit:
-        return self._put_identified(self._units, unit)
+        stored = self._put_identified(self._units, unit)
+        for other in list(self._units.values()):
+            if (
+                other.id != stored.id
+                and other.topic_name == stored.topic_name
+                and other.topic_ruleset == stored.topic_ruleset
+            ):
+                self._drop_unit(other.id)
+        return stored
 
     def unit(self, unit_id: str) -> Unit | None:
         return self._units.get(unit_id)
@@ -490,6 +557,7 @@ class CuratedStore:
         return tuple(self._classes.values())
 
     def put_lesson(self, lesson: Lesson) -> Lesson:
+        self._require_lesson_connection(lesson)
         return self._put_identified(self._lessons, lesson)
 
     def lesson(self, lesson_id: str) -> Lesson | None:
@@ -507,6 +575,9 @@ class CuratedStore:
     def custom_lessons(self) -> tuple[CustomLesson, ...]:
         return tuple(self._custom_lessons.values())
 
+    def delete_custom_lesson(self, custom_id: str) -> None:
+        self._custom_lessons.pop(custom_id, None)
+
     def put_unit_history(self, history: UnitHistory) -> UnitHistory:
         return self._put_identified(self._unit_histories, history)
 
@@ -515,6 +586,25 @@ class CuratedStore:
 
     def unit_histories(self) -> tuple[UnitHistory, ...]:
         return tuple(self._unit_histories.values())
+
+    def _require_lesson_connection(self, lesson: Lesson) -> None:
+        node = self._enrichment_nodes.get(lesson.target) if lesson.target else None
+        if node is not None and node.kind == "system":
+            validate_lesson_connection(system_id=node.id)
+        else:
+            validate_lesson_connection(named_move_id=lesson.target or "")
+
+    def _drop_unit(self, unit_id: str) -> None:
+        self._units.pop(unit_id, None)
+        for class_record in list(self._classes.values()):
+            if class_record.unit_id == unit_id:
+                self._drop_class(class_record.id)
+
+    def _drop_class(self, class_id: str) -> None:
+        self._classes.pop(class_id, None)
+        for lesson in list(self._lessons.values()):
+            if lesson.class_id == class_id:
+                self._lessons.pop(lesson.id, None)
 
     def _put_identified(self, bag: dict[str, object], record):
         stored = record if record.id else replace(record, id=self._allocate_id())

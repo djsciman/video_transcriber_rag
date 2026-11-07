@@ -4,10 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
-from coach_app.build import PackedClass
-from coach_app.store import CustomLesson, Lesson, UnitHistory
-
-_HISTORY_CLASSES: dict[str, tuple[PackedClass, ...]] = {}
+from coach_app.store import CustomLesson, Lesson, PackedClass, UnitHistory, system_members
 
 
 @dataclass(frozen=True)
@@ -29,10 +26,10 @@ def place_lesson(
 ):
     from coach_app.edit import add_lesson
 
-    placed = add_lesson(store, sheet, lesson, class_index=class_index, index=index)
-    placed = _apply_glued(store, sheet, placed, lesson, glued)
-    store.put_custom_lesson(CustomLesson(lesson=_snapshot(lesson, glued)))
-    return placed
+    placed = add_lesson(
+        store, sheet, lesson, class_index=class_index, index=index, glued=glued
+    )
+    return _apply_glued(store, sheet, placed, lesson, glued)
 
 
 def pull_custom(store, custom_id: str) -> tuple[Lesson, ...]:
@@ -65,7 +62,7 @@ def edit_custom(
 
 
 def delete_custom(store, custom_id: str) -> None:
-    store._custom_lessons.pop(custom_id, None)
+    store.delete_custom_lesson(custom_id)
 
 
 def search_library(
@@ -134,7 +131,7 @@ def browse_library(
     systems = [
         node
         for node in store.enrichment_nodes()
-        if node.kind == "system" and named_ids.intersection(node.aliases)
+        if node.kind == "system" and named_ids.intersection(system_members(node))
     ]
     targets = named_ids | {node.id for node in systems}
     customs = [
@@ -175,9 +172,15 @@ def add_lesson_sources(store, session=None, **filters) -> AddLessonSources:
 
 
 def save_history(store, sheet) -> UnitHistory:
-    history = store.put_unit_history(UnitHistory(unit=sheet.unit))
-    _HISTORY_CLASSES[history.id] = sheet.classes
-    return history
+    return store.put_unit_history(
+        UnitHistory(
+            unit=sheet.unit,
+            classes=tuple(
+                PackedClass(class_record=item.class_record, lessons=item.lessons)
+                for item in sheet.classes
+            ),
+        )
+    )
 
 
 def copy_history(store, history_id: str):
@@ -186,10 +189,13 @@ def copy_history(store, history_id: str):
     history = store.unit_history(history_id)
     unit = store.put_unit(replace(history.unit, id=""))
     packed = []
-    for item in _HISTORY_CLASSES.get(history_id, ()):
-        class_record = store.put_class(replace(item.class_record, id=""))
+    for item in history.classes:
+        class_record = store.put_class(
+            replace(item.class_record, id="", unit_id=unit.id)
+        )
         lessons = tuple(
-            store.put_lesson(replace(lesson, id="")) for lesson in item.lessons
+            store.put_lesson(replace(lesson, id="", class_id=class_record.id))
+            for lesson in item.lessons
         )
         packed.append(PackedClass(class_record=class_record, lessons=lessons))
     return Sheet(

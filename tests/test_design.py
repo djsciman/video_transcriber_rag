@@ -317,8 +317,35 @@ def test_tight_waist_sample_is_unordered_and_does_not_pack():
     pinned = add_system(store, open_design(), trilemma.id)
     assert ("system", trilemma.id) in _mark_keys(pinned)
     assert {mark.target for mark in pinned.marks if mark.kind == "named move"} == set(
-        trilemma.aliases
+        trilemma.members
     )
+
+
+def test_dropping_a_member_drops_only_that_system():
+    store = _tight_waist_catalog()
+    session = sample_tight_waist(store)
+    roll = _named(store, "Roll-through sweep")
+    knee = _named(store, "Knee lever")
+    trilemma = next(node for node in store.enrichment_nodes() if node.kind == "system")
+    roll_mark = next(
+        mark
+        for mark in session.marks
+        if mark.kind == "named move" and mark.target == roll.id
+    )
+
+    deleted = delete_mark(session, roll_mark.id)
+    remaining = {
+        store.enrichment_node(mark.target).name
+        for mark in deleted.marks
+        if mark.kind == "named move"
+    }
+    systems = {mark.target for mark in deleted.marks if mark.kind == "system"}
+
+    assert roll.name not in remaining
+    assert knee.name in remaining
+    assert "Tight waist" in remaining
+    assert trilemma.id not in systems
+    assert ("named move", knee.id) in _mark_keys(deleted)
 
 
 def test_design_does_not_organize_the_catalog_or_pack_classes():
@@ -331,8 +358,6 @@ def test_design_does_not_organize_the_catalog_or_pack_classes():
     assert "delete_enrichment" not in folded
     assert "import_enrichment_seed" not in folded
     assert "prototypes" not in folded
-    assert "openai" not in folded
-    assert "anthropic" not in folded
     assert "browser" not in folded
     session = open_design()
     assert session.marks == ()

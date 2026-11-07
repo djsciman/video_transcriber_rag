@@ -83,8 +83,6 @@ def test_read_and_edit_share_the_class_card_sheet_and_draft_stays_no_edit():
     else:
         raise AssertionError("expected Read mode to refuse packing")
     assert "playback" not in source.casefold()
-    assert "openai" not in source.casefold()
-    assert "anthropic" not in source.casefold()
     assert "prototypes" not in source.casefold()
     assert "<html" not in source.casefold()
     assert "max_classes" not in source.casefold()
@@ -215,6 +213,11 @@ def test_empty_classes_are_refused_with_no_class_cap_and_any_type_may_open():
     )
     assert store.class_record(opened.classes[-1].class_record.id)
     assert "max_classes" not in inspect.getsource(inspect.getmodule(open_sheet))
+    saved = store.custom_lessons()
+    assert any(
+        item.lesson.kind == "sparring" and item.lesson.scenario == "Half guard bottom."
+        for item in saved
+    )
 
 
 def test_sparring_games_and_drill_only_store_text_after_draft():

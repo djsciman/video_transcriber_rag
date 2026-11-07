@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 
 from coach_app.build import DRAFT_COLUMNS, PackedClass
-from coach_app.store import Class, Lesson
+from coach_app.store import Class, CustomLesson, Lesson
 
 
 @dataclass(frozen=True)
@@ -64,42 +64,46 @@ def class_cards(store, sheet: Sheet) -> tuple[tuple[LessonCard, ...], ...]:
     return tuple(rows)
 
 
-def add_lesson(store, sheet: Sheet, lesson: Lesson, *, class_index=None, index=None) -> Sheet:
+def add_lesson(
+    store,
+    sheet: Sheet,
+    lesson: Lesson,
+    *,
+    class_index=None,
+    index=None,
+    glued: Lesson | None = None,
+) -> Sheet:
     _require_edit(sheet)
-    stored = [store.put_lesson(lesson)]
-    if lesson.kind == "technique":
-        stored.append(
-            store.put_lesson(
-                Lesson(
-                    kind="drill",
-                    target=lesson.target,
-                    citations=lesson.citations,
-                )
-            )
-        )
+    unit_id = getattr(sheet.unit, "id", "") or ""
     if class_index is None or class_index == len(sheet.classes):
-        packed = PackedClass(
-            class_record=store.put_class(Class()),
-            lessons=tuple(stored),
+        class_record = store.put_class(Class(unit_id=unit_id))
+        stored = _put_placed_lessons(store, lesson, class_record.id)
+        packed = PackedClass(class_record=class_record, lessons=tuple(stored))
+        sheet = replace(sheet, classes=sheet.classes + (packed,))
+    else:
+        if class_index < 0 or class_index >= len(sheet.classes):
+            raise ValueError("Class is not on the sheet.")
+        current = sheet.classes[class_index]
+        stored = _put_placed_lessons(store, lesson, current.class_record.id)
+        lessons = list(current.lessons)
+        at = len(lessons) if index is None else index
+        at = max(0, min(at, len(lessons)))
+        if at < len(lessons):
+            start, end = _block(lessons, at)
+            if start < at <= end:
+                at = end + 1
+        lessons[at:at] = stored
+        classes = list(sheet.classes)
+        classes[class_index] = PackedClass(
+            class_record=current.class_record,
+            lessons=tuple(lessons),
         )
-        return replace(sheet, classes=sheet.classes + (packed,))
-    if class_index < 0 or class_index >= len(sheet.classes):
-        raise ValueError("Class is not on the sheet.")
-    current = sheet.classes[class_index]
-    lessons = list(current.lessons)
-    at = len(lessons) if index is None else index
-    at = max(0, min(at, len(lessons)))
-    if at < len(lessons):
-        start, end = _block(lessons, at)
-        if start < at <= end:
-            at = end + 1
-    lessons[at:at] = stored
-    classes = list(sheet.classes)
-    classes[class_index] = PackedClass(
-        class_record=current.class_record,
-        lessons=tuple(lessons),
+        sheet = replace(sheet, classes=tuple(classes))
+    job = glued.partner_job if glued is not None else lesson.partner_job
+    store.put_custom_lesson(
+        CustomLesson(lesson=replace(lesson, id="", partner_job=job))
     )
-    return replace(sheet, classes=tuple(classes))
+    return sheet
 
 
 def remove_lesson(store, sheet: Sheet, lesson_id: str) -> Sheet:
@@ -154,7 +158,9 @@ def drag_lesson(store, sheet: Sheet, lesson_id: str, *, class_index, index) -> S
         if not opening and to_ci > from_ci:
             to_ci -= 1
     if opening:
-        records.append(store.put_class(Class()))
+        records.append(
+            store.put_class(Class(unit_id=getattr(sheet.unit, "id", "") or ""))
+        )
         bags.append(list(chunk))
     else:
         dest = bags[to_ci]
@@ -172,6 +178,22 @@ def set_purpose(store, sheet: Sheet, class_index: int, purpose: str) -> Sheet:
         lessons=packed.lessons,
     )
     return replace(sheet, classes=tuple(classes))
+
+
+def _put_placed_lessons(store, lesson: Lesson, class_id: str) -> list[Lesson]:
+    stored = [store.put_lesson(replace(lesson, class_id=class_id))]
+    if lesson.kind == "technique":
+        stored.append(
+            store.put_lesson(
+                Lesson(
+                    kind="drill",
+                    target=lesson.target,
+                    citations=lesson.citations,
+                    class_id=class_id,
+                )
+            )
+        )
+    return stored
 
 
 def _mode(mode: str) -> str:

@@ -7,18 +7,12 @@ from dataclasses import dataclass, replace
 from coach_app.briefing import BriefingAdvisor, DisagreementSide
 from coach_app.design import DesignSession, sample_tight_waist
 from coach_app.placement import citations_for_design_mark, citations_for_lesson
-from coach_app.store import Class, Lesson, Unit
+from coach_app.store import Class, Lesson, PackedClass, Unit, system_members
 from coach_app.topics import same_ruleset_citations
 
 
 DRAFT_COLUMNS = ("Lesson", "Type", "Target", "What to run")
 _DEFAULT_JOB = "Coach fills the partner job."
-
-
-@dataclass(frozen=True)
-class PackedClass:
-    class_record: Class
-    lessons: tuple[Lesson, ...]
 
 
 @dataclass(frozen=True)
@@ -83,8 +77,11 @@ def _write_draft(store, session, advisor, paragraph: str) -> Draft:
     planned = _plan_classes(store, session, advisor)
     packed = []
     for lessons in planned:
-        class_record = store.put_class(Class())
-        stored = tuple(store.put_lesson(lesson) for lesson in lessons)
+        class_record = store.put_class(Class(unit_id=unit.id))
+        stored = tuple(
+            store.put_lesson(replace(lesson, class_id=class_record.id))
+            for lesson in lessons
+        )
         packed.append(PackedClass(class_record=class_record, lessons=stored))
     return Draft(unit=unit, classes=tuple(packed))
 
@@ -117,8 +114,7 @@ def _member_ids(store, session) -> set[str]:
         if mark.kind != "system":
             continue
         node = store.enrichment_node(mark.target)
-        if node is not None:
-            ids.update(node.aliases)
+        ids.update(system_members(node))
     return ids
 
 
@@ -152,7 +148,7 @@ def _isolated_marks(store, session, advisor, member_ids):
         if member is None:
             continue
         for system in systems:
-            if system is None or mark.target not in system.aliases:
+            if system is None or mark.target not in system_members(system):
                 continue
             if advisor.isolate_member(store, session, member, system):
                 isolated.append(mark)
@@ -188,7 +184,9 @@ def _citations_for(store, session, mark) -> tuple[str, ...]:
         )
         if chosen:
             return chosen
-        linked = citations_for_design_mark(store, mark.target)
+        linked = _same_ruleset_linked(
+            store, session, citations_for_design_mark(store, mark.target)
+        )
         node = store.enrichment_node(mark.target)
         systems = tuple(
             store.enrichment_node(item.target)
@@ -202,7 +200,9 @@ def _citations_for(store, session, mark) -> tuple[str, ...]:
         )
         pool = specific or linked
         return (pool[0].id,) if pool else ()
-    linked = citations_for_lesson(store, mark.target)
+    linked = _same_ruleset_linked(
+        store, session, citations_for_lesson(store, mark.target)
+    )
     system = store.enrichment_node(mark.target)
     preferred = tuple(
         citation
@@ -213,13 +213,30 @@ def _citations_for(store, session, mark) -> tuple[str, ...]:
     return (pool[0].id,) if pool else ()
 
 
+def _same_ruleset_linked(store, session, citations):
+    return tuple(
+        citation
+        for citation in citations
+        if _same_topic_ruleset(store, session, citation)
+    )
+
+
+def _same_topic_ruleset(store, session, citation) -> bool:
+    if not session.topic_ruleset or not citation.instructional:
+        return True
+    instructional = store.instructional(citation.instructional)
+    if instructional is None:
+        return True
+    return instructional.ruleset == session.topic_ruleset
+
+
 def _is_specific(citation, named_move, systems) -> bool:
     movement = _folded(citation.movement)
     move_name = _folded(named_move.name)
     if move_name and move_name in movement:
         return True
     for system in systems:
-        if system is None or named_move.id not in system.aliases:
+        if system is None or named_move.id not in system_members(system):
             continue
         if _system_level(citation, system):
             return False

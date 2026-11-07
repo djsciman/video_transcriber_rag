@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
-from coach_app.store import Citation, EnrichmentNode
+from coach_app.store import (
+    Citation,
+    EnrichmentNode,
+    system_members,
+    validate_lesson_connection,
+)
 
 
 @dataclass(frozen=True)
@@ -32,15 +37,6 @@ class PlacementAdvisor:
             if needle in {name.casefold() for name in names if name}:
                 return node.id
         return ""
-
-
-def validate_lesson_connection(*, named_move_id: str = "", system_id: str = "") -> None:
-    has_named_move = bool(str(named_move_id or "").strip())
-    has_system = bool(str(system_id or "").strip())
-    if has_named_move == has_system:
-        raise ValueError(
-            "A lesson connects to exactly one named move or exactly one catalog system."
-        )
 
 
 def citations_for_lesson(store, lesson_target):
@@ -71,9 +67,8 @@ def put_catalog_system(store, name, named_move_ids):
     members = tuple(named_move_ids)
     if len(members) < 2:
         raise ValueError("A catalog system is two or more named moves.")
-    # aliases holds member named-move ids; EnrichmentNode has no members field.
     return store.put_enrichment_node(
-        EnrichmentNode(kind="system", name=name, aliases=members)
+        EnrichmentNode(kind="system", name=name, members=members)
     )
 
 
@@ -138,5 +133,5 @@ def apply_placement_decisions(store, decisions):
 def _named_move_ids_for(store, lesson_target: str) -> tuple[str, ...]:
     node = store.enrichment_node(lesson_target)
     if node is not None and node.kind == "system":
-        return tuple(member for member in node.aliases if member)
+        return system_members(node)
     return (lesson_target,)
