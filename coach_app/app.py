@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import argparse
 import html
+import inspect
 from collections.abc import Callable
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Thread
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlencode, urlparse
 
 from coach_app.store import CuratedStore
 
@@ -80,8 +81,7 @@ def render_home(store: CuratedStore) -> str:
     topics = store.topics()
     if topics:
         items = "".join(
-            f"<li>{html.escape(topic.name)} ({html.escape(topic.ruleset)})</li>"
-            for topic in topics
+            _topic_link(topic.name, topic.ruleset) for topic in topics
         )
         topics_body = f"<ul>{items}</ul>"
     else:
@@ -92,6 +92,15 @@ def render_home(store: CuratedStore) -> str:
         '<section class="panel" id="topics">\n'
         "<h2>Topics</h2>\n"
         f"{topics_body}\n"
+        '<form method="post" action="/topics">\n'
+        '<label for="topic_name">Topic name</label>\n'
+        '<input id="topic_name" name="name" type="text">\n'
+        '<div class="choices">\n'
+        '<label><input type="radio" name="ruleset" value="gi"> gi</label>\n'
+        '<label><input type="radio" name="ruleset" value="no-gi"> no-gi</label>\n'
+        "</div>\n"
+        '<button type="submit">Open</button>\n'
+        "</form>\n"
         "</section>\n"
         '<section class="panel" id="settings">\n'
         "<h2>Playback folders</h2>\n"
@@ -118,8 +127,24 @@ def _optional(value: str) -> str | None:
     return stripped or None
 
 
+def _topic_link(name: str, ruleset: str) -> str:
+    href = "/topics?" + urlencode({"name": name, "ruleset": ruleset})
+    label = f"{html.escape(name)} ({html.escape(ruleset)})"
+    return f'<li><a href="{html.escape(href, quote=True)}">{label}</a></li>'
+
+
+def _call_get(screen: Screen, store: CuratedStore, fields: dict[str, list[str]]) -> str:
+    get = screen.get
+    if get is None:
+        raise RuntimeError("screen has no get")
+    if len(inspect.signature(get).parameters) >= 2:
+        return get(store, fields)
+    return get(store)
+
+
 add_screen(Screen("home", "/", "Home", get=render_home))
 add_screen(Screen("settings", "/settings", "", post=save_settings))
+import coach_app.ui_topics
 
 
 class CoachApp:
@@ -170,12 +195,14 @@ class _LocalServer(ThreadingHTTPServer):
 def _make_handler(app: CoachApp):
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self) -> None:
-            path = urlparse(self.path).path or "/"
+            parsed = urlparse(self.path)
+            path = parsed.path or "/"
             screen = screen_for(path)
             if screen is None or screen.get is None:
                 self._send(404, "text/plain; charset=utf-8", b"Not found")
                 return
-            body = screen.get(app.store).encode("utf-8")
+            fields = parse_qs(parsed.query, keep_blank_values=True)
+            body = _call_get(screen, app.store, fields).encode("utf-8")
             self._send(200, "text/html; charset=utf-8", body)
 
         def do_POST(self) -> None:

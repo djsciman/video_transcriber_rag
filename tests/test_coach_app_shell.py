@@ -116,7 +116,7 @@ def test_home_lists_topics_already_in_the_store(tmp_path):
 def test_coach_sets_video_root_and_transcript_folder_from_the_form(tmp_path):
     with CoachApp(tmp_path) as app:
         home = _Page(_get(app.url))
-        form = home.forms[0]
+        form = next(item for item in home.forms if "video_root" in item["inputs"])
         action = form["action"]
         assert form["method"] == "post"
         assert "video_root" in form["inputs"]
