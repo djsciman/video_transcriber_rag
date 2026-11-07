@@ -1,4 +1,4 @@
-"""Briefing memo for an open topic, before the coach determines the system."""
+"""Briefing memo for an open topic, and the system choice that follows it."""
 
 from __future__ import annotations
 
@@ -7,7 +7,14 @@ from urllib.parse import urlencode
 
 from coach_app.app import Screen, add_screen, render_shell
 from coach_app.briefing import BriefingAdvisor, BriefingMemo, brief_topic
-from coach_app.store import Citation, CuratedStore, Showing
+from coach_app.store import Citation, CuratedStore, Showing, Topic
+from coach_app.system import (
+    SystemAdvisor,
+    choose_system,
+    end_set_aside,
+    set_aside,
+    system_conflicts,
+)
 
 _STYLE = """
 .memo-top {
@@ -94,6 +101,21 @@ a.play {
   padding: 1rem 1.1rem;
   background: #fff1f2;
 }
+.conflict, .set-aside {
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  background: #fff7ed;
+  margin-top: 0.65rem;
+}
+textarea {
+  font: inherit;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.35rem 0.55rem;
+  width: 100%;
+  min-height: 4.5rem;
+}
 """
 
 
@@ -120,7 +142,7 @@ def render_briefing(store: CuratedStore, fields: dict[str, list[str]]) -> str:
             "</section>\n"
         )
         return render_shell(title="Briefing", current="home", body=body)
-    body = f"<style>{_STYLE}</style>\n" + _memo(store, memo)
+    body = f"<style>{_STYLE}</style>\n" + _memo(store, topic, memo)
     return render_shell(
         title=f"{memo.topic_name} ({memo.topic_ruleset})",
         current="home",
@@ -128,14 +150,41 @@ def render_briefing(store: CuratedStore, fields: dict[str, list[str]]) -> str:
     )
 
 
+def submit_briefing(store: CuratedStore, fields: dict[str, list[str]]) -> str:
+    name = _first(fields, "name")
+    ruleset = _first(fields, "ruleset")
+    topic = store.topic(name, ruleset)
+    action = _first(fields, "action")
+    if topic is not None:
+        if action == "choose_system":
+            choose_system(store, topic, _first(fields, "words"))
+        elif action in {"set_aside", "end_set_aside"}:
+            earlier = store.topic(
+                _first(fields, "earlier_name"),
+                _first(fields, "earlier_ruleset"),
+            )
+            if earlier is not None:
+                if action == "set_aside":
+                    set_aside(store, topic, earlier)
+                else:
+                    end_set_aside(store, topic, earlier)
+    return briefing_location(name, ruleset)
+
+
 def _advisor(store: CuratedStore):
     return getattr(store, "_briefing_advisor", None) or BriefingAdvisor()
 
 
-def _memo(store: CuratedStore, memo: BriefingMemo) -> str:
+def _system_advisor(store: CuratedStore):
+    return getattr(store, "_system_advisor", None) or SystemAdvisor()
+
+
+def _memo(store: CuratedStore, topic: Topic, memo: BriefingMemo) -> str:
     pill_class = "pill-gi" if memo.topic_ruleset == "gi" else "pill-nogi"
     pill_label = f"{html.escape(memo.topic_ruleset)} topic"
     same = "".join(_citation_item(store, citation) for citation in memo.same_ruleset_citations)
+    sides = tuple(side.citation for side in memo.disagreement)
+    notes = system_conflicts(store, topic, sides, _system_advisor(store))
     parts = [
         '<article class="panel memo" id="briefing-memo">\n',
         '<div class="memo-top">\n',
@@ -150,7 +199,9 @@ def _memo(store: CuratedStore, memo: BriefingMemo) -> str:
         f'<ul class="cite-list">{same}</ul>\n' if same else '<p class="empty">No same-ruleset citations.</p>\n',
         "</section>\n",
         _other_section(store, memo),
-        _disagreement_section(store, memo),
+        _disagreement_section(store, topic, memo, notes),
+        _system_section(topic),
+        _set_asides_section(store, topic),
         "</article>\n",
     ]
     return "".join(parts)
@@ -207,11 +258,13 @@ def _caveat_box(memo: BriefingMemo) -> str:
     )
 
 
-def _disagreement_section(store: CuratedStore, memo: BriefingMemo) -> str:
+def _disagreement_section(
+    store: CuratedStore, topic: Topic, memo: BriefingMemo, notes
+) -> str:
     if not memo.disagreement:
         return ""
     sides = "".join(
-        _side(store, side.citation) for side in memo.disagreement
+        _side(store, topic, side.citation, notes) for side in memo.disagreement
     )
     return (
         '<section id="disagreement">\n'
@@ -221,8 +274,11 @@ def _disagreement_section(store: CuratedStore, memo: BriefingMemo) -> str:
     )
 
 
-def _side(store: CuratedStore, citation: Citation) -> str:
+def _side(store: CuratedStore, topic: Topic, citation: Citation, notes) -> str:
     instructor = html.escape(citation.instructor or "")
+    conflicts = "".join(
+        _conflict_note(topic, note) for note in notes if note.side == citation
+    )
     return (
         '<div class="side">\n'
         f"<strong>{instructor}</strong>\n"
@@ -230,7 +286,79 @@ def _side(store: CuratedStore, citation: Citation) -> str:
         f"{_citation_meta(citation)}\n"
         f"{_playback(store, citation)}\n"
         f"{_steps(citation.step_bullets)}\n"
+        f"{conflicts}"
         "</div>\n"
+    )
+
+
+def _conflict_note(topic: Topic, note) -> str:
+    return (
+        '<div class="conflict">\n'
+        f'<div class="cite-head">{html.escape(note.earlier_topic_name)}</div>\n'
+        f"<p>{html.escape(note.system)}</p>\n"
+        '<form method="post" action="/briefing">\n'
+        f"{_topic_fields(topic)}"
+        '<input type="hidden" name="action" value="set_aside">\n'
+        f'<input type="hidden" name="earlier_name" value="{html.escape(note.earlier_topic_name, quote=True)}">\n'
+        f'<input type="hidden" name="earlier_ruleset" value="{html.escape(topic.ruleset, quote=True)}">\n'
+        '<button type="submit">Set aside</button>\n'
+        "</form>\n"
+        "</div>\n"
+    )
+
+
+def _system_section(topic: Topic) -> str:
+    empty = ""
+    if not topic.system:
+        empty = '<p class="empty">Empty until chosen.</p>\n'
+    return (
+        '<section id="system">\n'
+        "<h3>System</h3>\n"
+        f"{empty}"
+        '<form method="post" action="/briefing">\n'
+        f"{_topic_fields(topic)}"
+        '<input type="hidden" name="action" value="choose_system">\n'
+        '<label for="system-words">How this topic is taught</label>\n'
+        f'<textarea id="system-words" name="words">{html.escape(topic.system)}</textarea>\n'
+        '<button type="submit">Choose</button>\n'
+        "</form>\n"
+        "</section>\n"
+    )
+
+
+def _set_asides_section(store: CuratedStore, topic: Topic) -> str:
+    records = store.set_asides(topic.name, topic.ruleset)
+    if not records:
+        return ""
+    cards = []
+    for record in records:
+        earlier = store.topic(record.earlier_topic_name, record.earlier_topic_ruleset)
+        live = earlier.system if earlier is not None else ""
+        cards.append(
+            '<div class="set-aside">\n'
+            f'<div class="cite-head">{html.escape(record.earlier_topic_name)}</div>\n'
+            f"<p>{html.escape(live)}</p>\n"
+            '<form method="post" action="/briefing">\n'
+            f"{_topic_fields(topic)}"
+            '<input type="hidden" name="action" value="end_set_aside">\n'
+            f'<input type="hidden" name="earlier_name" value="{html.escape(record.earlier_topic_name, quote=True)}">\n'
+            f'<input type="hidden" name="earlier_ruleset" value="{html.escape(record.earlier_topic_ruleset, quote=True)}">\n'
+            '<button type="submit">Show again</button>\n'
+            "</form>\n"
+            "</div>\n"
+        )
+    return (
+        '<section id="set-asides">\n'
+        "<h3>Set aside on this topic</h3>\n"
+        f"{''.join(cards)}"
+        "</section>\n"
+    )
+
+
+def _topic_fields(topic: Topic) -> str:
+    return (
+        f'<input type="hidden" name="name" value="{html.escape(topic.name, quote=True)}">\n'
+        f'<input type="hidden" name="ruleset" value="{html.escape(topic.ruleset, quote=True)}">\n'
     )
 
 
@@ -306,4 +434,4 @@ def _first(fields: dict[str, list[str]], key: str) -> str:
     return values[0] if values else ""
 
 
-add_screen(Screen("briefing", "/briefing", "", get=render_briefing))
+add_screen(Screen("briefing", "/briefing", "", get=render_briefing, post=submit_briefing))
