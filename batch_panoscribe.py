@@ -162,7 +162,14 @@ def extract_chapters(video_path: Path) -> list[dict]:
         "-show_chapters",
         str(video_path),
     ]
-    result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    result = subprocess.run(
+        cmd,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
     payload = json.loads(result.stdout or "{}")
     chapters = []
     for index, chapter in enumerate(payload.get("chapters") or [], start=1):

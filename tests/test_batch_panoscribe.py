@@ -5,11 +5,14 @@ from __future__ import annotations
 import io
 import json
 import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
 from typing import Callable
+from unittest.mock import patch
 
 import batch_panoscribe
 
@@ -946,6 +949,40 @@ class SecondRunStableTest(unittest.TestCase):
             self.assertIn("Unchanged: 1", out)
             self.assertIn("Created: 0", out)
             self.assertIn("Updated: 0", out)
+
+
+class ExtractChaptersUtf8Test(unittest.TestCase):
+    def test_curly_quote_in_ffprobe_json_keeps_chapter_title(self):
+        payload = {
+            "chapters": [
+                {
+                    "id": 0,
+                    "time_base": "1/1000",
+                    "start": 0,
+                    "start_time": "0.000000",
+                    "end": 1000,
+                    "end_time": "1.000000",
+                    "tags": {"title": "The \u201dguard\u201d"},
+                }
+            ]
+        }
+        raw = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        self.assertIn(0x9D, raw)
+
+        real_run = subprocess.run
+
+        def fake_run(cmd, **kwargs):
+            self.assertEqual(cmd[0], "ffprobe")
+            child = "import sys; sys.stdout.buffer.write(" + repr(raw) + ")"
+            return real_run([sys.executable, "-c", child], **kwargs)
+
+        with patch.object(batch_panoscribe.subprocess, "run", fake_run):
+            chapters = batch_panoscribe.extract_chapters(Path("unused.mp4"))
+
+        self.assertEqual(
+            chapters,
+            [{"title": "The \u201dguard\u201d", "start": 0.0, "end": 1.0}],
+        )
 
 
 class CliOptionsTest(unittest.TestCase):
