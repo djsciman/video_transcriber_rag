@@ -16,8 +16,9 @@ paragraph longer than 160 characters is skipped. A card whose match is
 in the first 15 seconds is titled Introduction. A card with no text is
 titled continued. Those titles are written
 to the timestamp CSV and to the chapter-names CSV. Without --apply, only
-those files are written. With --apply, an existing chapter CSV is embedded
-and the video is not scanned again. With --apply and no chapter CSV, the
+those files are written. An existing times sidecar skips the scan unless
+--force. With --apply, an existing chapter CSV is embedded and the video
+is not scanned again unless --force. With --apply and no chapter CSV, the
 scan runs and the new chapters are embedded.
 
 The file is written next to the video as <video stem>_chapters.csv:
@@ -468,7 +469,8 @@ def apply_cli(argv):
     args = parser.parse_args(argv)
     videos = [Path(video) for video in args.videos] if args.videos else videos_with_sidecars(Path.cwd())
     if not videos:
-        sys.exit("no videos with chapter sidecars found")
+        print("no videos with chapter sidecars found", file=sys.stderr)
+        return 1
     failed = False
     for video in videos:
         try:
@@ -477,8 +479,7 @@ def apply_cli(argv):
             failed = True
             message = exc.code if isinstance(exc.code, str) else "apply failed"
             print(message, file=sys.stderr)
-    if failed:
-        sys.exit(1)
+    return 1 if failed else 0
 
 
 def ocr_text(engine, frame):
@@ -810,6 +811,7 @@ def detection_requested(argv):
         "--val",
         "--output",
         "--samples",
+        "--force",
     }
     for arg in argv:
         if arg in flags or arg.startswith("--output="):
@@ -822,18 +824,7 @@ def detection_requested(argv):
     return False
 
 
-def main():
-    configure_stdio()
-    # `--apply video` embeds sidecars that already exist. A color or a
-    # detection flag selects the combined command instead.
-    if "--apply" in sys.argv[1:] and not detection_requested(sys.argv[1:]):
-        plain = [arg for arg in sys.argv[1:] if arg != "--apply"]
-        videos = [arg for arg in plain if not arg.startswith("-")]
-        # A video that already has a chapter file is embedded. A video
-        # with no chapter file is detected from the histogram below.
-        if not videos or all(output_path(Path(video)).is_file() for video in videos):
-            apply_cli(plain)
-            return
+def build_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("video", help="video file to scan")
     parser.add_argument(
@@ -846,6 +837,11 @@ def main():
         "--apply",
         action="store_true",
         help="embed the chapter CSV into the video. Scan first when that file is missing",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="re-run the start-and-title scan even when a times sidecar exists",
     )
     parser.add_argument(
         "--fraction",
@@ -906,53 +902,65 @@ def main():
             "Omit this, and omit the hex color, to find cards from the whole-file histogram"
         ),
     )
-    args = parser.parse_args()
-    if not 0.0 <= args.fraction <= 1.0:
-        sys.exit("--fraction must be between 0 and 1")
-    if args.gap < 0:
-        sys.exit("--gap must be >= 0")
-    if args.min_seconds < 0:
-        sys.exit("--min-seconds must be >= 0")
-    if args.title_seconds < 0:
-        sys.exit("--title-seconds must be >= 0")
+    return parser
 
-    chapter_file = Path(args.output) if args.output is not None else output_path(args.video)
-    if args.apply and chapter_file.is_file():
-        print(f"using existing {chapter_file}")
-        apply_chapters(args.video, chapter_file)
-        return
+
+def _status_from_system_exit(exc):
+    if isinstance(exc.code, str):
+        print(exc.code, file=sys.stderr)
+        return 1
+    if exc.code in (None, 0):
+        return 0
+    return int(exc.code)
+
+
+def _scan_volume(
+    video,
+    color,
+    *,
+    apply,
+    fraction,
+    gap,
+    min_seconds,
+    hue,
+    sat,
+    val,
+    chapter_file,
+    title_seconds,
+    samples,
+):
     mode = "color"
     auto = None
-    if args.samples:
-        mode, args.color = plate_from_samples(
-            args.video,
-            args.samples,
-            args.hue,
-            args.sat,
-            args.val,
-            args.fraction,
+    if samples:
+        mode, color = plate_from_samples(
+            video,
+            samples,
+            hue,
+            sat,
+            val,
+            fraction,
         )
-    elif args.color is None:
+    elif color is None:
         mode = "auto"
-        auto, auto_rows = auto_from_video(args.video, args.hue, args.sat, args.val)
+        auto, auto_rows = auto_from_video(video, hue, sat, val)
 
     if mode == "auto":
-        found = find_color_frames.walk_starts(auto_rows, args.gap, 2)
+        found = find_color_frames.walk_starts(auto_rows, gap, 2)
     elif mode == "dark":
         found = find_color_frames.scan_dark_saturated(
-            args.video,
-            args.gap,
-            args.fraction,
+            video,
+            gap,
+            fraction,
         )
     else:
         mode, found = find_color_frames.scan_frames(
-            args.video,
-            args.color,
-            args.gap,
-            args.hue,
-            args.sat,
-            args.val,
-            args.fraction,
+            video,
+            color,
+            gap,
+            hue,
+            sat,
+            val,
+            fraction,
         )
         if mode == "dark":
             print(
@@ -963,45 +971,137 @@ def main():
             )
     if not found:
         print("no matches", file=sys.stderr)
-        sys.exit(1)
+        return 1
 
-    duration = video_duration(args.video)
+    duration = video_duration(video)
     rows = merge_short_chapters(
         merge_gap_chapters(
             chapter_rows(found, duration),
-            args.gap,
+            gap,
         ),
-        minimum=args.min_seconds,
+        minimum=min_seconds,
     )
     rows = title_chapters(
-        args.video,
+        video,
         rows,
         duration,
         found,
         mode,
-        args.color,
-        args.hue,
-        args.sat,
-        args.val,
-        args.fraction,
-        args.title_seconds,
+        color,
+        hue,
+        sat,
+        val,
+        fraction,
+        title_seconds,
         auto,
     )
-    destination = chapter_file
-    write_csv(destination, rows)
-    names = names_path(args.video)
-    write_names(names, args.video, rows)
+    write_csv(chapter_file, rows)
+    names = names_path(video)
+    write_names(names, video, rows)
 
-    for timestamp, fraction in found:
+    for timestamp, share in found:
         print(
             f"{find_color_frames.format_timestamp(timestamp)}  "
-            f"{fraction * 100:.1f}%"
+            f"{share * 100:.1f}%"
         )
-    print(f"wrote {len(rows)} chapters to {destination}")
+    print(f"wrote {len(rows)} chapters to {chapter_file}")
     print(f"wrote {len(rows)} names to {names}")
-    if args.apply:
-        apply_chapters(args.video, destination)
+    if apply:
+        apply_chapters(video, chapter_file)
+    return 0
+
+
+def run(
+    video,
+    color=None,
+    *,
+    force=False,
+    apply=False,
+    fraction=0.75,
+    gap=30.0,
+    min_seconds=MIN_CHAPTER_SECONDS,
+    hue=8.0,
+    sat=0.08,
+    val=0.10,
+    output=None,
+    title_seconds=TITLE_WINDOW_SECONDS,
+    samples=None,
+    detect_command=None,
+):
+    """Scan one volume for title-card chapters. Returns process exit status."""
+    video = Path(video)
+    chapter_file = Path(output) if output is not None else output_path(video)
+    if chapter_file.is_file() and not force:
+        print(f"using existing {chapter_file}")
+        if apply:
+            try:
+                apply_chapters(video, chapter_file)
+            except SystemExit as exc:
+                return _status_from_system_exit(exc)
+        return 0
+    if detect_command is not None:
+        return detect_command(video, chapter_file)
+    try:
+        return _scan_volume(
+            video,
+            color,
+            apply=apply,
+            fraction=fraction,
+            gap=gap,
+            min_seconds=min_seconds,
+            hue=hue,
+            sat=sat,
+            val=val,
+            chapter_file=chapter_file,
+            title_seconds=title_seconds,
+            samples=samples,
+        )
+    except SystemExit as exc:
+        return _status_from_system_exit(exc)
+
+
+def main(argv=None):
+    configure_stdio()
+    argv = sys.argv[1:] if argv is None else list(argv)
+    # `--apply video` embeds sidecars that already exist. A color or a
+    # detection flag selects the combined command instead.
+    if "--apply" in argv and not detection_requested(argv):
+        plain = [arg for arg in argv if arg != "--apply"]
+        videos = [arg for arg in plain if not arg.startswith("-")]
+        # A video that already has a chapter file is embedded. A video
+        # with no chapter file is detected from the histogram below.
+        if not videos or all(output_path(Path(video)).is_file() for video in videos):
+            return apply_cli(plain)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if not 0.0 <= args.fraction <= 1.0:
+        print("--fraction must be between 0 and 1", file=sys.stderr)
+        return 1
+    if args.gap < 0:
+        print("--gap must be >= 0", file=sys.stderr)
+        return 1
+    if args.min_seconds < 0:
+        print("--min-seconds must be >= 0", file=sys.stderr)
+        return 1
+    if args.title_seconds < 0:
+        print("--title-seconds must be >= 0", file=sys.stderr)
+        return 1
+    return run(
+        args.video,
+        args.color,
+        force=args.force,
+        apply=args.apply,
+        fraction=args.fraction,
+        gap=args.gap,
+        min_seconds=args.min_seconds,
+        hue=args.hue,
+        sat=args.sat,
+        val=args.val,
+        output=args.output,
+        title_seconds=args.title_seconds,
+        samples=args.samples,
+    )
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

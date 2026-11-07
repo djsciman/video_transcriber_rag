@@ -203,7 +203,10 @@ Useful detection options:
 | `--min-seconds` | `10` | Merge chapters shorter than this |
 | `--title-seconds` | `6` | How long after a card starts to OCR title slides |
 | `--samples` | — | Known title-card timestamps; pick plate color from those frames |
+| `--force` | off | Re-run the start-and-title scan even when a times sidecar exists |
 | (omit hex and `--samples`) | — | Auto: histogram of color concentration and dark saturation |
+
+An existing `<stem>_chapters.csv` skips the scan unless `--force`. Container-chapter skip is not part of this command.
 
 Embed existing sidecars (skips rescan when the chapter CSV is present):
 
@@ -242,11 +245,12 @@ Behavior:
 
 - Recursively finds `.mp4`, `.mkv`, `.avi`, `.mov`, `.webm`, `.m4v`, `.flv`, `.wmv`
 - Mirrors the folder tree under `output_dir` as `.json`
-- Requests speech only when the transcript has no `segments` list (an empty list counts as finished)
+- Requests speech only when the transcript has no `segments` list (an empty list counts as finished) unless `--force`
+- `--force` re-runs speech only; chapters and `video_file` still stamp in the same transcript write
 - Passes hard words from that volume’s container chapter titles as faster-whisper hotwords when speech runs
 - Copies container chapters when the stored list is missing or differs; keeps existing chapters when the container is empty
 - Writes `video_file` (basename including extension) when missing, empty, or different
-- Leaves finished volumes untouched; delete a transcript to get new speech
+- Leaves finished volumes untouched unless `--force`; delete a transcript to get new speech
 - Prints created/updated/failed lines and a final Created / Updated / Unchanged / Failed summary
 - Exit status 0 when every volume succeeds or is unchanged; 1 when any volume fails
 
@@ -255,6 +259,7 @@ Options:
 | Flag | Meaning |
 |------|---------|
 | `--ocr` / `--no-ocr` | On-screen OCR for speech requests only (default: off) |
+| `--force` | Re-run speech even when a `segments` list already exists |
 
 On Windows, paths of 260+ characters are opened with the `\\?\` extended-length prefix so long mirrored corpus paths still work when Long Paths are disabled. Speech scratch JSON is written under the system temp directory so a long volume name cannot push that scratch path over the limit.
 
