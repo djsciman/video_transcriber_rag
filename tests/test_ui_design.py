@@ -1,0 +1,387 @@
+"""Design the unit on the mental map. Drive HTTP, then the store and session.
+
+Headed browser is unavailable in this environment; urllib is the stand-in.
+"""
+
+from __future__ import annotations
+
+import inspect
+from html.parser import HTMLParser
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
+
+from coach_app.app import CoachApp
+from coach_app.design import ADD_WALK, citations_on_mark, walk_options
+from coach_app.store import Citation, CuratedStore
+from coach_app.ui_design import design_session
+
+
+class _Page(HTMLParser):
+    def __init__(self, markup: str) -> None:
+        super().__init__()
+        self.markup = markup
+        self.title = ""
+        self.text_parts: list[str] = []
+        self.links: list[tuple[str, str]] = []
+        self.forms: list[dict[str, object]] = []
+        self.sections: dict[str, str] = {}
+        self._in_title = False
+        self._in_textarea = False
+        self._textarea_name = ""
+        self._textarea_parts: list[str] = []
+        self._current_href = ""
+        self._link_text: list[str] = []
+        self._current_form: dict[str, object] | None = None
+        self._section_id = ""
+        self._section_parts: list[str] = []
+        self.feed(markup)
+
+    def handle_starttag(self, tag, attrs) -> None:
+        attrs = dict(attrs)
+        if tag == "title":
+            self._in_title = True
+        elif tag == "a":
+            self._current_href = attrs.get("href", "")
+            self._link_text = []
+        elif tag == "section":
+            self._flush_section()
+            self._section_id = attrs.get("id", "")
+            self._section_parts = []
+        elif tag == "form":
+            self._current_form = {
+                "id": attrs.get("id", ""),
+                "action": attrs.get("action", ""),
+                "method": attrs.get("method", "get").lower(),
+                "inputs": {},
+            }
+        elif tag == "input":
+            name = attrs.get("name")
+            if name and self._current_form is not None:
+                self._current_form["inputs"][name] = attrs.get("value", "")
+        elif tag == "textarea":
+            self._in_textarea = True
+            self._textarea_name = attrs.get("name", "")
+            self._textarea_parts = []
+        elif tag == "button":
+            name = attrs.get("name")
+            if name and self._current_form is not None:
+                self._current_form["inputs"].setdefault(name, attrs.get("value", ""))
+
+    def handle_endtag(self, tag) -> None:
+        if tag == "title":
+            self._in_title = False
+        elif tag == "a":
+            self.links.append((self._current_href, "".join(self._link_text).strip()))
+            self._current_href = ""
+            self._link_text = []
+        elif tag == "textarea":
+            value = "".join(self._textarea_parts)
+            if self._textarea_name and self._current_form is not None:
+                self._current_form["inputs"][self._textarea_name] = value
+            self._in_textarea = False
+            self._textarea_name = ""
+        elif tag == "form" and self._current_form is not None:
+            self.forms.append(self._current_form)
+            self._current_form = None
+        elif tag == "section":
+            self._flush_section()
+
+    def handle_data(self, data) -> None:
+        if self._in_title:
+            self.title += data
+        if self._current_href:
+            self._link_text.append(data)
+        if self._in_textarea:
+            self._textarea_parts.append(data)
+        if data.strip():
+            self.text_parts.append(data.strip())
+            if self._section_id:
+                self._section_parts.append(data.strip())
+
+    def _flush_section(self) -> None:
+        if self._section_id:
+            self.sections[self._section_id] = " ".join(self._section_parts)
+        self._section_id = ""
+        self._section_parts = []
+
+    @property
+    def text(self) -> str:
+        return " ".join(self.text_parts)
+
+
+def _design(app: CoachApp, name: str = "Tight waist", ruleset: str = "gi") -> str:
+    return app.url.rstrip("/") + "/design?" + urlencode({"name": name, "ruleset": ruleset})
+
+
+def _get(url: str) -> str:
+    with urlopen(url, timeout=5) as response:
+        return response.read().decode("utf-8")
+
+
+def _post(url: str, fields: dict[str, str]) -> str:
+    request = Request(
+        url,
+        data=urlencode(fields).encode("utf-8"),
+        method="POST",
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    with urlopen(request, timeout=5) as response:
+        return response.read().decode("utf-8")
+
+
+def _form(page: _Page, form_id: str) -> dict[str, object]:
+    for form in page.forms:
+        if form["id"] == form_id:
+            return form
+    raise AssertionError(form_id)
+
+
+def _named(store: CuratedStore, name: str):
+    matches = [
+        node
+        for node in store.enrichment_nodes()
+        if node.kind == "named move" and node.name == name
+    ]
+    assert len(matches) == 1, name
+    return matches[0]
+
+
+def _mark_keys(session):
+    return {(mark.kind, mark.target) for mark in session.marks}
+
+
+def _open_topic(app: CoachApp, name: str = "Tight waist", ruleset: str = "gi") -> None:
+    _post(app.url.rstrip("/") + "/topics", {"name": name, "ruleset": ruleset})
+
+
+def test_design_is_on_the_nav_without_prototype_chrome(tmp_path):
+    with CoachApp(tmp_path) as app:
+        home = _Page(_get(app.url))
+        _open_topic(app)
+        page = _Page(_get(_design(app)))
+
+    assert any(href == "/design" and label == "Design" for href, label in home.links)
+    assert "add-walk" in page.sections
+    assert "map-stage" in page.sections or "design-map" in page.markup
+    assert "Recenter" in page.markup
+    assert "Zoom" in page.markup
+    assert "Reset marks" in page.markup
+    assert "PROTOTYPE" not in page.markup
+    assert "Load sample" not in page.markup
+    assert "Guided walkthroughs" not in page.markup
+    assert "variant" not in page.markup.lower()
+    assert "PROTOTYPE" not in home.markup
+
+
+def test_add_walk_places_occupancy_type_and_named_move_then_replaces_type(tmp_path):
+    with CoachApp(tmp_path) as app:
+        _open_topic(app)
+        url = _design(app)
+        store = app.store
+        old_school = _named(store, "Old school sweep")
+        page = _Page(_get(url))
+        assert ADD_WALK[0] in {form["id"].split("-", 1)[0] for form in page.forms}
+
+        page = _Page(_post(url, _form(page, "family-guard")["inputs"]))
+        page = _Page(_post(url, _form(page, "position-half-guard")["inputs"]))
+        page = _Page(_post(url, _form(page, "occupancy-bottom")["inputs"]))
+        after_occ = design_session(store, "Tight waist", "gi")
+        assert ("occupancy", "bottom") in _mark_keys(after_occ)
+        assert "bottom" in page.markup
+        assert "type-sweep" in {form["id"] for form in page.forms}
+        assert "type-escape" not in {form["id"] for form in page.forms}
+
+        page = _Page(_post(url, _form(page, "type-sweep")["inputs"]))
+        after_type = design_session(store, "Tight waist", "gi")
+        assert ("type", "sweep") in _mark_keys(after_type)
+        assert "Sweep" in page.markup or "sweep" in page.markup
+        page = _Page(_post(url, _form(page, "end-side-control")["inputs"]))
+        page = _Page(_post(url, _form(page, f"named-move-{old_school.id}")["inputs"]))
+
+        session = design_session(store, "Tight waist", "gi")
+        keys = _mark_keys(session)
+
+    assert "Old school sweep" in page.markup
+    assert ("named move", old_school.id) in keys
+    assert ("occupancy", "bottom") in keys
+    assert ("type", "sweep") not in keys
+    store = CuratedStore.open(tmp_path)
+    assert store.classes() == ()
+    assert store.lessons() == ()
+    assert old_school.start_occupancy == "bottom"
+
+
+def test_family_filters_occupancy_and_type_on_closed_guard_bottom(tmp_path):
+    with CoachApp(tmp_path) as app:
+        _open_topic(app)
+        url = _design(app)
+        page = _Page(_get(url))
+        page = _Page(_post(url, _form(page, "family-guard")["inputs"]))
+        page = _Page(_post(url, _form(page, "position-closed-guard")["inputs"]))
+        occ_ids = {form["id"] for form in page.forms}
+        assert "occupancy-bottom" in occ_ids
+        assert "occupancy-top" in occ_ids
+        assert "occupancy-neutral" not in occ_ids
+        page = _Page(_post(url, _form(page, "occupancy-bottom")["inputs"]))
+        type_ids = {form["id"] for form in page.forms}
+        session = design_session(app.store, "Tight waist", "gi")
+
+    assert "type-escape" not in type_ids
+    assert "type-pass" not in type_ids
+    assert "type-takedown" not in type_ids
+    assert "type-sweep" in type_ids
+    assert "escape" not in walk_options(app.store, session)
+    assert ("occupancy", "bottom") in _mark_keys(session)
+
+
+def test_empty_canvas_add_keeps_existing_marks(tmp_path):
+    with CoachApp(tmp_path) as app:
+        _open_topic(app)
+        url = _design(app)
+        old_school = _named(app.store, "Old school sweep")
+        page = _Page(_get(url))
+        for form_id in (
+            "family-guard",
+            "position-half-guard",
+            "occupancy-bottom",
+            "type-sweep",
+            "end-side-control",
+            f"named-move-{old_school.id}",
+        ):
+            page = _Page(_post(url, _form(page, form_id)["inputs"]))
+        before = design_session(app.store, "Tight waist", "gi")
+        start = _form(page, "start-add")
+        after_page = _Page(_post(url, start["inputs"]))
+        after = design_session(app.store, "Tight waist", "gi")
+
+    assert ("named move", old_school.id) in _mark_keys(before)
+    assert _mark_keys(after) == _mark_keys(before)
+    assert "Old school sweep" in after_page.markup
+    assert "stroke-dasharray" in after_page.markup
+    assert "draft" in after_page.markup
+
+
+def test_left_click_edits_and_right_click_deletes(tmp_path):
+    with CoachApp(tmp_path) as app:
+        _open_topic(app)
+        url = _design(app)
+        old_school = _named(app.store, "Old school sweep")
+        page = _Page(_get(url))
+        for form_id in (
+            "family-guard",
+            "position-half-guard",
+            "occupancy-bottom",
+            "type-sweep",
+            "end-side-control",
+            f"named-move-{old_school.id}",
+        ):
+            page = _Page(_post(url, _form(page, form_id)["inputs"]))
+        session = design_session(app.store, "Tight waist", "gi")
+        named = next(mark for mark in session.marks if mark.kind == "named move")
+        edited = _Page(_post(url, _form(page, f"edit-{named.id}")["inputs"]))
+        selected = design_session(app.store, "Tight waist", "gi")
+        assert selected.selected_id == named.id
+        assert "edit-mark" in edited.sections
+        assert "Old school sweep" in edited.sections.get("edit-mark", edited.text)
+        assert "Coach notes" in edited.sections.get("edit-mark", edited.text)
+        deleted = _Page(_post(url, _form(edited, f"delete-{named.id}")["inputs"]))
+        after = design_session(app.store, "Tight waist", "gi")
+
+    assert ("named move", old_school.id) not in _mark_keys(after)
+    assert old_school.id not in {mark.target for mark in after.marks}
+    assert "Old school sweep" not in deleted.sections.get("marks", "")
+
+
+def test_named_move_edit_withholds_uncategorized_citations(tmp_path):
+    seeded = CuratedStore.open(tmp_path)
+    old_school = _named(seeded, "Old school sweep")
+    linked = seeded.put_citation(
+        Citation(movement="Old school grip", named_move_id=old_school.id)
+    )
+    seeded.put_citation(Citation(movement="Uncategorized tight waist"))
+
+    with CoachApp(tmp_path) as app:
+        _open_topic(app)
+        url = _design(app)
+        page = _Page(_get(url))
+        for form_id in (
+            "family-guard",
+            "position-half-guard",
+            "occupancy-bottom",
+            "type-sweep",
+            "end-side-control",
+            f"named-move-{old_school.id}",
+        ):
+            page = _Page(_post(url, _form(page, form_id)["inputs"]))
+        session = design_session(app.store, "Tight waist", "gi")
+        mark = next(
+            item
+            for item in session.marks
+            if item.kind == "named move" and item.target == old_school.id
+        )
+        edited = _Page(_post(url, _form(page, f"edit-{mark.id}")["inputs"]))
+        panel = edited.sections.get("edit-mark", "")
+        offered = citations_on_mark(
+            app.store, design_session(app.store, "Tight waist", "gi"), mark.id
+        )
+        _post(
+            url,
+            {
+                **_form(edited, f"citation-{linked.id}")["inputs"],
+                "citation_id": linked.id,
+            },
+        )
+        chosen = design_session(app.store, "Tight waist", "gi")
+
+    assert linked.movement in panel
+    assert "Uncategorized tight waist" not in panel
+    assert offered == (linked,)
+    assert all(item.named_move_id == old_school.id for item in offered)
+    assert (old_school.id, linked.id) in chosen.chosen_citations
+    store = CuratedStore.open(tmp_path)
+    assert store.classes() == ()
+    assert any(not item.named_move_id for item in store.citations())
+
+
+def test_pan_zoom_recenter_exist_and_design_does_not_pack(tmp_path):
+    with CoachApp(tmp_path) as app:
+        _open_topic(app)
+        page = _Page(_get(_design(app)))
+
+    lowered = page.markup.casefold()
+    assert "recenter" in lowered
+    assert "zoom" in lowered
+    assert "reset marks" in lowered
+    assert "applypan" in lowered or "ui.pan" in page.markup
+    assert "leader" in lowered or "layoutlabels" in lowered
+    assert "put_class" not in lowered
+    store = CuratedStore.open(tmp_path)
+    assert store.classes() == ()
+    assert store.lessons() == ()
+
+
+def test_design_screen_calls_domain_apis_and_skips_prototype_html():
+    import coach_app.ui_design as ui_design
+
+    source = inspect.getsource(ui_design)
+    folded = source.casefold()
+    assert "open_design" in source
+    assert "walk_options" in source
+    assert "pick(" in source
+    assert "add_named_move" in source
+    assert "edit_mark" in source
+    assert "delete_mark" in source
+    assert "citations_on_mark" in source
+    assert "choose_citation" in source
+    assert "ADD_WALK" in source
+    assert "put_class" not in source
+    assert "put_lesson" not in source
+    assert "put_enrichment_node" not in source
+    assert "convert(" not in source
+    assert "prototypes" not in folded
+    assert "unit-design-topic28" not in folded
+    assert "playwright" not in folded
+    assert "selenium" not in folded
+    assert "react" not in folded
+    assert "vue" not in folded
+    assert "d3" not in folded

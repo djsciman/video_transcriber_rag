@@ -148,6 +148,7 @@ import coach_app.ui_topics
 import coach_app.ui_curate  # noqa: E402
 from coach_app import ui_finder
 import coach_app.ui_placement
+import coach_app.ui_design
 
 
 class CoachApp:
