@@ -4,6 +4,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
+from coach_app.enrichment import (
+    aliases_of,
+    family_of,
+    names_from_cross_refs,
+    occupancy_for,
+    unify_seed,
+)
+
 
 @dataclass(frozen=True)
 class Instructional:
@@ -34,6 +42,7 @@ class Citation:
     cleaned_statement: str | None = None
     step_bullets: tuple[str, ...] = ()
     showings: tuple[Showing, ...] = ()
+    named_move_id: str = ""
     id: str = ""
 
 
@@ -65,6 +74,15 @@ class EnrichmentNode:
     kind: str
     name: str
     id: str = ""
+    family: str = ""
+    ruleset: str = ""
+    start_id: str = ""
+    type_of_move: str = ""
+    end_id: str = ""
+    start_occupancy: str = ""
+    end_occupancy: str = ""
+    aliases: tuple[str, ...] = ()
+    cross_refs: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -121,6 +139,7 @@ class CuratedStore:
         self._custom_lessons: dict[str, CustomLesson] = {}
         self._unit_histories: dict[str, UnitHistory] = {}
         self._next_id = 1
+        self._seed_imported = False
 
     def put_instructional(self, instructional: Instructional) -> Instructional:
         self._instructionals[instructional.name] = instructional
@@ -191,13 +210,169 @@ class CuratedStore:
         )
 
     def put_enrichment_node(self, node: EnrichmentNode) -> EnrichmentNode:
-        return self._put_identified(self._enrichment_nodes, node)
+        return self._put_identified(self._enrichment_nodes, self._with_occupancy(node))
 
     def enrichment_node(self, node_id: str) -> EnrichmentNode | None:
         return self._enrichment_nodes.get(node_id)
 
     def enrichment_nodes(self) -> tuple[EnrichmentNode, ...]:
         return tuple(self._enrichment_nodes.values())
+
+    def import_enrichment_seed(self, seed: dict) -> None:
+        if self._seed_imported:
+            return
+        catalog = unify_seed(seed)
+        positions = {item["id"]: item for item in catalog["positions"]}
+        submissions = {item["id"]: item for item in catalog["submissions"]}
+        for item in catalog["positions"]:
+            self.put_enrichment_node(
+                EnrichmentNode(
+                    kind="position",
+                    name=item["label"],
+                    id=item["id"],
+                    family=item.get("family") or "other",
+                    aliases=aliases_of(item),
+                    cross_refs=names_from_cross_refs(item),
+                )
+            )
+        for item in catalog["submissions"]:
+            self.put_enrichment_node(
+                EnrichmentNode(
+                    kind="submission",
+                    name=item["label"],
+                    id=item["id"],
+                    aliases=aliases_of(item),
+                    cross_refs=names_from_cross_refs(item),
+                )
+            )
+        for item in catalog["move_types"]:
+            self.put_enrichment_node(
+                EnrichmentNode(
+                    kind="type of move",
+                    name=item["label"],
+                    id=item["id"],
+                )
+            )
+        for path in catalog["paths"]:
+            start_family = family_of(positions, path["start"])
+            end_id = path["end"]
+            end_kind = "submission" if end_id in submissions else "position"
+            end_family = family_of(positions, end_id)
+            start_side, end_side = occupancy_for(
+                path["move_type"], start_family, end_kind, end_family
+            )
+            for leaf in path.get("leaves") or ():
+                self.put_enrichment_node(
+                    EnrichmentNode(
+                        kind="named move",
+                        name=leaf["name"],
+                        id=self._named_move_id(
+                            path["start"], path["move_type"], end_id, leaf["name"]
+                        ),
+                        ruleset=leaf.get("ruleset") or "both",
+                        start_id=path["start"],
+                        type_of_move=path["move_type"],
+                        end_id=end_id,
+                        start_occupancy=start_side,
+                        end_occupancy=end_side,
+                        aliases=aliases_of(leaf),
+                        cross_refs=names_from_cross_refs(leaf),
+                    )
+                )
+        self._seed_imported = True
+
+    def search_enrichment(self, query: str) -> tuple[EnrichmentNode, ...]:
+        needle = query.strip().casefold()
+        if not needle:
+            return ()
+        hits = []
+        for node in self._enrichment_nodes.values():
+            haystack = " ".join((node.name, *node.aliases, *node.cross_refs)).casefold()
+            if needle in haystack:
+                hits.append(node)
+        return tuple(hits)
+
+    def browse_hierarchy(
+        self,
+        start: str | None = None,
+        type_of_move: str | None = None,
+    ) -> tuple[EnrichmentNode, ...]:
+        if start is None:
+            return tuple(
+                node for node in self._enrichment_nodes.values() if node.kind == "position"
+            )
+        start_id = self._resolve_catalog_id(start, "position")
+        named = [
+            node
+            for node in self._enrichment_nodes.values()
+            if node.kind == "named move" and node.start_id == start_id
+        ]
+        if type_of_move is None:
+            type_ids = {node.type_of_move for node in named}
+            return tuple(
+                node
+                for node in self._enrichment_nodes.values()
+                if node.kind == "type of move" and node.id in type_ids
+            )
+        type_id = self._resolve_catalog_id(type_of_move, "type of move")
+        end_ids = {
+            node.end_id
+            for node in named
+            if node.type_of_move == type_id
+        }
+        return tuple(
+            node
+            for node in self._enrichment_nodes.values()
+            if node.id in end_ids and node.kind in {"position", "submission"}
+        )
+
+    def rename_enrichment_node(self, node_id: str, name: str) -> EnrichmentNode:
+        node = self._enrichment_nodes[node_id]
+        renamed = replace(node, name=name)
+        self._enrichment_nodes[node_id] = renamed
+        return renamed
+
+    def move_enrichment_node(
+        self,
+        node_id: str,
+        start_id: str,
+        type_of_move: str,
+        end_id: str,
+    ) -> EnrichmentNode:
+        node = self._enrichment_nodes[node_id]
+        type_id = self._resolve_catalog_id(type_of_move, "type of move")
+        moved = replace(
+            node,
+            start_id=self._resolve_catalog_id(start_id, "position"),
+            type_of_move=type_id,
+            end_id=end_id,
+            start_occupancy="",
+            end_occupancy="",
+        )
+        moved = self._with_occupancy(moved)
+        self._enrichment_nodes[node_id] = moved
+        return moved
+
+    def delete_enrichment_node(self, node_id: str) -> None:
+        node = self._enrichment_nodes.pop(node_id, None)
+        if node is None:
+            return
+        dropped = {node_id}
+        if node.kind != "named move":
+            for other in list(self._enrichment_nodes.values()):
+                if other.kind != "named move":
+                    continue
+                depends = (
+                    (node.kind == "position" and node_id in {other.start_id, other.end_id})
+                    or (node.kind == "type of move" and other.type_of_move == node_id)
+                    or (node.kind == "submission" and other.end_id == node_id)
+                )
+                if depends:
+                    dropped.add(other.id)
+                    self._enrichment_nodes.pop(other.id, None)
+        for citation in list(self._citations.values()):
+            if citation.named_move_id in dropped:
+                self._citations[citation.id] = replace(citation, named_move_id="")
 
     def put_unit(self, unit: Unit) -> Unit:
         return self._put_identified(self._units, unit)
@@ -253,3 +428,41 @@ class CuratedStore:
         allocated = str(self._next_id)
         self._next_id += 1
         return allocated
+
+    def _named_move_id(self, start_id: str, type_of_move: str, end_id: str, name: str) -> str:
+        slug = "".join(ch.lower() if ch.isalnum() else "-" for ch in name).strip("-")
+        return f"{start_id}/{type_of_move}/{end_id}/{slug}"
+
+    def _resolve_catalog_id(self, value: str, kind: str) -> str:
+        node = self._enrichment_nodes.get(value)
+        if node and node.kind == kind:
+            return node.id
+        for node in self._enrichment_nodes.values():
+            if node.kind == kind and node.name.casefold() == value.casefold():
+                return node.id
+        return value
+
+    def _with_occupancy(self, node: EnrichmentNode) -> EnrichmentNode:
+        if node.kind != "named move":
+            return node
+        end_kind = self._end_kind(node.end_id)
+        if node.start_occupancy and (node.end_occupancy or end_kind == "submission"):
+            return node
+        start = self._enrichment_nodes.get(node.start_id)
+        start_family = start.family if start else "other"
+        end = self._enrichment_nodes.get(node.end_id)
+        end_family = end.family if end and end_kind == "position" else "other"
+        start_side, end_side = occupancy_for(
+            node.type_of_move, start_family, end_kind, end_family
+        )
+        return replace(
+            node,
+            start_occupancy=node.start_occupancy or start_side,
+            end_occupancy=node.end_occupancy or end_side,
+        )
+
+    def _end_kind(self, end_id: str) -> str:
+        end = self._enrichment_nodes.get(end_id)
+        if end:
+            return end.kind
+        return "position"
