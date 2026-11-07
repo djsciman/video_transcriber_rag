@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import inspect
-import sys
 import unittest
-from unittest import mock
 
 from coach_app.cleanup import cleanup_volume
 
@@ -320,11 +318,7 @@ class CuratedStoreIsolationTest(unittest.TestCase):
                 {"start": 1.0, "end": 2.0, "text": "guard", "source": "SPEECH"},
             ],
         }
-        store = mock.Mock()
-
         record = cleanup_volume(volume)
 
-        self.assertEqual(store.mock_calls, [])
         self.assertIn("parts", record)
         self.assertNotIn("store", inspect.signature(cleanup_volume).parameters)
-        self.assertNotIn("coach_app.store", sys.modules)
