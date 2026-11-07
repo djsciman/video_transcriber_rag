@@ -113,6 +113,27 @@ def test_dry_run_writes_nothing_and_does_not_transcribe(tmp_path: Path):
     assert "FAIL" not in out
 
 
+def test_nfo_without_season_folder_does_not_skip_organize(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _show(library, "Half Guard Anthology")
+    (show / "tvshow.nfo").write_text("<tvshow/>", encoding="utf-8")
+    matches = library / "bjjfanatics_matches.csv"
+    matches.write_text(
+        f"folder_path,product_url\n{show.resolve()},https://bjjfanatics.com/products/half-guard\n",
+        encoding="utf-8",
+    )
+    corpus = tmp_path / "corpus"
+
+    code, out, calls = _run(library, corpus, apply=True)
+
+    assert code == 0
+    assert calls["organize"]
+    assert calls["organize"][0]["apply"] is True
+    assert any(line.startswith("RUN") and "organize" in line for line in out.splitlines())
+    assert not any(line.startswith("SKIP") and "organize" in line for line in out.splitlines())
+
+
 def test_skip_when_artifacts_exist(tmp_path: Path):
     library = tmp_path / "lib"
     library.mkdir()
@@ -246,11 +267,14 @@ def test_missing_url_outside_terminal_fails_organize(tmp_path: Path):
     assert show.name in out
 
 
-def test_already_nfo_dry_run_does_not_call_organize(tmp_path: Path):
+def test_already_organized_dry_run_does_not_call_organize(tmp_path: Path):
     library = tmp_path / "lib"
     library.mkdir()
     show = _show(library, "Half Guard Anthology")
     (show / "tvshow.nfo").write_text("<tvshow/>", encoding="utf-8")
+    season = show / "Season 01"
+    season.mkdir()
+    (show / "Volume 1.mp4").replace(season / "S01E01 - Volume 1.mp4")
     matches = library / "bjjfanatics_matches.csv"
     matches.write_text(
         f"folder_path,product_url\n{show.resolve()},https://bjjfanatics.com/products/half-guard\n",
@@ -263,7 +287,51 @@ def test_already_nfo_dry_run_does_not_call_organize(tmp_path: Path):
     assert code == 0
     assert calls["organize"] == []
     assert calls["transcribe"] == []
-    assert "SKIP" in out
+    assert any(line.startswith("SKIP") and "organize" in line for line in out.splitlines())
+
+
+def test_season_folder_without_nfo_does_not_skip_organize(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = library / "Half Guard Anthology"
+    show.mkdir()
+    season = show / "Season 01"
+    season.mkdir()
+    (season / "S01E01 - Volume 1.mp4").write_bytes(b"fake-video")
+    matches = library / "bjjfanatics_matches.csv"
+    matches.write_text(
+        f"folder_path,product_url\n{show.resolve()},https://bjjfanatics.com/products/half-guard\n",
+        encoding="utf-8",
+    )
+    corpus = tmp_path / "corpus"
+
+    code, out, calls = _run(library, corpus, apply=True)
+
+    assert code == 0
+    assert calls["organize"]
+    assert not any(line.startswith("SKIP") and "organize" in line for line in out.splitlines())
+
+
+def test_extras_folder_is_not_a_season_for_organize_skip(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _show(library, "Half Guard Anthology")
+    (show / "tvshow.nfo").write_text("<tvshow/>", encoding="utf-8")
+    extras = show / "extras"
+    extras.mkdir()
+    (show / "Volume 1.mp4").replace(extras / "sample.mp4")
+    matches = library / "bjjfanatics_matches.csv"
+    matches.write_text(
+        f"folder_path,product_url\n{show.resolve()},https://bjjfanatics.com/products/half-guard\n",
+        encoding="utf-8",
+    )
+    corpus = tmp_path / "corpus"
+
+    code, out, calls = _run(library, corpus, apply=True)
+
+    assert code == 0
+    assert calls["organize"]
+    assert not any(line.startswith("SKIP") and "organize" in line for line in out.splitlines())
 
 
 def test_missing_nfo_dry_run_may_call_organize_without_writes(tmp_path: Path):

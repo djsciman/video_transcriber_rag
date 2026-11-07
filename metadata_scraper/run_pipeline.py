@@ -120,7 +120,15 @@ def _selected_stages(stages: Sequence[str] | None, embed: bool) -> list[str]:
 
 
 def _organize_done(folder: Path) -> bool:
-    return (folder / "tvshow.nfo").is_file()
+    from bjj_organizer.naming import season_folder_number
+
+    if not (folder / "tvshow.nfo").is_file():
+        return False
+    try:
+        children = folder.iterdir()
+    except OSError:
+        return False
+    return any(child.is_dir() and season_folder_number(child.name) is not None for child in children)
 
 
 def _walk_volumes(folder: Path) -> list[Path]:
