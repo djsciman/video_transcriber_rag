@@ -2,9 +2,12 @@ from datetime import date
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
+import organize_instructional
+from bjj_organizer.errors import UsageError
 from bjj_organizer.models import Chapter, Product, Volume
 from bjj_organizer.fanatics_search import ProductHit
-from bjj_organizer.nfo import tvshow_xml
 from bjj_organizer.match import match_season
 from bjj_organizer.pipeline import (
     RuntimeOptions,
@@ -15,7 +18,6 @@ from bjj_organizer.pipeline import (
     lookup_season_url,
     rename_directory,
     resolve_season_url,
-    take_show_url,
 )
 
 
@@ -52,15 +54,15 @@ def test_untimed_volumes_list_chapters_and_do_not_remux():
     assert [chapter.title for chapter in episodes[0].chapters] == ["Intro", "Goal setting"]
     assert all(episode.split_start_ms is None for episode in episodes)
     assert all(not _wants_chapter_remux(episode, RuntimeOptions()) for episode in episodes)
-    split_episodes = _episodes_from_match(
+    combined = _episodes_from_match(
         matched.items,
         matched.mode,
-        RuntimeOptions(combine_volumes=False),
+        RuntimeOptions(),
         Path("."),
     )
-    assert len(split_episodes) == 2
-    assert all(episode.split_start_ms is None for episode in split_episodes)
-    assert [chapter.title for chapter in split_episodes[0].chapters] == ["Intro", "Goal setting"]
+    assert len(combined) == 2
+    assert all(episode.split_start_ms is None for episode in combined)
+    assert [chapter.title for chapter in combined[0].chapters] == ["Intro", "Goal setting"]
 
 
 def test_leaf_plan_and_apply_without_split(tmp_path: Path):
@@ -103,7 +105,7 @@ def test_leaf_plan_and_apply_without_split(tmp_path: Path):
     assert list(season.glob("*.nfo"))
 
 
-def test_volume_plan_expands_to_chapters(tmp_path: Path):
+def test_volume_plan_keeps_scrape_chapter_titles(tmp_path: Path):
     show = tmp_path / "Magic Guard Passing by Travis Stevens"
     show.mkdir()
     (show / "MagicGuardPassingbyTravisStevensVol1.mp4").write_bytes(b"x")
@@ -123,22 +125,19 @@ def test_volume_plan_expands_to_chapters(tmp_path: Path):
     plan = build_plan(
         show,
         ["https://example.com/magic"],
-        RuntimeOptions(combine_volumes=False),
+        RuntimeOptions(),
         scrape_product=scrape,
     )
     assert plan.seasons[0].mode == "volume"
-    assert len(plan.seasons[0].episodes) == 6
-    names = [e.dest_name for e in plan.seasons[0].episodes]
-    assert names[0] == "01.01 - Vol1 Chapter 1.mp4"
-    assert names[2] == "01.03 - Vol1 Chapter 3.mp4"
-    assert names[3] == "02.01 - Vol2 Chapter 1.mp4"
-    assert plan.seasons[0].episodes[0].split_start_ms == 0
-    assert plan.seasons[0].episodes[1].split_start_ms == 1000
-    assert plan.seasons[0].episodes[2].split_end_ms is None
-    assert plan.seasons[0].episodes[0].source == plan.seasons[0].episodes[1].source
+    assert len(plan.seasons[0].episodes) == 2
+    first = plan.seasons[0].episodes[0]
+    assert first.split_start_ms is None
+    assert [ch.title for ch in first.chapters] == ["Vol1 Chapter 1", "Vol1 Chapter 2", "Vol1 Chapter 3"]
+    assert first.dest_name.endswith("S01E01 - Volume 1.mp4")
+    assert len(first.concat_sources) == 1
 
 
-def test_segmented_mikey_plan_and_apply(tmp_path: Path):
+def test_segmented_plan_groups_chapter_files_into_volumes(tmp_path: Path):
     show = tmp_path / "Mikey Musumeci The Collar and Sleeve System Pt 1"
     show.mkdir()
     names = [
@@ -167,37 +166,23 @@ def test_segmented_mikey_plan_and_apply(tmp_path: Path):
     def scrape(url: str, user_agent: str | None = None) -> Product:
         return product
 
-    options = RuntimeOptions(combine_volumes=False)
-    plan = build_plan(show, ["https://bjjfanatics.com/products/collar"], options, scrape_product=scrape)
+    plan = build_plan(
+        show,
+        ["https://bjjfanatics.com/products/collar"],
+        RuntimeOptions(),
+        scrape_product=scrape,
+    )
     assert plan.seasons[0].mode == "segmented"
-    assert len(plan.seasons[0].episodes) == 3
-    assert [e.dest_name for e in plan.seasons[0].episodes] == [
-        "01.01 - Introduction.mp4",
-        "01.02 - Collar And Sleeve.mp4",
-        "02.01 - World One Outside Control.mp4",
-    ]
-    assert [e.title for e in plan.seasons[0].episodes] == [
-        "1.1 Introduction",
-        "1.2 Collar And Sleeve",
-        "2.1 World One Outside Control",
+    assert len(plan.seasons[0].episodes) == 2
+    assert [e.title for e in plan.seasons[0].episodes] == ["Volume 1", "Volume 2"]
+    assert [ch.title for ch in plan.seasons[0].episodes[0].chapters] == [
+        "Introduction",
+        "Collar And Sleeve",
     ]
     assert all(e.split_start_ms is None for e in plan.seasons[0].episodes)
-    apply_plan(plan, options)
-    dest_show = tmp_path / plan.dest_name
-    season = dest_show / "Season 01"
-    videos = sorted(p.name for p in season.glob("*.mp4"))
-    assert videos == [
-        "01.01 - Introduction.mp4",
-        "01.02 - Collar And Sleeve.mp4",
-        "02.01 - World One Outside Control.mp4",
-    ]
-    nfo = (season / "01.01 - Introduction.nfo").read_text(encoding="utf-8")
-    assert "<title>1.1 Introduction</title>" in nfo
-    assert "<episode>1</episode>" in nfo
-    assert "<plot>Volume 1</plot>" in nfo
 
 
-def test_nested_publish_date_order_and_various(tmp_path: Path):
+def test_nested_collection_is_leftover_bundle(tmp_path: Path):
     root = tmp_path / "Ryan Smith Collection"
     (root / "Get Off My Legs Gringo by Craig Jones").mkdir(parents=True)
     (root / "Mastering No Gi Takedowns by Travis Stevens").mkdir()
@@ -205,42 +190,16 @@ def test_nested_publish_date_order_and_various(tmp_path: Path):
         (root / "Get Off My Legs Gringo by Craig Jones" / f"Vol{i}.mp4").write_bytes(b"x")
         (root / "Mastering No Gi Takedowns by Travis Stevens" / f"Vol{i}.mp4").write_bytes(b"x")
 
-    products = {
-        "https://example.com/craig": _product("Get Off My Legs Gringo", "Craig Jones", 2, 10, "https://example.com/craig"),
-        "https://example.com/travis": _product(
-            "Mastering No Gi Takedowns", "Travis Stevens", 2, 2, "https://example.com/travis"
-        ),
-    }
-
     def scrape(url: str, user_agent: str | None = None) -> Product:
-        return products[url]
+        raise AssertionError("leftover bundles must not scrape")
 
-    options = RuntimeOptions(skip_chapters=True)
-    plan = build_plan(
-        root,
-        [
-            "Get Off My Legs Gringo by Craig Jones=https://example.com/craig",
-            "Mastering No Gi Takedowns by Travis Stevens=https://example.com/travis",
-        ],
-        options,
-        scrape_product=scrape,
-    )
-    assert plan.title == "Ryan Smith Collection by Various"
-    assert any("show/bundle URL" in warning for warning in plan.warnings)
-    assert plan.show_url == ""
-    assert [s.source_name for s in plan.seasons] == [
-        "Mastering No Gi Takedowns by Travis Stevens",
-        "Get Off My Legs Gringo by Craig Jones",
-    ]
-    assert [s.number for s in plan.seasons] == [1, 2]
-    apply_plan(plan, options)
-    renamed = tmp_path / "Ryan Smith Collection by Various"
-    assert renamed.is_dir()
-    assert (renamed / "Season 01").is_dir()
-    assert (renamed / "Season 02").is_dir()
-    assert not (renamed / "Get Off My Legs Gringo by Craig Jones").exists()
-    videos = sorted(p.name for p in (renamed / "Season 01").glob("*.mp4"))
-    assert "S01E01" in videos[0]
+    with pytest.raises(UsageError, match="leftover bundle"):
+        build_plan(
+            root,
+            ["https://example.com/craig"],
+            RuntimeOptions(skip_chapters=True),
+            scrape_product=scrape,
+        )
 
 
 def test_rename_directory_retries_access_denied(tmp_path: Path):
@@ -333,7 +292,7 @@ def test_segmented_combine_groups_by_volume(tmp_path: Path):
     plan = build_plan(
         show,
         ["https://bjjfanatics.com/products/collar"],
-        RuntimeOptions(combine_volumes=True),
+        RuntimeOptions(),
         scrape_product=scrape,
     )
     assert plan.combine_volumes
@@ -370,7 +329,7 @@ def test_volume_combine_keeps_one_episode_per_volume(tmp_path: Path):
     plan = build_plan(
         show,
         ["https://example.com/magic"],
-        RuntimeOptions(combine_volumes=True),
+        RuntimeOptions(),
         scrape_product=scrape,
     )
     assert len(plan.seasons[0].episodes) == 2
@@ -380,12 +339,12 @@ def test_volume_combine_keeps_one_episode_per_volume(tmp_path: Path):
     assert len(plan.seasons[0].episodes[0].concat_sources) == 1
 
 
-def test_resolve_url_one_season_accepts_show_name_key():
+def test_resolve_url_one_season_accepts_bare_url():
     url = resolve_season_url(
         "Season 1",
         "Season 01",
-        keyed={"Half Guard Anthology by Lachlan Giles": "https://example.com/half"},
-        bare_urls=[],
+        keyed={},
+        bare_urls=["https://example.com/half"],
         nested=True,
         season_count=1,
         show_folder="Half Guard Anthology by Lachlan Giles",
@@ -422,8 +381,8 @@ def test_organized_one_season_show_name_url(tmp_path: Path):
 
     plan = build_plan(
         show,
-        ["Half Guard Anthology by Lachlan Giles=https://bjjfanatics.com/products/half"],
-        RuntimeOptions(combine_volumes=True),
+        ["https://bjjfanatics.com/products/half"],
+        RuntimeOptions(),
         scrape_product=scrape,
     )
     assert plan.seasons[0].source_name == "The Half Guard Anthology by Lachlan Giles"
@@ -431,72 +390,23 @@ def test_organized_one_season_show_name_url(tmp_path: Path):
     assert len(plan.seasons[0].episodes[0].concat_sources) == 2
 
 
-def test_take_show_url_keeps_season_keys():
-    show_url, seasons = take_show_url(
-        "Go Further Faster By John Danaher",
-        {
-            "Go Further Faster By John Danaher": "https://example.com/bundle",
-            "Closed Guard": "https://example.com/closed",
-        },
-        [],
-    )
-    assert show_url == "https://example.com/bundle"
-    assert seasons == {"Closed Guard": "https://example.com/closed"}
-
-
-def test_nested_bundle_supplies_show_metadata(tmp_path: Path):
+def test_nested_bundle_is_left_out_of_organize(tmp_path: Path):
     root = tmp_path / "Go Further Faster By John Danaher"
     (root / "Closed Guard").mkdir(parents=True)
     (root / "Open Guard").mkdir()
     (root / "Closed Guard" / "1 Overview.mp4").write_bytes(b"x")
     (root / "Open Guard" / "1 Finding.mp4").write_bytes(b"x")
-    bundle_url = "https://bjjfanatics.com/products/go-further-faster-bundle-by-john-danher"
-    closed_url = "https://bjjfanatics.com/products/closed-guard"
-    open_url = "https://bjjfanatics.com/products/open-guard"
-    bundle = _product(
-        "Go Further Faster Bundle by John Danaher",
-        "John Danaher",
-        1,
-        3,
-        bundle_url,
-        chapters_each=1,
-    )
-    bundle.plot = "Bundle plot about the whole series"
-    bundle.volumes = [Volume("Volume 01: Pin Escapes", (Chapter("Should Not Match", 0),))]
-    bundle.unique_ids = {
-        "bjjfanatics": "999",
-        "bjjfanatics-handle": "go-further-faster-bundle-by-john-danher",
-    }
-    closed = _product("Closed Guard", "John Danaher", 1, 1, closed_url, chapters_each=1)
-    opened = _product("Open Guard", "John Danaher", 1, 2, open_url, chapters_each=1)
-    products = {bundle_url: bundle, closed_url: closed, open_url: opened}
 
     def scrape(url: str, user_agent: str | None = None) -> Product:
-        return products[url]
+        raise AssertionError("leftover bundles must not scrape")
 
-    plan = build_plan(
-        root,
-        [
-            bundle_url,
-            f"Closed Guard={closed_url}",
-            f"Open Guard={open_url}",
-        ],
-        RuntimeOptions(skip_chapters=True),
-        scrape_product=scrape,
-    )
-    assert plan.show_url == bundle_url
-    assert plan.plot.startswith("Bundle plot")
-    assert "Should Not Match" not in plan.plot
-    assert plan.premiered == date(2020, 1, 3)
-    assert plan.unique_id == "999"
-    assert plan.title == "Go Further Faster by John Danaher"
-    assert [season.product.source_url for season in plan.seasons] == [closed_url, open_url]
-    assert all(episode.title != "Should Not Match" for season in plan.seasons for episode in season.episodes)
-    blob = __import__("xml.etree.ElementTree", fromlist=["tostring"]).tostring(
-        tvshow_xml(plan), encoding="unicode"
-    )
-    assert ">999</uniqueid>" in blob
-    assert "go-further-faster-bundle-by-john-danher" in blob
+    with pytest.raises(UsageError, match="leftover bundle"):
+        build_plan(
+            root,
+            ["https://bjjfanatics.com/products/closed-guard"],
+            RuntimeOptions(skip_chapters=True),
+            scrape_product=scrape,
+        )
 
 
 def test_season_lookup_drops_bundle_url(tmp_path: Path, monkeypatch):
@@ -542,3 +452,109 @@ def test_organized_one_season_bare_url(tmp_path: Path):
         scrape_product=scrape,
     )
     assert len(plan.seasons) == 1
+
+
+def test_organize_parser_has_no_combine_or_split_flags():
+    parser = organize_instructional.build_parser()
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--folder", "Show", "--no-combine-volumes"])
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--folder", "Show", "--combine-volumes"])
+    args = parser.parse_args(["--folder", "Show", "--url", "https://example.com/product"])
+    assert not hasattr(args, "combine_volumes")
+    assert args.urls == ["https://example.com/product"]
+
+
+def test_default_plan_concatenates_chapter_files_into_volumes(tmp_path: Path):
+    show = tmp_path / "Mikey Musumeci The Collar and Sleeve System Pt 1"
+    show.mkdir()
+    names = [
+        "4533018132578-01-01- Introduction.mp4",
+        "4533018132578-01-02- Collar And Sleeve.mp4",
+        "4533018132578-02-01- World One Outside Control.mp4",
+    ]
+    for name in names:
+        (show / name).write_bytes(b"x")
+    product = Product(
+        title="The Collar and Sleeve System Part 1 by Mikey Musumeci",
+        instructor="Mikey Musumeci",
+        plot="Plot",
+        premiered=date(2025, 1, 1),
+        year=2025,
+        tags=["Instructional"],
+        unique_ids={"bjjfanatics": "1"},
+        images=[],
+        volumes=[
+            Volume("Volume 1", (Chapter("Introduction", 0), Chapter("Collar And Sleeve", 12_500))),
+            Volume("Volume 2", (Chapter("World One Outside Control", 0),)),
+        ],
+        source_url="https://bjjfanatics.com/products/collar",
+    )
+
+    def scrape(url: str, user_agent: str | None = None) -> Product:
+        return product
+
+    plan = build_plan(
+        show,
+        ["https://bjjfanatics.com/products/collar"],
+        RuntimeOptions(),
+        scrape_product=scrape,
+    )
+    assert len(plan.seasons[0].episodes) == 2
+    first, second = plan.seasons[0].episodes
+    assert first.title == "Volume 1"
+    assert [p.name for p in first.concat_sources] == [
+        "4533018132578-01-01- Introduction.mp4",
+        "4533018132578-01-02- Collar And Sleeve.mp4",
+    ]
+    assert [ch.title for ch in first.chapters] == ["Introduction", "Collar And Sleeve"]
+    assert first.split_start_ms is None
+    assert second.split_start_ms is None
+    assert first.dest_name.endswith("S01E01 - Volume 1.mp4")
+    assert second.dest_name.endswith("S01E02 - Volume 2.mp4")
+
+
+def test_leftover_bundle_folder_is_not_organized(tmp_path: Path):
+    root = tmp_path / "Go Further Faster By John Danaher"
+    (root / "Closed Guard").mkdir(parents=True)
+    (root / "Open Guard").mkdir()
+    (root / "Closed Guard" / "1 Overview.mp4").write_bytes(b"x")
+    (root / "Open Guard" / "1 Finding.mp4").write_bytes(b"x")
+
+    def scrape(url: str, user_agent: str | None = None) -> Product:
+        raise AssertionError("leftover bundles must not scrape")
+
+    with pytest.raises(UsageError, match="leftover bundle"):
+        build_plan(
+            root,
+            ["https://bjjfanatics.com/products/closed-guard"],
+            RuntimeOptions(skip_chapters=True),
+            scrape_product=scrape,
+        )
+
+
+def test_one_product_url_per_instructional_folder(tmp_path: Path):
+    show = tmp_path / "Closed Guard"
+    show.mkdir()
+    (show / "Vol1.mp4").write_bytes(b"x")
+
+    def scrape(url: str, user_agent: str | None = None) -> Product:
+        raise AssertionError("too many URLs must fail before scrape")
+
+    with pytest.raises(UsageError, match="at most one"):
+        build_plan(
+            show,
+            [
+                "https://example.com/closed",
+                "https://example.com/other",
+            ],
+            RuntimeOptions(skip_chapters=True),
+            scrape_product=scrape,
+        )
+    with pytest.raises(UsageError, match="SeasonFolder"):
+        build_plan(
+            show,
+            ["Closed Guard=https://example.com/closed"],
+            RuntimeOptions(skip_chapters=True),
+            scrape_product=scrape,
+        )

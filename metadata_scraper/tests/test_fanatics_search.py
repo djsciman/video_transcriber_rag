@@ -43,44 +43,38 @@ def test_rank_products_orders_by_score():
     assert "half-guard-anthology" in hits[0].url
 
 
-def test_prefer_bundle_ranks_bundle_above_a_volume():
+def test_score_match_prefers_instructional_over_bundle_listing():
     folder = "Go Further Faster By John Danaher"
     bundle = "Go Further Faster Bundle by John Danaher"
     half = "Half Guard: BJJ Fundamentals - Go Further Faster by John Danaher"
-    assert score_match(folder, bundle, prefer_bundle=True) > score_match(
-        folder, half, prefer_bundle=True
-    )
     assert score_match(folder, half) > score_match(folder, bundle)
+    assert score_match(folder, half, prefer_bundle=True) > score_match(
+        folder, bundle, prefer_bundle=True
+    )
 
 
-def test_lookup_candidates_queries_bundle_when_missing():
+def test_lookup_candidates_does_not_search_for_a_bundle():
     queries: list[str] = []
 
     def search(query: str):
         queries.append(query)
-        if query.endswith(" bundle"):
-            return [
-                {
-                    "title": "Go Further Faster Bundle by John Danaher",
-                    "handle": "go-further-faster-bundle-by-john-danher",
-                    "url": "/products/go-further-faster-bundle-by-john-danher",
-                }
-            ]
         return [
             {
                 "title": "Half Guard: BJJ Fundamentals - Go Further Faster by John Danaher",
                 "handle": "half-guard-bjj-fundamentals-go-further-faster-by-john-danaher",
                 "url": "/products/half-guard-bjj-fundamentals-go-further-faster-by-john-danaher",
-            }
+            },
+            {
+                "title": "Go Further Faster Bundle by John Danaher",
+                "handle": "go-further-faster-bundle-by-john-danher",
+                "url": "/products/go-further-faster-bundle-by-john-danher",
+            },
         ]
 
-    hits = lookup_candidates(
-        "Go Further Faster By John Danaher",
-        search=search,
-        prefer_bundle=True,
-    )
-    assert queries[1].endswith(" bundle")
-    assert hits[0].url.endswith("/go-further-faster-bundle-by-john-danher")
+    hits = lookup_candidates("Go Further Faster By John Danaher", search=search)
+    assert queries == ["Go Further Faster By John Danaher"]
+    assert hits[0].url.endswith("/half-guard-bjj-fundamentals-go-further-faster-by-john-danaher")
+    assert all(not query.endswith(" bundle") for query in queries)
 
 
 def test_lookup_candidates_uses_injected_search():

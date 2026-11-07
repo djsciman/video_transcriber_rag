@@ -38,7 +38,7 @@ def build_parser() -> argparse.ArgumentParser:
         dest="urls",
         default=[],
         help=(
-            'Product URL, or "SeasonFolder=https://..." for nested series (repeatable). '
+            "Product URL for this instructional folder. "
             "If omitted, search BJJ Fanatics and ask to confirm."
         ),
     )
@@ -53,19 +53,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Comma-separated child folder names overriding publish-date season numbers",
     )
     parser.add_argument(
-        "--combine-volumes",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help=(
-            "Combine chapter files into one file per volume with named chapter markers "
-            "(default). --no-combine-volumes keeps or splits to one file per chapter."
-        ),
-    )
-    parser.add_argument(
         "--container",
         choices=("keep", "mkv"),
         default="keep",
-        help="keep original container (default) or remux/split/concat to mkv",
+        help="keep original container (default) or remux/concat to mkv",
     )
     parser.add_argument(
         "--extras-policy",
@@ -77,8 +68,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--skip-chapters",
         action="store_true",
         help=(
-            "Do not inject chapter markers and do not split. "
-            "Segmented files are still concatenated when --combine-volumes is on."
+            "Do not inject chapter markers. "
+            "Segmented chapter files are still concatenated into volumes."
         ),
     )
     parser.add_argument("--ffmpeg", default=None, help="ffmpeg binary (default: PATH)")
@@ -121,7 +112,6 @@ def main(argv: list[str] | None = None) -> int:
             container=args.container,
             extras_policy=args.extras_policy,
             skip_chapters=args.skip_chapters,
-            combine_volumes=args.combine_volumes,
             season_order=order or None,
             user_agent=args.user_agent,
             ffmpeg=args.ffmpeg,

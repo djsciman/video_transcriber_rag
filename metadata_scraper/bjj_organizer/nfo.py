@@ -108,12 +108,10 @@ def episode_xml(show: ShowPlan, season: SeasonPlan, episode: EpisodePlan) -> ET.
     _text(root, "season", episode.season)
     _text(root, "episode", episode.episode)
     titles = [ch.title for ch in episode.chapters if ch.title.strip()]
-    if season.combine_volumes or len(titles) > 1:
-        plot = "; ".join(titles)
-    else:
-        plot = episode.volume_name or (
-            f"Volume {episode.volume_number}" if episode.volume_number else ""
-        )
+    plot = "; ".join(titles) if titles else (
+        episode.volume_name
+        or (f"Volume {episode.volume_number}" if episode.volume_number else "")
+    )
     _text(root, "plot", plot)
     aired = season.product.premiered
     if aired:

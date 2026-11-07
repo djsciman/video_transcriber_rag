@@ -36,41 +36,19 @@ def test_parse_repair_answer_accepts_all_and_letters():
     assert parse_repair_answer("Z", ["B", "C"]) is None
 
 
-def test_raw_multiseason_checklist_is_unchecked_and_offers_fixes(tmp_path: Path):
-    show = tmp_path / "Polish Power"
-    backtakes = show / "Polish Power Backtakes"
-    backtakes.mkdir(parents=True)
-    (backtakes / "4533018132578-01-01- Turtle.mp4").write_bytes(b"x")
-    (backtakes / "4533018132578-01-02- Clock.mp4").write_bytes(b"x")
-    mount = show / "Polish Power Full Mount"
-    mount.mkdir()
-    (mount / "4533018132578-02-01- Cross choke.mp4").write_bytes(b"x")
-    url_back = "https://example.com/back"
-    url_mount = "https://example.com/mount"
-    products = {
-        url_back: _product(
-            "Polish Power Back Takes",
-            "Adam Wardzinski",
-            url_back,
-            [Volume("Volume 1", (Chapter("Turtle", 0), Chapter("Clock", 1000)))],
-        ),
-        url_mount: _product(
-            "Polish Power Full Mount",
-            "Adam Wardzinski",
-            url_mount,
-            [Volume("Volume 1", (Chapter("Cross choke", 0),))],
-        ),
-    }
-
-    def scrape(url: str, user_agent: str | None = None) -> Product:
-        return products[url]
-
-    plan = build_plan(
-        show,
-        [f"Polish Power Backtakes={url_back}", f"Polish Power Full Mount={url_mount}"],
-        RuntimeOptions(),
-        scrape_product=scrape,
+def test_raw_chapter_files_checklist_is_unchecked_and_offers_fixes(tmp_path: Path):
+    show = tmp_path / "Polish Power Backtakes"
+    show.mkdir()
+    (show / "4533018132578-01-01- Turtle.mp4").write_bytes(b"x")
+    (show / "4533018132578-01-02- Clock.mp4").write_bytes(b"x")
+    url = "https://example.com/back"
+    product = _product(
+        "Polish Power Back Takes",
+        "Adam Wardzinski",
+        url,
+        [Volume("Volume 1", (Chapter("Turtle", 0), Chapter("Clock", 1000)))],
     )
+    plan = build_plan(show, [url], RuntimeOptions(), scrape_product=_scrape(product))
     report = assess(plan, RuntimeOptions())
     text = format_report(report)
     assert "[ ] tvshow.nfo" in text
@@ -129,44 +107,21 @@ def test_half_finished_combine_stays_unchecked(tmp_path: Path):
     assert "D" in report.needed_letters()
 
 
-def test_match_error_on_one_season_keeps_the_rest(tmp_path: Path):
-    show = tmp_path / "Bundle"
-    (show / "Season 01").mkdir(parents=True)
-    (show / "Season 01" / "already.mp4").write_bytes(b"x")
-    good = show / "Good Season"
-    good.mkdir()
-    (good / "TitleVol1.mp4").write_bytes(b"x")
-    bad = show / "Bad Season"
-    bad.mkdir()
-    (bad / "clip.mp4").write_bytes(b"x")
-    good_url = "https://example.com/good"
+def test_match_error_records_the_season_without_episodes(tmp_path: Path):
+    show = tmp_path / "Bad Season"
+    show.mkdir()
+    (show / "clip.mp4").write_bytes(b"x")
     bad_url = "https://example.com/bad"
-    products = {
-        good_url: _product("Good Season", "Ada", good_url, [Volume("Volume 1", (Chapter("Intro", 0),))]),
-        bad_url: _product(
-            "Bad Season",
-            "Ada",
-            bad_url,
-            [Volume(f"Volume {i}", (Chapter("A", 0), Chapter("B", 1000))) for i in range(1, 5)],
-        ),
-    }
-
-    def scrape(url: str, user_agent: str | None = None) -> Product:
-        return products[url]
-
-    plan = build_plan(
-        show,
-        ["Good Season=" + good_url, "Bad Season=" + bad_url],
-        RuntimeOptions(),
-        scrape_product=scrape,
+    product = _product(
+        "Bad Season",
+        "Ada",
+        bad_url,
+        [Volume(f"Volume {i}", (Chapter("A", 0), Chapter("B", 1000))) for i in range(1, 5)],
     )
-    by_name = {season.source_dir.name: season for season in plan.seasons}
-    assert "Season 01" not in by_name
-    assert by_name["Good Season"].number >= 2
-    assert by_name["Good Season"].dest_name != "Season 01"
-    assert by_name["Good Season"].episodes
-    assert by_name["Bad Season"].match_error
-    assert not by_name["Bad Season"].episodes
+    plan = build_plan(show, [bad_url], RuntimeOptions(), scrape_product=_scrape(product))
+    assert len(plan.seasons) == 1
+    assert plan.seasons[0].match_error
+    assert not plan.seasons[0].episodes
 
 
 def test_clips_already_inside_an_episode_are_leftovers(tmp_path: Path, monkeypatch):
@@ -190,7 +145,7 @@ def test_clips_already_inside_an_episode_are_leftovers(tmp_path: Path, monkeypat
         return ["Dive Under", "Tip Over"]
 
     monkeypatch.setattr("bjj_organizer.pipeline.probe_chapter_titles", fake_titles)
-    plan = build_plan(show, ["No Gi=" + url], RuntimeOptions(), scrape_product=_scrape(product))
+    plan = build_plan(show, [url], RuntimeOptions(), scrape_product=_scrape(product))
     season = plan.seasons[0]
     assert season.keep_dest
     assert season.dest_name == "Season 02"

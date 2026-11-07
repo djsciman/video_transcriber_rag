@@ -92,11 +92,10 @@ def test_season_and_episode_nfo():
     assert "<lockdata>false</lockdata>" in ep_blob
 
 
-def test_episode_nfo_no_combine_uses_volume_plot():
+def test_episode_nfo_plot_lists_chapter_titles():
     plan = _show()
     season = plan.seasons[0]
-    season.combine_volumes = False
     ep_blob = __import__("xml.etree.ElementTree", fromlist=["tostring"]).tostring(
         episode_xml(plan, season, season.episodes[0]), encoding="unicode"
     )
-    assert "<plot>Volume 1</plot>" in ep_blob
+    assert "<plot>Overview</plot>" in ep_blob
