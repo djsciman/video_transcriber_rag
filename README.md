@@ -12,7 +12,6 @@ The coach is the only user of the eventual application. Domain language lives in
 |--------|---------|
 | `metadata_scraper/organize_instructional.py` | Scrape a BJJ Fanatics product page and reorganize a local folder as a Jellyfin/TMM TV show (NFO, artwork, volumes, named chapters) |
 | `metadata_scraper/match_bjjfanatics.py` | Match local folder names to BJJ Fanatics product URLs and write `bjjfanatics_matches.csv` |
-| `metadata_scraper/split_bundles.py` | Split a multi-season bundle show so each instructional is its own one-season show |
 | `generate_chapters.py` | Detect title-card chapter starts, OCR titles, write sidecar CSVs, optionally embed chapters into the video |
 | `find_color_frames.py` | Lower-level HSV color-frame scanner used by chapter detection (also usable alone) |
 | `batch_panoscribe.py` | Walk a video tree and complete each transcript: speech only when missing, container chapters, and `video_file` |
@@ -25,7 +24,7 @@ Supporting material:
 - `docs/volumes-awaiting-parse.md` — raw corpus volumes not yet curated
 - `docs/agents/` — how agents use the issue tracker, labels, and domain docs
 - `tests/` — unit tests for chapter-start detection and batch completion (no ffmpeg, GPU, or real panoscribe)
-- `metadata_scraper/tests/` — pytest suite for scrape, match, NFO, layout, and organize/split pipelines
+- `metadata_scraper/tests/` — pytest suite for scrape, match, NFO, layout, and organize pipelines
 
 Video files and transcript JSON typically live **outside** this repo.
 
@@ -34,7 +33,7 @@ Video files and transcript JSON typically live **outside** this repo.
 ### System tools
 
 - **Python 3.12+** (on Windows use the launcher: `py -3`)
-- **ffmpeg** and **ffprobe** on `PATH` (required for chapter detection, embedding, reading container chapters, and `metadata_scraper` concat/split/remux)
+- **ffmpeg** and **ffprobe** on `PATH` (required for chapter detection, embedding, reading container chapters, and `metadata_scraper` concat/remux)
 - **panoscribe** installed for the same Python interpreter (required only for batch transcription)
 
 ### Python packages
@@ -53,7 +52,7 @@ Install the library organizer from [`metadata_scraper/requirements.txt`](metadat
 py -3 -m pip install -r metadata_scraper\requirements.txt
 ```
 
-That pulls in `beautifulsoup4`, `lxml`, and `pytest`. The scraper talks to BJJ Fanatics over HTTPS; ffmpeg is used when combining, splitting, or remuxing volumes.
+That pulls in `beautifulsoup4`, `lxml`, and `pytest`. The scraper talks to BJJ Fanatics over HTTPS; ffmpeg is used when concatenating chapter files into volumes or remuxing chapter markers.
 
 ## Getting started
 
@@ -93,7 +92,8 @@ That pulls in `beautifulsoup4`, `lxml`, and `pytest`. The scraper talks to BJJ F
 2. **Dry-run** `organize_instructional.py --folder ...` (prints the plan; no writes).
 3. **Apply** with `--apply` (NFO, artwork, season folders, volume files, named chapters).
 4. **Repair** later with `--repair` if a show is only partly organized.
-5. **Split bundles** with `split_bundles.py` when one show folder holds two or more Season folders that should each be their own show.
+
+Leftover multi-instructional bundle folders are out of this pipeline; flatten them by hand and organize each instructional folder on its own.
 
 ### Detect chapters and transcribe
 
@@ -132,22 +132,17 @@ Write files:
 py -3 metadata_scraper\organize_instructional.py --folder "path\to\Show Title by Instructor" --url "https://bjjfanatics.com/products/the-handle" --apply
 ```
 
-Nested series (one folder per instructional) take a keyed URL per child, or one bare URL for the bundle:
-
-```powershell
-py -3 metadata_scraper\organize_instructional.py --folder "path\to\Series Bundle" --url "Season 01=https://bjjfanatics.com/products/part-one" --url "Season 02=https://bjjfanatics.com/products/part-two"
-```
+One product URL per instructional folder. Chapter downloads are always concatenated into volumes with Fanatics chapter titles when names exist (starts from each source file's duration). Leftover bundle folders with several instructionals inside are not organized as one show.
 
 Useful flags:
 
 | Flag | Default | Meaning |
 |------|---------|---------|
 | `--apply` | off | Write files. Without it, print the plan and exit |
-| `--url` | search + confirm | Product URL; repeatable. Use `SeasonFolder=https://...` for nested series |
-| `--combine-volumes` / `--no-combine-volumes` | combine | One file per volume with named chapters, or keep/split to one file per chapter |
-| `--container` | `keep` | Keep the original container, or remux/split/concat to `mkv` |
+| `--url` | search + confirm | Product URL for this instructional folder |
+| `--container` | `keep` | Keep the original container, or remux/concat to `mkv` |
 | `--extras-policy` | `extras` | Move unmatched leftover videos into `extras/`, or `skip` to leave them |
-| `--skip-chapters` | off | Do not inject chapter markers and do not split. Segmented files still concatenate when combining volumes |
+| `--skip-chapters` | off | Do not inject chapter markers. Segmented files still concatenate into volumes |
 | `--season-order` | publish date | Comma-separated child folder names overriding season numbers |
 | `--repair` | off | Scan the show, print a checklist, and apply only the fixes you confirm |
 | `--repair-steps` | prompt | With `--repair`, apply `all` or letters such as `"B, C"` without a prompt |
@@ -172,19 +167,7 @@ py -3 metadata_scraper\match_bjjfanatics.py
 py -3 metadata_scraper\match_bjjfanatics.py --subfolders
 ```
 
-`--subfolders` also matches one level of child folders (search name is `parent child` so names like `Season 1` still match the series).
-
-### Split bundle shows
-
-`split_bundles.py` finds show folders that contain two or more `Season ##` directories, moves each season into its own show folder as `Season 01`, and rewrites tvshow / season / episode NFO. Default is a dry-run. `--library` defaults to the current working directory.
-
-```powershell
-py -3 metadata_scraper\split_bundles.py --library "path\to\library"
-py -3 metadata_scraper\split_bundles.py --folder "path\to\Bundle Show"
-py -3 metadata_scraper\split_bundles.py --library "path\to\library" --apply
-```
-
-`--offline` skips Fanatics fetches and names each new show from the bundle's named season.
+`--subfolders` also matches one level of child folders (search name is `parent child` so names like `Season 1` still match the series). Matching prefers the specific instructional product over a store listing titled as a bundle.
 
 ### Detect and embed chapters
 
@@ -293,9 +276,8 @@ The drill-down is written to `completeness_scan_results_<date-time>.md` in the r
 ├── metadata_scraper/
 │   ├── organize_instructional.py
 │   ├── match_bjjfanatics.py
-│   ├── split_bundles.py
 │   ├── requirements.txt
-│   ├── bjj_organizer/        # Scrape, match, NFO, concat/split
+│   ├── bjj_organizer/        # Scrape, match, NFO, concat
 │   └── tests/
 ├── docs/
 │   ├── adr/                  # Accepted decisions

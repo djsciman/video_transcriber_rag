@@ -15,15 +15,13 @@ from .artwork import product_fanart, product_poster, write_posters
 from .chapters import chapters_have_timeline, probe_chapter_titles, remux_with_chapters
 from .concat import concat_with_chapters
 from .errors import MatchError, UsageError
-from .fanatics_search import csv_hint_url, hit_from_url, lookup_candidates
+from .fanatics_search import csv_hint_url, lookup_candidates
 from .httputil import DEFAULT_USER_AGENT
 from .layout import child_dirs, detect_layout, dir_has_videos, list_videos, season_source_name
 from .match import group_matches_by_volume, match_season
 from .models import Chapter, ChapterMatch, EpisodePlan, SeasonPlan, ShowPlan
 from .naming import (
     SXXEYY,
-    episode_display_title,
-    episode_filename,
     is_generic_season_name,
     parse_video,
     pick_volume_title,
@@ -36,7 +34,7 @@ from .naming import (
 )
 from .nfo import write_episode_nfo, write_season_nfo, write_tvshow_nfo
 from .scrape.base import fetch_product
-from .split import is_whole_file_copy, remux_copy, split_source_into_episodes
+from .split import remux_copy
 
 
 @dataclass
@@ -65,10 +63,11 @@ def parse_url_arg(raw: str) -> tuple[str | None, str]:
         key, url = text.split("=", 1)
         key, url = key.strip(), url.strip()
         if key and (url.startswith("http://") or url.startswith("https://")):
-            return key, url
-    raise UsageError(
-        f"Invalid --url {raw!r}. Use a bare https URL, or SeasonFolder=https://..."
-    )
+            raise UsageError(
+                f"Invalid --url {raw!r}. Use a single product URL per instructional folder, "
+                "not SeasonFolder=https://..."
+            )
+    raise UsageError(f"Invalid --url {raw!r}. Use a bare https URL.")
 
 
 def _url_aliases(source_name: str, folder_name: str, show_folder: str) -> list[str]:
@@ -192,56 +191,6 @@ def lookup_season_url(
     return url
 
 
-def _stdin_is_tty(options: RuntimeOptions) -> bool:
-    stdin = options.stdin if options.stdin is not None else sys.stdin
-    return bool(hasattr(stdin, "isatty") and stdin.isatty())
-
-
-def take_show_url(
-    folder_name: str,
-    keyed: dict[str, str],
-    bare_urls: list[str],
-) -> tuple[str | None, dict[str, str]]:
-    """A bare URL, or a key naming the show folder, is the bundle. Not a season."""
-    if len(bare_urls) > 1:
-        raise UsageError(
-            "A nested show takes at most one bare --url (the bundle). "
-            "Use SeasonFolder=URL for each season."
-        )
-    show_url = bare_urls[0] if bare_urls else None
-    show_keys = {folder_name.strip().lower(), series_stem(folder_name).strip().lower()}
-    remaining: dict[str, str] = {}
-    for key, url in keyed.items():
-        if key.strip().lower() in show_keys:
-            if show_url and show_url != url:
-                raise UsageError(
-                    f"Show URL given twice with different values: {show_url} and {url}"
-                )
-            show_url = url
-            continue
-        remaining[key] = url
-    return show_url, remaining
-
-
-def lookup_show_url(folder: Path, options: RuntimeOptions) -> str | None:
-    hits = lookup_candidates(folder.name, user_agent=options.user_agent, prefer_bundle=True)
-    hint = csv_hint_url(folder)
-    if hint and all(hit.url != hint for hit in hits):
-        hinted = hit_from_url(folder.name, hint, prefer_bundle=True)
-        hits.append(hinted)
-        hits.sort(key=lambda hit: hit.score, reverse=True)
-    stdin = options.stdin if options.stdin is not None else sys.stdin
-    stderr = options.stderr if options.stderr is not None else sys.stderr
-    return confirm_product_url(
-        folder.name,
-        hits,
-        stdin,
-        stderr,
-        optional=True,
-        heading=f"No --url for show: {folder.name}",
-    )
-
-
 def _unique_instructors(names: list[str]) -> list[str]:
     out: list[str] = []
     seen: set[str] = set()
@@ -284,60 +233,22 @@ def _episodes_from_match(
     folder: Path,
 ) -> list[EpisodePlan]:
     episodes: list[EpisodePlan] = []
-    if options.combine_volumes:
-        for index, group in enumerate(group_matches_by_volume(items), start=1):
-            first = group[0]
-            sources = _unique_paths(group)
-            ext = first.parsed.extension
-            if options.container == "mkv":
-                ext = ".mkv"
-            title = pick_volume_title(first.parsed, first.volume_name, first.volume_number)
-            chapters: list[Chapter] = []
-            for item in group:
-                if item.toc:
-                    chapters.extend(item.toc)
-                else:
-                    chapters.append(Chapter(item.chapter_title, item.chapter.start_ms))
-            episodes.append(
-                EpisodePlan(
-                    source=sources[0],
-                    dest_dir=folder,
-                    dest_name="",
-                    season=0,
-                    episode=index,
-                    title=title,
-                    chapters=chapters,
-                    extension=ext,
-                    volume_number=first.volume_number,
-                    chapter_number=1,
-                    chapter_title=title,
-                    volume_name=first.volume_name,
-                    mode=mode,
-                    concat_sources=sources,
-                )
-            )
-        return episodes
-    for index, item in enumerate(items, start=1):
-        ext = item.parsed.extension
+    for index, group in enumerate(group_matches_by_volume(items), start=1):
+        first = group[0]
+        sources = _unique_paths(group)
+        ext = first.parsed.extension
         if options.container == "mkv":
             ext = ".mkv"
-        if item.toc:
-            title = item.chapter_title
-            chapters = list(item.toc)
-            split_start_ms = None
-            split_end_ms = None
-        else:
-            title = episode_display_title(
-                item.volume_number,
-                item.chapter_number,
-                item.chapter_title,
-            )
-            chapters = [item.chapter]
-            split_start_ms = item.split_start_ms
-            split_end_ms = item.split_end_ms
+        title = pick_volume_title(first.parsed, first.volume_name, first.volume_number)
+        chapters: list[Chapter] = []
+        for item in group:
+            if item.toc:
+                chapters.extend(item.toc)
+            else:
+                chapters.append(Chapter(item.chapter_title, item.chapter.start_ms))
         episodes.append(
             EpisodePlan(
-                source=item.parsed.path,
+                source=sources[0],
                 dest_dir=folder,
                 dest_name="",
                 season=0,
@@ -345,13 +256,12 @@ def _episodes_from_match(
                 title=title,
                 chapters=chapters,
                 extension=ext,
-                volume_number=item.volume_number,
-                chapter_number=item.chapter_number,
-                chapter_title=item.chapter_title,
-                volume_name=item.volume_name,
-                mode=item.mode,
-                split_start_ms=split_start_ms,
-                split_end_ms=split_end_ms,
+                volume_number=first.volume_number,
+                chapter_number=1,
+                chapter_title=title,
+                volume_name=first.volume_name,
+                mode=mode,
+                concat_sources=sources,
             )
         )
     return episodes
@@ -432,7 +342,7 @@ def _season_already_combined(
         extras=list(files),
         warnings=[f"Chapter clips are already combined into {episode_path.name}"],
         mode="volume",
-        combine_volumes=options.combine_volumes,
+        combine_volumes=True,
         keep_dest=True,
     )
 
@@ -458,19 +368,9 @@ def build_plan(
                 f"{folder.name} looks like a season of {folder.parent.name} "
                 f"(siblings include {', '.join(siblings[:6])}"
                 f"{'…' if len(siblings) > 6 else ''}). "
-                f"Point --folder at the series root and pass --url SeasonFolder=URL "
-                f"for each season so Jellyfin sees one show, not a show nested in a show."
+                "Organize this instructional folder on its own; leftover bundle siblings "
+                "stay out of the pipeline until flattened by hand."
             )
-    keyed: dict[str, str] = {}
-    bare: list[str] = []
-    for raw in url_args:
-        key, url = parse_url_arg(raw)
-        if key is None:
-            bare.append(url)
-        else:
-            keyed[key] = url
-    if not nested and len(bare) + len(keyed) > 1:
-        raise UsageError("A one-season show takes at most one --url")
 
     work_dirs = season_dirs if nested else [folder]
     if nested:
@@ -479,6 +379,26 @@ def build_plan(
             # Season 01 next to the original download folders is output from an
             # earlier run, not another season to match.
             work_dirs = topic_dirs
+    if nested and len(work_dirs) > 1:
+        names = ", ".join(path.name for path in work_dirs[:6])
+        extra = "…" if len(work_dirs) > 6 else ""
+        raise UsageError(
+            f"{folder.name} looks like a leftover bundle of {len(work_dirs)} instructionals "
+            f"({names}{extra}). Organize each instructional folder on its own; "
+            "flatten leftover bundles by hand."
+        )
+
+    keyed: dict[str, str] = {}
+    bare: list[str] = []
+    for raw in url_args:
+        key, url = parse_url_arg(raw)
+        if key is None:
+            bare.append(url)
+        else:
+            keyed[key] = url
+    if len(bare) + len(keyed) > 1:
+        raise UsageError("A one-season show takes at most one --url")
+
     season_plans: list[SeasonPlan] = []
     warnings: list[str] = []
     if parent_series_warning:
@@ -488,19 +408,6 @@ def build_plan(
     show_product = None
     season_keyed = keyed
     season_bare = bare
-    multi_season = nested and len(work_dirs) > 1
-    if multi_season:
-        show_url, season_keyed = take_show_url(folder.name, keyed, bare)
-        season_bare = []
-        if not show_url and _stdin_is_tty(options):
-            show_url = lookup_show_url(folder, options)
-        elif not show_url:
-            warnings.append(
-                "No show/bundle URL. Pass a bare --url or run in a terminal to confirm a lookup. "
-                "Show metadata will be taken from the seasons."
-            )
-    elif nested and bare and keyed:
-        raise UsageError("Mix of keyed and bare --url values; use SeasonFolder=URL for every season")
 
     exclude_urls: set[str] = set()
     if show_url:
@@ -562,7 +469,7 @@ def build_plan(
                     product=product,
                     warnings=[message],
                     mode="volume",
-                    combine_volumes=options.combine_volumes,
+                    combine_volumes=True,
                     match_error=message,
                 )
             )
@@ -577,7 +484,7 @@ def build_plan(
             extras=matched.extras,
             warnings=matched.warnings,
             mode=matched.mode,
-            combine_volumes=options.combine_volumes,
+            combine_volumes=True,
         )
         season.episodes = _episodes_from_match(matched.items, matched.mode, options, folder)
         season_plans.append(season)
@@ -620,21 +527,13 @@ def build_plan(
         for episode in season.episodes:
             if season.keep_dest:
                 continue
-            if options.combine_volumes:
-                episode.dest_name = volume_episode_filename(
-                    title,
-                    episode.season,
-                    episode.episode,
-                    episode.title,
-                    episode.extension,
-                )
-            else:
-                episode.dest_name = episode_filename(
-                    episode.volume_number,
-                    episode.chapter_number,
-                    episode.chapter_title,
-                    episode.extension,
-                )
+            episode.dest_name = volume_episode_filename(
+                title,
+                episode.season,
+                episode.episode,
+                episode.title,
+                episode.extension,
+            )
 
     if show_product and show_product.premiered:
         earliest = show_product.premiered
@@ -664,7 +563,7 @@ def build_plan(
         unique_id=unique_id,
         warnings=warnings,
         nested=nested,
-        combine_volumes=options.combine_volumes,
+        combine_volumes=True,
         show_url=show_url or "",
         show_product=show_product,
     )
@@ -678,7 +577,7 @@ def format_plan(plan: ShowPlan) -> str:
         f"Will rename folder: {'no' if plan.source_dir.name == plan.dest_name else plan.dest_name}",
         f"Instructors: {', '.join(plan.instructors) or '(none)'}",
         f"Seasons: {len(plan.seasons)}",
-        f"Combine volumes: {'yes' if plan.combine_volumes else 'no'}",
+        "Combine volumes: yes",
         "",
     ]
     for season in plan.seasons:
@@ -687,23 +586,13 @@ def format_plan(plan: ShowPlan) -> str:
             f"  {season.dest_name}  {season.source_name}  ({published})  "
             f"{len(season.episodes)} episodes  mode={season.mode}  from {season.source_dir.name}"
         )
-        current_source = None
         for episode in season.episodes:
-            if plan.combine_volumes and episode.concat_sources:
+            if episode.concat_sources:
                 lines.append(f"    {episode.title}  -> {episode.dest_name}")
                 for source in episode.concat_sources:
                     lines.append(f"      {source.name}")
                 for chapter in episode.chapters:
                     lines.append(f"      chapter {chapter.title}")
-            elif season.mode == "volume" and episode.split_start_ms is not None:
-                if episode.source != current_source:
-                    current_source = episode.source
-                    lines.append(f"    {episode.source.name}")
-                start = _fmt_ms(episode.split_start_ms)
-                end = _fmt_ms(episode.split_end_ms) if episode.split_end_ms is not None else "end"
-                lines.append(
-                    f"      [{start}–{end}]  {episode.title}  -> {episode.dest_name}"
-                )
             else:
                 lines.append(
                     f"    {episode.title}  <- {episode.source.name}  -> {episode.dest_name}"
@@ -842,25 +731,8 @@ def _move_file(source: Path, dest: Path) -> None:
     shutil.move(str(source), str(dest))
 
 
-def _group_episodes_by_source(episodes: list[EpisodePlan]) -> list[list[EpisodePlan]]:
-    groups: dict[Path, list[EpisodePlan]] = {}
-    order: list[Path] = []
-    for episode in episodes:
-        try:
-            key = episode.source.resolve()
-        except OSError:
-            key = episode.source
-        if key not in groups:
-            order.append(key)
-            groups[key] = []
-        groups[key].append(episode)
-    return [groups[key] for key in order]
-
-
 def _wants_chapter_remux(episode: EpisodePlan, options: RuntimeOptions) -> bool:
     if options.skip_chapters:
-        return False
-    if not options.combine_volumes:
         return False
     titled = [ch for ch in episode.chapters if ch.title.strip()]
     if len(titled) > 1 and not chapters_have_timeline(titled):
@@ -874,8 +746,6 @@ def _needs_ffmpeg(plan: ShowPlan, options: RuntimeOptions) -> bool:
     for season in plan.seasons:
         for episode in season.episodes:
             if len(episode.concat_sources) > 1:
-                return True
-            if episode.split_start_ms is not None:
                 return True
             if _wants_chapter_remux(episode, options):
                 return True
@@ -970,10 +840,7 @@ def apply_plan(plan: ShowPlan, options: RuntimeOptions) -> None:
                     show_poster_written = True
             write_season_nfo(plan, season, dest_dir)
 
-        split_eps = [ep for ep in season.episodes if ep.split_start_ms is not None]
-        other_eps = [ep for ep in season.episodes if ep.split_start_ms is None]
-
-        for episode in other_eps:
+        for episode in season.episodes:
             dest = dest_dir / episode.dest_name
             sources = episode.concat_sources or [episode.source]
             if len(sources) > 1:
@@ -1003,28 +870,6 @@ def apply_plan(plan: ShowPlan, options: RuntimeOptions) -> None:
             _place_single_file(sources[0], dest, episode, place_options, ffmpeg, ffprobe)
             if _repair_step(options, "F"):
                 write_episode_nfo(plan, season, episode, dest)
-
-        if full_apply or _repair_step(options, "F"):
-            for group in _group_episodes_by_source(split_eps):
-                source = group[0].source
-                if is_whole_file_copy(group):
-                    dest = dest_dir / group[0].dest_name
-                    _place_single_file(source, dest, group[0], place_options, ffmpeg, ffprobe)
-                    if _repair_step(options, "F"):
-                        write_episode_nfo(plan, season, group[0], dest)
-                    continue
-                assert ffmpeg and ffprobe
-                written = split_source_into_episodes(source, group, dest_dir, ffmpeg, ffprobe)
-                if _repair_step(options, "F"):
-                    for episode in written:
-                        write_episode_nfo(plan, season, episode, dest_dir / episode.dest_name)
-        elif _repair_step(options, "C"):
-            seen: set[Path] = set()
-            for episode in split_eps:
-                if episode.source in seen:
-                    continue
-                seen.add(episode.source)
-                _move_keeping_name([episode.source], dest_dir)
 
         if _repair_step(options, "G") and options.extras_policy == "extras" and season.extras:
             extras_dir = dest_dir / "extras"

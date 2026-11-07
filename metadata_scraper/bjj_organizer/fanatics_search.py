@@ -67,8 +67,7 @@ def score_match(folder: str, title: str, *, prefer_bundle: bool = False) -> floa
     seq = SequenceMatcher(None, " ".join(folder_tokens), " ".join(title_tokens)).ratio()
     score = (0.50 * recall) + (0.20 * precision) + (0.30 * seq)
     if "bundle" in title_set and "bundle" not in folder_set:
-        # Season searches penalize bundles. The show-folder search prefers them.
-        score += 0.18 if prefer_bundle else -0.18
+        score -= 0.18
     if folder_set <= title_set:
         score += 0.08
     return score
@@ -152,15 +151,6 @@ def csv_hint_url(folder: Path) -> str | None:
     return None
 
 
-def _merge_hits(primary: list[ProductHit], extra: list[ProductHit]) -> list[ProductHit]:
-    by_url: dict[str, ProductHit] = {hit.url: hit for hit in primary}
-    for hit in extra:
-        current = by_url.get(hit.url)
-        if current is None or hit.score > current.score:
-            by_url[hit.url] = hit
-    return sorted(by_url.values(), key=lambda hit: hit.score, reverse=True)
-
-
 def lookup_candidates(
     folder_name: str,
     user_agent: str = DEFAULT_USER_AGENT,
@@ -171,13 +161,6 @@ def lookup_candidates(
     query = QUERY_OVERRIDES.get(folder_name, folder_name)
     products = search(query)
     hits = rank_products(folder_name, products, prefer_bundle=prefer_bundle)
-    if prefer_bundle and not any("bundle" in hit.title.lower() for hit in hits):
-        extra_query = query if query.lower().rstrip().endswith(" bundle") else f"{query} bundle"
-        if extra_query != query:
-            hits = _merge_hits(
-                hits,
-                rank_products(folder_name, search(extra_query), prefer_bundle=True),
-            )
     if not hits and query != folder_name:
         products = search(folder_name)
         hits = rank_products(folder_name, products, prefer_bundle=prefer_bundle)

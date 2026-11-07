@@ -199,7 +199,7 @@ def assess(plan: ShowPlan, options: RuntimeOptions) -> RepairReport:
         )
 
         multi = [ep for ep in season.episodes if len(ep.concat_sources) > 1]
-        if not multi or not options.combine_volumes:
+        if not multi:
             items.append(CheckItem("chapter clips combined into volumes", True, "one file per volume", letter="D"))
         else:
             loose = 0
@@ -234,9 +234,7 @@ def assess(plan: ShowPlan, options: RuntimeOptions) -> RepairReport:
             timed = [
                 ep
                 for ep in season.episodes
-                if options.combine_volumes
-                and chapters_have_timeline(ep.chapters)
-                and not options.skip_chapters
+                if chapters_have_timeline(ep.chapters) and not options.skip_chapters
             ]
         if not timed:
             items.append(
@@ -272,11 +270,7 @@ def assess(plan: ShowPlan, options: RuntimeOptions) -> RepairReport:
             )
         else:
             expected = len(flatten_chapters(season.product.volumes))
-            present = (
-                sum(len(ep.chapters) for ep in season.episodes)
-                if options.combine_volumes
-                else len(season.episodes)
-            )
+            present = sum(len(ep.chapters) for ep in season.episodes)
             items.append(
                 CheckItem(
                     "course chapters present",
