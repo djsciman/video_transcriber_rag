@@ -120,6 +120,7 @@ def _optional(value: str) -> str | None:
 
 add_screen(Screen("home", "/", "Home", get=render_home))
 add_screen(Screen("settings", "/settings", "", post=save_settings))
+import coach_app.ui_curate  # noqa: E402
 
 
 class CoachApp:
