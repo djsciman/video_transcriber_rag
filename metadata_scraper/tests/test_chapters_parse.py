@@ -51,3 +51,19 @@ def test_ffmpeg_cmd_maps_only_av_and_drops_data():
     assert "-sn" in cmd
     assert "-ignore_unknown" in cmd
     assert cmd[cmd.index("-map_chapters") + 1] == "1"
+
+
+def test_ffmpeg_cmd_webm_omits_mp4_faststart_and_sn():
+    cmd = build_ffmpeg_cmd(
+        "ffmpeg",
+        Path("in.webm"),
+        Path("chapters.ffmeta"),
+        Path("out.webm"),
+        mov_faststart=True,
+    )
+    joined = " ".join(cmd)
+    assert "-dn" in cmd
+    assert "-sn" not in cmd
+    assert "-movflags" not in cmd
+    assert "faststart" not in joined
+    assert cmd[cmd.index("-map_chapters") + 1] == "1"
