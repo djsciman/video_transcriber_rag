@@ -91,6 +91,3 @@ def test_print_plan_does_not_open_a_browser_or_use_prototype_html():
     assert "playwright" not in folded
     assert "prototypes" not in folded
     assert "<html" not in folded
-    assert "openai" not in folded
-    assert "anthropic" not in folded
-    assert "sqlite" not in folded

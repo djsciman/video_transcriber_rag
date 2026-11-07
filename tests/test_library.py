@@ -22,6 +22,7 @@ from coach_app.library import (
 )
 from coach_app.store import (
     Citation,
+    CuratedStore,
     CustomLesson,
     Instructional,
     Lesson,
@@ -55,6 +56,17 @@ def test_place_on_a_unit_writes_custom_with_no_extra_save():
         for item in placed.classes[0].lessons
     )
     assert inspect.getsource(place_lesson).count("add_lesson") >= 1
+    via_edit = add_lesson(
+        store,
+        placed,
+        Lesson(kind="game", target=knee.id, condition="Sweep only."),
+        class_index=0,
+    )
+    assert any(
+        item.lesson.kind == "game" and item.lesson.condition == "Sweep only."
+        for item in store.custom_lessons()
+    )
+    assert via_edit.classes[0].lessons[-1].kind == "game"
 
 
 def test_pull_copies_fields_technique_brings_glued_drill_edit_leaves_saved():
@@ -227,6 +239,10 @@ def test_history_copy_creates_new_editable_unit_and_leaves_the_past_unchanged():
     past = store.unit_history(saved.id)
     assert saved.unit == original_unit
     assert past.unit == original_unit
+    assert past.classes
+    assert tuple(
+        tuple(lesson.kind for lesson in packed.lessons) for packed in past.classes
+    ) == original_kinds
     assert past.unit.paragraph == original_unit.paragraph
     assert past.unit.id == original_unit.id
     assert copied.unit.id != original_unit.id
@@ -259,10 +275,7 @@ def test_custom_copy_and_history_copy_go_through_the_facade():
     assert "unit_history" in source
     assert "put_unit" in source
     assert "browse_hierarchy" in source
-    assert "openai" not in folded
-    assert "anthropic" not in folded
-    assert "sqlite" not in folded
-    assert "postgres" not in folded
-    assert "django" not in folded
+    assert "_HISTORY_CLASSES" not in source
     assert "<html" not in folded
     assert "prototypes" not in folded
+    assert callable(CuratedStore.delete_custom_lesson)

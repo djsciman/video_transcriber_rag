@@ -11,6 +11,7 @@ from coach_app.store import (
     Instructional,
     Lesson,
     OtherRulesetChoice,
+    PackedClass,
     SetAside,
     Showing,
     Topic,
@@ -190,12 +191,22 @@ def test_enrichment_node_round_trip():
     named_move = store.put_enrichment_node(
         EnrichmentNode(kind="named move", name="Old school sweep")
     )
+    system = store.put_enrichment_node(
+        EnrichmentNode(
+            kind="system",
+            name="Closed guard trilemma",
+            members=(named_move.id, "kimura"),
+        )
+    )
     assert position.kind == "position"
     assert position.name == "Half guard"
     assert position.id
     assert named_move.kind == "named move"
+    assert named_move.aliases == ()
+    assert system.members == (named_move.id, "kimura")
+    assert system.aliases == ()
     assert store.enrichment_node(position.id) == position
-    assert store.enrichment_nodes() == (position, named_move)
+    assert store.enrichment_nodes() == (position, named_move, system)
 
 
 def test_unit_round_trip():
@@ -262,11 +273,67 @@ def test_unit_history_round_trip():
     unit = store.put_unit(
         Unit(topic_name="Knee cut", topic_ruleset="gi", paragraph="First packing.")
     )
-    written = store.put_unit_history(UnitHistory(unit=unit))
+    class_record = store.put_class(Class(purpose="Cut.", unit_id=unit.id))
+    lesson = store.put_lesson(
+        Lesson(kind="drill", target="knee-cut", class_id=class_record.id, partner_job="Hold.")
+    )
+    packed = PackedClass(class_record=class_record, lessons=(lesson,))
+    written = store.put_unit_history(UnitHistory(unit=unit, classes=(packed,)))
     assert written.unit == unit
+    assert written.classes == (packed,)
     assert written.id
     assert store.unit_history(written.id) == written
     assert store.unit_histories() == (written,)
+
+
+def test_remove_topic_end_set_aside_and_delete_custom_are_public():
+    store = CuratedStore()
+    store.put_topic(Topic(name="Knee cut", ruleset="gi"))
+    store.put_other_ruleset_choice(
+        OtherRulesetChoice(
+            topic_name="Knee cut",
+            topic_ruleset="gi",
+            instructional="Finishing Leg Locks",
+            yes=True,
+        )
+    )
+    store.put_set_aside(
+        SetAside(
+            topic_name="Knee cut",
+            topic_ruleset="gi",
+            earlier_topic_name="Half guard",
+            earlier_topic_ruleset="gi",
+        )
+    )
+    unit = store.put_unit(Unit(topic_name="Knee cut", topic_ruleset="gi"))
+    class_record = store.put_class(Class(unit_id=unit.id))
+    store.put_lesson(Lesson(kind="drill", target="knee-cut", class_id=class_record.id))
+    custom = store.put_custom_lesson(
+        CustomLesson(lesson=Lesson(kind="drill", target="knee-cut", partner_job="Hold."))
+    )
+    store.end_set_aside("Knee cut", "gi", "Half guard", "gi")
+    assert store.set_asides("Knee cut", "gi") == ()
+    store.put_set_aside(
+        SetAside(
+            topic_name="Knee cut",
+            topic_ruleset="gi",
+            earlier_topic_name="Half guard",
+            earlier_topic_ruleset="gi",
+        )
+    )
+    store.remove_topic("Knee cut", "gi")
+    store.delete_custom_lesson(custom.id)
+    assert store.topic("Knee cut", "gi") is None
+    assert store.units() == ()
+    assert store.classes() == ()
+    assert store.lessons() == ()
+    assert store.custom_lesson(custom.id) is None
+    try:
+        store.put_lesson(Lesson(kind="drill"))
+    except ValueError as error:
+        assert "exactly one" in str(error)
+    else:
+        raise AssertionError("expected an empty lesson target to fail xor")
 
 
 def _public_names(cls) -> list[str]:

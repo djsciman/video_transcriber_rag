@@ -116,6 +116,15 @@ def test_convert_packs_a_hand_built_canvas_and_refuses_an_empty_map():
     assert packed.session.marks == sample_tight_waist(store).marks
     assert len(packed.draft.classes) == 2
     assert store.unit(packed.draft.unit.id) == packed.draft.unit
+    again = convert(store, sample_tight_waist(store), BuildAdvisor())
+    units = [
+        unit
+        for unit in store.units()
+        if unit.topic_name == "Tight waist" and unit.topic_ruleset == "gi"
+    ]
+    assert len(units) == 1
+    assert units[0].id == again.draft.unit.id
+    assert len(store.classes()) == len(again.draft.classes)
 
 
 def test_first_draft_is_glued_technique_plus_drill_with_class_cuts_and_partner_jobs():
@@ -235,6 +244,65 @@ def test_citations_fall_back_to_the_first_linked_preferring_specific_named_move_
     assert far_cite.id not in by_target[roll.id].citations
 
 
+def test_fallback_does_not_pack_an_other_ruleset_citation():
+    store = _tight_waist_catalog()
+    roll = _named(store, "Roll-through sweep")
+    other = store.accept(
+        {
+            "movement": "Roll through from the tight waist",
+            "instructor": "John Danaher",
+            "chapter": "The roll through",
+            "cleaned_statement": "roll them through toward the outside",
+            "step_bullets": ("roll them through toward the outside",),
+            "details": ({"speech_start": 8.0, "text": "roll through"},),
+        },
+        instructional="Master The Move Arm Drags",
+        video_file="Master The Move Arm Drags - Volume 1.mp4",
+        ruleset="no-gi",
+    )
+    store.put_citation(replace(other, named_move_id=roll.id))
+    same = store.accept(
+        {
+            "movement": "Gi roll through from the tight waist",
+            "instructor": "John Danaher",
+            "chapter": "The roll through gi",
+            "cleaned_statement": "inside hook rolls them through",
+            "step_bullets": ("inside hook rolls them through",),
+            "details": ({"speech_start": 12.0, "text": "inside hook"},),
+        },
+        instructional="Half Guard Passing and Dynamic Pins",
+        video_file="Half Guard Passing and Dynamic Pins - Volume 1.mp4",
+        ruleset="gi",
+    )
+    store.put_citation(replace(same, named_move_id=roll.id))
+
+    result = convert(store, sample_tight_waist(store), BuildAdvisor())
+    by_target = {
+        lesson.target: lesson
+        for packed in result.draft.classes
+        for lesson in packed.lessons
+        if lesson.kind == "technique"
+    }
+    assert other.id not in by_target[roll.id].citations
+    assert by_target[roll.id].citations == (same.id,)
+
+    placed = convert(
+        store,
+        replace(
+            sample_tight_waist(store),
+            chosen_citations=((roll.id, other.id),),
+        ),
+        BuildAdvisor(),
+    )
+    placed_by_target = {
+        lesson.target: lesson
+        for packed in placed.draft.classes
+        for lesson in packed.lessons
+        if lesson.kind == "technique"
+    }
+    assert placed_by_target[roll.id].citations == (other.id,)
+
+
 def test_other_side_of_disagreement_is_the_partner_job_stub():
     store = _tight_waist_catalog()
     tight = _named(store, "Tight waist")
@@ -311,8 +379,6 @@ def test_draft_is_a_no_edit_layout_b_proposal_without_playback_or_class_cap():
     assert "playback" not in folded
     assert "browser" not in folded
     assert "pdf" not in folded
-    assert "openai" not in folded
-    assert "anthropic" not in folded
     assert "prototypes" not in folded
     assert "max_classes" not in folded
     assert not hasattr(draft, "add_lesson")

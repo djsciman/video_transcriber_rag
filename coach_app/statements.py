@@ -6,7 +6,7 @@ import re
 
 _MIN_CHAPTER_SECONDS = 60.0
 _SKIP_TITLE = re.compile(
-    r"(?i)^\s*(?:intro(?:duction)?|outro|named\s+roll|narrated\s+rolling)\s*$"
+    r"(?i)^\s*(?:intro(?:duction)?|outro|named\s+roll)\s*$"
 )
 
 

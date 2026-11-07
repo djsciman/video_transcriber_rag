@@ -89,8 +89,7 @@ def test_short_intro_outro_and_named_roll_yield_no_statement():
                 {"title": "Intro", "start": 0.0, "end": 90.0},
                 {"title": "Hip Bump Sweep", "start": 90.0, "end": 140.0},
                 {"title": "Outro", "start": 140.0, "end": 220.0},
-                {"title": "Narrated Rolling", "start": 220.0, "end": 400.0},
-                {"title": "Named Roll", "start": 400.0, "end": 500.0},
+                {"title": "Named Roll", "start": 220.0, "end": 400.0},
             ],
             "segments": [
                 {"start": 10.0, "end": 20.0, "text": "welcome", "source": "SPEECH"},
@@ -101,8 +100,7 @@ def test_short_intro_outro_and_named_roll_yield_no_statement():
                     "source": "SPEECH",
                 },
                 {"start": 150.0, "end": 160.0, "text": "thanks for watching", "source": "SPEECH"},
-                {"start": 230.0, "end": 240.0, "text": "we roll now", "source": "SPEECH"},
-                {"start": 410.0, "end": 420.0, "text": "named rolling", "source": "SPEECH"},
+                {"start": 230.0, "end": 240.0, "text": "named roll demonstration", "source": "SPEECH"},
             ],
         }
     )

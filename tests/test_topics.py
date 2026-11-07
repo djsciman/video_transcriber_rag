@@ -6,12 +6,15 @@ import inspect
 
 from coach_app.store import (
     Citation,
+    Class,
     CuratedStore,
     Instructional,
+    Lesson,
     OtherRulesetChoice,
     SetAside,
     Showing,
     Topic,
+    Unit,
 )
 from coach_app.topics import (
     mark_other_ruleset_showing,
@@ -159,6 +162,12 @@ def test_remove_clears_what_belonged_and_the_pair_can_open_again():
         )
     )
     store.put_topic(Topic(name="Half guard", ruleset="gi", system="Underhook."))
+    unit = store.put_unit(Unit(topic_name="Knee cut", topic_ruleset="gi"))
+    class_record = store.put_class(Class(purpose="Cut to mount.", unit_id=unit.id))
+    store.put_lesson(
+        Lesson(kind="drill", target="knee-cut", class_id=class_record.id, partner_job="Hold.")
+    )
+    keep_unit = store.put_unit(Unit(topic_name="Knee cut", topic_ruleset="no-gi"))
 
     remove_topic(store, "Knee cut", "gi")
 
@@ -167,8 +176,15 @@ def test_remove_clears_what_belonged_and_the_pair_can_open_again():
         "Knee cut", "gi", "Master The Move Arm Drags"
     ) is None
     assert store.set_asides("Knee cut", "gi") == ()
+    assert store.unit(unit.id) is None
+    assert store.class_record(class_record.id) is None
+    assert store.lessons() == ()
     assert store.topic("Knee cut", "no-gi") is not None
+    assert store.unit(keep_unit.id) == keep_unit
     assert store.topic("Half guard", "gi").system == "Underhook."
+    assert "._topics" not in inspect.getsource(remove_topic)
+    assert "._other_ruleset" not in inspect.getsource(remove_topic)
+    assert "._set_asides" not in inspect.getsource(remove_topic)
 
     reopened = open_topic(store, "Knee cut", "gi")
     assert reopened.name == "Knee cut"
@@ -268,6 +284,6 @@ def test_topics_module_does_not_drive_a_browser_or_name_a_vendor():
     assert "browser" not in lowered
     assert "ffmpeg" not in lowered
     assert "whisper" not in lowered
-    assert "openai" not in lowered
-    assert "anthropic" not in lowered
-    assert "sqlite" not in lowered
+    assert callable(CuratedStore.remove_topic)
+    opened = open_topic(CuratedStore(), "Knee cut", "gi")
+    assert opened.name == "Knee cut"

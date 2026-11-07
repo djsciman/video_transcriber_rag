@@ -38,14 +38,11 @@ def set_aside(store: CuratedStore, this_topic: Topic, earlier_topic: Topic) -> S
 
 
 def end_set_aside(store: CuratedStore, this_topic: Topic, earlier_topic: Topic) -> None:
-    store._set_asides.pop(
-        (
-            this_topic.name,
-            this_topic.ruleset,
-            earlier_topic.name,
-            earlier_topic.ruleset,
-        ),
-        None,
+    store.end_set_aside(
+        this_topic.name,
+        this_topic.ruleset,
+        earlier_topic.name,
+        earlier_topic.ruleset,
     )
 
 

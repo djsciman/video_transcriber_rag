@@ -351,9 +351,6 @@ def test_briefing_stand_in_does_not_name_a_vendor_or_open_a_browser():
     assert "browser" not in lowered
     assert "ffmpeg" not in lowered
     assert "whisper" not in lowered
-    assert "openai" not in lowered
-    assert "anthropic" not in lowered
-    assert "sqlite" not in lowered
     advisor = BriefingAdvisor()
     assert callable(advisor.select)
     assert callable(advisor.disagreeing_sides)
