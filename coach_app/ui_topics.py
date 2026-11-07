@@ -66,10 +66,14 @@ def render_topic(store: CuratedStore, fields: dict[str, list[str]]) -> str:
         return render_shell(title="Topic", current="home", body=body)
     escaped_name = html.escape(topic.name)
     escaped_ruleset = html.escape(topic.ruleset)
+    briefing_href = "/briefing?" + urlencode(
+        {"name": topic.name, "ruleset": topic.ruleset}
+    )
     body = (
         f"<style>{_STYLE}</style>\n"
         '<section class="panel">\n'
         f"<h2>{escaped_name} ({escaped_ruleset})</h2>\n"
+        f'<p><a href="{html.escape(briefing_href, quote=True)}">Briefing</a></p>\n'
         '<form method="post" action="/topics">\n'
         f'<input type="hidden" name="name" value="{html.escape(topic.name, quote=True)}">\n'
         f'<input type="hidden" name="ruleset" value="{html.escape(topic.ruleset, quote=True)}">\n'
