@@ -104,28 +104,6 @@ def is_video(path: Path) -> bool:
     return path.suffix.lower() in VIDEO_EXTS
 
 
-def _chapter_seconds(chapter: dict, key: str) -> float:
-    """Return a chapter boundary in seconds.
-
-    Prefer ffprobe's ``start_time`` / ``end_time`` (already seconds). Fall
-    back to the integer tick divided by ``time_base``.
-    """
-    raw = chapter.get(f"{key}_time")
-    if raw is not None and raw != "N/A":
-        return float(raw)
-    ticks = float(chapter[key])
-    num, den = str(chapter.get("time_base") or "1/1").split("/", 1)
-    return ticks * float(num) / float(den)
-
-
-def _chapter_title(chapter: dict, index: int) -> str:
-    tags = chapter.get("tags") or {}
-    for key, value in tags.items():
-        if key.lower() == "title" and value is not None and str(value).strip():
-            return str(value).strip()
-    return f"Chapter {index}"
-
-
 def round_chapter_time(value: float) -> float:
     return round(float(value) * 1000.0) / 1000.0
 
@@ -147,41 +125,18 @@ def normalize_container_chapters(raw_chapters: list[dict]) -> list[dict]:
     return chapters
 
 
-def extract_chapters(video_path: Path) -> list[dict]:
+def extract_chapters(video_path: Path, *, command=None) -> list[dict]:
     """Read container chapters via ffprobe.
 
     Each entry is ``{"title", "start", "end"}`` with times in seconds,
     matching transcript segment timestamps.
     """
+    from bjj_pipeline.remux import read_container_chapters
+
     video_path = io_path(video_path)
-    cmd = [
-        "ffprobe",
-        "-v",
-        "error",
-        "-print_format",
-        "json",
-        "-show_chapters",
-        str(video_path),
-    ]
-    result = subprocess.run(
-        cmd,
-        check=True,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
+    return normalize_container_chapters(
+        read_container_chapters(video_path, command=command)
     )
-    payload = json.loads(result.stdout or "{}")
-    chapters = []
-    for index, chapter in enumerate(payload.get("chapters") or [], start=1):
-        chapters.append(
-            {
-                "title": _chapter_title(chapter, index),
-                "start": _chapter_seconds(chapter, "start"),
-                "end": _chapter_seconds(chapter, "end"),
-            }
-        )
-    return normalize_container_chapters(chapters)
 
 
 def output_path_for(video: Path, input_dir: Path, output_dir: Path) -> Path:

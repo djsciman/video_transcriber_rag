@@ -12,7 +12,6 @@ import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
 from typing import Callable
-from unittest.mock import patch
 
 import batch_panoscribe
 
@@ -1003,13 +1002,21 @@ class ExtractChaptersUtf8Test(unittest.TestCase):
 
         real_run = subprocess.run
 
-        def fake_run(cmd, **kwargs):
+        def fake_command(cmd):
             self.assertEqual(cmd[0], "ffprobe")
             child = "import sys; sys.stdout.buffer.write(" + repr(raw) + ")"
-            return real_run([sys.executable, "-c", child], **kwargs)
+            return real_run(
+                [sys.executable, "-c", child],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
 
-        with patch.object(batch_panoscribe.subprocess, "run", fake_run):
-            chapters = batch_panoscribe.extract_chapters(Path("unused.mp4"))
+        chapters = batch_panoscribe.extract_chapters(
+            Path("unused.mp4"),
+            command=fake_command,
+        )
 
         self.assertEqual(
             chapters,

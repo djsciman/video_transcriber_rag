@@ -361,13 +361,27 @@ def media_signature(info):
     return rows
 
 
-def apply_chapters(video, times_path=None):
+def apply_chapters(video, times_path=None, *, command=None):
     """Remux `video` so its chapters match the two sidecar CSVs."""
+    from bjj_pipeline.remux import RemuxError, VERIFY_STRICT, probe_media, remux_chapters
+
     video = Path(video)
     if not video.is_file():
         sys.exit(f"video not found: {video}")
     chapters = load_named_chapters(video, times_path)
-    before = probe(video)
+    ffmpeg = shutil.which("ffmpeg")
+    ffprobe = shutil.which("ffprobe")
+    if command is None:
+        if ffmpeg is None:
+            sys.exit("ffmpeg not found on PATH")
+        if ffprobe is None:
+            sys.exit("ffprobe not found on PATH")
+    ffmpeg = ffmpeg or "ffmpeg"
+    ffprobe = ffprobe or "ffprobe"
+    try:
+        before = probe_media(video, ffprobe, command=command)
+    except RemuxError as exc:
+        sys.exit(str(exc))
     duration = float(before["format"]["duration"])
     last_end = chapters[-1][2]
     if abs(last_end - duration) > 1.0:
@@ -380,63 +394,23 @@ def apply_chapters(video, times_path=None):
     meta_fd, meta_name = tempfile.mkstemp(prefix="chapters-", suffix=".ffmeta")
     os.close(meta_fd)
     meta = Path(meta_name)
-    ffmpeg = shutil.which("ffmpeg")
-    if ffmpeg is None:
-        sys.exit("ffmpeg not found on PATH")
     try:
         write_ffmetadata(meta, chapters)
-        result = subprocess.run(
-            [
-                ffmpeg,
-                "-y",
-                "-v",
-                "error",
-                "-i",
-                str(video),
-                "-f",
-                "ffmetadata",
-                "-i",
-                str(meta),
-                "-map",
-                "0:v",
-                "-map",
-                "0:a",
-                "-map_metadata",
-                "0",
-                "-map_chapters",
-                "1",
-                "-c",
-                "copy",
-                str(temp),
-            ],
-            capture_output=True,
-            text=True,
+        remux_chapters(
+            video,
+            video,
+            meta.read_text(encoding="utf-8"),
+            ffmpeg=ffmpeg,
+            ffprobe=ffprobe,
+            verify=VERIFY_STRICT,
+            expected_chapters=expected_chapters(chapters),
+            before=before,
+            duration=duration,
+            command=command,
+            temp_path=temp,
         )
-        if result.returncode != 0:
-            sys.exit(f"ffmpeg exited {result.returncode} for {video.name}\n{result.stderr}")
-        after = probe(temp)
-        if media_signature(after) != media_signature(before):
-            sys.exit(f"{video.name}: remux changed the video or audio; left the original in place")
-        data_streams = [
-            stream for stream in after.get("streams", []) if stream.get("codec_type") == "data"
-        ]
-        # MP4 stores chapters as one text data stream. WebM and Matroska
-        # store them in the container, which the chapter list check covers.
-        if video.suffix.lower() in {".webm", ".mkv"}:
-            if data_streams:
-                sys.exit(f"{video.name}: remux added a data stream")
-        elif len(data_streams) != 1 or data_streams[0].get("codec_tag_string") != "text":
-            sys.exit(f"{video.name}: remux did not write a single chapter track")
-        after_duration = float(after["format"]["duration"])
-        if abs(after_duration - duration) > 0.05:
-            sys.exit(
-                f"{video.name}: duration changed from {duration:.3f}s to {after_duration:.3f}s"
-            )
-        got = embedded_chapters(after)
-        want = expected_chapters(chapters)
-        if got != want:
-            sys.exit(f"{video.name}: embedded chapters do not match the CSV files")
-        os.replace(temp, video)
+    except RemuxError as exc:
+        sys.exit(str(exc))
     finally:
         meta.unlink(missing_ok=True)
         if temp.exists():
