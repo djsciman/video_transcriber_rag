@@ -87,6 +87,10 @@ That pulls in `beautifulsoup4`, `lxml`, and `pytest`. The scraper talks to BJJ F
 
 ## Typical workflow
 
+Order is **match → organize (concat into volumes) → detect if needed → transcribe**.
+
+One command walks top-level instructional folders. Default stages are **match, organize, detect, transcribe**. Detect skips a volume that already has container chapters or a sidecar chapter file. A season that still looks like uncombined chapter files warns and skips detect unless `--force-stage detect`. Visual embed stays opt-in (`--embed`); `--apply` writes detect sidecars only.
+
 ### One pipeline command
 
 Dry-run a library (prints SKIP / RUN / FAIL; writes nothing; does not decode or Whisper):
@@ -101,27 +105,42 @@ Apply match, organize, detect, and transcribe. `--embed` is a separate flag for 
 py -3 metadata_scraper\run_pipeline.py --library "path\to\instructionals" --corpus "path\to\transcript-corpus" --apply
 ```
 
-`--force` re-runs every selected stage. `--force-stage match|organize|detect|transcribe` re-runs only that unit. A CSV product URL is used as the organize URL with no yes/no prompt. Missing URL outside a terminal fails that instructional's organize.
+| Flag | Meaning |
+|------|---------|
+| (omit `--apply`) | Dry run: print SKIP / RUN / FAIL, no writes, no decode, no speech |
+| `--apply` | Write match CSV, organize volumes, detect sidecars, and transcripts. Does **not** embed chapter sidecars |
+| `--embed` | Visual remux of sidecar chapter files into volumes. Opt-in; not implied by `--apply` |
+| `--force` | Re-run every selected stage even when its artifact exists |
+| `--force-stage match\|organize\|detect\|transcribe` | Re-run only that unit |
+| `--matches` | Match CSV path (default: `LIBRARY/bjjfanatics_matches.csv`) |
 
-### Organize a local instructional library one show at a time
+Skip unless `--force` / `--force-stage`:
 
-1. **Match** folder names to BJJ Fanatics URLs with `match_bjjfanatics.py` (optional; writes `bjjfanatics_matches.csv` that `organize_instructional.py` can use as a hint).
-2. **Dry-run** `organize_instructional.py --folder ...` (prints the plan; no writes).
-3. **Apply** with `--apply` (NFO, artwork, season folders, volume files, named chapters).
-4. **Repair** later with `--repair` if a show is only partly organized.
+| Stage | Skip when |
+|-------|-----------|
+| match | That folder already has a product URL in the match CSV |
+| organize | The show folder already has `tvshow.nfo` **and** at least one `Season ##` folder |
+| detect | The volume already has container chapters, or a sidecar chapter file exists. Uncombined chapter-file seasons warn and skip unless `--force-stage detect` |
+| transcribe | The mirrored corpus JSON already has a `segments` list (empty list counts as finished) |
 
-Leftover multi-instructional bundle folders are out of this pipeline; flatten them by hand and organize each instructional folder on its own.
+A CSV product URL is the organize URL with no yes/no prompt. One product URL per instructional folder. Missing URL outside a terminal fails that instructional's organize. Leftover multi-instructional bundle folders are out of this pipeline; flatten them by hand.
 
-### Detect chapters and transcribe
+Organize concatenates per-chapter downloads into volumes (Fanatics titles; starts from each source file's duration). There is no operator path that splits a volume into chapter files or splits a bundle show.
 
-For volumes that still lack chapter markers:
+Transcribe walks the **post-organize** tree (combined volumes under `Season ##`). Corpus JSON mirrors that tree under `--corpus`. A corpus written from pre-concat chapter files is not skip-stable after concat.
 
-1. **Detect chapters** (writes `<stem>_chapters.csv` and `<stem>_chapternames.csv` next to the video).
-2. **Review** the CSVs (edit titles if OCR missed).
-3. **Embed** with `--apply` (stream-copy remux; close the file in VLC or other players first on Windows).
-4. **Transcribe** a directory tree with `batch_panoscribe.py` into a mirrored JSON corpus.
+Repair of an already-organized show stays `organize_instructional.py --repair`; it is not a pipeline stage.
 
-For volumes that already have chapters in the container, skip to step 4.
+### Detect if needed
+
+The pipeline detect stage is the default walk: one start-and-title sample per volume, sidecar only. Review the CSVs, then optionally embed. For a single volume outside the pipeline:
+
+```powershell
+py -3 generate_chapters.py "path\to\Season 01\S01E01 - Volume 1.webm" 000000
+py -3 generate_chapters.py --apply "path\to\Season 01\S01E01 - Volume 1.webm"
+```
+
+Pipeline `--embed` is the same visual remux, still opt-in after `--apply`.
 
 ## Usage
 
@@ -149,7 +168,7 @@ Write files:
 py -3 metadata_scraper\organize_instructional.py --folder "path\to\Show Title by Instructor" --url "https://bjjfanatics.com/products/the-handle" --apply
 ```
 
-One product URL per instructional folder. Chapter downloads are always concatenated into volumes with Fanatics chapter titles when names exist (starts from each source file's duration). Leftover bundle folders with several instructionals inside are not organized as one show.
+One product URL per instructional folder (not keyed per-season URLs). Chapter downloads are always concatenated into volumes with Fanatics chapter titles when names exist (starts from each source file's duration). Leftover bundle folders with several instructionals inside are not organized as one show.
 
 Useful flags:
 
@@ -177,14 +196,15 @@ Repair letters: **B** show NFO and artwork, **C** season folders, **D** combine 
 
 ### Match folders to Fanatics URLs
 
-`match_bjjfanatics.py` searches BJJ Fanatics for each top-level folder under a library root and writes `folder_path,product_url` CSV. Edit `ROOT` and `OUT_CSV` at the top of the script (they default to a local library path). `organize_instructional.py` will use a matching row in `bjjfanatics_matches.csv` as a URL hint when `--url` is omitted.
+`match_bjjfanatics.py` searches BJJ Fanatics for each top-level folder under `--library` and writes `folder_path,product_url` CSV to `--output`. Folders that already have a product URL in that CSV are skipped unless `--force`. The pipeline command uses the same CSV as organize's product URL (no confirm prompt). Matching prefers the specific instructional product over a store listing titled as a bundle.
 
 ```powershell
-py -3 metadata_scraper\match_bjjfanatics.py
-py -3 metadata_scraper\match_bjjfanatics.py --subfolders
+py -3 metadata_scraper\match_bjjfanatics.py --library "path\to\instructionals" --output "path\to\bjjfanatics_matches.csv"
+py -3 metadata_scraper\match_bjjfanatics.py --library "path\to\instructionals" --output "path\to\bjjfanatics_matches.csv" --force
+py -3 metadata_scraper\match_bjjfanatics.py --library "path\to\instructionals" --output "path\to\bjjfanatics_matches.csv" --subfolders
 ```
 
-`--subfolders` also matches one level of child folders (search name is `parent child` so names like `Season 1` still match the series). Matching prefers the specific instructional product over a store listing titled as a bundle.
+`--subfolders` also matches one level of child folders (search name is `parent child` so names like `Season 1` still match the series). The pipeline default walk is top-level folders only.
 
 ### Detect and embed chapters
 
@@ -296,6 +316,7 @@ The drill-down is written to `completeness_scan_results_<date-time>.md` in the r
 ├── find_color_frames.py      # HSV frame matching
 ├── generate_chapters.py      # Chapter CSV + embed CLI
 ├── metadata_scraper/
+│   ├── run_pipeline.py       # One command: match, organize, detect, transcribe
 │   ├── organize_instructional.py
 │   ├── match_bjjfanatics.py
 │   ├── requirements.txt
@@ -328,16 +349,16 @@ py -3 -m pytest metadata_scraper -c metadata_scraper\pytest.ini -v
 ## Domain and design docs
 
 - **[`GLOSSARY.md`](GLOSSARY.md)** — use these terms (instructor, volume, chapter, citation, curated store, topic, system, …) in issues and code talk.
-- **[`docs/adr/`](docs/adr/)** — for example [ADR 0001](docs/adr/0001-sample-a-volume-once-for-chapter-starts.md): sample each volume once when detecting chapter starts.
+- **[`docs/adr/`](docs/adr/)** — [ADR 0001](docs/adr/0001-sample-a-volume-once-for-chapter-starts.md): sample each volume once when detecting chapter starts. [ADR 0002](docs/adr/0002-skip-pipeline-stage-when-artifact-exists.md): skip a finished stage unless forced.
 - **[`docs/agents/`](docs/agents/)** — GitHub issues via `gh`, triage labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`), and how agents should read the glossary before exploring.
 
 The advising application (curated store, citations, topics) is specified on the issue map; this repo’s scripts feed the raw corpus that curation later admits.
 
 ## Notes and limits
 
-- Close the target video in players before `generate_chapters.py --apply` or `organize_instructional.py --apply`, or Windows may refuse to replace the file.
-- `match_bjjfanatics.py` uses a hardcoded `ROOT` / `OUT_CSV`; change those constants before running it.
-- `organize_instructional.py` without `--url` needs a terminal so it can confirm a Fanatics lookup (or a matching row in `bjjfanatics_matches.csv`).
+- Close the target video in players before `generate_chapters.py --apply`, pipeline `--embed`, or `organize_instructional.py --apply`, or Windows may refuse to replace the file.
+- `match_bjjfanatics.py` takes `--library` and `--output`; it does not hardcode a disk path.
+- `organize_instructional.py` without `--url` needs a terminal so it can confirm a Fanatics lookup, unless a matching row in `bjjfanatics_matches.csv` already has a product URL (the pipeline uses that URL with no prompt).
 - Automatic title-card detection can miss plates held for less than about one second.
 - A hex plate that fails coverage can fall back to a dark-saturated pixel test (high saturation, low value).
 - `batch_panoscribe.py` treats two videos that differ only by extension and would share one JSON path as a failure (nothing written for that pair).
