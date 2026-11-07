@@ -2,10 +2,11 @@
 """
 Complete each volume transcript in one batch run.
 
-Speech is requested only when the transcript has no speech list. Chapters are
-copied from the video container when the stored list is missing or differs.
-The video file name is written when it is missing, empty, or different.
-Existing speech stays in place.
+Speech is requested only when the transcript has no speech list, including
+an empty list. `--force` re-runs speech only. Chapters are copied from the
+video container when the stored list is missing or differs. The video file
+name is written when it is missing, empty, or different. Speech, chapters,
+and video file stay one complete-volume write.
 """
 
 from __future__ import annotations
@@ -579,6 +580,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Enable or disable on-screen OCR (default: disabled). "
         "Passed only when speech is requested.",
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Re-run speech even when a segments list already exists.",
+    )
     return parser
 
 
@@ -597,6 +603,7 @@ def process_volume(
     speech_command: SpeechCommand,
     chapter_command: ChapterCommand,
     count_hotword_tokens: TokenCounter,
+    force: bool = False,
 ) -> str:
     """Process one volume. Returns created, updated, unchanged, or a fail reason."""
     try:
@@ -605,7 +612,7 @@ def process_volume(
         _fail_line(str(video), e.reason)
         return f"fail:{e.reason}"
 
-    need_speech = not info["segments_present"]
+    need_speech = force or not info["segments_present"]
     container_chapters = None
     container_error = None
     hotwords = None
@@ -731,6 +738,7 @@ def run(
     output_dir: Path,
     *,
     ocr: bool = False,
+    force: bool = False,
     speech_command: SpeechCommand | None = None,
     chapter_command: ChapterCommand | None = None,
     speech_available: bool | None = None,
@@ -770,7 +778,7 @@ def run(
             _existing, info = inspect_transcript(out)
         except TranscriptError:
             continue
-        if not info["segments_present"]:
+        if force or not info["segments_present"]:
             needs_speech = True
 
     if needs_speech:
@@ -796,6 +804,7 @@ def run(
             video,
             out,
             ocr=ocr,
+            force=force,
             speech_command=speech_command,
             chapter_command=chapter_command,
             count_hotword_tokens=count_hotword_tokens,
@@ -819,7 +828,7 @@ def run(
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    return run(args.input_dir, args.output_dir, ocr=args.ocr)
+    return run(args.input_dir, args.output_dir, ocr=args.ocr, force=args.force)
 
 
 if __name__ == "__main__":
