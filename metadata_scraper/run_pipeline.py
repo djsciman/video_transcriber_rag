@@ -1,4 +1,4 @@
-"""One command that sequences match, organize, and transcribe."""
+"""One command that sequences match, organize, detect, and transcribe."""
 
 from __future__ import annotations
 
@@ -16,13 +16,14 @@ for path in (SCRIPT_DIR, REPO_ROOT):
 
 from match_bjjfanatics import collect_folders  # noqa: E402
 
-DEFAULT_STAGES = ("match", "organize", "transcribe")
+DEFAULT_STAGES = ("match", "organize", "detect", "transcribe")
 STAGE_CHOICES = ("match", "organize", "detect", "transcribe", "embed")
 
 MatchFn = Callable[[Path], str]
 OrganizeFn = Callable[..., int]
 DetectFn = Callable[..., int]
 TranscribeFn = Callable[..., int]
+ChapterCountFn = Callable[[Path], int]
 
 
 def _print(stdout: TextIO, status: str, stage: str, name: str, reason: str = "") -> None:
@@ -68,6 +69,37 @@ def _default_transcribe(video: Path, output: Path, *, force: bool) -> int:
         count_hotword_tokens=batch_panoscribe.default_count_hotword_tokens,
     )
     return 0 if result in {"created", "updated", "unchanged"} else 1
+
+
+def _default_chapter_count(video: Path) -> int:
+    from bjj_organizer.chapters import probe_chapter_count
+
+    return probe_chapter_count(video, "ffprobe")
+
+
+def _chapter_sidecar(video: Path) -> Path:
+    import generate_chapters
+
+    return generate_chapters.output_path(video)
+
+
+def _uncombined_parents(videos: Sequence[Path], counts: dict[Path, int]) -> set[Path]:
+    from completeness_scan import is_combined_volume
+
+    grouped: dict[Path, list[Path]] = {}
+    for video in videos:
+        grouped.setdefault(video.parent, []).append(video)
+    skipped: set[Path] = set()
+    for parent, group in grouped.items():
+        if len(group) < 2:
+            continue
+        if any(
+            is_combined_volume(video, [{}] * max(counts.get(video, 0), 0))
+            for video in group
+        ):
+            continue
+        skipped.add(parent)
+    return skipped
 
 
 def _load_csv(path: Path) -> dict[str, str]:
@@ -160,6 +192,7 @@ def run(
     organize: OrganizeFn | None = None,
     detect: DetectFn | None = None,
     transcribe: TranscribeFn | None = None,
+    chapter_count: ChapterCountFn | None = None,
     stdin=None,
     stdout: TextIO | None = None,
     isatty: bool | None = None,
@@ -174,6 +207,7 @@ def run(
     organize_fn = organize or _default_organize
     detect_fn = detect or _default_detect
     transcribe_fn = transcribe or _default_transcribe
+    chapter_count_fn = chapter_count or _default_chapter_count
     selected = _selected_stages(stages, embed)
     csv_rows = _load_csv(matches_path)
     failed = False
@@ -227,8 +261,40 @@ def run(
 
         if "detect" in selected:
             redo = _forced("detect", force, force_stage)
-            for video in _walk_volumes(folder):
+            videos = _walk_volumes(folder)
+            counts: dict[Path, int] = {}
+            for video in videos:
+                try:
+                    counts[video] = int(chapter_count_fn(video))
+                except Exception as exc:  # noqa: BLE001
+                    _print(stdout, "FAIL", "detect", _rel(library, video), str(exc))
+                    failed = True
+            uncombined = (
+                set()
+                if force_stage == "detect"
+                else _uncombined_parents(videos, counts)
+            )
+            warned: set[Path] = set()
+            for video in videos:
+                if video not in counts:
+                    continue
                 label = _rel(library, video)
+                parent = video.parent
+                if parent in uncombined:
+                    if parent not in warned:
+                        stdout.write(
+                            f"WARN  detect      {_rel(library, parent)}  "
+                            "(uncombined chapter files)\n"
+                        )
+                        warned.add(parent)
+                    _print(stdout, "SKIP", "detect", label, "uncombined chapter files")
+                    continue
+                if counts[video] > 0:
+                    _print(stdout, "SKIP", "detect", label, "container chapters")
+                    continue
+                if _chapter_sidecar(video).is_file() and not redo:
+                    _print(stdout, "SKIP", "detect", label, "sidecar exists")
+                    continue
                 if not apply:
                     _print(stdout, "RUN", "detect", label)
                     continue
@@ -305,7 +371,7 @@ def _transcript_path(library: Path, corpus: Path, video: Path) -> Path:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Match, organize, and transcribe a library of instructionals."
+        description="Match, organize, detect, and transcribe a library of instructionals."
     )
     parser.add_argument("--library", type=Path, required=True, help="Root of instructional folders.")
     parser.add_argument("--corpus", type=Path, required=True, help="Root for transcript JSON.")
@@ -318,7 +384,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--apply",
         action="store_true",
-        help="Write match, organize, and transcribe. Default is a dry run.",
+        help="Write match, organize, detect sidecars, and transcribe. Default is a dry run.",
     )
     parser.add_argument("--force", action="store_true", help="Re-run every selected stage.")
     parser.add_argument(
