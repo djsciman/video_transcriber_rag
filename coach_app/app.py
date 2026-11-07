@@ -151,6 +151,7 @@ import coach_app.ui_placement
 import coach_app.ui_briefing
 import coach_app.ui_design
 import coach_app.ui_sheet
+import coach_app.ui_library
 
 
 class CoachApp:
