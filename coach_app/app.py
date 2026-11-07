@@ -150,6 +150,7 @@ from coach_app import ui_finder
 import coach_app.ui_placement
 import coach_app.ui_briefing
 import coach_app.ui_design
+import coach_app.ui_sheet
 
 
 class CoachApp:

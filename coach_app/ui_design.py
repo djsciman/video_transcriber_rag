@@ -132,7 +132,7 @@ def get_design(store: CuratedStore, fields: dict[str, list[str]] | None = None) 
         + _walk_panel(store, session, name, ruleset, bundle)
         + _map_panel(store, session, name, ruleset, bundle)
         + "</div>\n"
-        + _draft_panel(store, bundle)
+        + _draft_panel(store, bundle, name, ruleset)
         + "</div>\n"
         + _map_script()
     )
@@ -529,7 +529,7 @@ def _prompt_panel(name, ruleset, bundle) -> str:
     )
 
 
-def _draft_panel(store, bundle) -> str:
+def _draft_panel(store, bundle, name="", ruleset="") -> str:
     reason = bundle.get("convert_reason") or ""
     draft = bundle.get("draft")
     reason_html = (
@@ -545,11 +545,20 @@ def _draft_panel(store, bundle) -> str:
             _class_card(store, packed, index)
             for index, packed in enumerate(draft.classes)
         )
+    modes = ""
+    if name and ruleset:
+        query = urlencode({"name": name, "ruleset": ruleset})
+        modes = (
+            '<p class="sheet-modes">'
+            f'<a href="/sheet?{query}&amp;mode=read">Read</a> '
+            f'<a href="/sheet?{query}&amp;mode=edit">Edit</a>'
+            "</p>\n"
+        )
     return (
         '<section class="panel" id="draft">\n'
         "<h2>Draft</h2>\n"
         '<span class="pill pill-draft">Build proposal</span>\n'
-        f"{body}"
+        f"{modes}{body}"
         "</section>\n"
     )
 
