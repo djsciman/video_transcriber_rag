@@ -3,7 +3,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from pathlib import Path
 
+from coach_app.citations import (
+    apply_statement_edits,
+    instructional_ruleset,
+    playback_handle,
+    resolve_video_playback,
+)
 from coach_app.enrichment import (
     aliases_of,
     family_of,
@@ -30,6 +37,13 @@ class Volume:
 class Showing:
     timestamp: float
     playback_link: str | None = None
+
+
+@dataclass(frozen=True)
+class Playback:
+    path: Path
+    speech_start: float
+    available: bool
 
 
 @dataclass(frozen=True)
@@ -169,6 +183,89 @@ class CuratedStore:
 
     def citations(self) -> tuple[Citation, ...]:
         return tuple(self._citations.values())
+
+    def accept(
+        self,
+        proposal: dict,
+        *,
+        instructional: str,
+        video_file: str,
+        ruleset: str | None = None,
+    ) -> Citation:
+        instructor = proposal.get("instructor") or ""
+        self.put_instructional(
+            Instructional(
+                instructor=instructor,
+                name=instructional,
+                ruleset=instructional_ruleset(instructional, ruleset),
+            )
+        )
+        self.put_volume(
+            Volume(instructional=instructional, video_file_name=video_file)
+        )
+        showings = tuple(
+            Showing(
+                timestamp=float(detail["speech_start"]),
+                playback_link=playback_handle(video_file, detail["speech_start"]),
+            )
+            for detail in proposal.get("details") or ()
+        )
+        return self.put_citation(
+            Citation(
+                movement=proposal["movement"],
+                instructor=instructor,
+                instructional=instructional,
+                volume=video_file,
+                chapter=proposal.get("chapter"),
+                cleaned_statement=proposal.get("cleaned_statement"),
+                step_bullets=tuple(proposal.get("step_bullets") or ()),
+                showings=showings,
+            )
+        )
+
+    def correct(self, statement, *, movement=None, step_bullets=None):
+        if not isinstance(statement, Citation):
+            return apply_statement_edits(
+                statement, movement=movement, step_bullets=step_bullets
+            )
+        bullets = (
+            tuple(step_bullets)
+            if step_bullets is not None
+            else statement.step_bullets
+        )
+        cleaned = (
+            " ".join(bullets)
+            if step_bullets is not None
+            else statement.cleaned_statement
+        )
+        updated = replace(
+            statement,
+            movement=statement.movement if movement is None else movement,
+            step_bullets=bullets,
+            cleaned_statement=cleaned,
+        )
+        self._citations[updated.id] = updated
+        return updated
+
+    def remove(self, citation) -> None:
+        citation_id = citation.id if isinstance(citation, Citation) else citation
+        self._citations.pop(citation_id, None)
+
+    def resolve_playback(
+        self,
+        citation: Citation,
+        showing: Showing,
+        *,
+        video_root,
+        transcript_folder: str,
+    ) -> Playback:
+        path, speech_start, available = resolve_video_playback(
+            video_root=video_root,
+            transcript_folder=transcript_folder,
+            video_file=citation.volume or "",
+            speech_start=showing.timestamp,
+        )
+        return Playback(path=path, speech_start=speech_start, available=available)
 
     def put_topic(self, topic: Topic) -> Topic:
         self._topics[(topic.name, topic.ruleset)] = topic
