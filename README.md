@@ -21,7 +21,7 @@ Organizes local instructionals against [BJJ Fanatics](https://bjjfanatics.com/) 
 
 ### Coach-only advising (`coach_app`)
 
-Python package imported from the repository root. There is no CLI yet. One [`CuratedStore`](coach_app/store.py) is the seam: the coach writes records, the **advisor** reads them. Tests inject a stand-in advisor; they do not name a vendor.
+Python package imported from the repository root. Open the coach-only screens with `py -3 -m coach_app` in a browser on this machine. One [`CuratedStore`](coach_app/store.py) is the seam: the coach writes records, the **advisor** reads them. Tests inject a stand-in advisor; they do not name a vendor.
 
 | Module | Purpose |
 |--------|---------|
@@ -103,11 +103,17 @@ py -3 -m pip install -e ".[all]"
    py -3 -m pytest metadata_scraper -c metadata_scraper\pytest.ini -v
    ```
 
-`coach_app` has no install extra. Import it from the repository root. Install `pytest` if it is missing: `py -3 -m pip install pytest`.
+`coach_app` has no install extra. Import it from the repository root, or open the local screens with `py -3 -m coach_app`. Install `pytest` if it is missing: `py -3 -m pip install pytest`.
 
 ## Coach-only advising
 
 The pipeline leaves completed volume JSON on disk. `coach_app` reads that JSON, proposes cleaned statements, and admits citations the coach accepts into `CuratedStore`. Later steps (topic, briefing, Design, Build, Edit, print) all go through that store.
+
+Open the screens from the repository root. The default store location is a `curated-store` directory next to the process; pass `--location` to choose another. Video root and transcript folder are set on the home screen and survive closing the application.
+
+```powershell
+py -3 -m coach_app
+```
 
 ### Curation from a raw volume
 
@@ -216,10 +222,10 @@ Custom lessons save when placed on a unit. Unit history is a snapshot the coach 
 
 ### Coach-app tests
 
-Tests assert through the public facade. They use fixtures and a stand-in advisor. They do not open video, run speech, or drive a browser.
+Tests assert through the public facade. They use fixtures and a stand-in advisor. They do not open video or run speech. Shell tests drive the local HTTP screens the way the coach would, then assert through `CuratedStore`.
 
 ```powershell
-py -3 -m pytest tests/test_curated_store.py tests/test_cleanup.py tests/test_propose_statements.py tests/test_enrichment.py tests/test_citations.py tests/test_topics.py tests/test_placement.py tests/test_briefing.py tests/test_system.py tests/test_design.py tests/test_build.py tests/test_edit.py tests/test_library.py tests/test_print_packet.py -q
+py -3 -m pytest tests/test_curated_store.py tests/test_persist_store.py tests/test_cleanup.py tests/test_propose_statements.py tests/test_enrichment.py tests/test_citations.py tests/test_topics.py tests/test_placement.py tests/test_briefing.py tests/test_system.py tests/test_design.py tests/test_build.py tests/test_edit.py tests/test_library.py tests/test_print_packet.py tests/test_coach_app_shell.py -q
 ```
 
 ## Typical pipeline workflow
@@ -452,7 +458,9 @@ The drill-down is written to `completeness_scan_results_<date-time>.md` in the r
 │   ├── generate_chapters.py
 │   ├── batch_panoscribe.py
 │   └── completeness_scan.py
-├── coach_app/                # Coach-only advising; import from repo root
+├── coach_app/                # Coach-only advising; py -3 -m coach_app
+│   ├── __main__.py           # Local screens on this machine
+│   ├── app.py                # Shell, home, and settings
 │   ├── store.py              # CuratedStore facade
 │   ├── cleanup.py
 │   ├── statements.py
@@ -471,7 +479,7 @@ The drill-down is written to `completeness_scan_results_<date-time>.md` in the r
 
 ## Tests
 
-Pipeline tests use temporary trees and stand-in probes (no ffmpeg, GPU, or real panoscribe). Coach-app tests use fixtures and a stand-in advisor (no video, speech, or browser):
+Pipeline tests use temporary trees and stand-in probes (no ffmpeg, GPU, or real panoscribe). Coach-app tests use fixtures and a stand-in advisor (no video or speech). Shell tests drive HTTP, then assert through the store:
 
 ```powershell
 py -3 -m pytest tests -q
@@ -489,7 +497,7 @@ The pipeline writes the raw corpus. `coach_app` is the advising package that adm
 
 ## Notes and limits
 
-- `coach_app` is a library, not a CLI. `CuratedStore.open(location)` is a persisted store so a later runtime loads the same records. This package does not name a database engine or an application framework.
+- `py -3 -m coach_app` opens the coach-only screens in a browser on this machine. `CuratedStore.open(location)` is a persisted store so a later runtime loads the same records. This package does not name a database engine or an application framework.
 - Throwaway prototypes under `prototypes/` are not product code.
 - Close the target video in players before `py -m bjj_pipeline chapters --apply`, pipeline `--embed`, or `py -m bjj_pipeline organize --apply`, or Windows may refuse to replace the file.
 - Old script paths (`generate_chapters.py`, `batch_panoscribe.py`, `completeness_scan.py`, `find_color_frames.py`, `metadata_scraper/run_pipeline.py`, `organize_instructional.py`, `match_bjjfanatics.py`) still run for one cycle and print a deprecation line on stderr.
