@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PROTOTYPE — Layered dashboard · issue 87</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/shoelace-autoloader.js"></script>
+  <style>
+    :root {
+      --bg: #dfe8ec;
+      --ink: #0f1720;
+      --muted: #5b6773;
+      --paper: #f7fafb;
+      --elev: #ffffff;
+      --line: #c5d0d6;
+      --accent: #0f766e;
+      --accent-2: #ccfbf1;
+      --shadow-1: 0 1px 2px rgba(15, 23, 32, 0.06);
+      --shadow-2: 0 10px 30px rgba(15, 23, 32, 0.08);
+      --sans: system-ui, "Segoe UI", sans-serif;
+      --radius: 14px;
+      --sl-color-primary-600: #0f766e;
+      --sl-color-primary-700: #0f5f59;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body { font-family: var(--sans); color: var(--ink); background: radial-gradient(900px 400px at 10% -10%, #ccfbf155, transparent), var(--bg); }
+    .proto-banner {
+      background: #0f1720; color: #ecfeff; padding: 0.5rem 1rem; font-size: 0.82rem;
+      display: flex; flex-wrap: wrap; gap: 0.6rem 1rem;
+    }
+    .proto-banner strong { color: #86efac; }
+    .proto-switch {
+      border: 2px dotted #b91c1c; background: #fff7ed; margin: 0.6rem 0.85rem 0; padding: 0.45rem 0.65rem;
+      display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;
+    }
+    .proto-switch span { color: #9f1239; font-size: 0.72rem; font-weight: 700; }
+    .shell {
+      border: 2px dotted #15803d;
+      margin: 0.6rem 0.85rem 1rem;
+      background: transparent;
+      min-height: 68vh;
+    }
+    .top {
+      display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
+      padding: 0.85rem 1rem 0.4rem;
+    }
+    .top h1 { margin: 0; font-size: 1.25rem; letter-spacing: -0.03em; }
+    .top .meta { margin: 0; color: var(--muted); font-size: 0.85rem; }
+    .cards { display: grid; grid-template-columns: repeat(12, 1fr); gap: 0.75rem; padding: 0.5rem 1rem 1.2rem; }
+    .card {
+      background: var(--elev);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-1);
+      padding: 0.85rem 0.95rem;
+      grid-column: span 6;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
+    .card.span-12 { grid-column: span 12; }
+    .card.span-8 { grid-column: span 8; }
+    .card.span-4 { grid-column: span 4; }
+    .card h2 { margin: 0 0 0.5rem; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .screen { display: none; }
+    .screen.on { display: contents; }
+    .topic {
+      display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
+      padding: 0.55rem 0; border-top: 1px solid var(--line);
+    }
+    .topic:first-of-type { border-top: 0; }
+    .name { font-weight: 650; }
+    .map-wrap {
+      height: 16rem; border-radius: 12px; background: linear-gradient(#f7fafb, #e8f4f2);
+      border: 1px solid var(--line); position: relative; overflow: hidden;
+    }
+    .blob {
+      position: absolute; width: 7rem; height: 7rem; border-radius: 50%;
+      background: #99f6e4; opacity: 0.35; filter: blur(8px); animation: drift 8s ease-in-out infinite;
+    }
+    .node {
+      position: absolute; transform: translate(-50%, -50%) scale(0.92);
+      background: var(--accent); color: #fff; border: 0; border-radius: 999px;
+      padding: 0.35rem 0.7rem; font: inherit; cursor: pointer;
+      box-shadow: var(--shadow-2); animation: pop 280ms cubic-bezier(.2,1.4,.3,1) forwards;
+    }
+    @keyframes pop { to { transform: translate(-50%, -50%) scale(1); } }
+    @keyframes drift { 50% { transform: translate(12px, 8px); } }
+    @media (prefers-reduced-motion: reduce) {
+      .card, .node, .blob { animation: none; transition: none; }
+      .card:hover { transform: none; }
+    }
+    .sheet-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.4rem; padding: 0.4rem 0; border-top: 1px solid var(--line); font-size: 0.9rem; }
+    .impl, .resp {
+      border: 2px dotted #b91c1c; background: #fff7ed; color: #7f1d1d;
+      margin: 0 0.85rem 0.7rem; padding: 0.65rem 0.8rem; font-size: 0.84rem;
+    }
+    .impl h2 { margin: 0 0 0.3rem; font-size: 0.72rem; text-transform: uppercase; }
+    sl-alert { margin: 0 0.85rem 0.6rem; }
+    @media (max-width: 800px) {
+      .card, .card.span-8, .card.span-4 { grid-column: span 12; }
+    }
+    @media print {
+      .proto-banner, .proto-switch, .impl, .resp, sl-alert { display: none !important; }
+      .shell { border: 0; }
+      @page { size: letter landscape; margin: 0.5in; }
+    }
+  </style>
+</head>
+<body>
+  <div class="proto-banner proto-chrome">
+    <strong>PROTOTYPE</strong>
+    <span>Issue 87 — layered contemporary dashboard with purposeful motion. Shoelace loaded from jsDelivr for this throwaway file only — not a production choice. Green = coach UI. Red = chrome.</span>
+  </div>
+  <div class="proto-switch proto-chrome">
+    <span>Screens</span>
+    <sl-button size="small" data-screen="home" variant="primary">Home</sl-button>
+    <sl-button size="small" data-screen="topic">Topic resume</sl-button>
+    <sl-button size="small" data-screen="curate">Curation</sl-button>
+    <sl-button size="small" data-screen="design">Design + sheet</sl-button>
+    <sl-button size="small" data-screen="finder">Finder</sl-button>
+  </div>
+  <sl-alert class="proto-chrome" variant="warning" open>
+    CDN scripts are prototype-only. Live <code>coach_app</code> must not load jsDelivr. Shoelace is documented as sunset; Web Awesome or Lit are successor candidates if components are wanted.
+  </sl-alert>
+
+  <div class="shell">
+    <div class="top">
+      <div>
+        <h1>Advising</h1>
+        <p class="meta">Coach-only. Layered surfaces for Design; quieter cards for reading.</p>
+      </div>
+      <sl-button-group>
+        <sl-button size="small" data-nav="home">Home</sl-button>
+        <sl-button size="small" data-nav="curate">Curate</sl-button>
+        <sl-button size="small" data-nav="finder">Finder</sl-button>
+        <sl-button size="small" data-nav="design">Design</sl-button>
+      </sl-button-group>
+    </div>
+    <div class="cards">
+      <section class="screen on" id="screen-home">
+        <div class="card span-8">
+          <h2>Topics</h2>
+          <div class="topic"><span class="name">Hip bump sweep</span><sl-badge variant="primary">gi</sl-badge><sl-button size="small" data-goto="topic">Resume</sl-button></div>
+          <div class="topic"><span class="name">Body lock passing</span><sl-badge>no-gi</sl-badge><sl-button size="small">Resume</sl-button></div>
+          <sl-divider></sl-divider>
+          <sl-input label="Topic name" id="tn"></sl-input>
+          <div style="display:flex;gap:0.6rem;margin:0.6rem 0">
+            <sl-radio-group name="rs" value="gi">
+              <sl-radio value="gi">gi</sl-radio>
+              <sl-radio value="no-gi">no-gi</sl-radio>
+            </sl-radio-group>
+          </div>
+          <sl-button variant="primary" id="open">Open</sl-button>
+        </div>
+        <div class="card span-4">
+          <h2>Playback folders</h2>
+          <sl-input label="Video root" value="D:\BJJ library"></sl-input>
+          <sl-input label="Transcript folder" value="Hip Bump" style="margin-top:0.5rem"></sl-input>
+          <sl-button style="margin-top:0.7rem" id="save">Save</sl-button>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-topic">
+        <div class="card span-12">
+          <h2>Resume</h2>
+          <p>Hip bump sweep · gi. The map and sheet stay on this topic until you remove it.</p>
+          <sl-button variant="primary" data-goto="design">Design</sl-button>
+          <sl-button>Briefing</sl-button>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-curate">
+        <div class="card span-12">
+          <h2>Propose statements</h2>
+          <p>Volume 1 · Hip Bump. Accept keeps the cleaned statement in the curated store.</p>
+          <sl-button variant="primary" id="propose">
+            <sl-icon slot="prefix" name="magic"></sl-icon>
+            Propose statements
+          </sl-button>
+          <sl-spinner id="spin" style="display:none;margin-left:0.5rem"></sl-spinner>
+          <p id="pstatus" style="color:var(--muted)"></p>
+          <sl-card style="margin-top:0.6rem">
+            <strong>Hip bump sweep</strong>
+            <p>Sit up, post, bump, come to the knee line.</p>
+            <sl-button size="small" variant="primary" id="acc">Accept</sl-button>
+            <sl-button size="small">Dismiss</sl-button>
+          </sl-card>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-design">
+        <div class="card span-8">
+          <h2>Mental map</h2>
+          <p style="margin:0 0 0.4rem;color:var(--muted);font-size:0.85rem">Left-click selects. Right-click deletes (confirm). Motion settles; no ambient force after layout.</p>
+          <div class="map-wrap" id="map">
+            <div class="blob" style="left:10%;top:20%"></div>
+            <button class="node" style="left:28%;top:52%" type="button" data-mark="Closed guard">Closed guard</button>
+            <button class="node" style="left:52%;top:34%" type="button" data-mark="Hip bump sweep">Hip bump sweep</button>
+            <button class="node" style="left:74%;top:58%" type="button" data-mark="Stand-up">Stand-up</button>
+          </div>
+          <div style="margin-top:0.6rem;display:flex;gap:0.4rem;flex-wrap:wrap">
+            <sl-button variant="primary" id="prop-d">Propose canvas and Draft</sl-button>
+            <sl-button id="conv">Convert canvas to Draft</sl-button>
+            <sl-button id="del">Delete selected</sl-button>
+          </div>
+        </div>
+        <div class="card span-4">
+          <h2>Class 1 sheet</h2>
+          <div class="sheet-row"><strong>Lesson</strong><span>Type</span><span>Target</span></div>
+          <div class="sheet-row"><span>Hip bump from closed guard</span><span>technique</span><span>Hip bump sweep</span></div>
+          <div class="sheet-row"><span>Bump to the knee line</span><span>drill</span><span>Hip bump sweep</span></div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-finder">
+        <div class="card span-4">
+          <h2>Start</h2>
+          <sl-tree>
+            <sl-tree-item selected>Closed guard</sl-tree-item>
+            <sl-tree-item>Half guard</sl-tree-item>
+            <sl-tree-item>Standing</sl-tree-item>
+          </sl-tree>
+        </div>
+        <div class="card span-8">
+          <h2>Named moves</h2>
+          <sl-input placeholder="Filter" id="ff"></sl-input>
+          <sl-menu style="margin-top:0.5rem;border:1px solid var(--line);border-radius:10px">
+            <sl-menu-item value="h">Hip bump sweep</sl-menu-item>
+            <sl-menu-item value="f">Flower sweep</sl-menu-item>
+          </sl-menu>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <sl-dialog label="Delete mark" class="dialog-overview" id="dlg">
+    <p id="dlg-t">Delete this mark from the map?</p>
+    <sl-button slot="footer" variant="primary" id="dlg-ok">Delete</sl-button>
+  </sl-dialog>
+  <sl-alert id="toast" variant="success" duration="2000" closable></sl-alert>
+
+  <aside class="impl proto-chrome">
+    <h2>Proposed implementation technologies (candidate, not locked)</h2>
+    <ul>
+      <li>Python still emits the document and talks to <code>CuratedStore</code>.</li>
+      <li>This throwaway uses <a href="https://shoelace.style/getting-started/usage">Shoelace</a> via CDN for buttons, dialog, spinner, tree, menu. Prototype-only. Shoelace docs: project is sunset; evaluate Web Awesome or Lit if components are chosen.</li>
+      <li>Motion: CSS pop/hover plus WAAPI-friendly durations; <code>prefers-reduced-motion</code> disables them.</li>
+      <li>Print: landscape @page in this demo; product already has canvas vs class-card page names.</li>
+    </ul>
+  </aside>
+  <p class="resp proto-chrome"><strong>Responsive:</strong> 12-column cards collapse to a single column at 800px. Hover lift is disabled when reduced motion is requested.</p>
+
+  <script>
+    (function () {
+      var screens = ["home", "topic", "curate", "design", "finder"];
+      var selected = "Hip bump sweep";
+      function show(name) {
+        screens.forEach(function (id) {
+          document.getElementById("screen-" + id).classList.toggle("on", id === name);
+        });
+        document.querySelectorAll(".proto-switch sl-button").forEach(function (b) {
+          b.variant = b.getAttribute("data-screen") === name ? "primary" : "default";
+        });
+      }
+      document.querySelector(".proto-switch").addEventListener("click", function (e) {
+        var b = e.target.closest("sl-button[data-screen]");
+        if (b) show(b.getAttribute("data-screen"));
+      });
+      document.querySelector(".shell").addEventListener("click", function (e) {
+        var g = e.target.closest("[data-goto]");
+        if (g) show(g.getAttribute("data-goto"));
+        var n = e.target.closest("[data-nav]");
+        if (n) show(n.getAttribute("data-nav"));
+      });
+      function toast(msg) {
+        var a = document.getElementById("toast");
+        a.textContent = msg;
+        a.toast();
+      }
+      document.getElementById("open").addEventListener("click", function () { show("topic"); toast("Topic open."); });
+      document.getElementById("save").addEventListener("click", function () { toast("Playback folders saved."); });
+      document.getElementById("propose").addEventListener("click", function () {
+        document.getElementById("spin").style.display = "inline-block";
+        document.getElementById("pstatus").textContent = "Proposing cleaned statements…";
+        setTimeout(function () {
+          document.getElementById("spin").style.display = "none";
+          document.getElementById("pstatus").textContent = "Proposals ready.";
+          toast("Statements proposed.");
+        }, 900);
+      });
+      document.getElementById("acc").addEventListener("click", function () { toast("Citation accepted."); });
+      document.getElementById("map").addEventListener("click", function (e) {
+        var n = e.target.closest("[data-mark]");
+        if (n) { selected = n.getAttribute("data-mark"); toast("Selected " + selected); }
+      });
+      document.getElementById("map").addEventListener("contextmenu", function (e) {
+        e.preventDefault();
+        var n = e.target.closest("[data-mark]");
+        if (n) {
+          selected = n.getAttribute("data-mark");
+          document.getElementById("dlg-t").textContent = "Delete " + selected + " from the map?";
+          document.getElementById("dlg").show();
+        }
+      });
+      document.getElementById("del").addEventListener("click", function () {
+        document.getElementById("dlg-t").textContent = "Delete " + selected + " from the map?";
+        document.getElementById("dlg").show();
+      });
+      document.getElementById("dlg-ok").addEventListener("click", function () {
+        document.getElementById("dlg").hide();
+        toast("Mark deleted.");
+      });
+      document.getElementById("prop-d").addEventListener("click", function () { toast("Proposing canvas and Draft…"); });
+      document.getElementById("conv").addEventListener("click", function () { toast("Converted to Draft."); });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PROTOTYPE — Dense productivity · issue 87</title>
+  <style>
+    :root {
+      --space-1: 0.2rem;
+      --space-2: 0.4rem;
+      --space-3: 0.65rem;
+      --space-4: 1rem;
+      --ink: #12141a;
+      --ink-2: #3c4150;
+      --line: #d0d5dd;
+      --bg: #e8eaef;
+      --surface: #ffffff;
+      --surface-2: #f4f5f8;
+      --accent: #3730a3;
+      --accent-2: #e0e7ff;
+      --ok: #166534;
+      --ok-bg: #dcfce7;
+      --warn: #9a3412;
+      --warn-bg: #ffedd5;
+      --gi: #1e3a8a;
+      --nogi: #6b21a8;
+      --radius: 6px;
+      --font: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+      --focus: 0 0 0 2px #fff, 0 0 0 4px var(--accent);
+      --shadow: 0 1px 0 rgba(18, 20, 26, 0.06);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body { font-family: var(--font); color: var(--ink); background: var(--bg); font-size: 14px; line-height: 1.4; }
+    :focus-visible { outline: none; box-shadow: var(--focus); }
+    .proto-banner {
+      background: #1c1917; color: #fafaf9; padding: 0.45rem 0.85rem; font-size: 0.8rem;
+      display: flex; flex-wrap: wrap; gap: 0.6rem 1rem;
+    }
+    .proto-banner strong { color: #86efac; }
+    .proto-switch {
+      border: 2px dotted #b91c1c; background: #fff7ed; padding: 0.4rem 0.6rem;
+      display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center;
+    }
+    .proto-switch span { color: #9f1239; font-size: 0.72rem; font-weight: 700; }
+    .proto-switch button {
+      font: inherit; font-size: 0.8rem; border: 1px solid #fecaca; background: #fff;
+      color: #7f1d1d; border-radius: 4px; padding: 0.2rem 0.45rem; cursor: pointer;
+    }
+    .proto-switch button[aria-pressed="true"] { background: #7f1d1d; color: #fff; }
+    .app {
+      border: 2px dotted #15803d;
+      display: grid;
+      grid-template-columns: 13.5rem 1fr;
+      min-height: calc(100vh - 7rem);
+    }
+    .rail {
+      background: var(--ink);
+      color: #e5e7eb;
+      padding: 0.85rem 0.7rem;
+    }
+    .rail h1 { font-size: 0.92rem; margin: 0 0 0.15rem; font-weight: 650; letter-spacing: 0.02em; }
+    .rail p { margin: 0 0 0.85rem; color: #9ca3af; font-size: 0.72rem; }
+    .rail a {
+      display: block; color: #e5e7eb; text-decoration: none; padding: 0.38rem 0.5rem;
+      border-radius: var(--radius); margin-bottom: 0.15rem;
+    }
+    .rail a[aria-current="page"] { background: #312e81; color: #fff; }
+    .rail a:hover { background: #1f2937; }
+    .main { background: var(--bg); display: flex; flex-direction: column; min-width: 0; }
+    .crumb {
+      background: var(--surface); border-bottom: 1px solid var(--line);
+      padding: 0.45rem 0.85rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
+    }
+    .crumb strong { font-size: 0.92rem; }
+    .pill { display: inline-block; font-size: 0.68rem; font-weight: 700; padding: 0.08rem 0.4rem; border-radius: 999px; }
+    .pill-gi { background: #dbeafe; color: var(--gi); }
+    .pill-nogi { background: #ede9fe; color: var(--nogi); }
+    .work { padding: 0.7rem 0.85rem 1.1rem; flex: 1; }
+    .screen { display: none; }
+    .screen.on { display: block; }
+    .grid-2 { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: var(--space-3); }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: var(--space-3); }
+    .card h2 { margin: 0 0 0.45rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-2); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 0.32rem 0.35rem; border-bottom: 1px solid var(--line); font-size: 0.86rem; }
+    th { color: var(--ink-2); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; }
+    tr[aria-selected="true"] { background: var(--accent-2); }
+    tr:hover { background: var(--surface-2); }
+    label { display: block; font-size: 0.78rem; margin: 0.25rem 0 0.12rem; }
+    input, select, textarea {
+      font: inherit; width: 100%; border: 1px solid var(--line); border-radius: 4px;
+      padding: 0.32rem 0.4rem; background: #fff;
+    }
+    .row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.4rem; }
+    button.btn {
+      font: inherit; font-size: 0.82rem; border: 1px solid var(--line); background: var(--surface);
+      border-radius: 4px; padding: 0.28rem 0.55rem; min-height: 28px; cursor: pointer;
+    }
+    button.btn:hover { background: var(--surface-2); }
+    button.btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    button.btn.primary:hover { background: #312e81; }
+    .split { display: grid; grid-template-columns: 16rem 1fr 14rem; gap: var(--space-3); min-height: 22rem; }
+    .pane { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.55rem; overflow: auto; }
+    .pane h2 { margin: 0 0 0.4rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-2); }
+    .item {
+      display: block; width: 100%; text-align: left; border: 0; background: transparent;
+      padding: 0.35rem 0.4rem; border-radius: 4px; cursor: pointer; font: inherit;
+    }
+    .item[aria-current="true"], .item.on { background: var(--accent-2); }
+    .map {
+      background: var(--surface-2); border: 1px dashed var(--line); border-radius: var(--radius);
+      height: 14rem; position: relative;
+    }
+    .node {
+      position: absolute; transform: translate(-50%, -50%); background: var(--accent); color: #fff;
+      border: 0; border-radius: 4px; padding: 0.2rem 0.4rem; font: inherit; font-size: 0.75rem; cursor: pointer;
+    }
+    .node:hover { filter: brightness(1.1); }
+    .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--line); margin-bottom: 0.5rem; }
+    .tabs [role="tab"] {
+      font: inherit; border: 0; background: transparent; padding: 0.35rem 0.7rem; cursor: pointer;
+      border-bottom: 2px solid transparent; color: var(--ink-2);
+    }
+    .tabs [role="tab"][aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 650; }
+    dialog {
+      border: 1px solid var(--line); border-radius: var(--radius); padding: 0; max-width: 22rem;
+      box-shadow: 0 12px 40px rgba(18, 20, 26, 0.18);
+    }
+    dialog::backdrop { background: rgba(18, 20, 26, 0.35); }
+    .dlg { padding: 0.85rem; }
+    .kbd { font-family: var(--mono); font-size: 0.72rem; background: var(--surface-2); padding: 0.05rem 0.3rem; border-radius: 3px; }
+    .status { font-size: 0.78rem; color: var(--ink-2); min-height: 1.1rem; }
+    .busy .bar { height: 2px; background: var(--accent); width: 0; animation: load 0.9s ease forwards; }
+    @keyframes load { to { width: 100%; } }
+    @media (prefers-reduced-motion: reduce) { .busy .bar { animation: none; width: 100%; } }
+    .impl, .resp {
+      border: 2px dotted #b91c1c; background: #fff7ed; color: #7f1d1d;
+      margin: 0.5rem 0.6rem; padding: 0.55rem 0.7rem; font-size: 0.8rem;
+    }
+    .impl h2 { margin: 0 0 0.3rem; font-size: 0.72rem; text-transform: uppercase; }
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+      .rail { display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; }
+      .rail p { display: none; }
+      .rail a { display: inline-block; margin: 0; }
+      .grid-2, .split { grid-template-columns: 1fr; }
+    }
+    @media print {
+      .proto-banner, .proto-switch, .rail, .impl, .resp { display: none !important; }
+      .app { display: block; border: 0; }
+      @page { margin: 0.5in; }
+    }
+  </style>
+</head>
+<body>
+  <div class="proto-banner proto-chrome">
+    <strong>PROTOTYPE</strong>
+    <span>Issue 87 — dense productivity. Tokens + headless-style APG patterns in one file. No production dependency. Green = coach UI. Red = chrome.</span>
+  </div>
+  <div class="proto-switch proto-chrome" role="toolbar" aria-label="Prototype screens">
+    <span>Screens</span>
+    <button type="button" data-screen="home" aria-pressed="true">Home</button>
+    <button type="button" data-screen="topic">Topic resume</button>
+    <button type="button" data-screen="place">Placement</button>
+    <button type="button" data-screen="design">Design + sheet</button>
+    <button type="button" data-screen="finder">Finder</button>
+  </div>
+
+  <div class="app">
+    <nav class="rail" aria-label="Application">
+      <h1>Advising</h1>
+      <p>Coach-only</p>
+      <a href="#home" data-nav="home" aria-current="page">Home</a>
+      <a href="#place" data-nav="place">Place</a>
+      <a href="#finder" data-nav="finder">Finder</a>
+      <a href="#design" data-nav="design">Design</a>
+      <a href="#design" data-nav="sheet">Sheet</a>
+      <a href="#finder" data-nav="custom">Custom</a>
+    </nav>
+    <div class="main">
+      <div class="crumb">
+        <div><strong id="crumb-title">Topics</strong> <span class="pill pill-gi" id="crumb-pill">gi</span></div>
+        <div class="kbd">Ctrl+K finder</div>
+      </div>
+      <div class="work">
+        <section class="screen on" id="screen-home">
+          <div class="grid-2">
+            <div class="card">
+              <h2>Open topics</h2>
+              <table>
+                <thead><tr><th>Topic</th><th>Ruleset</th><th></th></tr></thead>
+                <tbody>
+                  <tr data-goto="topic" style="cursor:pointer"><td>Hip bump sweep</td><td>gi</td><td>Resume</td></tr>
+                  <tr><td>Body lock passing</td><td>no-gi</td><td>Resume</td></tr>
+                </tbody>
+              </table>
+              <form id="open-form">
+                <label for="name">Topic name</label>
+                <input id="name" name="name">
+                <div class="row">
+                  <label><input type="radio" name="rs" value="gi" checked> gi</label>
+                  <label><input type="radio" name="rs" value="no-gi"> no-gi</label>
+                  <button class="btn primary" type="submit">Open</button>
+                </div>
+              </form>
+            </div>
+            <div class="card">
+              <h2>Playback folders</h2>
+              <label>Video root</label>
+              <input value="D:\BJJ library">
+              <label>Transcript folder</label>
+              <input value="Hip Bump">
+              <div class="row"><button class="btn" type="button" id="save">Save</button></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-topic">
+          <div class="card">
+            <h2>Resume</h2>
+            <p style="margin:0 0 0.5rem">Hip bump sweep stays gi. System and set-asides live on the briefing; the map lives on Design.</p>
+            <div class="row">
+              <button class="btn primary" data-goto="design" type="button">Continue Design</button>
+              <button class="btn" type="button">Briefing</button>
+              <button class="btn" type="button" id="rm">Remove topic</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-place">
+          <div class="card">
+            <h2>Placement pass</h2>
+            <div class="busy" id="place-busy" hidden><div class="bar"></div></div>
+            <p class="status" id="place-status">Review the proposed named-move link. Accept, correct, or skip.</p>
+            <table>
+              <thead><tr><th>Citation</th><th>Proposed named move</th><th></th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>Sit-up bump from closed guard</td>
+                  <td>
+                    <label class="visually-hidden" for="nm">Named move</label>
+                    <select id="nm"><option>Hip bump sweep</option><option>Flower sweep</option></select>
+                  </td>
+                  <td class="row">
+                    <button class="btn primary" type="button" id="accept-place">Accept</button>
+                    <button class="btn" type="button">Skip</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-design">
+          <div role="tablist" class="tabs" aria-label="Design surfaces">
+            <button type="button" role="tab" aria-selected="true" aria-controls="tab-map" id="t-map">Map</button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="tab-sheet" id="t-sheet">Sheet</button>
+          </div>
+          <div class="split" id="tab-map" role="tabpanel">
+            <div class="pane">
+              <h2>Add walk</h2>
+              <button class="item on" type="button">Closed guard</button>
+              <button class="item" type="button">Sweep</button>
+              <button class="item" type="button">Hip bump sweep</button>
+            </div>
+            <div class="pane">
+              <h2>Canvas</h2>
+              <p class="status">Left-click selects. Right-click opens the delete dialog. Keyboard: Delete.</p>
+              <div class="map" id="canvas" tabindex="0">
+                <button class="node" style="left:28%;top:55%" type="button" data-mark="Closed guard">Closed guard</button>
+                <button class="node" style="left:55%;top:35%" type="button" data-mark="Hip bump sweep">Hip bump sweep</button>
+                <button class="node" style="left:78%;top:60%" type="button" data-mark="Technical stand-up">Stand-up</button>
+              </div>
+              <div class="row">
+                <button class="btn primary" type="button" id="propose-d">Propose canvas and Draft</button>
+                <button class="btn" type="button" id="convert">Convert</button>
+              </div>
+              <p class="status" id="d-status"></p>
+            </div>
+            <div class="pane">
+              <h2>Inspector</h2>
+              <p id="insp">Hip bump sweep</p>
+              <div class="row">
+                <button class="btn" type="button" id="edit">Edit</button>
+                <button class="btn" type="button" id="del">Delete</button>
+              </div>
+            </div>
+          </div>
+          <div id="tab-sheet" role="tabpanel" hidden>
+            <div class="card">
+              <h2>Class 1 — Establish the bump</h2>
+              <table>
+                <thead><tr><th>Lesson</th><th>Type</th><th>Target</th></tr></thead>
+                <tbody>
+                  <tr><td>Hip bump from closed guard</td><td>technique</td><td>Hip bump sweep</td></tr>
+                  <tr><td>Bump to the knee line</td><td>drill</td><td>Hip bump sweep</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-finder">
+          <div class="split">
+            <div class="pane">
+              <h2>Start</h2>
+              <button class="item on" type="button">Closed guard</button>
+              <button class="item" type="button">Half guard</button>
+            </div>
+            <div class="pane">
+              <h2>Named moves</h2>
+              <label for="filter">Filter</label>
+              <input id="filter" placeholder="Type to filter">
+              <button class="item" type="button">Hip bump sweep</button>
+              <button class="item" type="button">Flower sweep</button>
+            </div>
+            <div class="pane">
+              <h2>Uncategorized</h2>
+              <p>2 citations with no named-move link.</p>
+              <button class="btn" type="button" data-goto="place">Open placement</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <dialog id="confirm" aria-labelledby="dlg-t">
+    <form method="dialog" class="dlg">
+      <h2 id="dlg-t" style="margin:0 0 0.4rem;font-size:1rem">Delete mark</h2>
+      <p id="dlg-b">Delete Hip bump sweep from the map?</p>
+      <div class="row">
+        <button class="btn" value="cancel">Keep</button>
+        <button class="btn primary" value="ok">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <aside class="impl proto-chrome">
+    <h2>Proposed implementation technologies (candidate, not locked)</h2>
+    <ul>
+      <li>Same Python HTML shell. Design tokens as CSS variables (this file’s <code>:root</code>).</li>
+      <li>Headless-style patterns from <a href="https://www.w3.org/WAI/ARIA/apg/">APG</a>: native <code>dialog</code>, tabs, selected table row, inspector instead of a styled component library.</li>
+      <li>No production npm package. Optional later: Alpine.js for tab/dialog glue only.</li>
+      <li>Type: IBM Plex if installed, else Segoe/system. No CDN required.</li>
+    </ul>
+  </aside>
+  <p class="resp proto-chrome"><strong>Responsive:</strong> rail collapses to a horizontal strip below 900px; split panes stack. Print hides rail and chrome; class cards stay portrait-ready.</p>
+
+  <script>
+    (function () {
+      var screens = ["home", "topic", "place", "design", "finder"];
+      var titles = { home: "Topics", topic: "Hip bump sweep", place: "Placement", design: "Design", finder: "Finder" };
+      var navMap = { home: "home", place: "place", finder: "finder", design: "design", sheet: "design", custom: "finder" };
+      function show(name) {
+        screens.forEach(function (id) {
+          document.getElementById("screen-" + id).classList.toggle("on", id === name);
+        });
+        document.getElementById("crumb-title").textContent = titles[name] || name;
+        document.querySelectorAll(".proto-switch button").forEach(function (b) {
+          b.setAttribute("aria-pressed", b.getAttribute("data-screen") === name ? "true" : "false");
+        });
+        document.querySelectorAll(".rail a").forEach(function (a) {
+          var key = a.getAttribute("data-nav");
+          if (navMap[key] === name) a.setAttribute("aria-current", "page");
+          else a.removeAttribute("aria-current");
+        });
+      }
+      document.querySelector(".proto-switch").addEventListener("click", function (e) {
+        var b = e.target.closest("button[data-screen]");
+        if (b) show(b.getAttribute("data-screen"));
+      });
+      document.body.addEventListener("click", function (e) {
+        var g = e.target.closest("[data-goto]");
+        if (g) { e.preventDefault(); show(g.getAttribute("data-goto")); }
+        var nav = e.target.closest(".rail a");
+        if (nav) { e.preventDefault(); show(navMap[nav.getAttribute("data-nav")]); }
+      });
+      document.getElementById("open-form").addEventListener("submit", function (e) { e.preventDefault(); show("topic"); });
+      document.getElementById("save").addEventListener("click", function () { document.getElementById("crumb-title").textContent = "Folders saved"; });
+      document.getElementById("rm").addEventListener("click", function () { show("home"); });
+      document.getElementById("accept-place").addEventListener("click", function () {
+        var b = document.getElementById("place-busy"), s = document.getElementById("place-status");
+        b.hidden = false; s.textContent = "Writing the named-move link…";
+        setTimeout(function () { b.hidden = true; s.textContent = "Accepted onto Hip bump sweep."; }, 700);
+      });
+      var selected = "Hip bump sweep";
+      document.getElementById("canvas").addEventListener("click", function (e) {
+        var n = e.target.closest("[data-mark]");
+        if (!n) return;
+        selected = n.getAttribute("data-mark");
+        document.getElementById("insp").textContent = selected;
+      });
+      document.getElementById("canvas").addEventListener("contextmenu", function (e) {
+        e.preventDefault();
+        var n = e.target.closest("[data-mark]");
+        if (n) { selected = n.getAttribute("data-mark"); document.getElementById("dlg-b").textContent = "Delete " + selected + " from the map?"; document.getElementById("confirm").showModal(); }
+      });
+      document.getElementById("del").addEventListener("click", function () {
+        document.getElementById("dlg-b").textContent = "Delete " + selected + " from the map?";
+        document.getElementById("confirm").showModal();
+      });
+      document.getElementById("canvas").addEventListener("keydown", function (e) {
+        if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); document.getElementById("del").click(); }
+      });
+      document.getElementById("propose-d").addEventListener("click", function () {
+        var s = document.getElementById("d-status");
+        s.textContent = "Proposing the Design canvas and Draft…";
+        setTimeout(function () { s.textContent = "Draft listed under the map."; }, 800);
+      });
+      document.getElementById("t-map").addEventListener("click", function () {
+        document.getElementById("t-map").setAttribute("aria-selected", "true");
+        document.getElementById("t-sheet").setAttribute("aria-selected", "false");
+        document.getElementById("tab-map").hidden = false;
+        document.getElementById("tab-sheet").hidden = true;
+      });
+      document.getElementById("t-sheet").addEventListener("click", function () {
+        document.getElementById("t-sheet").setAttribute("aria-selected", "true");
+        document.getElementById("t-map").setAttribute("aria-selected", "false");
+        document.getElementById("tab-sheet").hidden = false;
+        document.getElementById("tab-map").hidden = true;
+      });
+      document.getElementById("filter").addEventListener("input", function () {
+        var q = this.value.toLowerCase();
+        document.querySelectorAll("#screen-finder .pane:nth-child(2) .item").forEach(function (el) {
+          el.style.display = el.textContent.toLowerCase().indexOf(q) === -1 ? "none" : "";
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

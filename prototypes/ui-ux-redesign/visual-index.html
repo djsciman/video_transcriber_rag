@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PROTOTYPE — Visual / tech candidates · issue 87</title>
+  <style>
+    :root {
+      --bg: #f4f1ea; --ink: #1c1917; --muted: #57534e; --paper: #fffcf6;
+      --line: #d6d3d1; --accent: #9a3412;
+      --serif: "Iowan Old Style", Palatino, Georgia, serif;
+      --sans: "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--sans); background: var(--bg); color: var(--ink); line-height: 1.5; }
+    .banner { background: #1c1917; color: #fafaf9; padding: 0.65rem 1.2rem; font-size: 0.88rem; }
+    .banner strong { color: #86efac; }
+    main { max-width: 48rem; margin: 1.2rem auto 2rem; padding: 0 1.2rem; }
+    h1 { font-family: var(--serif); font-size: 1.8rem; margin: 0 0 0.35rem; }
+    .meta { color: var(--muted); }
+    .chrome { border: 2px dotted #b91c1c; background: #fff7ed; color: #7f1d1d; padding: 0.7rem 0.9rem; margin: 1rem 0; font-size: 0.9rem; }
+    .card {
+      border: 2px dotted #15803d; background: var(--paper); padding: 1rem 1.1rem; margin: 0.8rem 0;
+      box-shadow: 0 8px 24px rgba(28,25,23,.06);
+    }
+    .card h2 { font-family: var(--serif); margin: 0 0 0.3rem; font-size: 1.25rem; }
+    .card p { margin: 0.25rem 0; color: var(--muted); }
+    a { color: var(--accent); }
+    ul { margin: 0.4rem 0 0; padding-left: 1.15rem; }
+  </style>
+</head>
+<body>
+  <div class="banner"><strong>PROTOTYPE</strong> Issue 87 — three visual and implementation candidates. No stack locked.</div>
+  <main>
+    <h1>UI tech and visual directions</h1>
+    <p class="meta">Throwaway demos for review. Green outline on each prototype marks proposed coach UI. Red outline is prototype chrome. Production <code>coach_app/</code> is untouched.</p>
+    <div class="chrome">
+      Research document: <code>docs/ui-ux-discovery/tech-visual.md</code>.
+      Parent map: issue 85. Review (no lock here): issue 89.
+    </div>
+    <article class="card">
+      <h2><a href="visual-editorial.html">Editorial paper/ink</a></h2>
+      <p>Refined workbook: serif titles, rust accent, reading measure.</p>
+      <ul>
+        <li>Implementation: plain HTML + CSS matching the current stdlib shell. No CDN, no framework.</li>
+        <li>Motion: 220ms page rise, button press, accept flash.</li>
+      </ul>
+    </article>
+    <article class="card">
+      <h2><a href="visual-productivity.html">Dense productivity</a></h2>
+      <p>Split panes, compact tables, inspector, IBM Plex fallback stack.</p>
+      <ul>
+        <li>Implementation: design tokens + APG/headless patterns (dialog, tabs, selected row) in one file. No production dependency.</li>
+        <li>Motion: placement progress bar; focus ring language.</li>
+      </ul>
+    </article>
+    <article class="card">
+      <h2><a href="visual-layered.html">Layered dashboard</a></h2>
+      <p>Elevated cards, teal accent, node pop-in, Propose spinner.</p>
+      <ul>
+        <li>Implementation: Shoelace via CDN in this file only (documented sunset; not a product choice).</li>
+        <li>Motion: hover lift, map node scale, toast.</li>
+      </ul>
+    </article>
+  </main>
+</body>
+</html>

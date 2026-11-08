@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PROTOTYPE — Editorial paper/ink · issue 87</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --paper: #fffcf6;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #d6d3d1;
+      --accent: #9a3412;
+      --accent-soft: #ffedd5;
+      --ok: #14532d;
+      --ok-soft: #dcfce7;
+      --warn: #854d0e;
+      --warn-soft: #fef9c3;
+      --gi: #1e3a8a;
+      --gi-soft: #dbeafe;
+      --nogi: #5b21b6;
+      --nogi-soft: #ede9fe;
+      --shadow: 0 1px 2px rgba(28, 25, 23, 0.06), 0 8px 24px rgba(28, 25, 23, 0.06);
+      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --radius: 10px;
+      --focus: 0 0 0 2px var(--paper), 0 0 0 4px var(--accent);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      font-family: var(--sans);
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    :focus-visible { outline: none; box-shadow: var(--focus); }
+    .proto-banner, .proto-switch, .impl-panel, .resp-note { font-family: var(--sans); }
+    .proto-banner {
+      background: #1c1917;
+      color: #fafaf9;
+      padding: 0.55rem 1.1rem;
+      font-size: 0.85rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+      align-items: baseline;
+    }
+    .proto-banner strong { color: #86efac; }
+    .proto-switch {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: #fff7ed;
+      border: 2px dotted #b91c1c;
+      margin: 0.7rem 1rem 0;
+      padding: 0.55rem 0.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: center;
+    }
+    .proto-switch span { color: #9f1239; font-size: 0.78rem; font-weight: 650; margin-right: 0.4rem; }
+    .proto-switch button {
+      font: inherit;
+      font-size: 0.85rem;
+      border: 1px solid #fecaca;
+      background: #fff;
+      color: #7f1d1d;
+      border-radius: 6px;
+      padding: 0.28rem 0.55rem;
+      cursor: pointer;
+    }
+    .proto-switch button[aria-pressed="true"] { background: #7f1d1d; color: #fff; border-color: #7f1d1d; }
+    .coach-ui {
+      border: 2px dotted #15803d;
+      margin: 0.7rem 1rem 1.2rem;
+      background: var(--bg);
+      min-height: 70vh;
+    }
+    .page { max-width: 46rem; margin: 0 auto; padding: 1.15rem 1.25rem 2.2rem; }
+    .page.wide { max-width: none; }
+    header h1 {
+      font-family: var(--serif);
+      font-weight: 600;
+      font-size: 1.75rem;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.3rem;
+    }
+    header .meta { color: var(--muted); margin: 0; max-width: 72ch; }
+    nav.coach-nav { display: flex; flex-wrap: wrap; gap: 0.15rem 1.1rem; margin: 1rem 0 1.15rem; border-bottom: 1px solid var(--line); padding-bottom: 0.55rem; }
+    nav.coach-nav a {
+      color: var(--ink);
+      text-decoration: none;
+      padding: 0.25rem 0;
+      border-bottom: 2px solid transparent;
+      font-size: 0.95rem;
+    }
+    nav.coach-nav a:hover { color: var(--accent); }
+    nav.coach-nav a[aria-current="page"] { border-bottom-color: var(--ink); font-weight: 650; }
+    .panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 0.95rem 1.05rem 1.1rem;
+      margin: 0 0 0.9rem;
+    }
+    .panel h2 {
+      font-size: 0.76rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 0.55rem;
+    }
+    .empty { color: var(--muted); margin: 0 0 0.7rem; }
+    label { display: block; font-size: 0.92rem; margin: 0.35rem 0 0.2rem; }
+    input[type="text"], textarea, select {
+      font: inherit;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.4rem 0.55rem;
+      background: #fff;
+    }
+    .choices { display: flex; gap: 0.9rem; margin: 0.4rem 0; }
+    .choices label { display: flex; align-items: center; gap: 0.35rem; margin: 0; }
+    button.btn {
+      font: inherit;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 8px;
+      padding: 0.38rem 0.75rem;
+      min-height: 2rem;
+      cursor: pointer;
+      transition: transform 80ms ease, box-shadow 80ms ease, background 120ms ease;
+    }
+    button.btn:hover { background: var(--accent-soft); }
+    button.btn:active { transform: translateY(1px); }
+    button.btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+    button.btn.primary:hover { background: #44403c; }
+    button.btn.busy { opacity: 0.7; cursor: wait; }
+    .topic-list { list-style: none; padding: 0; margin: 0 0 0.8rem; }
+    .topic-list li { border-top: 1px solid var(--line); padding: 0.55rem 0; }
+    .topic-list li:first-child { border-top: 0; }
+    .topic-list a { color: var(--ink); font-family: var(--serif); font-size: 1.15rem; text-decoration: none; }
+    .topic-list a:hover { color: var(--accent); }
+    .pill { display: inline-block; border-radius: 999px; padding: 0.1rem 0.5rem; font-size: 0.75rem; font-weight: 650; }
+    .pill-gi { background: var(--gi-soft); color: var(--gi); }
+    .pill-nogi { background: var(--nogi-soft); color: var(--nogi); }
+    .pill-caveat { background: var(--warn-soft); color: var(--warn); border: 1px solid #ca8a04; }
+    .screen { display: none; animation: rise 220ms ease; }
+    .screen.on { display: block; }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .screen { animation: none; }
+      button.btn { transition: none; }
+    }
+    .cite { border-top: 1px solid var(--line); padding: 0.8rem 0; }
+    .cite:first-child { border-top: 0; }
+    .cite-head { font-weight: 650; }
+    .cite-meta { color: var(--muted); font-size: 0.86rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.45rem; }
+    .flash { animation: okflash 700ms ease; }
+    @keyframes okflash { from { background: var(--ok-soft); } to { background: transparent; } }
+    .map-stage {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      min-height: 16rem;
+      position: relative;
+    }
+    .map-stage svg { width: 100%; height: 16rem; display: block; }
+    .legend { font-size: 0.78rem; color: var(--muted); margin: 0.35rem 0 0; }
+    .class-card { border: 2px dashed var(--line); border-radius: 14px; overflow: hidden; margin: 0.7rem 0; background: var(--paper); }
+    .class-card .cut { background: #1c1917; color: #fafaf9; padding: 0.65rem 1rem; display: flex; gap: 0.7rem; align-items: baseline; }
+    .class-card .cut h3 { margin: 0; font-family: var(--serif); font-size: 1.05rem; }
+    .class-card .cut .n { color: #a8a29e; font-size: 0.72rem; }
+    table.sheet { width: 100%; border-collapse: collapse; background: #fff; }
+    table.sheet th, table.sheet td { border-bottom: 1px solid var(--line); padding: 0.45rem 0.5rem; text-align: left; vertical-align: top; }
+    table.sheet th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+    tr.tech td:first-child { box-shadow: inset 4px 0 0 #1e3a8a; }
+    tr.drill td:first-child { box-shadow: inset 4px 0 0 #ca8a04; }
+    .finder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+    .walk-btn { width: 100%; text-align: left; margin: 0 0 0.25rem; }
+    .walk-btn.on { background: var(--accent-soft); }
+    .impl-panel, .resp-note {
+      border: 2px dotted #b91c1c;
+      background: #fff7ed;
+      color: #7f1d1d;
+      margin: 0 1rem 1rem;
+      padding: 0.7rem 0.85rem;
+      font-size: 0.86rem;
+    }
+    .impl-panel h2, .resp-note strong { margin: 0 0 0.35rem; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; }
+    .impl-panel ul { margin: 0.2rem 0 0; padding-left: 1.1rem; }
+    .toast {
+      position: fixed; bottom: 1rem; right: 1rem;
+      background: var(--ink); color: #fff; padding: 0.45rem 0.75rem;
+      border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity 180ms ease;
+    }
+    .toast.show { opacity: 1; }
+    @media (max-width: 720px) {
+      .finder-grid { grid-template-columns: 1fr; }
+      .page { padding: 1rem; }
+    }
+    @media print {
+      .proto-banner, .proto-switch, .impl-panel, .resp-note, nav.coach-nav { display: none !important; }
+      .coach-ui { border: 0; }
+      @page { margin: 0.5in; }
+    }
+  </style>
+</head>
+<body>
+  <div class="proto-banner proto-chrome">
+    <strong>PROTOTYPE</strong>
+    <span>Issue 87 — refined paper/ink editorial. Green outline = proposed coach UI. Red outline = prototype chrome. No production dependency.</span>
+  </div>
+  <div class="proto-switch proto-chrome" role="toolbar" aria-label="Prototype screens">
+    <span>Screens</span>
+    <button type="button" data-screen="home" aria-pressed="true">Home</button>
+    <button type="button" data-screen="topic">Topic resume</button>
+    <button type="button" data-screen="curate">Curation</button>
+    <button type="button" data-screen="design">Design + sheet</button>
+    <button type="button" data-screen="finder">Finder</button>
+  </div>
+
+  <div class="coach-ui">
+    <div class="page" id="shell">
+      <header>
+        <h1>Advising</h1>
+        <p class="meta">Coach-only. Students never use this application.</p>
+      </header>
+      <nav class="coach-nav" aria-label="Application">
+        <a href="#home" data-nav="home" aria-current="page">Home</a>
+        <a href="#curate" data-nav="curate">Curate</a>
+        <a href="#finder" data-nav="finder">Finder</a>
+        <a href="#design" data-nav="design">Design</a>
+        <a href="#design" data-nav="sheet">Sheet</a>
+        <a href="#finder" data-nav="custom">Custom</a>
+      </nav>
+
+      <section class="screen on" id="screen-home" aria-label="Home">
+        <div class="panel">
+          <h2>Topics</h2>
+          <ul class="topic-list">
+            <li>
+              <a href="#topic" data-goto="topic">Hip bump sweep</a>
+              <span class="pill pill-gi">gi</span>
+            </li>
+            <li>
+              <a href="#topic" data-goto="topic">Body lock passing</a>
+              <span class="pill pill-nogi">no-gi</span>
+            </li>
+          </ul>
+          <form id="open-topic" action="#">
+            <label for="topic_name">Topic name</label>
+            <input id="topic_name" name="name" type="text" autocomplete="off">
+            <div class="choices">
+              <label><input type="radio" name="ruleset" value="gi" checked> gi</label>
+              <label><input type="radio" name="ruleset" value="no-gi"> no-gi</label>
+            </div>
+            <button class="btn primary" type="submit">Open</button>
+          </form>
+        </div>
+        <div class="panel">
+          <h2>Playback folders</h2>
+          <label for="video_root">Video root</label>
+          <input id="video_root" type="text" value="D:\BJJ library">
+          <label for="transcript_folder">Transcript folder</label>
+          <input id="transcript_folder" type="text" value="Hip Bump">
+          <p style="margin:0.55rem 0 0"><button class="btn" type="button" id="save-folders">Save</button></p>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-topic" aria-label="Topic resume">
+        <div class="panel">
+          <h2>Open topic</h2>
+          <p style="font-family:var(--serif);font-size:1.35rem;margin:0 0 0.35rem">Hip bump sweep <span class="pill pill-gi">gi</span></p>
+          <p class="meta">Name and ruleset stay fixed. Resume Design, or pack the sheet when the map is ready.</p>
+          <p class="actions">
+            <button class="btn" type="button" data-goto="design">Design</button>
+            <button class="btn" type="button">Briefing</button>
+            <button class="btn" type="button" id="remove-topic">Remove topic</button>
+          </p>
+        </div>
+        <div class="panel">
+          <h2>Other-ruleset instructional</h2>
+          <p><span class="pill pill-caveat">caveat</span> A showing from a no-gi instructional may enter this gi topic only when you place it.</p>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-curate" aria-label="Curation">
+        <div class="panel">
+          <h2>Volume</h2>
+          <label for="volume">Transcript</label>
+          <select id="volume">
+            <option>Hip Bump — Volume 1</option>
+          </select>
+          <p class="actions"><button class="btn primary" type="button" id="propose">Propose statements</button></p>
+          <p class="empty" id="propose-status" hidden>Proposing cleaned statements for this volume…</p>
+        </div>
+        <div class="panel">
+          <h2>Proposals</h2>
+          <div class="cite" id="cite-1">
+            <div class="cite-head">Hip bump sweep</div>
+            <div class="cite-meta">Chapter 3 · 1:12 · instructor speech kept</div>
+            <p>Sit up, post the hand, bump, and come to the knee line. Keep every spoken detail from each showing.</p>
+            <p class="actions">
+              <button class="btn primary" type="button" data-accept>Accept</button>
+              <button class="btn" type="button">Dismiss</button>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-design" aria-label="Design and sheet">
+        <div class="panel">
+          <h2>Mental map</h2>
+          <p class="legend">Left-click a mark to select (edit in the inspector). Right-click deletes after confirm. Drag is optional; the buttons still work.</p>
+          <div class="map-stage" id="map">
+            <svg viewBox="0 0 640 240" role="img" aria-label="Design canvas">
+              <line x1="180" y1="120" x2="320" y2="80" stroke="#d6d3d1"/>
+              <line x1="320" y1="80" x2="460" y2="130" stroke="#d6d3d1"/>
+              <circle cx="180" cy="120" r="16" fill="#1d4ed8" class="mark" data-name="Closed guard"/>
+              <polygon points="320,58 342,80 320,102 298,80" fill="#1d4ed8" class="mark" data-name="Hip bump sweep"/>
+              <rect x="444" y="114" width="32" height="32" rx="4" fill="#0f766e" class="mark" data-name="Technical stand-up"/>
+              <text x="180" y="156" text-anchor="middle" font-size="12" fill="#57534e">Closed guard</text>
+              <text x="320" y="122" text-anchor="middle" font-size="12" fill="#57534e">Hip bump sweep</text>
+              <text x="460" y="168" text-anchor="middle" font-size="12" fill="#57534e">Technical stand-up</text>
+            </svg>
+          </div>
+          <p class="actions">
+            <button class="btn" type="button" id="edit-mark">Edit selected</button>
+            <button class="btn" type="button" id="delete-mark">Delete selected</button>
+            <button class="btn primary" type="button" id="propose-canvas">Propose canvas and Draft</button>
+            <button class="btn" type="button" id="convert">Convert canvas to Draft</button>
+          </p>
+          <p class="empty" id="map-status" hidden></p>
+        </div>
+        <div class="class-card">
+          <div class="cut"><span class="n">Class 1</span><h3>Establish the bump</h3></div>
+          <table class="sheet">
+            <thead><tr><th>Lesson</th><th>Type</th><th>Target</th></tr></thead>
+            <tbody>
+              <tr class="tech"><td>Hip bump from closed guard</td><td>technique</td><td>Hip bump sweep</td></tr>
+              <tr class="drill"><td>Bump to the knee line</td><td>drill</td><td>Hip bump sweep</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-finder" aria-label="Finder">
+        <div class="panel">
+          <h2>Search the catalog</h2>
+          <label for="q">Query</label>
+          <input id="q" type="text" placeholder="named move, instructor, system">
+        </div>
+        <div class="finder-grid">
+          <div class="panel">
+            <h2>Start position</h2>
+            <button class="btn walk-btn on" type="button">Closed guard</button>
+            <button class="btn walk-btn" type="button">Half guard</button>
+            <button class="btn walk-btn" type="button">Standing</button>
+          </div>
+          <div class="panel">
+            <h2>Named moves</h2>
+            <p>Hip bump sweep · citations 4</p>
+            <p class="empty">Uncategorized: 2 citations waiting for a named-move link.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <aside class="impl-panel proto-chrome">
+    <h2>Proposed implementation technologies (candidate, not locked)</h2>
+    <ul>
+      <li>Python stdlib <code>http.server</code>, HTML strings, expanded <code>shell.css</code> — same shape as live <code>coach_app</code>.</li>
+      <li>No frontend framework. Native <code>:focus-visible</code>, CSS transitions, <code>prefers-reduced-motion</code>.</li>
+      <li>Design map stays in-page SVG/JS. Print: existing <code>@page canvas</code> landscape and class-card portrait, 0.5 in margins.</li>
+      <li>CDN: none in this file.</li>
+    </ul>
+  </aside>
+  <p class="resp-note proto-chrome"><strong>Responsive</strong> — reading column 46rem; Finder stacks to one column at 720px; Design canvas is full width of the column. Print hides prototype chrome.</p>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    (function () {
+      var screens = ["home", "topic", "curate", "design", "finder"];
+      var navMap = { home: "home", curate: "curate", finder: "finder", design: "design", sheet: "design", custom: "finder", topic: "topic" };
+      function show(name) {
+        screens.forEach(function (id) {
+          document.getElementById("screen-" + id).classList.toggle("on", id === name);
+        });
+        document.querySelectorAll(".proto-switch button").forEach(function (b) {
+          b.setAttribute("aria-pressed", b.getAttribute("data-screen") === name ? "true" : "false");
+        });
+        document.querySelectorAll("nav.coach-nav a").forEach(function (a) {
+          var key = a.getAttribute("data-nav");
+          if (navMap[key] === name) a.setAttribute("aria-current", "page");
+          else a.removeAttribute("aria-current");
+        });
+        document.getElementById("shell").classList.toggle("wide", name === "design");
+      }
+      document.querySelector(".proto-switch").addEventListener("click", function (e) {
+        var b = e.target.closest("button");
+        if (b) show(b.getAttribute("data-screen"));
+      });
+      document.querySelector(".coach-ui").addEventListener("click", function (e) {
+        var g = e.target.closest("[data-goto]");
+        if (g) { e.preventDefault(); show(g.getAttribute("data-goto")); }
+      });
+      document.querySelector("nav.coach-nav").addEventListener("click", function (e) {
+        var a = e.target.closest("a");
+        if (!a) return;
+        e.preventDefault();
+        show(navMap[a.getAttribute("data-nav")] || "home");
+      });
+      function toast(msg) {
+        var t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        setTimeout(function () { t.classList.remove("show"); }, 1600);
+      }
+      document.getElementById("open-topic").addEventListener("submit", function (e) {
+        e.preventDefault();
+        show("topic");
+        toast("Topic open.");
+      });
+      document.getElementById("save-folders").addEventListener("click", function () { toast("Playback folders saved."); });
+      document.getElementById("remove-topic").addEventListener("click", function () {
+        if (confirm("Remove this topic and what belonged to it?")) { show("home"); toast("Topic removed."); }
+      });
+      document.getElementById("propose").addEventListener("click", function () {
+        var btn = this, st = document.getElementById("propose-status");
+        btn.classList.add("busy"); btn.disabled = true; st.hidden = false;
+        setTimeout(function () { btn.classList.remove("busy"); btn.disabled = false; st.hidden = true; toast("Proposals ready."); }, 900);
+      });
+      document.querySelector("[data-accept]").addEventListener("click", function () {
+        document.getElementById("cite-1").classList.add("flash");
+        toast("Citation accepted into the curated store.");
+      });
+      var selected = "Hip bump sweep";
+      document.getElementById("map").addEventListener("click", function (e) {
+        var m = e.target.closest(".mark");
+        if (m) { selected = m.getAttribute("data-name"); toast("Selected " + selected + " — edit."); }
+      });
+      document.getElementById("map").addEventListener("contextmenu", function (e) {
+        e.preventDefault();
+        var m = e.target.closest(".mark");
+        if (m && confirm("Delete " + m.getAttribute("data-name") + "?")) toast("Mark deleted.");
+      });
+      document.getElementById("edit-mark").addEventListener("click", function () { toast("Edit " + selected); });
+      document.getElementById("delete-mark").addEventListener("click", function () {
+        if (confirm("Delete " + selected + "?")) toast("Mark deleted.");
+      });
+      document.getElementById("propose-canvas").addEventListener("click", function () {
+        var s = document.getElementById("map-status");
+        s.hidden = false; s.textContent = "Proposing the Design canvas and Draft…";
+        setTimeout(function () { s.textContent = "Draft ready under the map."; toast("Canvas and Draft proposed."); }, 800);
+      });
+      document.getElementById("convert").addEventListener("click", function () { toast("Canvas converted to Draft."); });
+      document.querySelectorAll(".walk-btn").forEach(function (b) {
+        b.addEventListener("click", function () {
+          document.querySelectorAll(".walk-btn").forEach(function (x) { x.classList.remove("on"); });
+          b.classList.add("on");
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
