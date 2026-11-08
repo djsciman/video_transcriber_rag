@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PROTOTYPE — Guided work (issue 88)</title>
+  <style>
+    :root {
+      --bg: #f4f1ea; --paper: #fffcf6; --ink: #1c1917; --muted: #57534e;
+      --line: #d6d3d1; --accent: #9a3412; --ok: #14532d;
+      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      --sans: "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--sans); color: var(--ink); background: var(--bg); line-height: 1.45; }
+    .proto { border: 2px dotted #b91c1c; background: #fef2f2; margin: 0.6rem 0.9rem; padding: 0.55rem 0.75rem; font-size: 0.88rem; }
+    .proto strong { color: #991b1b; }
+    .proto a { color: #991b1b; }
+    .coach { border: 2px dotted #15803d; background: var(--paper); margin: 0.6rem 0.9rem 2rem; padding: 0.9rem 1rem 1.2rem; }
+    h1 { font-family: var(--serif); font-size: 1.45rem; margin: 0 0 0.2rem; }
+    .lede { color: var(--muted); margin: 0 0 0.8rem; }
+    .status { background: #ecfccb; border: 1px solid #84cc16; border-radius: 8px; padding: 0.4rem 0.6rem; margin: 0 0 0.7rem; font-size: 0.9rem; }
+    .status[hidden] { display: none; }
+    .rail { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0 0 0.85rem; }
+    .rail button {
+      font: inherit; border: 1px solid var(--line); background: #fff; border-radius: 999px;
+      padding: 0.22rem 0.65rem; cursor: pointer;
+    }
+    .rail button[aria-current="step"] { background: #1c1917; color: #fff; border-color: #1c1917; }
+    .rail button.done { border-color: #14532d; }
+    .layout { display: grid; gap: 0.75rem; }
+    @media (min-width: 900px) { .layout { grid-template-columns: 16rem 1fr; } }
+    .next {
+      border: 2px solid var(--accent); border-radius: 12px; padding: 0.75rem 0.8rem; background: #fff7ed;
+    }
+    .next h2 { margin: 0 0 0.35rem; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent); }
+    .panel { border: 1px solid var(--line); border-radius: 12px; padding: 0.75rem 0.85rem; background: #fff; }
+    .panel h2 { margin: 0 0 0.5rem; font-size: 1.05rem; font-family: var(--serif); }
+    .who { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 0 0 0.35rem; }
+    .proposal { border: 1px dashed #c2410c; background: #fff7ed; border-radius: 10px; padding: 0.65rem 0.75rem; margin: 0.4rem 0; }
+    .decision { border: 1px solid #14532d; background: #f0fdf4; border-radius: 10px; padding: 0.65rem 0.75rem; margin: 0.4rem 0; }
+    .cite { border-top: 1px solid var(--line); padding: 0.55rem 0; }
+    .cite:first-of-type { border-top: 0; }
+    button.primary, button.ghost, button.danger {
+      font: inherit; border-radius: 8px; padding: 0.4rem 0.75rem; cursor: pointer; margin: 0.2rem 0.25rem 0.2rem 0;
+    }
+    button.primary { background: #1c1917; color: #fff; border: 1px solid #1c1917; }
+    button.ghost { background: #fff; border: 1px solid var(--line); }
+    button.danger { background: #fff; border: 1px solid #9f1239; color: #9f1239; }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    label { display: block; margin: 0.35rem 0 0.15rem; }
+    input[type="text"], textarea, select {
+      font: inherit; width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 0.35rem 0.5rem;
+    }
+    textarea { min-height: 4rem; }
+    .map {
+      min-height: 12rem; border: 1px solid var(--line); border-radius: 12px; background: #fff;
+      position: relative; padding: 0.5rem;
+    }
+    .mark {
+      position: absolute; border-radius: 999px; padding: 0.2rem 0.55rem; font-size: 0.8rem; font-weight: 650;
+      background: #dbeafe; border: 1px solid #1d4ed8; color: #1e3a8a;
+    }
+    .cards { display: grid; gap: 0.5rem; }
+    .class-card { border: 2px dashed var(--line); border-radius: 12px; overflow: hidden; }
+    .class-card.solid { border-style: solid; }
+    .class-card header { background: #1c1917; color: #fafaf9; padding: 0.45rem 0.7rem; font-family: var(--serif); }
+    .class-card table { width: 100%; border-collapse: collapse; }
+    .class-card td { padding: 0.4rem 0.55rem; border-bottom: 1px solid var(--line); }
+    .pill { display: inline-block; border-radius: 999px; padding: 0.08rem 0.45rem; font-size: 0.75rem; font-weight: 650; }
+    .pill-tech { background: #dbeafe; color: #1e3a8a; }
+    .pill-drill { background: #fef9c3; color: #854d0e; }
+    .tiny { color: var(--muted); font-size: 0.82rem; }
+    ul.steps { margin: 0.3rem 0 0; padding-left: 1.1rem; }
+    .more { margin-top: 0.7rem; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="proto">
+    <strong>PROTOTYPE</strong> — Candidate A: guided next-action / progressive disclosure.
+    Distinct from inbox queues and from a spatial studio. Sample data only.
+    <a href="ux-index.html">Index</a> ·
+    <a href="ux-inbox.html">Inbox</a> ·
+    <a href="ux-studio.html">Studio</a>
+  </div>
+
+  <div class="coach">
+    <h1>Advising</h1>
+    <p class="lede">Coach-only. One current job. Later stages stay closed until this job needs them.</p>
+    <div id="flash" class="status" hidden></div>
+    <nav class="rail" aria-label="Job stages" id="rail"></nav>
+    <div class="layout">
+      <aside class="next" id="next"></aside>
+      <main id="main"></main>
+    </div>
+  </div>
+
+<script>
+const STAGES = [
+  { id: "folders", label: "Folders" },
+  { id: "curate", label: "Curate" },
+  { id: "place", label: "Place" },
+  { id: "topic", label: "Open topic" },
+  { id: "briefing", label: "Briefing" },
+  { id: "design", label: "Design" },
+  { id: "sheet", label: "Sheet" },
+  { id: "print", label: "Print" }
+];
+
+const state = {
+  stage: "folders",
+  videoRoot: "",
+  transcriptFolder: "",
+  volumeLoaded: false,
+  proposals: [
+    { id: "p1", movement: "Hip bump sweep",
+      bullets: ["Post on the near arm", "Elevate the hips", "Come to the knees"],
+      accepted: false, dismissed: false }
+  ],
+  accepted: [],
+  uncategorized: [],
+  placed: [],
+  topic: null,
+  system: "",
+  marks: [],
+  sheetMode: null,
+  purpose: "",
+  printed: false
+};
+
+function flash(msg) {
+  const el = document.getElementById("flash");
+  el.hidden = !msg;
+  el.textContent = msg || "";
+}
+
+function done(id) {
+  if (id === "folders") return !!(state.videoRoot && state.transcriptFolder);
+  if (id === "curate") return state.accepted.length > 0;
+  if (id === "place") return state.placed.length > 0 && state.uncategorized.length === 0;
+  if (id === "topic") return !!state.topic;
+  if (id === "briefing") return !!state.system;
+  if (id === "design") return state.marks.length > 0;
+  if (id === "sheet") return state.sheetMode === "edit" || state.sheetMode === "read";
+  if (id === "print") return state.printed;
+  return false;
+}
+
+function suggested() {
+  if (!state.videoRoot || !state.transcriptFolder) return "folders";
+  if (!state.volumeLoaded || state.accepted.length === 0) return "curate";
+  if (state.uncategorized.length) return "place";
+  if (!state.topic) return "topic";
+  if (!state.system) return "briefing";
+  if (!state.marks.length) return "design";
+  if (!state.sheetMode) return "sheet";
+  if (!state.printed) return "print";
+  return "print";
+}
+
+function go(id) {
+  state.stage = id;
+  render();
+}
+
+function render() {
+  const rail = document.getElementById("rail");
+  rail.innerHTML = STAGES.map(s => {
+    const cur = s.id === state.stage ? ' aria-current="step"' : "";
+    const cls = done(s.id) ? " done" : "";
+    return `<button type="button" class="${cls.trim()}"${cur} data-go="${s.id}">${s.label}</button>`;
+  }).join("");
+  rail.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
+
+  const nxt = suggested();
+  const nxtLabel = STAGES.find(s => s.id === nxt).label;
+  document.getElementById("next").innerHTML = `
+    <h2>Next action</h2>
+    <p>${nextCopy()}</p>
+    <button type="button" class="primary" data-go="${nxt}">Go to ${nxtLabel}</button>
+    <p class="tiny">You can jump the rail. Returning coaches skip finished stages.</p>`;
+  document.getElementById("next").querySelector("[data-go]").onclick = () => go(nxt);
+
+  const views = { folders, curate, place, topic, briefing, design, sheet, print };
+  document.getElementById("main").innerHTML = views[state.stage]();
+  bind();
+}
+
+function nextCopy() {
+  if (!state.videoRoot) return "Set the video root and transcript folder so playback links can open.";
+  if (!state.accepted.length) return "Curate a volume. Accept cleaned statements into the curated store.";
+  if (state.uncategorized.length) return "Place uncategorized citations on a named move. Until then they are not offered on a lesson.";
+  if (!state.topic) return "Open the topic you will teach.";
+  if (!state.system) return "Read the briefing, then choose the system. The advisor does not determine it.";
+  if (!state.marks.length) return "Design the unit on the map, then convert to a Draft.";
+  if (!state.sheetMode || state.sheetMode === "draft") return "Read the Draft, then Edit the sheet in your words.";
+  if (!state.printed) return "Print the duplex packet.";
+  return "This topic's packet is ready. Curate another volume or copy from History when you re-teach.";
+}
+
+function folders() {
+  return `<section class="panel">
+    <p class="who">Coach settings</p>
+    <h2>Playback folders</h2>
+    <label for="vr">Video root</label>
+    <input id="vr" type="text" value="${esc(state.videoRoot)}">
+    <label for="tf">Transcript folder</label>
+    <input id="tf" type="text" value="${esc(state.transcriptFolder)}">
+    <button type="button" class="primary" id="save-folders">Save</button>
+  </section>`;
+}
+
+function curate() {
+  const props = state.proposals.filter(p => !p.accepted && !p.dismissed).map(p => `
+    <div class="proposal">
+      <p class="who">Advisor proposes</p>
+      <strong>${esc(p.movement)}</strong>
+      <ul class="steps">${p.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>
+      <p class="tiny">Playback link: Volume 1 · 0:42 (sample)</p>
+      <button type="button" class="primary" data-accept="${p.id}">Accept into curated store</button>
+      <button type="button" class="ghost" data-dismiss="${p.id}">Dismiss</button>
+    </div>`).join("") || `<p class="tiny">No open proposals on this volume.</p>`;
+  const acc = state.accepted.map(p => `
+    <div class="decision"><p class="who">In the curated store</p><strong>${esc(p.movement)}</strong>
+    ${p.uncategorized ? "<p class='tiny'>Not yet on a named move.</p>" : ""}</div>`).join("");
+  return `<section class="panel">
+    <p class="who">Store activity · one volume</p>
+    <h2>Curate a volume</h2>
+    <p class="tiny">Sample volume: Hip Bump Sweeps · Volume 1 · gi. Load uses in-memory sample data.</p>
+    <button type="button" class="ghost" id="load-vol">Load sample volume</button>
+    ${state.volumeLoaded ? props + acc : ""}
+  </section>`;
+}
+
+function place() {
+  if (!state.uncategorized.length) {
+    return `<section class="panel"><h2>Place citations</h2><p>No uncategorized citations. They can enter a lesson once they belong to a named move.</p></section>`;
+  }
+  return `<section class="panel">
+    <p class="who">Advisor proposes a named-move link</p>
+    <h2>Place citations</h2>
+    ${state.uncategorized.map(c => `
+      <div class="proposal">
+        <strong>${esc(c.movement)}</strong>
+        <p class="tiny">Proposed named move: Hip bump sweep</p>
+        <button type="button" class="primary" data-place="${c.id}">Accept placement</button>
+        <button type="button" class="ghost" data-skip="${c.id}">Skip</button>
+      </div>`).join("")}
+  </section>`;
+}
+
+function topic() {
+  return `<section class="panel">
+    <h2>Open a topic</h2>
+    <label for="tn">Topic name</label>
+    <input id="tn" type="text" value="${esc(state.topic ? state.topic.name : "Hip bump sweep")}">
+    <div>
+      <label><input type="radio" name="rs" value="gi" ${!state.topic || state.topic.ruleset==="gi"?"checked":""}> gi</label>
+      <label><input type="radio" name="rs" value="no-gi" ${state.topic && state.topic.ruleset==="no-gi"?"checked":""}> no-gi</label>
+    </div>
+    <button type="button" class="primary" id="open-topic">Open</button>
+    ${state.topic ? `<p class="tiny">Open: ${esc(state.topic.name)} (${esc(state.topic.ruleset)}). Name and ruleset stay fixed.</p>
+      <button type="button" class="danger" id="remove-topic">Remove topic</button>` : ""}
+  </section>`;
+}
+
+function briefing() {
+  if (!state.topic) return `<section class="panel"><h2>Briefing</h2><p>Open a topic first.</p></section>`;
+  return `<section class="panel">
+    <p class="who">Information, then a coach decision</p>
+    <h2>${esc(state.topic.name)} (${esc(state.topic.ruleset)})</h2>
+    <p class="tiny">Before the coach determines the system.</p>
+    <div class="cite"><strong>Hip bump sweep</strong> · Instructor A · same-ruleset
+      <ul class="steps"><li>Post on the near arm</li><li>Elevate the hips</li></ul>
+    </div>
+    <div class="proposal">
+      <p class="who">Advisor surfaces disagreement</p>
+      <p>Instructor A: come to the knees. Instructor B: stay on the hip and take the far arm.</p>
+    </div>
+    <div class="decision">
+      <p class="who">Coach determines the system</p>
+      <label for="sys">How this topic is taught</label>
+      <textarea id="sys">${esc(state.system)}</textarea>
+      <button type="button" class="primary" id="choose-sys">Choose</button>
+    </div>
+  </section>`;
+}
+
+function design() {
+  const can = state.marks.length > 0;
+  const marks = state.marks.map((m,i) =>
+    `<span class="mark" style="left:${20+i*28}%;top:${30+i*18}%">${esc(m)}</span>`).join("");
+  return `<section class="panel">
+    <p class="who">Topic activity · spatial map, then convert</p>
+    <h2>Design</h2>
+    <p class="tiny">${state.system ? "System: " + esc(state.system) : "System words are empty. You can still map; packing is weaker."}</p>
+    <button type="button" class="ghost" id="add-mark">Add named move: Hip bump sweep</button>
+    <div class="map" aria-label="Design map">${marks || `<p class="tiny">Empty map. Add a named move from the catalog walk.</p>`}</div>
+    <button type="button" class="primary" id="convert" ${can ? "" : "disabled"}>Convert to Draft</button>
+    ${can ? "" : `<p class="tiny">The map has no named moves or systems to convert.</p>`}
+  </section>`;
+}
+
+function sheet() {
+  if (!state.sheetMode) return `<section class="panel"><h2>Sheet</h2><p>Convert from Design first.</p></section>`;
+  const solid = state.sheetMode !== "draft" ? "solid" : "";
+  return `<section class="panel">
+    <h2>Unit sheet · ${state.sheetMode}</h2>
+    <button type="button" class="ghost" data-mode="draft">Draft</button>
+    <button type="button" class="ghost" data-mode="read">Read</button>
+    <button type="button" class="ghost" data-mode="edit">Edit</button>
+    <div class="class-card ${solid}">
+      <header>Class 1 · ${state.sheetMode === "edit"
+        ? `<input id="purpose" value="${esc(state.purpose)}" placeholder="Purpose line">`
+        : esc(state.purpose || "Purpose empty")}</header>
+      <table>
+        <tr><td><span class="pill pill-tech">technique</span> Hip bump sweep</td></tr>
+        <tr><td><span class="pill pill-drill">drill</span> Partner job: hold closed guard, then post</td></tr>
+      </table>
+    </div>
+    ${state.sheetMode === "edit" ? `<button type="button" class="primary" id="save-purpose">Save purpose</button>` : ""}
+    <p class="tiny">Draft is a proposal (dashed). Read and Edit are modes of the same sheet.</p>
+  </section>`;
+}
+
+function print() {
+  if (!state.sheetMode) return `<section class="panel"><h2>Print</h2><p>Pack a Draft first.</p></section>`;
+  return `<section class="panel">
+    <h2>Duplex packet</h2>
+    <p>Canvas page (Design map) then class cards. Sample only.</p>
+    <div class="class-card solid">
+      <header>Class 1 · ${esc(state.purpose || "Purpose empty")}</header>
+      <table><tr><td>Hip bump sweep · technique + glued drill</td></tr></table>
+    </div>
+    <button type="button" class="primary" id="do-print">Print packet</button>
+    ${state.printed ? `<p class="tiny">Packet marked printed in this prototype session.</p>` : ""}
+  </section>`;
+}
+
+function bind() {
+  const $ = id => document.getElementById(id);
+  if ($("save-folders")) $("save-folders").onclick = () => {
+    state.videoRoot = $("vr").value.trim() || "C:\\\\bjj\\\\video";
+    state.transcriptFolder = $("tf").value.trim() || "C:\\\\bjj\\\\transcripts";
+    flash("Folders saved. Playback links can resolve when the video file is present.");
+    go("curate");
+  };
+  if ($("load-vol")) $("load-vol").onclick = () => {
+    state.volumeLoaded = true;
+    flash("Volume loaded. Advisor proposed 1 cleaned statement.");
+    render();
+  };
+  document.querySelectorAll("[data-accept]").forEach(b => b.onclick = () => {
+    const p = state.proposals.find(x => x.id === b.dataset.accept);
+    p.accepted = true;
+    const rec = { ...p, uncategorized: true };
+    state.accepted.push(rec);
+    state.uncategorized.push(rec);
+    flash("Citation accepted into the curated store. It is uncategorized until you Place it.");
+    go("place");
+  });
+  document.querySelectorAll("[data-dismiss]").forEach(b => b.onclick = () => {
+    state.proposals.find(x => x.id === b.dataset.dismiss).dismissed = true;
+    flash("Proposal dismissed. It did not enter the curated store.");
+    render();
+  });
+  document.querySelectorAll("[data-place]").forEach(b => b.onclick = () => {
+    const id = b.dataset.place;
+    const c = state.uncategorized.find(x => x.id === id);
+    state.uncategorized = state.uncategorized.filter(x => x.id !== id);
+    state.placed.push(c);
+    c.uncategorized = false;
+    flash("Citation placed on Hip bump sweep. It can enter a lesson.");
+    go("topic");
+  });
+  document.querySelectorAll("[data-skip]").forEach(b => b.onclick = () => {
+    flash("Skipped. Citation stays uncategorized.");
+    render();
+  });
+  if ($("open-topic")) $("open-topic").onclick = () => {
+    const name = $("tn").value.trim() || "Hip bump sweep";
+    const ruleset = document.querySelector("input[name=rs]:checked").value;
+    state.topic = { name, ruleset };
+    flash(`Opened ${name} (${ruleset}). Name and ruleset stay fixed.`);
+    go("briefing");
+  };
+  if ($("remove-topic")) $("remove-topic").onclick = () => {
+    state.topic = null; state.system = ""; state.marks = []; state.sheetMode = null; state.printed = false;
+    flash("Topic removed. What belonged to it is cleared.");
+    go("topic");
+  };
+  if ($("choose-sys")) $("choose-sys").onclick = () => {
+    state.system = $("sys").value.trim() || "If they post, hip bump; if they base, take the back.";
+    flash("System chosen by the coach. It stays on this topic.");
+    go("design");
+  };
+  if ($("add-mark")) $("add-mark").onclick = () => {
+    if (!state.marks.includes("Hip bump sweep")) state.marks.push("Hip bump sweep");
+    flash("Named move on the map.");
+    render();
+  };
+  if ($("convert")) $("convert").onclick = () => {
+    if (!state.marks.length) return;
+    state.sheetMode = "draft";
+    flash("Draft packed from Design. Dashed cards mean proposal. Edit when you take it.");
+    go("sheet");
+  };
+  document.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => {
+    state.sheetMode = b.dataset.mode;
+    flash("Sheet mode: " + state.sheetMode);
+    render();
+  });
+  if ($("save-purpose")) $("save-purpose").onclick = () => {
+    state.purpose = $("purpose").value;
+    flash("Purpose line saved on class 1.");
+    render();
+  };
+  if ($("do-print")) $("do-print").onclick = () => {
+    state.printed = true;
+    flash("Packet ready. In production this uses the browser print dialog.");
+    render();
+  };
+}
+
+function esc(s) {
+  return String(s || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+}
+
+render();
+</script>
+</body>
+</html>

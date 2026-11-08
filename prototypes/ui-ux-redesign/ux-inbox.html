@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PROTOTYPE — Attention inbox (issue 88)</title>
+  <style>
+    :root {
+      --bg: #e7e5e4; --paper: #fffcf6; --ink: #1c1917; --muted: #57534e;
+      --line: #d6d3d1; --accent: #9a3412;
+      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      --sans: "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--sans); color: var(--ink); background: var(--bg); line-height: 1.4; }
+    .proto { border: 2px dotted #b91c1c; background: #fef2f2; margin: 0.5rem 0.7rem; padding: 0.5rem 0.7rem; font-size: 0.86rem; }
+    .proto strong { color: #991b1b; }
+    .proto a { color: #991b1b; }
+    .coach { border: 2px dotted #15803d; margin: 0.5rem 0.7rem 1.5rem; background: var(--paper); padding: 0.7rem; }
+    header.app { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; align-items: baseline; }
+    h1 { font-family: var(--serif); font-size: 1.4rem; margin: 0; }
+    .lede { color: var(--muted); margin: 0.2rem 0 0.6rem; }
+    .flash { background: #ecfccb; border: 1px solid #84cc16; border-radius: 8px; padding: 0.4rem 0.6rem; margin: 0 0 0.6rem; }
+    .flash[hidden] { display: none; }
+    .board { display: grid; gap: 0.55rem; grid-template-columns: repeat(4, minmax(12rem, 1fr)); overflow-x: auto; }
+    .col { background: #f5f5f4; border: 1px solid var(--line); border-radius: 12px; padding: 0.5rem; min-height: 18rem; }
+    .col h2 { margin: 0 0 0.4rem; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
+    .count { background: #fff; border-radius: 999px; padding: 0 0.4rem; font-size: 0.75rem; color: var(--ink); }
+    .item {
+      display: block; width: 100%; text-align: left; font: inherit; background: #fff;
+      border: 1px solid var(--line); border-radius: 10px; padding: 0.55rem 0.6rem; margin: 0 0 0.4rem; cursor: pointer;
+    }
+    .item:focus, .item:hover { outline: 2px solid var(--ink); }
+    .item strong { display: block; }
+    .item .tiny { color: var(--muted); font-size: 0.78rem; }
+    .kind { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); }
+    .workspace {
+      display: none; margin-top: 0.7rem; border: 1px solid var(--line); border-radius: 12px;
+      background: #fff; padding: 0.75rem 0.85rem;
+    }
+    .workspace.open { display: block; }
+    .who { font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+    .proposal { border: 1px dashed #c2410c; background: #fff7ed; border-radius: 10px; padding: 0.6rem; margin: 0.4rem 0; }
+    .decision { border: 1px solid #14532d; background: #f0fdf4; border-radius: 10px; padding: 0.6rem; margin: 0.4rem 0; }
+    button.primary, button.ghost, button.danger {
+      font: inherit; border-radius: 8px; padding: 0.35rem 0.7rem; cursor: pointer; margin: 0.15rem 0.2rem 0 0;
+    }
+    button.primary { background: #1c1917; color: #fff; border: 1px solid #1c1917; }
+    button.ghost { background: #fff; border: 1px solid var(--line); }
+    button.danger { background: #fff; color: #9f1239; border: 1px solid #9f1239; }
+    button:disabled { opacity: 0.45; }
+    textarea, input[type="text"] { font: inherit; width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 0.35rem; }
+    textarea { min-height: 3.5rem; }
+    .class-card { border: 2px dashed var(--line); border-radius: 10px; overflow: hidden; margin: 0.4rem 0; }
+    .class-card.solid { border-style: solid; }
+    .class-card header { background: #1c1917; color: #fff; padding: 0.4rem 0.6rem; }
+    .map { min-height: 8rem; border: 1px solid var(--line); border-radius: 10px; position: relative; margin: 0.4rem 0; }
+    .mark { position: absolute; left: 22%; top: 35%; background: #dbeafe; border: 1px solid #1d4ed8; border-radius: 999px; padding: 0.15rem 0.5rem; font-size: 0.8rem; }
+    .pill { display: inline-block; border-radius: 999px; padding: 0.08rem 0.4rem; font-size: 0.75rem; font-weight: 650; background: #dbeafe; color: #1e3a8a; }
+    .tools { margin: 0.4rem 0 0.6rem; }
+  </style>
+</head>
+<body>
+  <div class="proto">
+    <strong>PROTOTYPE</strong> — Candidate B: attention inbox + workspace. Work is queued by state, not by a stage rail or a spatial map.
+    <a href="ux-index.html">Index</a> ·
+    <a href="ux-guided.html">Guided</a> ·
+    <a href="ux-studio.html">Studio</a>
+  </div>
+  <div class="coach">
+    <header class="app">
+      <div>
+        <h1>Attention</h1>
+        <p class="lede">Coach-only. Outstanding work sits in queues. Open a card to work it. Students never use this.</p>
+      </div>
+      <div class="tools">
+        <button type="button" class="ghost" id="seed-vol">New volume arrived</button>
+        <button type="button" class="ghost" id="seed-topic">Need to teach Hip bump</button>
+      </div>
+    </header>
+    <div id="flash" class="flash" hidden></div>
+    <div class="board" id="board"></div>
+    <section class="workspace" id="ws" aria-live="polite"></section>
+  </div>
+<script>
+const Q = ["awaiting", "progress", "decision", "done"];
+const QLABEL = {
+  awaiting: "Awaiting",
+  progress: "In progress",
+  decision: "Needs decision",
+  done: "Done"
+};
+
+let items = [
+  { id: "vol1", queue: "awaiting", kind: "volume", title: "Hip Bump Sweeps · Volume 1", detail: "Raw transcript on disk. Not in the curated store." },
+  { id: "folders", queue: "awaiting", kind: "settings", title: "Playback folders", detail: "Video root and transcript folder are empty." }
+];
+let openId = null;
+let extra = {
+  accepted: 0, placed: 0, system: "", marks: 0, sheet: null, purpose: "", printed: false
+};
+
+function flash(m) {
+  const el = document.getElementById("flash");
+  el.hidden = !m; el.textContent = m || "";
+}
+
+function renderBoard() {
+  document.getElementById("board").innerHTML = Q.map(q => {
+    const list = items.filter(i => i.queue === q);
+    return `<section class="col" aria-labelledby="h-${q}">
+      <h2 id="h-${q}">${QLABEL[q]} <span class="count">${list.length}</span></h2>
+      ${list.map(i => `<button type="button" class="item" data-open="${i.id}">
+        <span class="kind">${i.kind}</span>
+        <strong>${esc(i.title)}</strong>
+        <span class="tiny">${esc(i.detail)}</span>
+      </button>`).join("") || `<p class="tiny">None.</p>`}
+    </section>`;
+  }).join("");
+  document.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openItem(b.dataset.open));
+}
+
+function openItem(id) {
+  openId = id;
+  const it = items.find(x => x.id === id);
+  const ws = document.getElementById("ws");
+  ws.classList.add("open");
+  ws.innerHTML = workspace(it);
+  bindWs(it);
+}
+
+function workspace(it) {
+  if (!it) return "";
+  if (it.kind === "settings") return `
+    <p class="who">Coach settings</p>
+    <h2>Playback folders</h2>
+    <label>Video root <input id="vr" type="text" value="C:\\bjj\\video"></label>
+    <label>Transcript folder <input id="tf" type="text" value="C:\\bjj\\transcripts"></label>
+    <button type="button" class="primary" id="save-f">Save</button>`;
+  if (it.kind === "volume") return `
+    <p class="who">Store · advisor proposes, coach accepts</p>
+    <h2>${esc(it.title)}</h2>
+    <div class="proposal">
+      <p class="who">Advisor proposes cleaned statement</p>
+      <strong>Hip bump sweep</strong>
+      <p>Post on the near arm. Elevate the hips. Come to the knees.</p>
+      <p class="tiny">Playback link: 0:42 · file may be missing and the citation can still enter the store.</p>
+    </div>
+    <button type="button" class="primary" id="accept">Accept into curated store</button>
+    <button type="button" class="ghost" id="dismiss">Dismiss</button>`;
+  if (it.kind === "place") return `
+    <p class="who">Needs decision · placement</p>
+    <h2>Uncategorized citations</h2>
+    <div class="proposal">
+      <strong>Hip bump sweep</strong>
+      <p class="tiny">Proposed named move: Hip bump sweep. Uncategorized citations are not offered on a lesson.</p>
+    </div>
+    <button type="button" class="primary" id="place">Accept placement</button>
+    <button type="button" class="ghost" id="skip">Skip</button>`;
+  if (it.kind === "topic-open") return `
+    <h2>Open topic</h2>
+    <p>Hip bump sweep · gi. A student failed it under resistance.</p>
+    <button type="button" class="primary" id="open-t">Open</button>`;
+  if (it.kind === "briefing") return `
+    <p class="who">Information then coach decision</p>
+    <h2>Briefing · Hip bump sweep (gi)</h2>
+    <p>Same-ruleset citations are in the store. Advisor surfaces a disagreement on the finish.</p>
+    <div class="proposal">Instructor A: come to the knees. Instructor B: stay on the hip.</div>
+    <div class="decision">
+      <p class="who">Coach determines the system</p>
+      <textarea id="sys">${esc(extra.system)}</textarea>
+      <button type="button" class="primary" id="choose">Choose</button>
+    </div>`;
+  if (it.kind === "design") return `
+    <h2>Design · Hip bump sweep (gi)</h2>
+    <p class="tiny">System: ${esc(extra.system) || "empty"}</p>
+    <button type="button" class="ghost" id="addm">Add named move</button>
+    <div class="map">${extra.marks ? `<span class="mark">Hip bump sweep</span>` : `<p class="tiny">Empty map.</p>`}</div>
+    <button type="button" class="primary" id="conv" ${extra.marks ? "" : "disabled"}>Convert to Draft</button>
+    ${extra.marks ? "" : `<p class="tiny">The map has no named moves or systems to convert.</p>`}`;
+  if (it.kind === "sheet") return `
+    <h2>Sheet · ${extra.sheet || "none"}</h2>
+    <button type="button" class="ghost" data-mode="draft">Draft</button>
+    <button type="button" class="ghost" data-mode="read">Read</button>
+    <button type="button" class="ghost" data-mode="edit">Edit</button>
+    <div class="class-card ${extra.sheet==="draft"?"":"solid"}">
+      <header>Class 1 · <input id="purpose" value="${esc(extra.purpose)}" placeholder="Purpose"></header>
+      <p style="padding:0.5rem"><span class="pill">technique</span> Hip bump sweep · glued drill</p>
+    </div>
+    <button type="button" class="primary" id="save-p">Save purpose</button>
+    <button type="button" class="ghost" id="to-print">Send to print</button>`;
+  if (it.kind === "print") return `
+    <h2>Print packet</h2>
+    <div class="class-card solid"><header>Class 1 · ${esc(extra.purpose||"Purpose empty")}</header>
+    <p style="padding:0.5rem">Map page + class cards (sample)</p></div>
+    <button type="button" class="primary" id="print">Print</button>`;
+  return `<h2>${esc(it.title)}</h2><p>${esc(it.detail)}</p>`;
+}
+
+function bindWs(it) {
+  const byId = id => document.getElementById(id);
+  if (byId("save-f")) byId("save-f").onclick = () => {
+    move(it.id, "done");
+    it.detail = "Video root and transcript folder saved.";
+    flash("Folders saved.");
+    finish();
+  };
+  if (byId("accept")) byId("accept").onclick = () => {
+    extra.accepted++;
+    move(it.id, "done");
+    it.detail = "Accepted into the curated store.";
+    upsert({ id: "place1", queue: "decision", kind: "place", title: "1 citation uncategorized",
+      detail: "Accepted from Volume 1. Place it on a named move." });
+    flash("Citation in the store, still uncategorized.");
+    finish();
+    openItem("place1");
+  };
+  if (byId("dismiss")) byId("dismiss").onclick = () => {
+    move(it.id, "done"); it.detail = "Dismissed. Not in the store.";
+    flash("Proposal dismissed."); finish();
+  };
+  if (byId("place")) byId("place").onclick = () => {
+    extra.placed++;
+    move(it.id, "done"); it.detail = "Placed on Hip bump sweep.";
+    flash("Citation can enter a lesson.");
+    finish();
+  };
+  if (byId("skip")) byId("skip").onclick = () => {
+    flash("Still uncategorized. Card stays in Needs decision.");
+  };
+  if (byId("open-t")) byId("open-t").onclick = () => {
+    move(it.id, "done");
+    upsert({ id: "br", queue: "decision", kind: "briefing", title: "Hip bump sweep (gi) needs a system",
+      detail: "Briefing is ready. Coach chooses system words." });
+    flash("Topic open. System empty.");
+    finish();
+    openItem("br");
+  };
+  if (byId("choose")) byId("choose").onclick = () => {
+    extra.system = byId("sys").value.trim() || "If they post, hip bump; if they base, take the back.";
+    move(it.id, "done"); it.detail = "System chosen: " + extra.system;
+    upsert({ id: "des", queue: "progress", kind: "design", title: "Design Hip bump sweep (gi)",
+      detail: "Map is empty. Add named moves, then convert." });
+    flash("System stays on this topic.");
+    finish();
+    openItem("des");
+  };
+  if (byId("addm")) byId("addm").onclick = () => { extra.marks = 1; flash("Named move on the map."); openItem(it.id); };
+  if (byId("conv")) byId("conv").onclick = () => {
+    extra.sheet = "draft";
+    move(it.id, "done");
+    upsert({ id: "sh", queue: "progress", kind: "sheet", title: "Draft ready to Edit",
+      detail: "Dashed cards are a proposal. Edit is the coach sheet." });
+    flash("Draft packed from Design.");
+    finish();
+    openItem("sh");
+  };
+  document.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => {
+    extra.sheet = b.dataset.mode; flash("Sheet mode: " + extra.sheet); openItem(it.id);
+  });
+  if (byId("save-p")) byId("save-p").onclick = () => {
+    extra.purpose = byId("purpose").value; extra.sheet = "edit";
+    flash("Purpose saved. This is now the coach's sheet.");
+    it.detail = "Edited. Purpose set.";
+    openItem(it.id);
+  };
+  if (byId("to-print")) byId("to-print").onclick = () => {
+    upsert({ id: "pr", queue: "awaiting", kind: "print", title: "Print packet · Hip bump sweep (gi)",
+      detail: "Duplex: map then class cards." });
+    flash("Print job awaiting.");
+    finish();
+    openItem("pr");
+  };
+  if (byId("print")) byId("print").onclick = () => {
+    extra.printed = true; move(it.id, "done"); it.detail = "Printed this session.";
+    flash("Packet printed (prototype).");
+    finish();
+  };
+}
+
+function move(id, q) { const it = items.find(x => x.id === id); if (it) it.queue = q; }
+function upsert(obj) {
+  const i = items.findIndex(x => x.id === obj.id);
+  if (i >= 0) items[i] = { ...items[i], ...obj }; else items.push(obj);
+}
+function finish() { renderBoard(); }
+
+document.getElementById("seed-vol").onclick = () => {
+  upsert({ id: "vol1", queue: "awaiting", kind: "volume", title: "Hip Bump Sweeps · Volume 1",
+    detail: "Raw transcript on disk. Not in the curated store." });
+  flash("Volume is awaiting curation.");
+  renderBoard();
+};
+document.getElementById("seed-topic").onclick = () => {
+  upsert({ id: "top", queue: "awaiting", kind: "topic-open", title: "Open Hip bump sweep (gi)",
+    detail: "Student failed it under resistance." });
+  flash("Topic work is awaiting.");
+  renderBoard();
+};
+
+function esc(s) {
+  return String(s||"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+}
+renderBoard();
+</script>
+</body>
+</html>

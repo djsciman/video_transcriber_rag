@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PROTOTYPE — Topic studio (issue 88)</title>
+  <style>
+    :root {
+      --bg: #1c1917; --paper: #fffcf6; --ink: #1c1917; --muted: #57534e;
+      --line: #d6d3d1; --accent: #ea580c;
+      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      --sans: "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body { font-family: var(--sans); color: var(--ink); background: #292524; line-height: 1.4; }
+    .proto { border: 2px dotted #fca5a5; background: #7f1d1d; color: #fee2e2; padding: 0.45rem 0.7rem; font-size: 0.84rem; }
+    .proto a { color: #fecaca; }
+    .coach { border: 2px dotted #4ade80; margin: 0.45rem; min-height: calc(100vh - 3.2rem); display: grid;
+      grid-template-rows: auto auto 1fr auto; background: #292524; color: #fafaf9; }
+    .top { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: 0.55rem 0.75rem; background: #1c1917; }
+    h1 { font-family: var(--serif); font-size: 1.25rem; margin: 0; }
+    .sysline { color: #a8a29e; font-size: 0.88rem; }
+    .gap { background: #7c2d12; color: #ffedd5; border-radius: 8px; padding: 0.2rem 0.5rem; font-size: 0.8rem; }
+    .ok { background: #14532d; color: #dcfce7; border-radius: 8px; padding: 0.2rem 0.5rem; font-size: 0.8rem; }
+    .flash { margin: 0 0.75rem; background: #365314; color: #ecfccb; border-radius: 8px; padding: 0.35rem 0.55rem; }
+    .flash[hidden] { display: none; }
+    .stage { display: grid; grid-template-columns: 18rem 1fr 18rem; gap: 0.45rem; padding: 0.45rem; min-height: 0; }
+    @media (max-width: 960px) { .stage { grid-template-columns: 1fr; } }
+    .dock {
+      background: var(--paper); color: var(--ink); border-radius: 12px; overflow: auto; max-height: 70vh;
+      border: 1px solid #44403c;
+    }
+    .dock h2 {
+      margin: 0; padding: 0.45rem 0.65rem; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;
+      background: #e7e5e4; color: var(--muted);
+    }
+    .dock .body { padding: 0.55rem 0.65rem; }
+    .canvas {
+      background: #fff; color: var(--ink); border-radius: 12px; position: relative; min-height: 22rem;
+      border: 1px solid #44403c;
+    }
+    .canvas h2 {
+      margin: 0; padding: 0.4rem 0.65rem; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;
+      background: #1c1917; color: #e7e5e4;
+    }
+    svg { width: 100%; height: 16rem; display: block; }
+    .sheetbar { background: var(--paper); color: var(--ink); margin: 0.45rem; border-radius: 12px; padding: 0.55rem 0.7rem; }
+    button.primary, button.ghost, button.tab {
+      font: inherit; border-radius: 8px; padding: 0.3rem 0.6rem; cursor: pointer; margin: 0.12rem 0.15rem 0 0;
+    }
+    button.primary { background: #1c1917; color: #fff; border: 1px solid #1c1917; }
+    button.ghost, button.tab { background: #fff; border: 1px solid var(--line); color: var(--ink); }
+    button.tab.on { background: #1c1917; color: #fff; }
+    button:disabled { opacity: 0.45; }
+    .proposal { border: 1px dashed #c2410c; background: #fff7ed; border-radius: 8px; padding: 0.45rem; margin: 0.35rem 0; color: var(--ink); }
+    .decision { border: 1px solid #14532d; background: #f0fdf4; border-radius: 8px; padding: 0.45rem; margin: 0.35rem 0; color: var(--ink); }
+    .who { font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+    textarea, input[type="text"] { font: inherit; width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 0.3rem; }
+    textarea { min-height: 3.2rem; }
+    .class-card { border: 2px dashed var(--line); border-radius: 10px; overflow: hidden; margin: 0.35rem 0; }
+    .class-card.solid { border-style: solid; }
+    .class-card header { background: #1c1917; color: #fff; padding: 0.35rem 0.55rem; }
+    .tiny { color: var(--muted); font-size: 0.8rem; }
+    .empty { position: absolute; left: 50%; top: 55%; transform: translate(-50%,-50%); color: var(--muted); text-align: center; max-width: 22rem; }
+    ul.marks { margin: 0; padding-left: 1.1rem; color: var(--ink); }
+  </style>
+</head>
+<body>
+  <div class="proto">
+    <strong>PROTOTYPE</strong> — Candidate C: topic studio. The open topic and Design map are the spatial center. Not a stage rail. Not an inbox.
+    <a href="ux-index.html">Index</a> ·
+    <a href="ux-guided.html">Guided</a> ·
+    <a href="ux-inbox.html">Inbox</a>
+  </div>
+  <div class="coach">
+    <header class="top">
+      <div>
+        <h1 id="title">No topic open</h1>
+        <div class="sysline" id="sysline">Open a topic to enter its studio. The map stays at the center.</div>
+      </div>
+      <div id="gaps"></div>
+    </header>
+    <div id="flash" class="flash" hidden></div>
+    <div class="stage">
+      <aside class="dock" aria-label="Store dock">
+        <h2>Store</h2>
+        <div class="body" id="store"></div>
+      </aside>
+      <section class="canvas" aria-label="Design map">
+        <h2>Design map · spatial center</h2>
+        <div id="map"></div>
+      </section>
+      <aside class="dock" aria-label="Briefing dock">
+        <h2>Briefing</h2>
+        <div class="body" id="brief"></div>
+      </aside>
+    </div>
+    <section class="sheetbar" aria-label="Sheet and print">
+      <div id="sheet"></div>
+    </section>
+  </div>
+<script>
+const S = {
+  folders: false,
+  accepted: 0,
+  uncategorized: 0,
+  placed: 0,
+  topic: null,
+  system: "",
+  marks: [],
+  sheet: null,
+  purpose: "",
+  printed: false,
+  volLoaded: false
+};
+
+function flash(m) {
+  const el = document.getElementById("flash");
+  el.hidden = !m; el.textContent = m || "";
+}
+
+function render() {
+  document.getElementById("title").textContent = S.topic
+    ? `${S.topic.name} (${S.topic.ruleset})` : "No topic open";
+  document.getElementById("sysline").textContent = S.topic
+    ? (S.system ? "System: " + S.system : "System empty — the coach has not determined how this topic is taught.")
+    : "Store work can happen without a topic. Teaching work happens inside a topic studio.";
+  const gaps = [];
+  if (!S.folders) gaps.push("Folders unset");
+  if (S.uncategorized) gaps.push(S.uncategorized + " uncategorized");
+  if (S.topic && !S.system) gaps.push("Needs system");
+  if (S.topic && !S.marks.length) gaps.push("Map empty");
+  if (S.marks.length && !S.sheet) gaps.push("No Draft yet");
+  document.getElementById("gaps").innerHTML = gaps.length
+    ? gaps.map(g => `<span class="gap">${g}</span>`).join(" ")
+    : `<span class="ok">No outstanding gaps on this studio</span>`;
+  store();
+  map();
+  brief();
+  sheet();
+}
+
+function store() {
+  document.getElementById("store").innerHTML = `
+    <p class="tiny">Curate and Place live here because they fill the curated store, not a single topic.</p>
+    <button type="button" class="ghost" id="save-f">Save playback folders</button>
+    <button type="button" class="ghost" id="load">Load sample volume</button>
+    ${S.volLoaded && !S.accepted ? `<div class="proposal">
+      <p class="who">Advisor proposes</p>
+      <strong>Hip bump sweep</strong>
+      <p class="tiny">Post, elevate, come to the knees. Playback 0:42.</p>
+      <button type="button" class="primary" id="accept">Accept into store</button>
+    </div>` : ""}
+    ${S.uncategorized ? `<div class="proposal">
+      <p class="who">Needs placement</p>
+      <p>${S.uncategorized} citation(s) uncategorized — not offered on a lesson.</p>
+      <button type="button" class="primary" id="place">Place on Hip bump sweep</button>
+    </div>` : ""}
+    <p class="tiny">Store: ${S.accepted} accepted · ${S.placed} placed · ${S.uncategorized} uncategorized</p>
+    ${S.topic ? "" : `<button type="button" class="primary" id="open">Open Hip bump sweep (gi)</button>`}
+  `;
+  const $ = id => document.getElementById(id);
+  if ($("save-f")) $("save-f").onclick = () => { S.folders = true; flash("Folders saved on this machine."); render(); };
+  if ($("load")) $("load").onclick = () => { S.volLoaded = true; flash("Volume loaded into the store dock."); render(); };
+  if ($("accept")) $("accept").onclick = () => {
+    S.accepted++; S.uncategorized++;
+    flash("In the curated store, uncategorized. Place it so Design can use it.");
+    render();
+  };
+  if ($("place")) $("place").onclick = () => {
+    S.uncategorized = 0; S.placed++;
+    flash("Placed on the named move. If the studio is open, it can appear on the map.");
+    render();
+  };
+  if ($("open")) $("open").onclick = () => {
+    S.topic = { name: "Hip bump sweep", ruleset: "gi" };
+    flash("Entered the topic studio. Name and ruleset stay fixed.");
+    render();
+  };
+}
+
+function map() {
+  const marks = S.marks.map((m, i) => {
+    const x = 80 + i * 90, y = 70 + i * 40;
+    return `<circle cx="${x}" cy="${y}" r="18" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+      <text x="${x}" y="${y+4}" text-anchor="middle" font-size="10" fill="#1e3a8a">${esc(m)}</text>`;
+  }).join("");
+  document.getElementById("map").innerHTML = `
+    <svg viewBox="0 0 400 180" role="img" aria-label="Design map">
+      <rect x="8" y="8" width="384" height="164" fill="#fff" stroke="#e7e5e4"/>
+      ${marks}
+    </svg>
+    ${S.marks.length ? "" : `<div class="empty">Empty map. Add a named move from the store. Convert stays off until the map can pack.</div>`}
+    <div style="padding:0.45rem 0.65rem;background:#fff;color:#1c1917">
+      <button type="button" class="ghost" id="addm" ${S.placed || S.accepted ? "" : "disabled"}>Add Hip bump sweep to map</button>
+      <button type="button" class="primary" id="conv" ${S.marks.length ? "" : "disabled"}>Convert to Draft</button>
+      <ul class="marks">${S.marks.map(m => `<li>${esc(m)}</li>`).join("") || "<li class='tiny'>No marks (list equivalent of the graph)</li>"}</ul>
+    </div>`;
+  const $ = id => document.getElementById(id);
+  if ($("addm")) $("addm").onclick = () => {
+    if (!S.topic) { flash("Open a topic first. The map belongs to a studio."); return; }
+    if (!S.marks.includes("Hip bump sweep")) S.marks.push("Hip bump sweep");
+    flash("Named move on the map.");
+    render();
+  };
+  if ($("conv")) $("conv").onclick = () => {
+    S.sheet = "draft";
+    flash("Draft packed from this map. Sheet dock below is now a proposal.");
+    render();
+  };
+}
+
+function brief() {
+  if (!S.topic) {
+    document.getElementById("brief").innerHTML = `<p class="tiny">Briefing belongs to an open topic. Open one from the store dock.</p>`;
+    return;
+  }
+  document.getElementById("brief").innerHTML = `
+    <p class="tiny">Before the coach determines the system.</p>
+    <p><strong>Same-ruleset</strong> · Instructor A · Hip bump sweep</p>
+    <div class="proposal">
+      <p class="who">Advisor surfaces disagreement</p>
+      Come to the knees vs stay on the hip.
+    </div>
+    <div class="decision">
+      <p class="who">Coach chooses</p>
+      <textarea id="sys">${esc(S.system)}</textarea>
+      <button type="button" class="primary" id="choose">Choose system</button>
+    </div>`;
+  document.getElementById("choose").onclick = () => {
+    S.system = document.getElementById("sys").value.trim() || "If they post, hip bump; if they base, take the back.";
+    flash("System pinned under the studio title. It stays on this topic.");
+    render();
+  };
+}
+
+function sheet() {
+  if (!S.sheet) {
+    document.getElementById("sheet").innerHTML = `<p class="tiny">Sheet and print sit under the map. Convert when the map has named moves or a system.</p>`;
+    return;
+  }
+  document.getElementById("sheet").innerHTML = `
+    <button type="button" class="tab ${S.sheet==="draft"?"on":""}" data-mode="draft">Draft</button>
+    <button type="button" class="tab ${S.sheet==="read"?"on":""}" data-mode="read">Read</button>
+    <button type="button" class="tab ${S.sheet==="edit"?"on":""}" data-mode="edit">Edit</button>
+    <button type="button" class="tab ${S.sheet==="print"?"on":""}" data-mode="print">Print</button>
+    <div class="class-card ${S.sheet==="draft"?"":"solid"}">
+      <header>Class 1 · ${S.sheet==="edit"
+        ? `<input id="purpose" type="text" value="${esc(S.purpose)}" placeholder="Purpose line" style="width:12rem">`
+        : esc(S.purpose || "Purpose empty")}</header>
+      <p style="padding:0.45rem">Technique Hip bump sweep · glued drill (partner job)</p>
+    </div>
+    ${S.sheet==="edit"?`<button type="button" class="primary" id="save-p">Save purpose</button>`:""}
+    ${S.sheet==="print"?`<button type="button" class="primary" id="do-print">Print packet</button>
+      ${S.printed?"<p class='tiny'>Printed this session.</p>":""}`:""}
+  `;
+  document.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => { S.sheet = b.dataset.mode; render(); });
+  const sp = document.getElementById("save-p");
+  if (sp) sp.onclick = () => { S.purpose = document.getElementById("purpose").value; flash("Purpose saved on class 1."); render(); };
+  const pr = document.getElementById("do-print");
+  if (pr) pr.onclick = () => { S.printed = true; flash("Packet printed from this studio (prototype)."); render(); };
+}
+
+function esc(s) {
+  return String(s||"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+}
+render();
+</script>
+</body>
+</html>

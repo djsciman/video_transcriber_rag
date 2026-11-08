@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PROTOTYPE — UX philosophy candidates (issue 88)</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --paper: #fffcf6;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #d6d3d1;
+      --accent: #9a3412;
+      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      --sans: "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.45;
+    }
+    .proto {
+      border: 2px dotted #b91c1c;
+      background: #fef2f2;
+      margin: 0.75rem 1.25rem;
+      padding: 0.65rem 0.85rem;
+    }
+    .proto strong { color: #991b1b; }
+    .coach {
+      border: 2px dotted #15803d;
+      background: var(--paper);
+      margin: 0.75rem 1.25rem 2rem;
+      padding: 1rem 1.15rem 1.4rem;
+      max-width: 58rem;
+    }
+    h1 {
+      font-family: var(--serif);
+      font-size: 1.7rem;
+      margin: 0 0 0.35rem;
+    }
+    .meta { color: var(--muted); margin: 0 0 1rem; }
+    .cards { display: grid; gap: 0.75rem; }
+    @media (min-width: 720px) { .cards { grid-template-columns: 1fr 1fr 1fr; } }
+    a.card {
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0.85rem 0.95rem;
+      text-decoration: none;
+      color: var(--ink);
+      background: #fff;
+    }
+    a.card:focus, a.card:hover { outline: 2px solid var(--ink); outline-offset: 2px; }
+    a.card h2 { font-size: 1.05rem; margin: 0 0 0.35rem; font-family: var(--serif); }
+    a.card p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+    .tag { display: inline-block; font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.35rem; }
+  </style>
+</head>
+<body>
+  <div class="proto">
+    <strong>PROTOTYPE</strong> — Throwaway index for issue 88. Red dotted = prototype chrome. Green dotted = proposed coach-facing UI. No winner is selected. Double-click any candidate HTML file; no build step.
+  </div>
+  <div class="coach">
+    <h1>Three interaction candidates</h1>
+    <p class="meta">Coach-only advising application. Students never use this. Same sample teaching (Hip bump sweep, gi) in each file; the structure of work is what differs.</p>
+    <div class="cards">
+      <a class="card" href="ux-guided.html">
+        <span class="tag">Candidate A</span>
+        <h2>Guided work</h2>
+        <p>Task-oriented next action. One current job. Later stages stay closed until needed.</p>
+      </a>
+      <a class="card" href="ux-inbox.html">
+        <span class="tag">Candidate B</span>
+        <h2>Attention inbox</h2>
+        <p>Queues of outstanding work: awaiting, in progress, needs decision, done. Workspace opens from a card.</p>
+      </a>
+      <a class="card" href="ux-studio.html">
+        <span class="tag">Candidate C</span>
+        <h2>Topic studio</h2>
+        <p>The open topic and Design map sit at the center. Briefing, store, sheet, and print are docks around that place.</p>
+      </a>
+    </div>
+    <p class="meta" style="margin-top:1rem">Research: <code>docs/ui-ux-discovery/ux-philosophies.md</code></p>
+  </div>
+</body>
+</html>
