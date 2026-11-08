@@ -82,15 +82,20 @@ tr.glued td:first-child { box-shadow: inset 4px 0 0 #fb923c; }
 .cut-purpose { display: flex; gap: 0.35rem; align-items: center; margin-left: auto; }
 .cut-purpose input { min-width: 16rem; }
 .source-list { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.success-watch { margin: 0.55rem 0 0; padding: 0.55rem 0.7rem; border-top: 1px dashed var(--line); }
+.success-watch h3 { font-size: 0.86rem; margin: 0 0 0.35rem; }
+.success-watch fieldset { border: 0; padding: 0; margin: 0 0 0.35rem; }
+.success-watch label { margin-right: 0.55rem; }
+@media print {
+  .success-watch, .success { display: none !important; }
+}
 </style>
 """
 
 
 def current_sheet(store: CuratedStore, name: str, ruleset: str, mode: str = ""):
-    ui = _ui(store, name, ruleset)
-    wanted = _mode(mode or ui.get("mode") or "read")
-    ui["mode"] = wanted
-    held = ui.get("sheet")
+    wanted = _mode(mode) if mode else ""
+    held = store.sheet(name, ruleset)
     draft = _draft(store, name, ruleset)
     if draft is not None and held is not None:
         if getattr(held.unit, "id", "") != getattr(draft.unit, "id", ""):
@@ -98,28 +103,33 @@ def current_sheet(store: CuratedStore, name: str, ruleset: str, mode: str = ""):
     if held is None:
         if draft is None:
             return None
-        held = open_sheet(store, draft, wanted)
-    elif held.mode != wanted:
+        held = open_sheet(store, draft, wanted or "read")
+        store.put_sheet(held)
+    elif wanted and held.mode != wanted:
         held = set_mode(held, wanted)
-    ui["sheet"] = held
+        store.put_sheet(held)
     return held
 
 
-def get_sheet(store: CuratedStore, fields: dict[str, list[str]] | None = None) -> str:
+def get_sheet(app, fields: dict[str, list[str]] | None = None) -> str:
     fields = fields or {}
+    store = app.store
     name, ruleset = _topic(store, fields)
     mode = _field(fields, "mode")
     sheet = current_sheet(store, name, ruleset, mode)
-    ui = _ui(store, name, ruleset)
+    ui = _ui(app, name, ruleset)
+    if sheet is not None:
+        ui["mode"] = sheet.mode
     session = design_session(store, name, ruleset) if name else None
     body = _STYLE + _sheet_section(store, sheet, ui, name, ruleset, session)
     title = f"Sheet · {name}" if name else "Sheet"
     return render_shell(title=title, current="sheet", body=body)
 
 
-def post_sheet(store: CuratedStore, fields: dict[str, list[str]]) -> str:
+def post_sheet(app, fields: dict[str, list[str]]) -> str:
+    store = app.store
     name, ruleset = _topic(store, fields)
-    ui = _ui(store, name, ruleset)
+    ui = _ui(app, name, ruleset)
     action = _field(fields, "action")
     mode = _field(fields, "mode") or ui.get("mode") or "read"
     ui["error"] = ""
@@ -168,7 +178,7 @@ def post_sheet(store: CuratedStore, fields: dict[str, list[str]]) -> str:
     elif action == "add" and sheet is not None:
         sheet = _try(ui, lambda: _add(store, set_mode(sheet, "edit"), fields))
     if sheet is not None:
-        ui["sheet"] = sheet
+        store.put_sheet(sheet)
         ui["mode"] = sheet.mode
     return _location(name, ruleset, ui.get("mode") or "read")
 
@@ -263,7 +273,7 @@ def _class_card(store, sheet, packed, cards, index: int, name, ruleset) -> str:
                 f'aria-label="Ran {html.escape(card.target, quote=True)}"></td>'
             )
         elif mode == "edit":
-            extra = f'<td class="edit-tools">{_edit_tools(lesson, name, ruleset)}</td>'
+            extra = f'<td class="edit-tools">{_edit_tools(lesson, name, ruleset, index)}</td>'
         rows.append(
             f'<tr class="{html.escape(row_kind)}{glued}" data-lesson="{html.escape(lesson.id, quote=True)}">'
             f"{extra}"
@@ -304,24 +314,40 @@ def _class_card(store, sheet, packed, cards, index: int, name, ruleset) -> str:
         f"<thead><tr>{''.join(heads)}</tr></thead>\n"
         f"<tbody>{''.join(rows)}</tbody>\n"
         "</table>\n"
-        "</div>\n"
+        + (_success_watch() if mode == "read" else "")
+        + "</div>\n"
     )
 
 
-def _edit_tools(lesson, name, ruleset) -> str:
-    return (
-        _form(
-            f"drag-{lesson.id}",
-            name,
-            ruleset,
-            {
-                "action": "drag",
-                "lesson_id": lesson.id,
-                "class_index": "0",
-                "index": "0",
-            },
-            "Move",
+def _success_watch() -> str:
+    scale = ("none", "some", "most", "all")
+    def group(legend: str) -> str:
+        choices = "".join(
+            f'<label><input type="radio"> {html.escape(item)}</label>'
+            for item in scale
         )
+        return f"<fieldset><legend>{html.escape(legend)}</legend>{choices}</fieldset>"
+    return (
+        '<div class="success-watch success" id="success-watch">\n'
+        "<h3>Success watch</h3>\n"
+        + group("Attempting")
+        + group("Completing or coming close against a better partner")
+        + "</div>\n"
+    )
+
+
+def _edit_tools(lesson, name, ruleset, class_index: int) -> str:
+    return (
+        f'<form id="drag-{html.escape(lesson.id, quote=True)}" class="row-form" '
+        'method="post" action="/sheet">'
+        f"{_topic_hidden(name, ruleset)}"
+        '<input type="hidden" name="action" value="drag">'
+        f'<input type="hidden" name="lesson_id" value="{html.escape(lesson.id, quote=True)}">'
+        '<label>Class <input type="number" name="class_index" '
+        f'value="{class_index}"></label>'
+        '<label>Index <input type="number" name="index" value="0"></label>'
+        '<button type="submit">Move</button>'
+        "</form>"
         + _form(
             f"remove-{lesson.id}",
             name,
@@ -471,7 +497,7 @@ def _custom_list(customs, name, ruleset) -> str:
     for custom in customs:
         label = custom.lesson.kind
         items.append(
-            _form(
+            _add_form(
                 f"add-custom-{custom.id}",
                 name,
                 ruleset,
@@ -498,14 +524,13 @@ def _hit_list(kind: str, hits, name, ruleset) -> str:
                 "action": "add",
                 "source": kind,
                 "target": hit_id,
-                "kind": "technique",
             }
             label = getattr(hit, "name", hit_id)
         form_id = f"add-{kind}-{hit_id}"
         if form_id in seen:
             continue
         seen.add(form_id)
-        items.append(_form(form_id, name, ruleset, fields, html.escape(label)))
+        items.append(_add_form(form_id, name, ruleset, fields, html.escape(label)))
     if not items:
         return ""
     return f"<h3>{html.escape(kind.title())}</h3>\n" + "".join(items)
@@ -517,7 +542,7 @@ def _map_list(store, move_ids, name, ruleset) -> str:
         node = store.enrichment_node(target)
         label = node.name if node is not None else target
         items.append(
-            _form(
+            _add_form(
                 f"add-map-{target}",
                 name,
                 ruleset,
@@ -525,7 +550,6 @@ def _map_list(store, move_ids, name, ruleset) -> str:
                     "action": "add",
                     "source": "map",
                     "target": target,
-                    "kind": "technique",
                 },
                 html.escape(label),
             )
@@ -535,11 +559,41 @@ def _map_list(store, move_ids, name, ruleset) -> str:
     return "<h3>On the map</h3>\n" + "".join(items)
 
 
+def _add_form(form_id, name, ruleset, fields: dict[str, str], label: str) -> str:
+    hidden = [_topic_hidden(name, ruleset)]
+    hidden.extend(
+        f'<input type="hidden" name="{html.escape(key, quote=True)}" '
+        f'value="{html.escape(str(val), quote=True)}">'
+        for key, val in fields.items()
+    )
+    kinds = "".join(
+        f'<option value="{html.escape(kind)}">{html.escape(kind)}</option>'
+        for kind in ("technique", "sparring", "game", "drill")
+    )
+    return (
+        f'<form id="{html.escape(form_id, quote=True)}" class="row-form add-lesson-form" '
+        'method="post" action="/sheet">'
+        + "".join(hidden)
+        + f'<label>Kind <select name="kind">{kinds}</select></label>'
+        '<label>Class <input type="text" name="class_index" value=""></label>'
+        '<label>Index <input type="text" name="index" value=""></label>'
+        '<label>Partner job <input type="text" name="partner_job" value=""></label>'
+        '<label>Scenario <input type="text" name="scenario" value=""></label>'
+        '<label>Condition <input type="text" name="condition" value=""></label>'
+        f'<button type="submit">{label}</button>'
+        "</form>"
+    )
+
+
 def _draft(store, name, ruleset):
-    table = getattr(store, "_design_sessions", None) or {}
-    held = table.get((name, ruleset))
-    if held is not None and held.get("draft") is not None:
-        return held["draft"]
+    held = store.sheet(name, ruleset)
+    if held is not None:
+        return Draft(
+            unit=held.unit,
+            classes=held.classes,
+            layout=getattr(held, "layout", "B"),
+            columns=tuple(getattr(held, "columns", DRAFT_COLUMNS)),
+        )
     unit = next(
         (
             item
@@ -564,16 +618,12 @@ def _draft(store, name, ruleset):
     return Draft(unit=unit, classes=tuple(packed))
 
 
-def _ui(store, name, ruleset) -> dict:
-    table = getattr(store, "_sheets", None)
-    if table is None:
-        table = {}
-        store._sheets = table
+def _ui(app, name, ruleset) -> dict:
+    table = app.sheet_ui
     key = (name, ruleset)
     held = table.get(key)
     if held is None:
         held = {
-            "sheet": None,
             "mode": "read",
             "error": "",
             "search": {},
@@ -587,8 +637,9 @@ def _topic(store, fields: dict[str, list[str]]) -> tuple[str, str]:
     name = _field(fields, "name")
     ruleset = _field(fields, "ruleset")
     if name and ruleset:
+        store.set_current_topic(name, ruleset)
         return name, ruleset
-    last = getattr(store, "_design_last_topic", None)
+    last = store.current_topic()
     if last:
         return last
     topics = store.topics()

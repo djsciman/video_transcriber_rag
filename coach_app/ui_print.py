@@ -261,7 +261,7 @@ def _topic(store, fields: dict[str, list[str]]) -> tuple[str, str]:
     ruleset = _field(fields, "ruleset")
     if name and ruleset:
         return name, ruleset
-    last = getattr(store, "_design_last_topic", None)
+    last = store.current_topic()
     if last:
         return last
     topics = store.topics()

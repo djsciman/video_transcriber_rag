@@ -185,6 +185,9 @@ class CuratedStore:
         self._hold_persist = False
         self._video_root = None
         self._transcript_folder = None
+        self._design_sessions = {}
+        self._sheets = {}
+        self._current_topic = None
 
     @classmethod
     def open(cls, location) -> CuratedStore:
@@ -628,6 +631,32 @@ class CuratedStore:
         self._custom_lessons.pop(custom_id, None)
         self._persist()
 
+    def put_design_session(self, session):
+        key = (session.topic_name, session.topic_ruleset)
+        self._design_sessions[key] = session
+        self._persist()
+        return session
+
+    def design_session(self, topic_name: str, topic_ruleset: str):
+        return self._design_sessions.get((topic_name, topic_ruleset))
+
+    def put_sheet(self, sheet):
+        unit = sheet.unit
+        key = (unit.topic_name, unit.topic_ruleset)
+        self._sheets[key] = sheet
+        self._persist()
+        return sheet
+
+    def sheet(self, topic_name: str, topic_ruleset: str):
+        return self._sheets.get((topic_name, topic_ruleset))
+
+    def set_current_topic(self, name: str, ruleset: str) -> None:
+        self._current_topic = (name, ruleset) if name and ruleset else None
+        self._persist()
+
+    def current_topic(self):
+        return self._current_topic
+
     def put_unit_history(self, history: UnitHistory) -> UnitHistory:
         return self._put_identified(self._unit_histories, history)
 
@@ -682,6 +711,9 @@ class CuratedStore:
             "seed_imported": self._seed_imported,
             "video_root": self._video_root,
             "transcript_folder": self._transcript_folder,
+            "design_sessions": self._design_sessions,
+            "sheets": self._sheets,
+            "current_topic": self._current_topic,
         }
         target = self._location / "state"
         scratch = self._location / "state.tmp"
@@ -718,6 +750,9 @@ class CuratedStore:
         self._seed_imported = payload.get("seed_imported", False)
         self._video_root = payload.get("video_root")
         self._transcript_folder = payload.get("transcript_folder")
+        self._design_sessions = payload.get("design_sessions", {})
+        self._sheets = payload.get("sheets", {})
+        self._current_topic = payload.get("current_topic")
 
     def _allocate_id(self) -> str:
         allocated = str(self._next_id)

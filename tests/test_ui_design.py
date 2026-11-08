@@ -16,6 +16,7 @@ from coach_app.design import ADD_WALK, citations_on_mark, walk_options
 from coach_app.placement import put_catalog_system
 from coach_app.store import Citation, CuratedStore, EnrichmentNode
 from coach_app.ui_design import design_session
+from coach_app.ui_sheet import current_sheet
 from tests.test_build import TIGHT_WAIST_PARAGRAPH
 
 
@@ -207,9 +208,13 @@ def test_design_is_on_the_nav_without_prototype_chrome(tmp_path):
     assert "unit-prompt" in page.sections or 'id="unit-prompt"' in page.markup
     assert "draft" in page.sections or 'id="draft"' in page.markup
     prompt_at = page.markup.find('id="unit-prompt"')
+    walk_at = page.markup.find('id="add-walk"')
     canvas_at = page.markup.find('id="map-stage"')
     draft_at = page.markup.find('id="draft"')
-    assert 0 <= prompt_at < canvas_at < draft_at
+    assert 0 <= prompt_at < walk_at < canvas_at < draft_at
+    assert "grid-template-columns: minmax(16rem, 22rem)" not in page.markup
+    layout_slice = page.markup[walk_at:canvas_at]
+    assert "design-layout" not in layout_slice
     assert "Propose canvas and Draft" in page.markup
     assert "Convert canvas to Draft" in page.markup
     assert "Recenter" in page.markup
@@ -426,6 +431,8 @@ def test_design_screen_calls_domain_apis_and_skips_prototype_html():
     assert "propose(" in source
     assert "convert(" in source
     assert "BuildAdvisor" in source
+    assert "put_design_session" in source
+    assert "_design_sessions" not in source
     assert "put_class" not in source
     assert "put_lesson" not in source
     assert "put_enrichment_node" not in source
@@ -625,3 +632,27 @@ def test_first_draft_is_glued_dashed_class_cards_without_edit_or_playback(tmp_pa
         if lesson.kind == "technique":
             assert lesson.partner_job == ""
     assert "Partner job" in draft_html
+
+
+def test_restart_restores_map_marks_and_sheet(tmp_path):
+    from tests.test_ui_sheet import _pack, _sheet
+
+    with CoachApp(tmp_path) as first:
+        _pack(first)
+        session = design_session(first.store, "Tight waist", "gi")
+        marks = _mark_keys(session)
+        live_sheet = current_sheet(first.store, "Tight waist", "gi")
+
+    with CoachApp(tmp_path) as later:
+        restored = design_session(later.store, "Tight waist", "gi")
+        design = _Page(_get(_design(later)))
+        sheet = _Page(_get(_sheet(later, mode="read")))
+        later_sheet = current_sheet(later.store, "Tight waist", "gi")
+
+    assert marks
+    assert _mark_keys(restored) == marks
+    assert "Knee lever" in design.markup
+    assert "Knee lever" in sheet.markup
+    assert later_sheet is not None
+    assert live_sheet is not None
+    assert len(later_sheet.classes) == len(live_sheet.classes)

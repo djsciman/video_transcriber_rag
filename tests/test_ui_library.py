@@ -267,6 +267,9 @@ def test_screens_call_library_domain_and_skip_prototype_html():
     assert "browse_library" in source
     assert "save_history" in source
     assert "copy_history" in source
+    assert "put_sheet" in source
+    assert "_design_sessions" not in source
+    assert "_library_walk" not in source
     assert "put_custom_lesson" not in source
     assert "put_unit_history" not in source
     assert "prototypes" not in folded

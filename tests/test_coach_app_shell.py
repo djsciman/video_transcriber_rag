@@ -1,5 +1,6 @@
 """Coach-facing application shell. Drive HTTP, then assert through the store."""
 
+import inspect
 import subprocess
 import sys
 from html.parser import HTMLParser
@@ -202,3 +203,10 @@ def test_module_help_is_for_the_coach():
     assert result.returncode == 0
     assert "coach" in result.stdout.lower()
     assert "student login" not in result.stdout.lower()
+    assert "127.0.0.1" in result.stdout
+    assert "0.0.0.0" not in result.stdout
+    help_text = result.stdout.casefold()
+    assert "this machine" in help_text or "localhost" in help_text or "127.0.0.1" in result.stdout
+    from coach_app.app import CoachApp
+
+    assert inspect.signature(CoachApp.__init__).parameters["host"].default == "127.0.0.1"

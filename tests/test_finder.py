@@ -11,8 +11,9 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from coach_app.app import CoachApp
-from coach_app.placement import citations_for_design_mark, citations_for_lesson
-from coach_app.store import Citation, CuratedStore
+from coach_app.library import search_library
+from coach_app.placement import citations_for_design_mark, citations_for_lesson, put_catalog_system
+from coach_app.store import Citation, CuratedStore, Instructional
 
 
 class _Page(HTMLParser):
@@ -28,6 +29,8 @@ class _Page(HTMLParser):
         self._current_href = ""
         self._link_text: list[str] = []
         self._current_form: dict[str, object] | None = None
+        self._select_name = ""
+        self._select_selected = False
         self._section_id = ""
         self._section_parts: list[str] = []
         self.feed(markup)
@@ -54,6 +57,20 @@ class _Page(HTMLParser):
             name = attrs.get("name")
             if name and self._current_form is not None:
                 self._current_form["inputs"][name] = attrs.get("value", "")
+        elif tag == "select":
+            self._select_name = attrs.get("name", "")
+            self._select_selected = False
+            if self._select_name and self._current_form is not None:
+                self._current_form["inputs"][self._select_name] = ""
+        elif tag == "option":
+            if self._select_name and self._current_form is not None:
+                value = attrs.get("value", "")
+                selected = "selected" in attrs
+                current = self._current_form["inputs"].get(self._select_name, "")
+                if selected or (not self._select_selected and current == ""):
+                    self._current_form["inputs"][self._select_name] = value
+                    if selected:
+                        self._select_selected = True
         elif tag == "button":
             name = attrs.get("name")
             if name and self._current_form is not None:
@@ -66,6 +83,9 @@ class _Page(HTMLParser):
             self.links.append((self._current_href, "".join(self._link_text).strip()))
             self._current_href = ""
             self._link_text = []
+        elif tag == "select":
+            self._select_name = ""
+            self._select_selected = False
         elif tag == "form" and self._current_form is not None:
             self.forms.append(self._current_form)
             self._current_form = None
@@ -344,4 +364,86 @@ def test_finder_does_not_import_prototype_html():
     assert "move_enrichment_node" in source
     assert "delete_enrichment_node" in source
     assert "browse_hierarchy" in source
-    assert "search_enrichment" in source
+    assert "search_enrichment" in source or "search_library" in source
+    assert "put_catalog_system" in source
+
+
+def test_dimensional_search_shows_matching_named_moves(tmp_path):
+    seeded = CuratedStore.open(tmp_path)
+    old = _named(seeded, "Old school sweep")
+    seeded.put_instructional(
+        Instructional(instructor="Emily Kwok", name="Old School", ruleset="gi")
+    )
+    seeded.put_citation(
+        Citation(
+            movement="Old school sweep",
+            instructor="Emily Kwok",
+            instructional="Old School",
+            named_move_id=old.id,
+        )
+    )
+
+    with CoachApp(tmp_path) as app:
+        url = _finder(app)
+        page = _Page(_get(url))
+        search = dict(_form(page, "search")["inputs"])
+        assert "position" in search
+        assert "sweep" in search or "type" in page.markup.casefold()
+        assert "submission" in search
+        assert "instructor" in search
+        assert "ruleset" in search
+        search.update(
+            {
+                "position": "Half guard",
+                "sweep": "sweep",
+                "instructor": "Emily Kwok",
+                "ruleset": "gi",
+            }
+        )
+        found = _Page(_post(url, search))
+
+    results = found.sections.get("search-results", found.text)
+    assert "Old school sweep" in results
+    store = CuratedStore.open(tmp_path)
+    hits = search_library(
+        store,
+        position="Half guard",
+        sweep="sweep",
+        instructor="Emily Kwok",
+        ruleset="gi",
+    )
+    assert any(getattr(hit, "name", None) == "Old school sweep" for hit in hits)
+
+
+def test_finder_adds_and_lists_catalog_systems(tmp_path):
+    seeded = CuratedStore.open(tmp_path)
+    come_up = next(
+        node
+        for node in seeded.enrichment_nodes()
+        if node.kind == "named move" and node.name == "Old school sweep"
+    )
+    knee = _named(seeded, "Knee slice pass")
+
+    with CoachApp(tmp_path) as app:
+        url = _finder(app)
+        page = _Page(_get(url))
+        add_fields = dict(_form(page, "add")["inputs"])
+        assert add_fields["kind"]
+        assert "system" in page.markup.casefold()
+        add_fields.update(
+            {
+                "kind": "system",
+                "name": "Half guard dilemma",
+                "members": f"{come_up.id},{knee.id}",
+            }
+        )
+        page = _Page(_post(url, add_fields))
+
+    assert "Half guard dilemma" in page.text
+    store = CuratedStore.open(tmp_path)
+    systems = [node for node in store.enrichment_nodes() if node.kind == "system"]
+    added = next(node for node in systems if node.name == "Half guard dilemma")
+    assert len(added.members) >= 2
+    assert come_up.id in added.members
+    assert knee.id in added.members
+    assert put_catalog_system is not None

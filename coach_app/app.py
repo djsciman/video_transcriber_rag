@@ -133,13 +133,27 @@ def _topic_link(name: str, ruleset: str) -> str:
     return f'<li><a href="{html.escape(href, quote=True)}">{label}</a></li>'
 
 
-def _call_get(screen: Screen, store: CuratedStore, fields: dict[str, list[str]]) -> str:
+def _invoke(fn, app: "CoachApp", fields: dict[str, list[str]]):
+    args = []
+    for name in inspect.signature(fn).parameters:
+        if name == "app":
+            args.append(app)
+        elif name == "store":
+            args.append(app.store)
+        elif name == "fields":
+            args.append(fields)
+        elif not args:
+            args.append(app.store)
+        else:
+            args.append(fields)
+    return fn(*args)
+
+
+def _call_get(screen: Screen, app: "CoachApp", fields: dict[str, list[str]]) -> str:
     get = screen.get
     if get is None:
         raise RuntimeError("screen has no get")
-    if len(inspect.signature(get).parameters) >= 2:
-        return get(store, fields)
-    return get(store)
+    return _invoke(get, app, fields)
 
 
 add_screen(Screen("home", "/", "Home", get=render_home))
@@ -161,6 +175,30 @@ class CoachApp:
     def __init__(self, location, host: str = "127.0.0.1", port: int = 0) -> None:
         self.location = Path(location)
         self.store = CuratedStore.open(self.location)
+        self.finder_walk = {
+            "start": "",
+            "type_of_move": "",
+            "end": "",
+            "query": "",
+            "position": "",
+            "sweep": "",
+            "submission": "",
+            "instructor": "",
+            "ruleset": "",
+        }
+        self.library_walk = {"start": "", "type_of_move": "", "end": ""}
+        self.library_search = {
+            "position": "",
+            "sweep": "",
+            "submission": "",
+            "instructor": "",
+            "ruleset": "",
+            "query": "",
+            "ran": "",
+        }
+        self.curate: dict = {}
+        self.design_ui: dict = {}
+        self.sheet_ui: dict = {}
         self.httpd = _LocalServer((host, port), _make_handler(self))
         self._thread: Thread | None = None
 
@@ -210,7 +248,7 @@ def _make_handler(app: CoachApp):
                 self._send(404, "text/plain; charset=utf-8", b"Not found")
                 return
             fields = parse_qs(parsed.query, keep_blank_values=True)
-            body = _call_get(screen, app.store, fields).encode("utf-8")
+            body = _call_get(screen, app, fields).encode("utf-8")
             self._send(200, "text/html; charset=utf-8", body)
 
         def do_POST(self) -> None:
@@ -222,7 +260,7 @@ def _make_handler(app: CoachApp):
             length = int(self.headers.get("Content-Length", "0") or "0")
             raw = self.rfile.read(length).decode("utf-8") if length else ""
             fields = parse_qs(raw, keep_blank_values=True)
-            location = screen.post(app.store, fields)
+            location = _invoke(screen.post, app, fields)
             self.send_response(303)
             self.send_header("Location", location)
             self.end_headers()
@@ -249,7 +287,11 @@ def main(argv: list[str] | None = None) -> int:
         default=str(DEFAULT_LOCATION),
         help="Curated store location (default: curated-store next to the process).",
     )
-    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument(
+        "--host",
+        default="127.0.0.1",
+        help="Listen on this machine only (default: 127.0.0.1).",
+    )
     parser.add_argument("--port", type=int, default=8765)
     args = parser.parse_args(argv)
     app = CoachApp(args.location, host=args.host, port=args.port)

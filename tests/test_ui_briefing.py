@@ -365,6 +365,9 @@ def test_screens_call_brief_topic_and_do_not_import_prototypes():
     assert "put_lesson" not in source
     assert "<html" not in source
     assert "system_history" not in source
+    assert "pill-nogi" not in source
+    assert 'class="question"' not in source
+    assert "pill-no-gi" in source
 
 
 def _camp_citation(store: CuratedStore):

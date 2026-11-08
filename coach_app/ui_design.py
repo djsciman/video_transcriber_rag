@@ -8,7 +8,7 @@ from dataclasses import replace
 from urllib.parse import urlencode
 
 from coach_app.app import Screen, add_screen, render_shell
-from coach_app.build import DRAFT_COLUMNS, BuildAdvisor, convert, propose
+from coach_app.build import DRAFT_COLUMNS, BuildAdvisor, Draft, convert, propose
 from coach_app.design import (
     ADD_WALK,
     AddWalk,
@@ -22,7 +22,7 @@ from coach_app.design import (
     walk_options,
     walk_step,
 )
-from coach_app.store import CuratedStore
+from coach_app.store import CuratedStore, PackedClass
 
 _EMPTY_CONVERT = "The map has no named moves or systems to convert."
 _ADVISOR = BuildAdvisor()
@@ -31,10 +31,11 @@ _STYLE = """
 <style>
 .page { max-width: none; width: 100%; }
 .design-stack { display: flex; flex-direction: column; gap: 0.7rem; }
-.design-layout { display: grid; grid-template-columns: minmax(16rem, 22rem) 1fr; gap: 0.7rem; align-items: start; }
-@media (max-width: 900px) { .design-layout { grid-template-columns: 1fr; } }
+#add-walk .row-form { display: inline-block; margin: 0 0.25rem 0.25rem 0; }
+#add-walk .row-form button { width: auto; text-align: left; }
 .row-form { margin: 0 0 0.25rem; }
 .row-form button { width: 100%; text-align: left; }
+.map-stage, #map-stage, #design-map { width: 100%; }
 .catalog-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 0.2rem 0.3rem; margin: 0 0 0.55rem; }
 .catalog-crumbs button {
   border: 0; background: #1c1917; color: #fff; border-radius: 999px;
@@ -116,22 +117,26 @@ _TYPE_STYLE = {
 
 
 def design_session(store: CuratedStore, name: str = "", ruleset: str = ""):
-    return _bundle(store, name, ruleset)["session"]
+    held = store.design_session(name, ruleset)
+    if held is None:
+        held = open_design(topic_name=name, topic_ruleset=ruleset)
+        if name and ruleset:
+            store.put_design_session(held)
+    return held
 
 
-def get_design(store: CuratedStore, fields: dict[str, list[str]] | None = None) -> str:
+def get_design(app, fields: dict[str, list[str]] | None = None) -> str:
     fields = fields or {}
+    store = app.store
     name, ruleset = _topic(store, fields)
-    bundle = _bundle(store, name, ruleset)
+    bundle = _bundle(app, store, name, ruleset)
     session = bundle["session"]
     body = (
         _STYLE
         + '<div class="design-stack">\n'
         + _prompt_panel(name, ruleset, bundle)
-        + '<div class="design-layout">\n'
         + _walk_panel(store, session, name, ruleset, bundle)
         + _map_panel(store, session, name, ruleset, bundle)
-        + "</div>\n"
         + _draft_panel(store, bundle, name, ruleset)
         + "</div>\n"
         + _map_script()
@@ -140,9 +145,10 @@ def get_design(store: CuratedStore, fields: dict[str, list[str]] | None = None) 
     return render_shell(title=title, current="design", body=body)
 
 
-def post_design(store: CuratedStore, fields: dict[str, list[str]]) -> str:
+def post_design(app, fields: dict[str, list[str]]) -> str:
+    store = app.store
     name, ruleset = _topic(store, fields)
-    bundle = _bundle(store, name, ruleset)
+    bundle = _bundle(app, store, name, ruleset)
     session = bundle["session"]
     action = _field(fields, "action")
     if action == "propose":
@@ -195,28 +201,74 @@ def post_design(store: CuratedStore, fields: dict[str, list[str]]) -> str:
         if value:
             bundle["session"] = pick(store, session, value)
             bundle["adding"] = bool(bundle["session"].walk.family)
+    _commit(store, bundle)
     return _location(name, ruleset)
 
 
-def _bundle(store: CuratedStore, name: str, ruleset: str) -> dict:
-    table = getattr(store, "_design_sessions", None)
-    if table is None:
-        table = {}
-        store._design_sessions = table
-    key = (name, ruleset)
-    store._design_last_topic = key
-    held = table.get(key)
-    if held is None:
-        held = {
-            "session": open_design(topic_name=name, topic_ruleset=ruleset),
+def _bundle(app, store: CuratedStore, name: str, ruleset: str) -> dict:
+    if name and ruleset:
+        store.set_current_topic(name, ruleset)
+    extras = app.design_ui.setdefault(
+        (name, ruleset),
+        {
             "notes": {},
             "adding": False,
             "paragraph": "",
             "draft": None,
             "convert_reason": "",
-        }
-        table[key] = held
-    return held
+        },
+    )
+    extras["session"] = design_session(store, name, ruleset)
+    if extras.get("draft") is None:
+        extras["draft"] = _draft_from_store(store, name, ruleset)
+    extras["adding"] = extras.get("adding") or bool(extras["session"].walk.family)
+    return extras
+
+
+def _commit(store: CuratedStore, bundle: dict) -> None:
+    session = bundle["session"]
+    store.put_design_session(session)
+    draft = bundle.get("draft")
+    if draft is None:
+        return
+    from coach_app.edit import open_sheet
+
+    existing = store.sheet(session.topic_name, session.topic_ruleset)
+    mode = existing.mode if existing is not None else "read"
+    store.put_sheet(open_sheet(store, draft, mode))
+
+
+def _draft_from_store(store: CuratedStore, name: str, ruleset: str):
+    held = store.sheet(name, ruleset)
+    if held is not None:
+        return Draft(
+            unit=held.unit,
+            classes=held.classes,
+            layout=getattr(held, "layout", "B"),
+            columns=tuple(getattr(held, "columns", DRAFT_COLUMNS)),
+        )
+    unit = next(
+        (
+            item
+            for item in store.units()
+            if item.topic_name == name and item.topic_ruleset == ruleset
+        ),
+        None,
+    )
+    if unit is None:
+        return None
+    packed = []
+    for class_record in store.classes():
+        if class_record.unit_id != unit.id:
+            continue
+        lessons = tuple(
+            lesson for lesson in store.lessons() if lesson.class_id == class_record.id
+        )
+        if lessons:
+            packed.append(PackedClass(class_record=class_record, lessons=lessons))
+    if not packed:
+        return None
+    return Draft(unit=unit, classes=tuple(packed))
 
 
 def _topic(store: CuratedStore, fields: dict[str, list[str]]) -> tuple[str, str]:
@@ -224,7 +276,7 @@ def _topic(store: CuratedStore, fields: dict[str, list[str]]) -> tuple[str, str]
     ruleset = _field(fields, "ruleset")
     if name and ruleset:
         return name, ruleset
-    last = getattr(store, "_design_last_topic", None)
+    last = store.current_topic()
     if last:
         return last
     topics = store.topics()

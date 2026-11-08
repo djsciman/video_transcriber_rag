@@ -65,7 +65,7 @@ a.play {
   margin-right: 0.35rem;
 }
 .pill-gi { background: #ecfccb; color: #3f6212; border: 1px solid #84cc16; }
-.pill-nogi { background: #e0f2fe; color: #075985; border: 1px solid #38bdf8; }
+.pill-no-gi { background: #e0f2fe; color: #075985; border: 1px solid #38bdf8; }
 .pill-other { background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; }
 .pill-caveat { background: #fef9c3; color: #854d0e; border: 1px solid #ca8a04; }
 .other-card {
@@ -89,7 +89,7 @@ a.play {
   gap: 0.75rem;
   margin-top: 0.5rem;
 }
-.question { font-size: 1.05rem; max-width: 68ch; margin: 0.35rem 0 0.75rem; }
+.other-ruleset-ask { font-size: 1.05rem; max-width: 68ch; margin: 0.35rem 0 0.75rem; }
 .sides {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -180,7 +180,7 @@ def _system_advisor(store: CuratedStore):
 
 
 def _memo(store: CuratedStore, topic: Topic, memo: BriefingMemo) -> str:
-    pill_class = "pill-gi" if memo.topic_ruleset == "gi" else "pill-nogi"
+    pill_class = "pill-gi" if memo.topic_ruleset == "gi" else "pill-no-gi"
     pill_label = f"{html.escape(memo.topic_ruleset)} topic"
     same = "".join(_citation_item(store, citation) for citation in memo.same_ruleset_citations)
     sides = tuple(side.citation for side in memo.disagreement)
@@ -217,7 +217,7 @@ def _other_section(store: CuratedStore, memo: BriefingMemo) -> str:
     return (
         '<section id="other-ruleset-briefing">\n'
         "<h3>Other-ruleset material</h3>\n"
-        f'<p class="question">{html.escape(memo.other_ruleset_question)}</p>\n'
+        f'<p class="other-ruleset-ask">{html.escape(memo.other_ruleset_question)}</p>\n'
         f"{cards}"
         f"{caveat}"
         "</section>\n"

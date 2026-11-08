@@ -45,8 +45,9 @@ textarea { font: inherit; border: 1px solid var(--line); border-radius: 8px; pad
 """
 
 
-def render_curate(store: CuratedStore) -> str:
-    session = _session(store)
+def render_curate(app) -> str:
+    store = app.store
+    session = _session(app)
     body = [
         f"<style>{_STYLE}</style>",
         _picker(session),
@@ -61,14 +62,15 @@ def render_curate(store: CuratedStore) -> str:
     )
 
 
-def post_curate(store: CuratedStore, fields: dict[str, list[str]]) -> str:
+def post_curate(app, fields: dict[str, list[str]]) -> str:
+    store = app.store
     action = _field(fields, "action")
     if action == "load":
-        _load(store, fields)
+        _load(app, store, fields)
     elif action == "accept":
-        _accept(store, fields)
+        _accept(app, store, fields)
     elif action == "dismiss":
-        _dismiss(store, fields)
+        _dismiss(app, fields)
     elif action == "correct":
         _correct_accepted(store, fields)
     elif action == "remove":
@@ -78,14 +80,14 @@ def post_curate(store: CuratedStore, fields: dict[str, list[str]]) -> str:
     return "/curate"
 
 
-def _load(store: CuratedStore, fields: dict[str, list[str]]) -> None:
+def _load(app, store: CuratedStore, fields: dict[str, list[str]]) -> None:
     path = Path(_field(fields, "volume_path"))
     instructor = _field(fields, "instructor")
     instructional = _field(fields, "instructional")
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError, UnicodeError):
-        store._curate = {
+        app.curate = {
             "volume_path": str(path),
             "instructor": instructor,
             "instructional": instructional,
@@ -98,7 +100,7 @@ def _load(store: CuratedStore, fields: dict[str, list[str]]) -> None:
     proposals = propose_statements(
         cleaned, StatementDrafter(), instructor=instructor
     )
-    store._curate = {
+    app.curate = {
         "volume_path": str(path),
         "instructor": instructor,
         "instructional": instructional,
@@ -108,7 +110,7 @@ def _load(store: CuratedStore, fields: dict[str, list[str]]) -> None:
     }
 
 
-def _accept(store: CuratedStore, fields: dict[str, list[str]]) -> None:
+def _accept(app, store: CuratedStore, fields: dict[str, list[str]]) -> None:
     proposal = _proposal_from(fields)
     if not proposal:
         return
@@ -122,17 +124,17 @@ def _accept(store: CuratedStore, fields: dict[str, list[str]]) -> None:
     instructional = _field(fields, "instructional") or proposal.get(
         "instructional", ""
     )
-    video_file = _field(fields, "video_file") or _session(store).get("video_file", "")
+    video_file = _field(fields, "video_file") or _session(app).get("video_file", "")
     if not instructional or not video_file:
         return
     store.accept(draft, instructional=instructional, video_file=video_file)
-    _drop_proposal(store, proposal)
+    _drop_proposal(app, proposal)
 
 
-def _dismiss(store: CuratedStore, fields: dict[str, list[str]]) -> None:
+def _dismiss(app, fields: dict[str, list[str]]) -> None:
     proposal = _proposal_from(fields)
     if proposal:
-        _drop_proposal(store, proposal)
+        _drop_proposal(app, proposal)
 
 
 def _correct_accepted(store: CuratedStore, fields: dict[str, list[str]]) -> None:
@@ -461,8 +463,8 @@ def _proposal_from(fields: dict[str, list[str]]) -> dict:
     return loaded if isinstance(loaded, dict) else {}
 
 
-def _drop_proposal(store: CuratedStore, proposal: dict) -> None:
-    session = _session(store)
+def _drop_proposal(app, proposal: dict) -> None:
+    session = _session(app)
     key = _key(proposal)
     session["proposals"] = [
         item for item in session.get("proposals") or [] if _key(item) != key
@@ -473,8 +475,8 @@ def _key(proposal: dict) -> tuple:
     return (proposal.get("chapter"), proposal.get("movement"))
 
 
-def _session(store: CuratedStore) -> dict:
-    session = getattr(store, "_curate", None)
+def _session(app) -> dict:
+    session = getattr(app, "curate", None)
     return session if isinstance(session, dict) else {}
 
 

@@ -5,6 +5,8 @@ from __future__ import annotations
 import html
 
 from coach_app.app import Screen, add_screen, render_shell
+from coach_app.library import search_library
+from coach_app.placement import put_catalog_system
 from coach_app.store import CuratedStore, EnrichmentNode
 
 _FAMILY_ORDER = (
@@ -50,8 +52,9 @@ _STYLE = """
 """
 
 
-def get_finder(store: CuratedStore) -> str:
-    walk = _walk(store)
+def get_finder(app) -> str:
+    store = app.store
+    walk = app.finder_walk
     starts = store.browse_hierarchy()
     types = store.browse_hierarchy(walk["start"]) if walk["start"] else ()
     ends = (
@@ -60,10 +63,11 @@ def get_finder(store: CuratedStore) -> str:
         else ()
     )
     leaves = _named_moves(store, walk["start"], walk["type_of_move"], walk["end"])
-    hits = store.search_enrichment(walk["query"]) if walk["query"] else ()
+    hits = _search_hits(store, walk)
     uncategorized = tuple(
         citation for citation in store.citations() if not citation.named_move_id
     )
+    systems = tuple(node for node in store.enrichment_nodes() if node.kind == "system")
     body = (
         _STYLE
         + _search_panel(walk)
@@ -74,17 +78,20 @@ def get_finder(store: CuratedStore) -> str:
         + _ends_panel(ends, walk)
         + _leaves_panel(leaves, walk)
         + "</div>\n"
+        + _systems_panel(store, systems)
         + _uncategorized_panel(uncategorized)
         + _organize_panel(walk)
     )
     return render_shell(title="Finder", current="finder", body=body)
 
 
-def post_finder(store: CuratedStore, fields: dict[str, list[str]]) -> str:
+def post_finder(app, fields: dict[str, list[str]]) -> str:
+    store = app.store
     action = _field(fields, "action")
-    walk = _walk(store)
+    walk = app.finder_walk
     if action == "search":
-        walk["query"] = _field(fields, "query")
+        for key in ("query", "position", "sweep", "submission", "instructor", "ruleset"):
+            walk[key] = _field(fields, key)
     elif action == "select_start":
         walk["start"] = _field(fields, "start")
         walk["type_of_move"] = ""
@@ -148,14 +155,58 @@ def _add_node(store: CuratedStore, fields: dict[str, list[str]]) -> None:
                 ruleset=_field(fields, "ruleset") or "both",
             )
         )
+        return
+    if kind == "system":
+        members = _member_ids(store, _field(fields, "members"))
+        if len(members) >= 2:
+            put_catalog_system(store, name, members)
 
 
-def _walk(store: CuratedStore) -> dict[str, str]:
-    walk = getattr(store, "_finder_walk", None)
-    if not isinstance(walk, dict):
-        walk = {"start": "", "type_of_move": "", "end": "", "query": ""}
-        store._finder_walk = walk
-    return walk
+def _member_ids(store: CuratedStore, raw: str) -> tuple[str, ...]:
+    ids = []
+    for part in raw.replace(";", ",").split(","):
+        token = part.strip()
+        if not token:
+            continue
+        node = store.enrichment_node(token)
+        if node is None:
+            node = next(
+                (
+                    item
+                    for item in store.enrichment_nodes()
+                    if item.kind == "named move" and item.name.casefold() == token.casefold()
+                ),
+                None,
+            )
+        ids.append(node.id if node is not None else token)
+    return tuple(ids)
+
+
+def _search_hits(store: CuratedStore, walk: dict[str, str]):
+    dims = {
+        key: walk.get(key, "")
+        for key in ("position", "sweep", "submission", "instructor", "ruleset", "query")
+    }
+    if not any(dims.values()):
+        return ()
+    seen = set()
+    hits = []
+    if dims["query"] and not any(
+        dims[key] for key in ("position", "sweep", "submission", "instructor", "ruleset")
+    ):
+        for node in store.search_enrichment(dims["query"]):
+            if node.id not in seen:
+                seen.add(node.id)
+                hits.append(node)
+    for hit in search_library(store, **dims):
+        hit_id = getattr(hit, "id", "")
+        if not hit_id or hit_id in seen:
+            continue
+        if getattr(hit, "kind", None) not in {"named move", "system"}:
+            continue
+        seen.add(hit_id)
+        hits.append(hit)
+    return tuple(hits)
 
 
 def _named_moves(store: CuratedStore, start: str, type_of_move: str, end: str):
@@ -172,15 +223,28 @@ def _named_moves(store: CuratedStore, start: str, type_of_move: str, end: str):
 
 
 def _search_panel(walk: dict[str, str]) -> str:
-    query = html.escape(walk["query"], quote=True)
+    dims = (
+        ("position", "Position"),
+        ("sweep", "Type / sweep"),
+        ("submission", "Submission"),
+        ("instructor", "Instructor"),
+        ("ruleset", "Ruleset"),
+        ("query", "Name, alias, judo, wrestling"),
+    )
+    inputs = []
+    for key, label in dims:
+        value = html.escape(walk.get(key, ""), quote=True)
+        inputs.append(
+            f'<label for="{key}">{html.escape(label)}</label>\n'
+            f'<input id="{key}" name="{key}" type="search" value="{value}">\n'
+        )
     return (
         '<section class="panel" id="search-panel">\n'
         "<h2>Search</h2>\n"
         '<form id="search" method="post" action="/finder">\n'
         '<input type="hidden" name="action" value="search">\n'
-        '<label for="query">Search names, aliases, judo, wrestling</label>\n'
-        f'<input id="query" name="query" type="search" value="{query}">\n'
-        '<button type="submit">Search</button>\n'
+        + "".join(inputs)
+        + '<button type="submit">Search</button>\n'
         "</form>\n"
         "</section>\n"
     )
@@ -312,6 +376,31 @@ def _leaves_panel(leaves: tuple[EnrichmentNode, ...], walk: dict[str, str]) -> s
     )
 
 
+def _systems_panel(store: CuratedStore, systems: tuple[EnrichmentNode, ...]) -> str:
+    if systems:
+        cards = []
+        for node in systems:
+            names = []
+            for member_id in node.members:
+                member = store.enrichment_node(member_id)
+                names.append(member.name if member is not None else member_id)
+            cards.append(
+                '<div class="leaf">'
+                f'<div class="name">{html.escape(node.name)}</div>'
+                f'<div class="xref">{html.escape(", ".join(names))}</div>'
+                "</div>"
+            )
+        body = "\n".join(cards)
+    else:
+        body = '<p class="empty">No catalog systems yet.</p>'
+    return (
+        '<section class="panel" id="catalog-systems">\n'
+        "<h2>Catalog systems</h2>\n"
+        f"{body}\n"
+        "</section>\n"
+    )
+
+
 def _uncategorized_panel(citations) -> str:
     if citations:
         cards = []
@@ -348,9 +437,12 @@ def _organize_panel(walk: dict[str, str]) -> str:
         '<option value="type of move">Type of move</option>\n'
         '<option value="submission">Submission</option>\n'
         '<option value="named move">Named move</option>\n'
+        '<option value="system">System</option>\n'
         "</select>\n"
         '<label for="add-name">Name</label>\n'
         '<input id="add-name" name="name" type="text">\n'
+        '<label for="add-members">System members</label>\n'
+        '<input id="add-members" name="members" type="text">\n'
         '<label for="add-family">Family</label>\n'
         '<input id="add-family" name="family" type="text" value="guard">\n'
         '<label for="add-start">Start</label>\n'

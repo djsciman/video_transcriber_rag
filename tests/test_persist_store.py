@@ -4,6 +4,8 @@ import copy
 import json
 from pathlib import Path
 
+from coach_app.design import DesignMark, DesignSession
+from coach_app.edit import Sheet
 from coach_app.store import (
     Class,
     CuratedStore,
@@ -172,3 +174,48 @@ def test_later_runtime_sees_topics_units_and_history(tmp_path):
     assert later.lesson(lesson.id) == lesson
     assert later.custom_lesson(custom.id) == custom
     assert later.unit_history(history.id) == history
+
+
+def test_later_runtime_restores_design_marks_and_sheet(tmp_path):
+    first = CuratedStore.open(tmp_path)
+    first.put_topic(Topic(name="Tight waist", ruleset="gi"))
+    knee = next(
+        node
+        for node in first.enrichment_nodes()
+        if node.kind == "named move" and node.name == "Knee slice pass"
+    )
+    session = DesignSession(
+        topic_name="Tight waist",
+        topic_ruleset="gi",
+        marks=(
+            DesignMark(kind="named move", target=knee.id, id="m1", start_id=knee.start_id),
+        ),
+        next_id=2,
+    )
+    first.put_design_session(session)
+    unit = first.put_unit(Unit(topic_name="Tight waist", topic_ruleset="gi"))
+    class_record = first.put_class(Class(purpose="Win the underhook.", unit_id=unit.id))
+    lesson = first.put_lesson(
+        Lesson(kind="technique", target=knee.id, class_id=class_record.id)
+    )
+    sheet = Sheet(
+        unit=unit,
+        classes=(PackedClass(class_record=class_record, lessons=(lesson,)),),
+        mode="edit",
+        editable=True,
+    )
+    first.put_sheet(sheet)
+    first.set_current_topic("Tight waist", "gi")
+
+    later = CuratedStore.open(tmp_path)
+    restored_session = later.design_session("Tight waist", "gi")
+    restored_sheet = later.sheet("Tight waist", "gi")
+
+    assert restored_session is not None
+    assert restored_session.marks == session.marks
+    assert restored_session.topic_name == "Tight waist"
+    assert restored_sheet is not None
+    assert restored_sheet.mode == "edit"
+    assert restored_sheet.classes[0].class_record.purpose == "Win the underhook."
+    assert restored_sheet.classes[0].lessons[0].target == knee.id
+    assert later.current_topic() == ("Tight waist", "gi")

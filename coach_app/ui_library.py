@@ -6,7 +6,7 @@ import html
 from urllib.parse import urlencode
 
 from coach_app.app import Screen, add_screen, render_shell
-from coach_app.build import DRAFT_COLUMNS, Draft
+from coach_app.build import DRAFT_COLUMNS
 from coach_app.library import (
     browse_library,
     copy_history,
@@ -69,9 +69,10 @@ tr.game { background: linear-gradient(90deg, #ede9fe, #fff 42%); }
 """
 
 
-def get_custom(store: CuratedStore, fields: dict[str, list[str]] | None = None) -> str:
-    walk = _walk(store)
-    search = _search_state(store)
+def get_custom(app, fields: dict[str, list[str]] | None = None) -> str:
+    store = app.store
+    walk = app.library_walk
+    search = app.library_search
     body = (
         _STYLE
         + _create_panel()
@@ -83,7 +84,8 @@ def get_custom(store: CuratedStore, fields: dict[str, list[str]] | None = None) 
     return render_shell(title="Custom", current="custom", body=body)
 
 
-def post_custom(store: CuratedStore, fields: dict[str, list[str]]) -> str:
+def post_custom(app, fields: dict[str, list[str]]) -> str:
+    store = app.store
     action = _field(fields, "action")
     if action == "create":
         lesson = _lesson_from(fields)
@@ -99,12 +101,12 @@ def post_custom(store: CuratedStore, fields: dict[str, list[str]]) -> str:
         if custom_id:
             delete_custom(store, custom_id)
     elif action == "search":
-        state = _search_state(store)
+        state = app.library_search
         for key in ("position", "sweep", "submission", "instructor", "ruleset", "query"):
             state[key] = _field(fields, key)
         state["ran"] = "1"
     elif action == "browse":
-        walk = _walk(store)
+        walk = app.library_walk
         if "start" in fields:
             walk["start"] = _field(fields, "start")
             if "type_of_move" not in fields:
@@ -480,75 +482,14 @@ def _history_card(store: CuratedStore, entry) -> str:
 
 
 def _hold_copied(store: CuratedStore, sheet) -> None:
+    from coach_app.design import open_design
+
     name = sheet.unit.topic_name
     ruleset = sheet.unit.topic_ruleset
-    draft = Draft(
-        unit=sheet.unit,
-        classes=sheet.classes,
-        layout=getattr(sheet, "layout", "B"),
-        columns=tuple(getattr(sheet, "columns", DRAFT_COLUMNS)),
-    )
-    table = getattr(store, "_design_sessions", None)
-    if table is None:
-        table = {}
-        store._design_sessions = table
-    bundle = table.get((name, ruleset))
-    if bundle is None:
-        from coach_app.design import open_design
-
-        bundle = {
-            "session": open_design(topic_name=name, topic_ruleset=ruleset),
-            "notes": {},
-            "adding": False,
-            "paragraph": getattr(sheet.unit, "paragraph", ""),
-            "draft": draft,
-            "convert_reason": "",
-        }
-        table[(name, ruleset)] = bundle
-    else:
-        bundle["draft"] = draft
-    store._design_last_topic = (name, ruleset)
-    sheets = getattr(store, "_sheets", None)
-    if sheets is None:
-        sheets = {}
-        store._sheets = sheets
-    held = sheets.get((name, ruleset))
-    if held is None:
-        sheets[(name, ruleset)] = {
-            "sheet": sheet,
-            "mode": "edit",
-            "error": "",
-            "search": {},
-            "browse": {"start": "", "type_of_move": "", "end": ""},
-        }
-    else:
-        held["sheet"] = sheet
-        held["mode"] = "edit"
-        held["error"] = ""
-
-
-def _walk(store: CuratedStore) -> dict[str, str]:
-    walk = getattr(store, "_library_walk", None)
-    if not isinstance(walk, dict):
-        walk = {"start": "", "type_of_move": "", "end": ""}
-        store._library_walk = walk
-    return walk
-
-
-def _search_state(store: CuratedStore) -> dict[str, str]:
-    state = getattr(store, "_library_search", None)
-    if not isinstance(state, dict):
-        state = {
-            "position": "",
-            "sweep": "",
-            "submission": "",
-            "instructor": "",
-            "ruleset": "",
-            "query": "",
-            "ran": "",
-        }
-        store._library_search = state
-    return state
+    if store.design_session(name, ruleset) is None:
+        store.put_design_session(open_design(topic_name=name, topic_ruleset=ruleset))
+    store.put_sheet(sheet)
+    store.set_current_topic(name, ruleset)
 
 
 def _lesson_from(fields: dict[str, list[str]]) -> Lesson:
@@ -566,7 +507,7 @@ def _topic(store: CuratedStore, fields: dict[str, list[str]]) -> tuple[str, str]
     ruleset = _field(fields, "ruleset")
     if name and ruleset:
         return name, ruleset
-    last = getattr(store, "_design_last_topic", None)
+    last = store.current_topic()
     if last:
         return last
     topics = store.topics()
