@@ -113,7 +113,7 @@ def complete_chat(
     prompt: str,
     *,
     urlopen=None,
-    timeout: float = 120,
+    timeout: float = 600,
 ) -> str:
     """POST an OpenAI-compatible chat completion via stdlib urllib."""
     opener = urllib.request.urlopen if urlopen is None else urlopen
@@ -125,6 +125,9 @@ def complete_chat(
             "model": model,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0,
+            "reasoning_effort": "none",
+            "response_format": {"type": "json_object"},
+            "options": {"num_ctx": 2048},
         }
     ).encode("utf-8")
     request = urllib.request.Request(
@@ -336,20 +339,7 @@ def _build_prompt(
     vocab: dict,
     named_moves: list[str],
 ) -> str:
-    move_lines = [
-        f"- {move_id} ({vocab['move_labels'].get(move_id, move_id)})"
-        for move_id in vocab["move_types"]
-    ]
-    start_lines = [
-        f"- {start_id} ({vocab['start_labels'].get(start_id, start_id)})"
-        for start_id in vocab["start_ids"]
-    ]
-    end_lines = [
-        f"- {end_id} ({vocab['end_labels'].get(end_id, end_id)})"
-        for end_id in vocab["end_ids"]
-    ]
     named_lines = [f"- {name}" for name in named_moves]
-    hint_lines = [f"- {name}" for name in vocab["hints"]]
     return "\n".join(
         [
             "Pare filler, false starts, idioms, and empty turns of phrase from the chapter speech.",
@@ -358,12 +348,12 @@ def _build_prompt(
             "Add (inside …) or (outside …) from context without replacing an inside/outside word already spoken.",
             "Inside is toward the primary body connection; outside is away from it.",
             "Occupancy is top, bottom, or neutral (neutral is standing or clinch).",
-            "Return JSON only with keys transcript_cleaned (string) and suggested_tags (array of hops).",
-            "Each hop: start_position, start_occupancy, move_type, end, end_occupancy, named_move, ruleset.",
+            "Return JSON only with keys transcript_cleaned (string) and suggested_tags (array of hop objects).",
+            "Each hop object: start_position, start_occupancy, move_type, end, end_occupancy, named_move, ruleset.",
             "Use only allow-list ids and named-move names. No system field. Do not store family.",
             "end_occupancy must be an empty string when end is a submission.",
             "ruleset is gi, no-gi, or both.",
-            "suggested_tags is [] when nothing fits.",
+            "suggested_tags is [] when nothing fits. Do not use strings in suggested_tags.",
             "",
             f"instructor: {chapter.get('instructor', '')}",
             f"instructional: {chapter.get('instructional', '')}",
@@ -372,29 +362,21 @@ def _build_prompt(
             f"previous_chapter: {chapter.get('previous_chapter', '')}",
             f"next_chapter: {chapter.get('next_chapter', '')}",
             "",
-            "Occupancy:",
-            "top",
-            "bottom",
-            "neutral",
-            "",
-            "Types of move:",
-            *move_lines,
-            "",
-            "Start positions (id):",
-            *start_lines,
-            "",
-            "Ends (id):",
-            *end_lines,
+            "Occupancy: top, bottom, neutral",
+            f"Types of move: {', '.join(vocab['move_types'])}",
+            f"Start positions (id): {', '.join(vocab['start_ids'])}",
+            f"Ends (id): {', '.join(vocab['end_ids'])}",
             "",
             "NAMED_MOVES:",
             *named_lines,
             "END_NAMED_MOVES",
             "",
-            "Repair hints (judo/wrestling names, not hop ids):",
-            *hint_lines,
+            f"Repair hints (judo/wrestling names, not hop ids): {', '.join(vocab['hints'])}",
             "",
             "Chapter speech:",
             raw,
+            "",
+            "Return JSON only. suggested_tags is an array of hop objects, not strings.",
         ]
     )
 

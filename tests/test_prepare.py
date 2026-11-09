@@ -442,6 +442,9 @@ def test_complete_chat_posts_openai_body(monkeypatch):
     assert recorded["body"]["model"] == "qwen-test"
     assert recorded["body"]["messages"] == [{"role": "user", "content": "pare this"}]
     assert recorded["body"]["temperature"] == 0
+    assert recorded["body"]["reasoning_effort"] == "none"
+    assert recorded["body"]["response_format"] == {"type": "json_object"}
+    assert recorded["body"]["options"] == {"num_ctx": 2048}
 
     monkeypatch.delenv("BJJ_LLM_BASE_URL")
     monkeypatch.delenv("BJJ_LLM_MODEL")
