@@ -198,6 +198,36 @@ def test_one_chapter_covering_whole_recording_leave_file_unchanged(tmp_path: Pat
     assert json_path.read_bytes() == before
 
 
+def test_one_partial_chapter_leave_file_unchanged(tmp_path: Path):
+    corpus = tmp_path / "corpus"
+    json_path = corpus / SHOW / "Season 01" / "vol.json"
+    payload = {
+        "video_file": VOLUME,
+        "chapters": [{"title": "Intro", "start": 0.0, "end": 30.0}],
+        "language": "en",
+        "segments": list(SEGMENTS),
+    }
+    _write_volume(json_path, payload)
+    before = json_path.read_bytes()
+
+    prepare_volume(json_path, corpus)
+
+    assert json_path.read_bytes() == before
+
+
+def test_two_chapters_one_untitled_leave_file_unchanged(tmp_path: Path):
+    corpus = tmp_path / "corpus"
+    json_path = corpus / SHOW / "Season 01" / "vol.json"
+    payload = _two_chapter_payload()
+    payload["chapters"][1]["title"] = "  "
+    _write_volume(json_path, payload)
+    before = json_path.read_bytes()
+
+    prepare_volume(json_path, corpus)
+
+    assert json_path.read_bytes() == before
+
+
 def test_prepare_accepts_injected_completer():
     params = inspect.signature(prepare_volume).parameters
     assert list(params)[:4] == [
@@ -267,6 +297,12 @@ def test_fake_completer_writes_cleaned_keys_and_keeps_overlap(tmp_path: Path):
     assert guard["suggested_tags"] == [VALID_HOP]
     assert passing["suggested_tags"] == [VALID_HOP]
     assert "system" not in guard["suggested_tags"][0]
+    prompt = prompts[0]
+    assert "- takedown (Takedown)" in prompt
+    assert "- closed-guard (Closed guard)" in prompt
+    assert "- armbar (Armbar)" in prompt
+    assert "Keep chapter titles and names already used in this volume's speech" in prompt
+    assert "Occupancy: top, bottom, neutral" in prompt or "Occupancy:" in prompt
 
 
 def test_completer_down_keeps_raw_omits_cleaned(tmp_path: Path):
@@ -345,6 +381,10 @@ def test_windowed_chapter_stitches_text_and_dedupes_hops(tmp_path: Path):
     assert "<30.00>" in prompts[1]
     assert "<40.00>" not in prompts[0]
     assert "<0.00>" not in prompts[1]
+    assert "Chapter speech:" in prompts[0]
+    assert "Context (do not repeat):" not in prompts[0]
+    assert "Context (do not repeat):" in prompts[1]
+    assert "Pare only this speech:" in prompts[1]
     data = json.loads(json_path.read_text(encoding="utf-8"))
     guard, passing = data["chapters"]
     assert guard["transcript_cleaned"] == "window 1 window 2"

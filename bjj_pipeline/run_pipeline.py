@@ -191,7 +191,7 @@ def _transcript_done(output: Path) -> bool:
 
 def _prepare_eligible(output: Path) -> bool:
     from . import batch_panoscribe
-    from .prepare import _covers_whole_recording
+    from .prepare import _eligible_chapters
 
     try:
         _data, info = batch_panoscribe.inspect_transcript(output)
@@ -200,16 +200,13 @@ def _prepare_eligible(output: Path) -> bool:
     if not info["segments_present"]:
         return False
     chapters = info["chapters"]
-    if not isinstance(chapters, list) or not chapters:
-        return False
     segments = info["segments"] if isinstance(info["segments"], list) else []
-    if _covers_whole_recording(chapters, segments):
-        return False
-    return any(isinstance(chapter, dict) for chapter in chapters)
+    return _eligible_chapters(chapters, segments)
 
 
 def _prepare_done(output: Path) -> bool:
     from . import batch_panoscribe
+    from .prepare import _real_chapters
 
     try:
         _data, info = batch_panoscribe.inspect_transcript(output)
@@ -218,7 +215,7 @@ def _prepare_done(output: Path) -> bool:
     chapters = info["chapters"]
     if not isinstance(chapters, list) or not chapters:
         return False
-    real = [chapter for chapter in chapters if isinstance(chapter, dict)]
+    real = _real_chapters(chapters)
     if not real:
         return False
     return all(isinstance(chapter.get("transcript_cleaned"), str) for chapter in real)
@@ -412,7 +409,7 @@ def run(
                     failed = True
                 else:
                     if code:
-                        _print(stdout, "FAIL", "prepare", label)
+                        _print(stdout, "FAIL", "prepare", label, "model half")
                         failed = True
                     else:
                         _print(stdout, "RUN", "prepare", label)

@@ -60,12 +60,10 @@ def prepare_volume(
     if not isinstance(payload, dict):
         return 0
     chapters = payload.get("chapters")
-    if not isinstance(chapters, list) or not chapters:
-        return 0
     segments = payload.get("segments")
     if not isinstance(segments, list):
         segments = []
-    if _covers_whole_recording(chapters, segments):
+    if not _eligible_chapters(chapters, segments):
         return 0
 
     instructional = _instructional_name(json_path, corpus_root)
@@ -82,17 +80,17 @@ def prepare_volume(
             nested.append(chapter)
             continue
         previous = chapters[index - 1].get("title", "") if index > 0 else ""
-        nxt = chapters[index + 1].get("title", "") if index + 1 < len(chapters) else ""
+        next_title = chapters[index + 1].get("title", "") if index + 1 < len(chapters) else ""
         if not isinstance(previous, str):
             previous = ""
-        if not isinstance(nxt, str):
-            nxt = ""
+        if not isinstance(next_title, str):
+            next_title = ""
         updated = dict(chapter)
         updated["instructor"] = instructor
         updated["instructional"] = instructional
         updated["volume"] = volume
         updated["previous_chapter"] = previous
-        updated["next_chapter"] = nxt
+        updated["next_chapter"] = next_title
         overlapping = _overlapping_spans(chapter, segments)
         updated["transcript_raw"] = _join_raw(overlapping)
         if completer is not None and vocab is not None:
@@ -146,6 +144,24 @@ def complete_chat(
     if not isinstance(content, str):
         raise ValueError("empty completion")
     return content
+
+
+def _real_chapters(chapters: list) -> list:
+    return [
+        chapter
+        for chapter in chapters
+        if isinstance(chapter, dict) and str(chapter.get("title") or "").strip()
+    ]
+
+
+def _eligible_chapters(chapters, segments: list) -> bool:
+    if not isinstance(chapters, list) or not chapters:
+        return False
+    if len(_real_chapters(chapters)) < 2:
+        return False
+    if _covers_whole_recording(chapters, segments):
+        return False
+    return True
 
 
 def _covers_whole_recording(chapters: list, segments: list) -> bool:
@@ -338,12 +354,31 @@ def _build_prompt(
     raw: str,
     vocab: dict,
     named_moves: list[str],
+    *,
+    context: str = "",
 ) -> str:
+    move_lines = [
+        f"- {move_id} ({vocab['move_labels'].get(move_id, move_id)})"
+        for move_id in vocab["move_types"]
+    ]
+    start_lines = [
+        f"- {start_id} ({vocab['start_labels'].get(start_id, start_id)})"
+        for start_id in vocab["start_ids"]
+    ]
+    end_lines = [
+        f"- {end_id} ({vocab['end_labels'].get(end_id, end_id)})"
+        for end_id in vocab["end_ids"]
+    ]
     named_lines = [f"- {name}" for name in named_moves]
+    speech_lines = (
+        ["Context (do not repeat):", context, "", "Pare only this speech:", raw]
+        if context
+        else ["Chapter speech:", raw]
+    )
     return "\n".join(
         [
             "Pare filler, false starts, idioms, and empty turns of phrase from the chapter speech.",
-            "Keep instructor names already used in this volume.",
+            "Keep chapter titles and names already used in this volume's speech, including instructor names.",
             "Repair mistranscribed grappling words using the chapter titles and the allow-list.",
             "Add (inside …) or (outside …) from context without replacing an inside/outside word already spoken.",
             "Inside is toward the primary body connection; outside is away from it.",
@@ -363,9 +398,14 @@ def _build_prompt(
             f"next_chapter: {chapter.get('next_chapter', '')}",
             "",
             "Occupancy: top, bottom, neutral",
-            f"Types of move: {', '.join(vocab['move_types'])}",
-            f"Start positions (id): {', '.join(vocab['start_ids'])}",
-            f"Ends (id): {', '.join(vocab['end_ids'])}",
+            "Types of move:",
+            *move_lines,
+            "",
+            "Start positions (id):",
+            *start_lines,
+            "",
+            "Ends (id):",
+            *end_lines,
             "",
             "NAMED_MOVES:",
             *named_lines,
@@ -373,8 +413,7 @@ def _build_prompt(
             "",
             f"Repair hints (judo/wrestling names, not hop ids): {', '.join(vocab['hints'])}",
             "",
-            "Chapter speech:",
-            raw,
+            *speech_lines,
             "",
             "Return JSON only. suggested_tags is an array of hop objects, not strings.",
         ]
@@ -465,8 +504,19 @@ def _pare_chapter(
     named_set = set(named)
     texts: list[str] = []
     hops: list[dict] = []
-    for window in _span_windows(spans):
-        prompt = _build_prompt(chapter, _join_raw(window), vocab, named)
+    for index, window in enumerate(_span_windows(spans)):
+        if index == 0:
+            prompt = _build_prompt(chapter, _join_raw(window), vocab, named)
+        else:
+            overlap = window[:WINDOW_OVERLAP_SPANS]
+            rest = window[WINDOW_OVERLAP_SPANS:]
+            prompt = _build_prompt(
+                chapter,
+                _join_raw(rest),
+                vocab,
+                named,
+                context=_join_raw(overlap),
+            )
         parsed = _parse_completion(completer(prompt))
         texts.append(parsed["transcript_cleaned"])
         for hop in parsed["suggested_tags"]:
