@@ -1,0 +1,105 @@
+<h1>Advising</h1>
+<p class="lede">Coach-only. Topic {{ state.topic_name }} ({{ state.ruleset }}). One current job. Later stages stay closed until this job needs them.</p>
+
+<div class="world" aria-label="Knowledge in the world">
+  <span class="chip">Topic {{ state.topic_name }}</span>
+  <span class="chip">Ruleset {{ state.ruleset }}</span>
+  <span class="chip">Citations {{ counts.citations_accepted }}</span>
+  <span class="chip">Uncategorized {{ counts.uncategorized }}</span>
+  <span class="chip">System {{ "chosen" if counts.system_chosen else "empty" }}</span>
+  <span class="chip">Map-ready {{ "yes" if counts.map_ready else "no" }}</span>
+  <span class="chip">Sheet {{ counts.sheet_mode }}</span>
+  <span class="chip">Missing video {{ counts.missing_video }}</span>
+</div>
+
+<div class="next">
+  <h2>Next action</h2>
+  <p><strong>{{ next.label }}</strong> — {{ next.why }}</p>
+</div>
+
+<p class="decision"><strong>Closure:</strong> {{ state.last_feedback }}</p>
+
+<div class="panel">
+  <p class="who">Advisor proposes</p>
+  {% for p in state.proposals %}
+    <div class="proposal">
+      <p>{{ p.text }}</p>
+      <p class="who">Status: {{ p.status }} · Volume {{ p.volume }}</p>
+      {% if p.status == "awaiting" %}
+        <form method="post" action="/accept" style="display:inline">
+          <input type="hidden" name="proposal_id" value="{{ p.id }}">
+          <button class="primary" type="submit">Accept</button>
+        </form>
+        <form method="post" action="/dismiss" style="display:inline">
+          <input type="hidden" name="proposal_id" value="{{ p.id }}">
+          <button class="ghost" type="submit">Dismiss</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endfor %}
+  <form hx-post="/propose" hx-target="#stage" hx-swap="innerHTML" hx-indicator="#busy-propose">
+    <button class="ghost" type="submit">Propose another cleaned statement</button>
+    <span id="busy-propose" class="htmx-indicator busy">Proposing… the advisor is reading the volume.</span>
+  </form>
+</div>
+
+<div class="panel">
+  <p class="who">Coach places (uncategorized stay off lessons)</p>
+  {% if not state.uncategorized %}
+    <p>No uncategorized citations.</p>
+  {% endif %}
+  {% for c in state.uncategorized %}
+    <div>
+      <p>{{ c.text }} {% if c.playback_missing %}<em>(playback link missing)</em>{% endif %}</p>
+      <form method="post" action="/place">
+        <input type="hidden" name="citation_id" value="{{ c.id }}">
+        <button class="primary" type="submit">Place on Hip bump sweep</button>
+      </form>
+    </div>
+  {% endfor %}
+</div>
+
+<div class="panel">
+  <p class="who">Briefing — coach determines the system</p>
+  {% if state.system_chosen %}
+    <div class="decision">System: {{ state.system_words }}</div>
+  {% else %}
+    <p>Empty until chosen. Gi stays gi.</p>
+    <form method="post" action="/choose-system">
+      <button class="primary" type="submit">Choose system</button>
+    </form>
+  {% endif %}
+</div>
+
+<div class="panel">
+  <p class="who">Design map — left-click would edit; right-click would delete (sample)</p>
+  <div class="map" id="design-map">
+    {% for m in state.map_marks %}
+      <span class="mark">{{ m.label }}</span>
+    {% else %}
+      <p style="padding:1rem;color:var(--muted)">Empty map. Convert stays blocked until a named move exists.</p>
+    {% endfor %}
+  </div>
+  <form method="post" action="/add-named-move">
+    <button class="ghost" type="submit">Add named move</button>
+  </form>
+  <form hx-post="/convert" hx-target="#stage" hx-swap="innerHTML" hx-indicator="#busy-convert">
+    <button class="primary" type="submit" {% if not counts.can_convert %}disabled{% endif %}>Convert to Draft</button>
+    <span id="busy-convert" class="htmx-indicator busy">Converting… packing stays in the application.</span>
+  </form>
+  {% if state.draft_classes %}
+    {% for card in state.draft_classes %}
+      <div class="class-card">
+        <header>{{ card.title }} · {{ card.kind }}</header>
+        <p style="padding:0.5rem">{{ card.move }}</p>
+      </div>
+    {% endfor %}
+    <p><a href="/print">Print packet</a></p>
+  {% endif %}
+</div>
+
+<div class="proto">
+  Prototype-only: reset in-memory sample.
+  <form method="post" action="/reset"><button class="ghost" type="submit">Reset sample</button></form>
+  <p class="state">{{ counts | tojson }}</p>
+</div>

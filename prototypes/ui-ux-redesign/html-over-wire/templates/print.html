@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Print packet — Hip bump sweep (gi)</title>
+  <style>
+    :root { --ink: #1c1917; --serif: Palatino, Georgia, serif; --sans: "Segoe UI", system-ui, sans-serif; }
+    body { font-family: var(--sans); color: var(--ink); }
+    h1 { font-family: var(--serif); }
+    .canvas { page: canvas; border: 1px solid #d6d3d1; min-height: 12rem; padding: 1rem; }
+    .class-card { page: class-card; border: 2px solid #1c1917; margin: 1rem 0; }
+    .class-card header { background: #1c1917; color: #fff; padding: 0.4rem 0.7rem; }
+    .proto { border: 2px dotted #b91c1c; background: #fef2f2; padding: 0.5rem; }
+    @page { margin: 0.5in; }
+    @page canvas { size: letter landscape; margin: 0.5in; }
+    @page class-card { size: letter portrait; margin: 0.5in; }
+    @media print { .proto { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="proto">PROTOTYPE print packet. Green coach UI is the pages below. Use the browser print dialog.</div>
+  <section class="canvas">
+    <h1>Design canvas — {{ state.topic_name }} ({{ state.ruleset }})</h1>
+    <p>System: {{ state.system_words or "empty" }}</p>
+    {% for m in state.map_marks %}<p>{{ m.label }}</p>{% endfor %}
+  </section>
+  {% for card in state.draft_classes %}
+    <section class="class-card">
+      <header>{{ card.title }} · {{ card.kind }}</header>
+      <p>{{ card.move }}</p>
+    </section>
+  {% endfor %}
+</body>
+</html>

@@ -1,0 +1,2 @@
+# Throwaway extras for issue 90 prototype 2. Do not add to repo-root pyproject.toml.
+nicegui==3.19.0

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PROTOTYPE — Attention inbox (issue 90)</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+  <style>
+    :root {
+      --bg: #e7e5e4; --paper: #fafaf9; --ink: #1c1917; --muted: #57534e;
+      --line: #a8a29e; --accent: #1d4ed8; --ok: #166534;
+      --sans: "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--sans); background: var(--bg); color: var(--ink); }
+    .proto { border: 2px dotted #b91c1c; background: #fef2f2; margin: 0.6rem 0.9rem; padding: 0.55rem 0.75rem; font-size: 0.88rem; }
+    .coach { border: 2px dotted #15803d; background: var(--paper); margin: 0.6rem 0.9rem 2rem; padding: 0.9rem 1rem; }
+    h1 { font-size: 1.35rem; margin: 0 0 0.2rem; }
+    .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.5rem 0 0.8rem; }
+    .chip { border: 1px solid var(--line); border-radius: 6px; padding: 0.12rem 0.45rem; font-size: 0.78rem; background: #fff; }
+    .chip[data-kind="status"] { background: #eff6ff; border-color: var(--accent); }
+    .layout { display: grid; gap: 0.75rem; }
+    @media (min-width: 900px) { .layout { grid-template-columns: 16rem 1fr; } }
+    .queue a {
+      display: block; padding: 0.45rem 0.55rem; border: 1px solid var(--line); border-radius: 8px;
+      text-decoration: none; color: inherit; margin: 0.3rem 0; min-height: 2rem;
+    }
+    .queue a[aria-current="true"] { background: #1c1917; color: #fff; }
+    .workspace { border: 1px solid var(--line); border-radius: 10px; padding: 0.75rem; background: #fff; }
+    .proposal { border: 1px dashed #c2410c; background: #fff7ed; border-radius: 8px; padding: 0.6rem; }
+    .decision { border: 1px solid var(--ok); background: #f0fdf4; border-radius: 8px; padding: 0.6rem; }
+    button, .btn {
+      font: inherit; border-radius: 8px; padding: 0.4rem 0.75rem; cursor: pointer; border: 1px solid var(--line); background: #fff;
+    }
+    button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    .primary { background: #1c1917; color: #fff; border-color: #1c1917; }
+    .danger { color: #9f1239; border-color: #9f1239; }
+    dialog { border: 1px solid var(--line); border-radius: 12px; padding: 1rem; max-width: 24rem; }
+    .filter { width: 100%; padding: 0.35rem 0.5rem; margin: 0 0 0.6rem; }
+    .state { font-family: ui-monospace, Consolas, monospace; font-size: 0.78rem; }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body x-data="{ q: '{{ queue }}', filter: '', dialogOpen: false, pendingId: '' }">
+  <div class="proto">
+    <strong>PROTOTYPE</strong> — Issue 90 composition 3 of 3: Flask + Jinja2 + Alpine.js.
+    Attention inbox + workspace. Productivity tokens + APG <code>dialog</code>. Sample data.
+    Nothing is written to the curated store.
+    <br><strong>Color key:</strong> <span style="border-bottom:2px dotted #b91c1c">red dotted</span> = prototype-only chrome.
+    <span style="border-bottom:2px dotted #15803d">green dotted</span> = proposed coach-final UI.
+    Bind <code>127.0.0.1:{{ port }}</code>.
+    Other compositions: <a href="http://127.0.0.1:8771/">HTML-over-wire</a> ·
+    <a href="http://127.0.0.1:8772/">NiceGUI studio</a>.
+  </div>
+
+  <div class="coach">
+    <h1>Attention</h1>
+    <p>Coach-only. Queues of outstanding work. Opening a queue opens the workspace. Topic {{ state.topic_name }} ({{ state.ruleset }}).</p>
+    <div class="chips" aria-label="Knowledge in the world">
+      <span class="chip" data-kind="status">Uncategorized {{ counts.uncategorized }}</span>
+      <span class="chip" data-kind="status">Awaiting accept {{ counts.awaiting }}</span>
+      <span class="chip" data-kind="status">Map-ready {{ "yes" if counts.map_ready else "no" }}</span>
+      <span class="chip">Citations {{ counts.citations_accepted }}</span>
+      <span class="chip">System {{ "chosen" if counts.system_chosen else "empty" }}</span>
+      <span class="chip">Sheet {{ counts.sheet_mode }}</span>
+      <span class="chip">Missing video {{ counts.missing_video }}</span>
+    </div>
+    <p class="decision"><strong>Next:</strong> {{ next.label }} — {{ next.why }}</p>
+    <p><strong>Closure:</strong> {{ state.last_feedback }}</p>
+
+    <div class="layout">
+      <nav class="queue" aria-label="Work queues">
+        <a href="/?queue=uncategorized" aria-current="{{ 'true' if queue == 'uncategorized' else 'false' }}">Uncategorized ({{ counts.uncategorized }})</a>
+        <a href="/?queue=awaiting" aria-current="{{ 'true' if queue == 'awaiting' else 'false' }}">Awaiting accept ({{ counts.awaiting }})</a>
+        <a href="/?queue=map-ready" aria-current="{{ 'true' if queue == 'map-ready' else 'false' }}">Map-ready</a>
+      </nav>
+      <section class="workspace" aria-label="Workspace">
+        <label for="filter">Filter in this queue</label>
+        <input id="filter" class="filter" type="search" x-model="filter" placeholder="Recognition: type to filter, do not recall ids">
+
+        {% if queue == "awaiting" %}
+          {% for p in state.proposals if p.status == "awaiting" %}
+            <div class="proposal" x-show="'{{ p.text|e }}'.toLowerCase().includes(filter.toLowerCase())">
+              <p class="who">Advisor proposes</p>
+              <p>{{ p.text }}</p>
+              <form method="post" action="/accept">
+                <input type="hidden" name="proposal_id" value="{{ p.id }}">
+                <button class="primary" type="submit">Accept</button>
+              </form>
+            </div>
+          {% else %}
+            <p>Queue clear. Next action moved to Place or Briefing.</p>
+          {% endfor %}
+        {% elif queue == "map-ready" %}
+          <div class="decision">
+            {% if counts.map_ready %}
+              Topic is map-ready. Convert would live here in production.
+            {% elif counts.system_chosen %}
+              System is chosen. Add named moves on Design to finish map-ready.
+            {% else %}
+              System empty. Choose on the briefing.
+              <form method="post" action="/choose-system">
+                <button class="primary" type="submit">Choose system</button>
+              </form>
+            {% endif %}
+          </div>
+        {% else %}
+          {% for c in state.uncategorized %}
+            <article x-show="'{{ c.text|e }}'.toLowerCase().includes(filter.toLowerCase())">
+              <p>{{ c.text }} {% if c.playback_missing %}<em>(playback missing)</em>{% endif %}</p>
+              <form method="post" action="/place" style="display:inline">
+                <input type="hidden" name="citation_id" value="{{ c.id }}">
+                <button class="primary" type="submit">Place on Hip bump sweep</button>
+              </form>
+              <button class="danger" type="button"
+                @click="pendingId = '{{ c.id }}'; $refs.confirm.showModal()">
+                Remove citation
+              </button>
+            </article>
+          {% else %}
+            <p>No uncategorized citations. Returning coaches can jump to Awaiting or Map-ready.</p>
+          {% endfor %}
+        {% endif %}
+      </section>
+    </div>
+  </div>
+
+  <dialog x-ref="confirm" aria-labelledby="confirm-title">
+    <h2 id="confirm-title">Remove this citation?</h2>
+    <p>High-cost. The citation leaves the curated store in this sample. Confirm is required.</p>
+    <form method="post" action="/remove-citation">
+      <input type="hidden" name="citation_id" :value="pendingId">
+      <button class="danger" type="submit">Remove</button>
+      <button type="button" @click="$refs.confirm.close()">Keep</button>
+    </form>
+  </dialog>
+
+  <div class="proto">
+    Prototype-only reset.
+    <form method="post" action="/reset"><button type="submit">Reset sample</button></form>
+    <p class="state">{{ counts | tojson }}</p>
+  </div>
+</body>
+</html>
