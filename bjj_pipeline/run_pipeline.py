@@ -71,10 +71,14 @@ def _default_prepare(
     corpus_root: Path,
     video_library_root: Path | None = None,
 ) -> int:
-    from .prepare import prepare_volume
+    from .prepare import complete_chat, prepare_volume
 
-    prepare_volume(json_path, corpus_root, video_library_root)
-    return 0
+    return prepare_volume(
+        json_path,
+        corpus_root,
+        video_library_root,
+        completer=complete_chat,
+    )
 
 
 def _default_chapter_count(video: Path) -> int:
@@ -217,7 +221,7 @@ def _prepare_done(output: Path) -> bool:
     real = [chapter for chapter in chapters if isinstance(chapter, dict)]
     if not real:
         return False
-    return all(isinstance(chapter.get("transcript_raw"), str) for chapter in real)
+    return all(isinstance(chapter.get("transcript_cleaned"), str) for chapter in real)
 
 
 def _stream_isatty(stdin, isatty: bool | None) -> bool:
