@@ -75,6 +75,22 @@ def test_no_split_bundles_shim():
     assert not (REPO / "split_bundles.py").exists()
 
 
+def test_readme_operator_path_lists_prepare():
+    text = (REPO / "README.md").read_text(encoding="utf-8")
+    assert "Default stages are **match, organize, detect, transcribe, prepare**." in text
+    assert "Apply match, organize, detect, transcribe, and prepare." in text
+    assert "`--force-stage match\\|organize\\|detect\\|transcribe\\|prepare`" in text
+    assert "| prepare | Every real chapter" in text
+    assert "`transcript_cleaned`" in text
+    assert "`BJJ_LLM_BASE_URL`" in text
+    assert "`http://localhost:11434/v1`" in text
+    assert "`BJJ_LLM_MODEL`" in text
+    assert "`qwen3.5:4b`" in text
+    assert "Ollama" in text
+    assert "in place" in text
+    assert "`segments`" in text
+
+
 def test_pyproject_declares_organize_transcribe_all_extras():
     data = tomllib.loads((REPO / "pyproject.toml").read_text(encoding="utf-8"))
     extras = data["project"]["optional-dependencies"]
