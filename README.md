@@ -268,6 +268,8 @@ Prepare updates that existing corpus JSON in place after transcribe. Whisper `se
 | `BJJ_LLM_BASE_URL` | `http://localhost:11434/v1` | Local Ollama base URL |
 | `BJJ_LLM_MODEL` | `qwen3.5:4b` | Local model tag. Operators may set `qwen3:4b-instruct` if that tag is missing |
 
+Live 4B sample (laptop class, not the 27B production box): install Ollama (`winget install --id Ollama.Ollama -e --accept-package-agreements --accept-source-agreements`), `ollama pull qwen3.5:4b`, set `BJJ_LLM_BASE_URL=http://localhost:11434/v1`. `complete_chat` posts `reasoning_effort` `none` (OpenAI-compat off-switch; `/v1` ignores native `think`), `response_format` JSON, and `options.num_ctx` 2048. `/v1` still loads 4096 unless you `ollama create` a `PARAMETER num_ctx 2048` alias. Copy a volume JSON out of the 529-volume library before scoring; do not overwrite the corpus in place.
+
 Repair of an already-organized show stays `py -3 -m bjj_pipeline organize --repair`; it is not a pipeline stage.
 
 ### Detect if needed
