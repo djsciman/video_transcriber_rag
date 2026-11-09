@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import re
+
 _FILLERS = frozenset({"uh", "um", "er"})
+_SPAN_PREFIX = re.compile(r"<(\d+(?:\.\d+)?)>")
 
 
 def _strip_fillers(text: str) -> str:
@@ -31,7 +34,10 @@ def cleanup_volume(volume: dict) -> dict:
         if str(chapter.get("title") or "").strip()
     ]
     if len(chapters) >= 2:
-        parts = _nest_under_chapters(chapters, speech)
+        if any(_joined_chapter_speech(chapter) is not None for chapter in chapters):
+            parts = _parts_from_chapter_speech(chapters)
+        else:
+            parts = _nest_under_chapters(chapters, speech)
         recording_title = ""
     else:
         parts = [_untitled_part(speech)]
@@ -43,6 +49,61 @@ def cleanup_volume(volume: dict) -> dict:
         "recording_title": recording_title,
         "parts": parts,
     }
+
+
+def _joined_chapter_speech(chapter: dict) -> str | None:
+    cleaned = chapter.get("transcript_cleaned")
+    if isinstance(cleaned, str):
+        return cleaned
+    raw = chapter.get("transcript_raw")
+    if isinstance(raw, str):
+        return raw
+    return None
+
+
+def _parts_from_chapter_speech(chapters: list[dict]) -> list[dict]:
+    ordered = sorted(chapters, key=lambda chapter: chapter["start"])
+    return [
+        {
+            "title": chapter["title"],
+            "start": chapter["start"],
+            "end": chapter["end"],
+            "speech": _speech_from_joined(chapter, _joined_chapter_speech(chapter) or ""),
+        }
+        for chapter in ordered
+    ]
+
+
+def _speech_from_joined(chapter: dict, joined: str) -> list[dict]:
+    text = joined.strip()
+    if not text:
+        return []
+    matches = list(_SPAN_PREFIX.finditer(text))
+    if not matches:
+        return [
+            {
+                "start": chapter["start"],
+                "end": chapter["end"],
+                "text": text,
+            }
+        ]
+    spans = []
+    for index, match in enumerate(matches):
+        start = float(match.group(1))
+        chunk_end = (
+            matches[index + 1].start() if index + 1 < len(matches) else len(text)
+        )
+        chunk = text[match.end() : chunk_end].strip()
+        if not chunk:
+            continue
+        if index + 1 < len(matches):
+            end = float(matches[index + 1].group(1))
+        else:
+            end = chapter["end"]
+        if end < start:
+            end = start
+        spans.append({"start": start, "end": end, "text": chunk})
+    return spans
 
 
 def _untitled_part(speech: list[dict]) -> dict:

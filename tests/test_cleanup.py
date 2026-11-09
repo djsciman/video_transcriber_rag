@@ -306,6 +306,161 @@ class RealChaptersTest(unittest.TestCase):
         )
 
 
+class ChapterSpeechPreferenceTest(unittest.TestCase):
+    def test_transcript_cleaned_is_used_instead_of_raw_or_segments(self):
+        volume = {
+            "video_file": "Closed Guard.mp4",
+            "chapters": [
+                {
+                    "title": "Closed Guard",
+                    "start": 0.0,
+                    "end": 300.0,
+                    "transcript_raw": "<10.00> raw closed guard uh",
+                    "transcript_cleaned": "pared closed guard",
+                },
+                {
+                    "title": "Arm Bar",
+                    "start": 300.0,
+                    "end": 600.0,
+                    "transcript_raw": "<300.00> raw arm bar uh",
+                    "transcript_cleaned": "pared arm bar",
+                },
+            ],
+            "segments": [
+                {
+                    "start": 10.0,
+                    "end": 14.0,
+                    "text": "uh nested closed guard",
+                    "source": "SPEECH",
+                },
+                {
+                    "start": 310.0,
+                    "end": 320.0,
+                    "text": "uh nested arm bar",
+                    "source": "SPEECH",
+                },
+                {
+                    "start": 900.0,
+                    "end": 910.0,
+                    "text": "after chapters",
+                    "source": "SPEECH",
+                },
+            ],
+        }
+
+        record = cleanup_volume(volume)
+
+        self.assertEqual(record["recording_title"], "")
+        self.assertEqual(
+            [(part["title"], [span["text"] for span in part["speech"]]) for part in record["parts"]],
+            [
+                ("Closed Guard", ["pared closed guard"]),
+                ("Arm Bar", ["pared arm bar"]),
+            ],
+        )
+        self.assertEqual(record["parts"][0]["speech"][0]["start"], 0.0)
+        self.assertEqual(record["parts"][0]["speech"][0]["end"], 300.0)
+        self.assertEqual(record["parts"][1]["speech"][0]["start"], 300.0)
+        self.assertEqual(record["parts"][1]["speech"][0]["end"], 600.0)
+
+    def test_transcript_raw_copies_overlap_and_skips_a_second_nest(self):
+        volume = {
+            "video_file": "Guard Pass.mp4",
+            "chapters": [
+                {
+                    "title": "Guard",
+                    "start": 0.0,
+                    "end": 300.0,
+                    "transcript_raw": (
+                        "<10.00> in guard <290.00> straddling the start"
+                    ),
+                },
+                {
+                    "title": "Pass",
+                    "start": 300.0,
+                    "end": 600.0,
+                    "transcript_raw": (
+                        "<290.00> straddling the start <300.00> at the pass"
+                    ),
+                },
+            ],
+            "segments": [
+                {"start": 10.0, "end": 20.0, "text": "in guard", "source": "SPEECH"},
+                {
+                    "start": 290.0,
+                    "end": 310.0,
+                    "text": "straddling the start",
+                    "source": "SPEECH",
+                },
+                {"start": 300.0, "end": 320.0, "text": "at the pass", "source": "SPEECH"},
+                {
+                    "start": 900.0,
+                    "end": 910.0,
+                    "text": "after chapters",
+                    "source": "SPEECH",
+                },
+            ],
+        }
+
+        record = cleanup_volume(volume)
+
+        self.assertEqual(
+            [(part["title"], [span["text"] for span in part["speech"]]) for part in record["parts"]],
+            [
+                ("Guard", ["in guard", "straddling the start"]),
+                ("Pass", ["straddling the start", "at the pass"]),
+            ],
+        )
+        self.assertEqual(
+            [span["start"] for span in record["parts"][0]["speech"]],
+            [10.0, 290.0],
+        )
+        self.assertEqual(
+            [span["start"] for span in record["parts"][1]["speech"]],
+            [290.0, 300.0],
+        )
+
+    def test_neither_key_still_nests_from_segments_and_strips_fillers(self):
+        volume = {
+            "video_file": "Vol1.mp4",
+            "chapters": [
+                {"title": "Closed Guard", "start": 0.0, "end": 120.0},
+                {"title": "Arm Bar", "start": 120.0, "end": 240.0},
+            ],
+            "segments": [
+                {
+                    "start": 10.0,
+                    "end": 14.0,
+                    "text": "closed uh guard",
+                    "source": "SPEECH",
+                },
+                {
+                    "start": 200.0,
+                    "end": 205.0,
+                    "text": "finish um the armbar",
+                    "source": "SPEECH",
+                },
+                {
+                    "start": 300.0,
+                    "end": 301.0,
+                    "text": "after both chapters",
+                    "source": "SPEECH",
+                },
+            ],
+        }
+
+        record = cleanup_volume(volume)
+
+        self.assertEqual(
+            [(part["title"], [span["text"] for span in part["speech"]]) for part in record["parts"]],
+            [
+                ("Closed Guard", ["closed guard"]),
+                ("Arm Bar", ["finish the armbar"]),
+                ("", ["after both chapters"]),
+            ],
+        )
+
+
 class CuratedStoreIsolationTest(unittest.TestCase):
     def test_raw_record_is_not_written_to_the_curated_store(self):
         volume = {
