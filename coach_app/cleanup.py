@@ -35,7 +35,7 @@ def cleanup_volume(volume: dict) -> dict:
     ]
     if len(chapters) >= 2:
         if any(_joined_chapter_speech(chapter) is not None for chapter in chapters):
-            parts = _parts_from_chapter_speech(chapters)
+            parts = _parts_from_chapter_speech(chapters, speech)
         else:
             parts = _nest_under_chapters(chapters, speech)
         recording_title = ""
@@ -61,16 +61,29 @@ def _joined_chapter_speech(chapter: dict) -> str | None:
     return None
 
 
-def _parts_from_chapter_speech(chapters: list[dict]) -> list[dict]:
+def _parts_from_chapter_speech(chapters: list[dict], speech: list[dict]) -> list[dict]:
     ordered = sorted(chapters, key=lambda chapter: chapter["start"])
     return [
         {
             "title": chapter["title"],
             "start": chapter["start"],
             "end": chapter["end"],
-            "speech": _speech_from_joined(chapter, _joined_chapter_speech(chapter) or ""),
+            "speech": _speech_for_chapter(chapter, speech, ordered),
         }
         for chapter in ordered
+    ]
+
+
+def _speech_for_chapter(
+    chapter: dict, speech: list[dict], ordered: list[dict]
+) -> list[dict]:
+    joined = _joined_chapter_speech(chapter)
+    if joined is not None:
+        return _speech_from_joined(chapter, joined)
+    return [
+        span
+        for span in speech
+        if _chapter_containing(span["start"], ordered) is chapter
     ]
 
 

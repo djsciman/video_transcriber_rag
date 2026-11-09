@@ -829,10 +829,11 @@ def _write_corpus_json(path: Path, payload: dict) -> Path:
     return path
 
 
-def _prepare_line(out: str, status: str) -> bool:
-    return any(
-        line.startswith(status) and "prepare" in line for line in out.splitlines()
-    )
+def _prepare_line(out: str, status: str) -> str:
+    for line in out.splitlines():
+        if line.startswith(status) and "prepare" in line:
+            return line
+    return ""
 
 
 def test_parser_force_stage_includes_prepare():
@@ -1146,7 +1147,9 @@ def test_completer_down_nests_raw_prints_fail_then_retry_fills_cleaned(
     )
 
     assert code == 1
-    assert _prepare_line(out, "FAIL")
+    fail_line = _prepare_line(out, "FAIL")
+    assert fail_line
+    assert "model half" in fail_line
     data = json.loads(out_json.read_text(encoding="utf-8"))
     guard, passing = data["chapters"]
     assert "<290.00>" in guard["transcript_raw"]
@@ -1208,6 +1211,38 @@ def test_prepare_skips_whole_recording_chapter(tmp_path: Path):
     assert _prepare_line(out, "SKIP")
 
 
+def test_prepare_skips_single_partial_chapter(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(
+        library, "Arm Bars by John Danaher", ["S01E01 - Volume 1.mp4"]
+    )
+    corpus = tmp_path / "corpus"
+    out_json = (
+        corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    )
+    _write_corpus_json(
+        out_json,
+        {
+            "video_file": "S01E01 - Volume 1.mp4",
+            "chapters": [{"title": "Intro", "start": 0.0, "end": 30.0}],
+            "language": "en",
+            "segments": [
+                {"start": 10.0, "end": 20.0, "text": "in guard"},
+                {"start": 40.0, "end": 50.0, "text": "after"},
+            ],
+        },
+    )
+
+    code, out, calls = _run(
+        library, corpus, apply=True, chapter_count=lambda _video: 2
+    )
+
+    assert code == 0
+    assert calls["prepare"] == []
+    assert _prepare_line(out, "SKIP")
+
+
 def test_prepare_fail_exits_1(tmp_path: Path):
     library = tmp_path / "lib"
     library.mkdir()
@@ -1247,4 +1282,6 @@ def test_prepare_fail_exits_1(tmp_path: Path):
     )
 
     assert code == 1
-    assert _prepare_line(buf.getvalue(), "FAIL")
+    fail_line = _prepare_line(buf.getvalue(), "FAIL")
+    assert fail_line
+    assert "model half" in fail_line

@@ -420,6 +420,58 @@ class ChapterSpeechPreferenceTest(unittest.TestCase):
             [290.0, 300.0],
         )
 
+    def test_mixed_chapter_uses_per_chapter_source_and_skips_leftovers(self):
+        volume = {
+            "video_file": "Vol1.mp4",
+            "chapters": [
+                {
+                    "title": "Closed Guard",
+                    "start": 0.0,
+                    "end": 120.0,
+                    "transcript_cleaned": "pared closed guard",
+                },
+                {
+                    "title": "Arm Bar",
+                    "start": 120.0,
+                    "end": 240.0,
+                },
+            ],
+            "segments": [
+                {
+                    "start": 10.0,
+                    "end": 14.0,
+                    "text": "uh nested closed guard",
+                    "source": "SPEECH",
+                },
+                {
+                    "start": 200.0,
+                    "end": 205.0,
+                    "text": "finish um the armbar",
+                    "source": "SPEECH",
+                },
+                {
+                    "start": 300.0,
+                    "end": 301.0,
+                    "text": "after both chapters",
+                    "source": "SPEECH",
+                },
+            ],
+        }
+
+        record = cleanup_volume(volume)
+
+        self.assertEqual(
+            [(part["title"], [span["text"] for span in part["speech"]]) for part in record["parts"]],
+            [
+                ("Closed Guard", ["pared closed guard"]),
+                ("Arm Bar", ["finish the armbar"]),
+            ],
+        )
+        self.assertEqual(record["parts"][0]["speech"][0]["start"], 0.0)
+        self.assertEqual(record["parts"][0]["speech"][0]["end"], 120.0)
+        self.assertEqual(record["parts"][1]["speech"][0]["start"], 200.0)
+        self.assertEqual(record["parts"][1]["speech"][0]["end"], 205.0)
+
     def test_neither_key_still_nests_from_segments_and_strips_fillers(self):
         volume = {
             "video_file": "Vol1.mp4",
