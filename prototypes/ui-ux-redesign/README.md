@@ -8,9 +8,11 @@ Three **separate** compositions of non-stdlib Python + JavaScript. Not skins. No
 
 | Folder | Python + JS | 88 paradigm | 87 visual | Port |
 | --- | --- | --- | --- | --- |
-| [html-over-wire/](html-over-wire/) | Starlette + Jinja2 + htmx 2.0.11 | Guided next-action | Editorial paper/ink | 127.0.0.1:8771 |
-| [nicegui-studio/](nicegui-studio/) | NiceGUI 3.19.0 (bundles Vue + Quasar) | Topic studio | Layered / productivity | 127.0.0.1:8772 |
-| [flask-alpine-inbox/](flask-alpine-inbox/) | Flask + Jinja2 + Alpine.js 3.14.8 | Attention inbox + workspace | Productivity tokens + APG dialog | 127.0.0.1:8773 |
+| [html-over-wire/](html-over-wire/) | Starlette + Jinja2 + htmx 2.0.11 | Guided next-action | Blue sans productivity | 127.0.0.1:8771 |
+| [nicegui-studio/](nicegui-studio/) | NiceGUI 3.19.0 (bundles Vue + Quasar) | Topic studio | Blue sans over Quasar | 127.0.0.1:8772 |
+| [flask-alpine-inbox/](flask-alpine-inbox/) | Flask + Jinja2 + Alpine.js 3.14.8 | Attention inbox + workspace | Blue sans + APG dialog | 127.0.0.1:8773 |
+
+Shared visual: [`blue_shell.css`](blue_shell.css) — navy appbar, ice-blue canvas, Segoe UI / Helvetica / Arial, filled blue primaries. Distinct from spec-70 cream/serif paper-ink.
 
 Chrome: **green dotted** = proposed coach-final UI. **red dotted** = prototype-only chrome. Each page has a red banner explaining the key.
 

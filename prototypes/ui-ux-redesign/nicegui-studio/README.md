@@ -1,6 +1,6 @@
 # PROTOTYPE — NiceGUI topic studio (issue 90)
 
-Throwaway. Not production. Topic studio + layered/productivity chrome via NiceGUI's bundled Vue + Quasar.
+Throwaway. Not production. Topic studio via NiceGUI's bundled Vue + Quasar, restyled with a blue sans-serif shell (`ui.colors` + `../blue_shell.css`).
 
 ## What it proves
 

@@ -5,46 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PROTOTYPE — Attention inbox (issue 90)</title>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
-  <style>
-    :root {
-      --bg: #e7e5e4; --paper: #fafaf9; --ink: #1c1917; --muted: #57534e;
-      --line: #a8a29e; --accent: #1d4ed8; --ok: #166534;
-      --sans: "Segoe UI", system-ui, sans-serif;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: var(--sans); background: var(--bg); color: var(--ink); }
-    .proto { border: 2px dotted #b91c1c; background: #fef2f2; margin: 0.6rem 0.9rem; padding: 0.55rem 0.75rem; font-size: 0.88rem; }
-    .coach { border: 2px dotted #15803d; background: var(--paper); margin: 0.6rem 0.9rem 2rem; padding: 0.9rem 1rem; }
-    h1 { font-size: 1.35rem; margin: 0 0 0.2rem; }
-    .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.5rem 0 0.8rem; }
-    .chip { border: 1px solid var(--line); border-radius: 6px; padding: 0.12rem 0.45rem; font-size: 0.78rem; background: #fff; }
-    .chip[data-kind="status"] { background: #eff6ff; border-color: var(--accent); }
-    .layout { display: grid; gap: 0.75rem; }
-    @media (min-width: 900px) { .layout { grid-template-columns: 16rem 1fr; } }
-    .queue a {
-      display: block; padding: 0.45rem 0.55rem; border: 1px solid var(--line); border-radius: 8px;
-      text-decoration: none; color: inherit; margin: 0.3rem 0; min-height: 2rem;
-    }
-    .queue a[aria-current="true"] { background: #1c1917; color: #fff; }
-    .workspace { border: 1px solid var(--line); border-radius: 10px; padding: 0.75rem; background: #fff; }
-    .proposal { border: 1px dashed #c2410c; background: #fff7ed; border-radius: 8px; padding: 0.6rem; }
-    .decision { border: 1px solid var(--ok); background: #f0fdf4; border-radius: 8px; padding: 0.6rem; }
-    button, .btn {
-      font: inherit; border-radius: 8px; padding: 0.4rem 0.75rem; cursor: pointer; border: 1px solid var(--line); background: #fff;
-    }
-    button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-    .primary { background: #1c1917; color: #fff; border-color: #1c1917; }
-    .danger { color: #9f1239; border-color: #9f1239; }
-    dialog { border: 1px solid var(--line); border-radius: 12px; padding: 1rem; max-width: 24rem; }
-    .filter { width: 100%; padding: 0.35rem 0.5rem; margin: 0 0 0.6rem; }
-    .state { font-family: ui-monospace, Consolas, monospace; font-size: 0.78rem; }
-    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-  </style>
+  <style>{{ blue_css | safe }}</style>
 </head>
 <body x-data="{ q: '{{ queue }}', filter: '', dialogOpen: false, pendingId: '' }">
   <div class="proto">
     <strong>PROTOTYPE</strong> — Issue 90 composition 3 of 3: Flask + Jinja2 + Alpine.js.
-    Attention inbox + workspace. Productivity tokens + APG <code>dialog</code>. Sample data.
+    Attention inbox + workspace. Blue sans-serif shell + APG <code>dialog</code>. Sample data.
     Nothing is written to the curated store.
     <br><strong>Color key:</strong> <span style="border-bottom:2px dotted #b91c1c">red dotted</span> = prototype-only chrome.
     <span style="border-bottom:2px dotted #15803d">green dotted</span> = proposed coach-final UI.
@@ -54,8 +20,13 @@
   </div>
 
   <div class="coach">
+    <header class="appbar">
+      <div class="brand">Coach advising</div>
+      <div class="appbar-meta">{{ state.topic_name }} · {{ state.ruleset }} · attention inbox</div>
+    </header>
+    <div class="pad">
     <h1>Attention</h1>
-    <p>Coach-only. Queues of outstanding work. Opening a queue opens the workspace. Topic {{ state.topic_name }} ({{ state.ruleset }}).</p>
+    <p class="lede">Coach-only. Queues of outstanding work. Opening a queue opens the workspace.</p>
     <div class="chips" aria-label="Knowledge in the world">
       <span class="chip" data-kind="status">Uncategorized {{ counts.uncategorized }}</span>
       <span class="chip" data-kind="status">Awaiting accept {{ counts.awaiting }}</span>
@@ -65,7 +36,10 @@
       <span class="chip">Sheet {{ counts.sheet_mode }}</span>
       <span class="chip">Missing video {{ counts.missing_video }}</span>
     </div>
-    <p class="decision"><strong>Next:</strong> {{ next.label }} — {{ next.why }}</p>
+    <div class="next">
+      <h2>Next action</h2>
+      <p><strong>{{ next.label }}</strong> — {{ next.why }}</p>
+    </div>
     <p><strong>Closure:</strong> {{ state.last_feedback }}</p>
 
     <div class="layout">
@@ -122,6 +96,7 @@
           {% endfor %}
         {% endif %}
       </section>
+    </div>
     </div>
   </div>
 

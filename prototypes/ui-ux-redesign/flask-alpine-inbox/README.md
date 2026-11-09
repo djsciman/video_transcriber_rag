@@ -1,6 +1,6 @@
 # PROTOTYPE — Flask + Alpine.js attention inbox (issue 90)
 
-Throwaway. Not production. Attention inbox + workspace, productivity tokens, native `dialog`.
+Throwaway. Not production. Attention inbox + workspace, blue sans-serif shell, native `dialog`.
 
 ## What it proves
 

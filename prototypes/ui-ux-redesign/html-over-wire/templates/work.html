@@ -5,52 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PROTOTYPE — HTML-over-the-wire (issue 90)</title>
   <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js" integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg" crossorigin="anonymous"></script>
-  <style>
-    :root {
-      --bg: #f4f1ea; --paper: #fffcf6; --ink: #1c1917; --muted: #57534e;
-      --line: #d6d3d1; --accent: #9a3412;
-      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-      --sans: "Segoe UI", system-ui, sans-serif;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: var(--sans); color: var(--ink); background: var(--bg); line-height: 1.45; }
-    .proto { border: 2px dotted #b91c1c; background: #fef2f2; margin: 0.6rem 0.9rem; padding: 0.55rem 0.75rem; font-size: 0.88rem; }
-    .proto strong { color: #991b1b; }
-    .coach { border: 2px dotted #15803d; background: var(--paper); margin: 0.6rem 0.9rem 2rem; padding: 0.9rem 1rem 1.2rem; }
-    h1 { font-family: var(--serif); font-size: 1.45rem; margin: 0 0 0.2rem; }
-    .lede { color: var(--muted); margin: 0 0 0.8rem; }
-    .world { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.8rem; }
-    .chip { border: 1px solid var(--line); border-radius: 999px; padding: 0.15rem 0.55rem; font-size: 0.8rem; background: #fff; }
-    .next { border: 2px solid var(--accent); border-radius: 12px; padding: 0.75rem 0.8rem; background: #fff7ed; }
-    .next h2 { margin: 0 0 0.35rem; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent); }
-    .proposal { border: 1px dashed #c2410c; background: #fff7ed; border-radius: 10px; padding: 0.65rem 0.75rem; margin: 0.4rem 0; }
-    .decision { border: 1px solid #14532d; background: #f0fdf4; border-radius: 10px; padding: 0.65rem 0.75rem; margin: 0.4rem 0; }
-    .panel { border: 1px solid var(--line); border-radius: 12px; padding: 0.75rem 0.85rem; background: #fff; margin: 0.6rem 0; }
-    .who { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 0 0 0.35rem; }
-    button { font: inherit; border-radius: 8px; padding: 0.4rem 0.75rem; cursor: pointer; margin: 0.2rem 0.25rem 0.2rem 0; }
-    .primary { background: #1c1917; color: #fff; border: 1px solid #1c1917; }
-    .ghost { background: #fff; border: 1px solid var(--line); }
-    .htmx-indicator { display: none; color: var(--accent); font-weight: 650; }
-    .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline; }
-    .busy { margin-left: 0.4rem; }
-    .map { min-height: 8rem; border: 1px solid var(--line); border-radius: 12px; position: relative; background: #fff; }
-    .mark { position: absolute; left: 2rem; top: 2rem; background: #dbeafe; border: 1px solid #1d4ed8; border-radius: 999px; padding: 0.2rem 0.55rem; }
-    .class-card { border: 2px dashed var(--line); border-radius: 12px; overflow: hidden; margin-top: 0.5rem; }
-    .class-card header { background: #1c1917; color: #fafaf9; padding: 0.45rem 0.7rem; font-family: var(--serif); }
-    .state { font-family: ui-monospace, Consolas, monospace; font-size: 0.78rem; white-space: pre-wrap; background: #fff; border: 1px solid var(--line); padding: 0.5rem; border-radius: 8px; }
-    @media (prefers-reduced-motion: reduce) {
-      .htmx-indicator { transition: none; }
-    }
-    @media print {
-      .proto { display: none; }
-      .coach { border: none; }
-    }
-  </style>
+  <style>{{ blue_css | safe }}</style>
 </head>
 <body>
   <div class="proto">
     <strong>PROTOTYPE</strong> — Issue 90 composition 1 of 3: Starlette + Jinja2 + htmx.
-    Guided next-action. Editorial paper/ink. Sample data. Nothing is written to the curated store.
+    Guided next-action. Blue sans-serif productivity shell. Sample data. Nothing is written to the curated store.
     <br><strong>Color key:</strong> <span style="border-bottom: 2px dotted #b91c1c;">red dotted</span> = prototype-only chrome.
     <span style="border-bottom: 2px dotted #15803d;">green dotted</span> = proposed coach-final UI.
     Bind <code>127.0.0.1:{{ port }}</code>.

@@ -1,6 +1,6 @@
 # PROTOTYPE — HTML-over-the-wire (issue 90)
 
-Throwaway. Not production. Guided next-action + editorial paper/ink.
+Throwaway. Not production. Guided next-action + blue sans-serif shell.
 
 ## What it proves
 
@@ -51,5 +51,5 @@ CDN is throwaway-only. Production would vendor the file.
 ## 88 / 87 mapping
 
 - Paradigm: guided next-action (issue 88 candidate 1)
-- Visual: editorial paper/ink (issue 87 candidate A)
+- Visual: blue sans-serif productivity shell (`../blue_shell.css`; navy appbar, ice canvas, Segoe UI / Helvetica / Arial). Layout still maps to issue 87 candidate A (guided), restyled off spec-70 paper/ink.
 - Closest to issue 87 stack sketch S2, now with a real Python extra

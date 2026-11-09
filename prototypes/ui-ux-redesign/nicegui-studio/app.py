@@ -22,16 +22,21 @@ HOST = "127.0.0.1"
 PORT = 8772
 STATE = fresh()
 
+BLUE_CSS = (ROOT / "blue_shell.css").read_text(encoding="utf-8")
 PRINT_CSS = """
 @page { margin: 0.5in; }
 @page canvas { size: letter landscape; margin: 0.5in; }
 @page class-card { size: letter portrait; margin: 0.5in; }
 @media print {
-  .proto-chrome { display: none !important; }
+  .proto-chrome, .appbar { display: none !important; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+body, .nicegui-content, .q-page {
+  font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+.q-page { background: transparent !important; }
 """
 
 
@@ -50,12 +55,12 @@ def refresh(world, next_box, map_box, sheet_box, feedback, state_pre) -> None:
             ("Sheet", c["sheet_mode"]),
             ("Missing video", c["missing_video"]),
         ]:
-            ui.badge(f"{label}: {value}").props("outline")
+            ui.badge(f"{label}: {value}").props("color=primary")
     next_box.clear()
     with next_box:
-        ui.label("NEXT ACTION").classes("text-xs tracking-widest text-orange-800")
-        ui.label(nxt["label"]).classes("text-lg font-medium")
-        ui.label(nxt["why"]).classes("text-sm text-stone-600")
+        ui.label("NEXT ACTION").classes("text-xs tracking-widest").style("color:#dbeafe;letter-spacing:0.12em")
+        ui.label(nxt["label"]).classes("text-lg font-medium").style("color:#fff")
+        ui.label(nxt["why"]).classes("text-sm").style("color:#dbeafe")
     map_box.clear()
     with map_box:
         if STATE["map_marks"]:
@@ -66,7 +71,7 @@ def refresh(world, next_box, map_box, sheet_box, feedback, state_pre) -> None:
             )
             ui.html(
                 f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160" width="100%" height="160">'
-                f'<rect width="480" height="160" fill="#fffcf6" stroke="#d6d3d1"/>{marks}</svg>',
+                f'<rect width="480" height="160" fill="#eff6ff" stroke="#93c5fd"/>{marks}</svg>',
                 sanitize=False,
             )
         else:
@@ -132,12 +137,24 @@ def reset() -> None:
 
 @ui.page("/")
 def studio() -> None:
+    ui.colors(
+        primary="#1d4ed8",
+        secondary="#0ea5e9",
+        accent="#2563eb",
+        dark="#0b1f3a",
+        positive="#0369a1",
+        negative="#9f1239",
+        info="#1d4ed8",
+        warning="#1e40af",
+    )
+    ui.add_css(BLUE_CSS)
     ui.add_css(PRINT_CSS)
     ui.add_head_html(
         """
 <style>
-  .proto-chrome { border: 2px dotted #b91c1c; background: #fef2f2; padding: 0.55rem 0.75rem; margin-bottom: 0.6rem; }
-  .coach-final { border: 2px dotted #15803d; background: #fffcf6; padding: 0.9rem 1rem; }
+  .proto-chrome { border: 2px dotted #b91c1c; background: #fef2f2; padding: 0.55rem 0.75rem; margin-bottom: 0.6rem; border-radius: 10px; }
+  .coach-final { border: 2px dotted #15803d; background: #ffffff; padding: 0; overflow: hidden; border-radius: 16px; box-shadow: 0 14px 32px rgba(29,78,216,0.12); }
+  .studio-pad { padding: 1rem 1.1rem 1.25rem; }
 </style>
 """
     )
@@ -145,7 +162,7 @@ def studio() -> None:
         with ui.element("div").classes("proto-chrome"):
             ui.html(
                 "<strong>PROTOTYPE</strong> — Issue 90 composition 2 of 3: NiceGUI (bundles Vue + Quasar). "
-                "Topic studio. Layered / productivity. Sample data. Nothing is written to the curated store.<br>"
+                "Topic studio. Blue sans-serif shell over Quasar. Sample data. Nothing is written to the curated store.<br>"
                 "<strong>Color key:</strong> red dotted = prototype-only chrome. "
                 "green dotted = proposed coach-final UI. Bind 127.0.0.1:8772. "
                 '<a href="http://127.0.0.1:8771/">HTML-over-wire</a> · '
@@ -153,61 +170,76 @@ def studio() -> None:
                 sanitize=False,
             )
         with ui.element("div").classes("coach-final"):
-            ui.label("Topic studio").classes("text-2xl")
-            ui.label(
-                f"Coach-only. Open topic {STATE['topic_name']} ({STATE['ruleset']}). "
-                "Design map at the center. Briefing, store, sheet, and print are docks."
-            ).classes("text-stone-600")
+            ui.html(
+                f'<header class="appbar"><div class="brand">Coach advising</div>'
+                f'<div class="appbar-meta">{STATE["topic_name"]} · {STATE["ruleset"]} · topic studio</div></header>',
+                sanitize=False,
+            )
+            with ui.element("div").classes("studio-pad"):
+                ui.label("Topic studio").classes("text-2xl").style(
+                    "font-family:'Segoe UI',Helvetica,Arial,sans-serif;color:#0b1f3a;letter-spacing:-0.02em"
+                )
+                ui.label(
+                    f"Coach-only. Open topic {STATE['topic_name']} ({STATE['ruleset']}). "
+                    "Design map at the center. Briefing, store, sheet, and print are docks."
+                ).style("color:#3d5270")
 
-            world = ui.row().classes("gap-2 flex-wrap q-mb-sm")
-            next_box = ui.card().classes("w-full bg-orange-50")
+                world = ui.row().classes("gap-2 flex-wrap q-mb-sm")
+                next_box = ui.card().classes("w-full").style(
+                    "background:linear-gradient(135deg,#1d4ed8,#2563eb 55%,#0ea5e9);color:#fff;border:0"
+                )
 
-            with ui.splitter(value=62).classes("w-full h-96") as splitter:
-                with splitter.before:
-                    ui.label("DESIGN MAP").classes("text-xs tracking-widest")
-                    map_box = ui.column().classes("w-full")
-                    with ui.row():
-                        ui.button("Add named move", on_click=add_named_move)
-                        ui.button("Convert to Draft", on_click=convert).props("color=primary")
-                with splitter.after:
-                    ui.label("DOCKS").classes("text-xs tracking-widest")
-                    with ui.tabs() as tabs:
-                        briefing = ui.tab("Briefing")
-                        store = ui.tab("Store")
-                        sheet = ui.tab("Sheet")
-                        packet = ui.tab("Print")
-                    with ui.tab_panels(tabs, value=briefing).classes("w-full"):
-                        with ui.tab_panel(briefing):
-                            ui.label("Advisor proposes system words. Coach determines.")
-                            ui.button("Choose system", on_click=choose_system)
-                            ui.label().bind_text_from(STATE, "system_words")
-                        with ui.tab_panel(store):
-                            ui.label("Uncategorized citations are not offered on a lesson.")
-                            ui.button("Place one citation", on_click=place_first)
-                        with ui.tab_panel(sheet):
-                            sheet_box = ui.column()
-                        with ui.tab_panel(packet):
-                            ui.label(
-                                "Print uses the browser. Landscape canvas + portrait class cards, 0.5 in. "
-                                "Quasar layout chrome is hidden via @media print."
-                            )
-                            ui.button("Open print view", on_click=lambda: ui.navigate.to("/print"))
+                with ui.splitter(value=62).classes("w-full h-96") as splitter:
+                    with splitter.before:
+                        ui.label("DESIGN MAP").classes("text-xs tracking-widest")
+                        map_box = ui.column().classes("w-full")
+                        with ui.row():
+                            ui.button("Add named move", on_click=add_named_move)
+                            ui.button("Convert to Draft", on_click=convert).props("color=primary")
+                    with splitter.after:
+                        ui.label("DOCKS").classes("text-xs tracking-widest")
+                        with ui.tabs() as tabs:
+                            briefing = ui.tab("Briefing")
+                            store = ui.tab("Store")
+                            sheet = ui.tab("Sheet")
+                            packet = ui.tab("Print")
+                        with ui.tab_panels(tabs, value=briefing).classes("w-full"):
+                            with ui.tab_panel(briefing):
+                                ui.label("Advisor proposes system words. Coach determines.")
+                                ui.button("Choose system", on_click=choose_system)
+                                ui.label().bind_text_from(STATE, "system_words")
+                            with ui.tab_panel(store):
+                                ui.label("Uncategorized citations are not offered on a lesson.")
+                                ui.button("Place one citation", on_click=place_first)
+                            with ui.tab_panel(sheet):
+                                sheet_box = ui.column()
+                            with ui.tab_panel(packet):
+                                ui.label(
+                                    "Print uses the browser. Landscape canvas + portrait class cards, 0.5 in. "
+                                    "Quasar layout chrome is hidden via @media print."
+                                )
+                                ui.button("Open print view", on_click=lambda: ui.navigate.to("/print"))
 
-            feedback = ui.label().classes("q-mt-md")
-            with ui.element("div").classes("proto-chrome q-mt-md"):
-                ui.label("Prototype-only state dump and reset.")
-                ui.button("Reset sample", on_click=reset)
-                state_pre = ui.label().classes("font-mono text-xs")
+                feedback = ui.label().classes("q-mt-md")
 
-            global PANELS
-            PANELS = (world, next_box, map_box, sheet_box, feedback, state_pre)
-            refresh(*PANELS)
+        with ui.element("div").classes("proto-chrome q-mt-md"):
+            ui.label("Prototype-only state dump and reset.")
+            ui.button("Reset sample", on_click=reset)
+            state_pre = ui.label().classes("font-mono text-xs")
+
+        global PANELS
+        PANELS = (world, next_box, map_box, sheet_box, feedback, state_pre)
+        refresh(*PANELS)
 
 
 @ui.page("/print")
 def print_page() -> None:
+    ui.colors(primary="#1d4ed8", dark="#0b1f3a")
+    ui.add_css(BLUE_CSS)
     ui.add_css(PRINT_CSS)
-    ui.label(f"Design canvas — {STATE['topic_name']} ({STATE['ruleset']})").classes("text-2xl")
+    ui.label(f"Design canvas — {STATE['topic_name']} ({STATE['ruleset']})").classes("text-2xl").style(
+        "font-family:'Segoe UI',Helvetica,Arial,sans-serif;color:#0b1f3a"
+    )
     ui.label(f"System: {STATE['system_words'] or 'empty'}")
     for card in STATE["draft_classes"]:
         with ui.card():

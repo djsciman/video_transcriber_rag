@@ -20,6 +20,7 @@ from sample_store import counts, fresh, next_action  # noqa: E402
 HOST = "127.0.0.1"
 PORT = 8773
 STATE = fresh()
+BLUE_CSS = (ROOT / "blue_shell.css").read_text(encoding="utf-8")
 
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -33,6 +34,7 @@ def page(queue: str = "uncategorized"):
         next=next_action(STATE),
         queue=queue,
         port=PORT,
+        blue_css=BLUE_CSS,
     )
 
 

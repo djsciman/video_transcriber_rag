@@ -1,3 +1,8 @@
+<header class="appbar">
+  <div class="brand">Coach advising</div>
+  <div class="appbar-meta">{{ state.topic_name }} · {{ state.ruleset }} · one current job</div>
+</header>
+<div class="pad">
 <h1>Advising</h1>
 <p class="lede">Coach-only. Topic {{ state.topic_name }} ({{ state.ruleset }}). One current job. Later stages stay closed until this job needs them.</p>
 
@@ -5,9 +10,9 @@
   <span class="chip">Topic {{ state.topic_name }}</span>
   <span class="chip">Ruleset {{ state.ruleset }}</span>
   <span class="chip">Citations {{ counts.citations_accepted }}</span>
-  <span class="chip">Uncategorized {{ counts.uncategorized }}</span>
-  <span class="chip">System {{ "chosen" if counts.system_chosen else "empty" }}</span>
-  <span class="chip">Map-ready {{ "yes" if counts.map_ready else "no" }}</span>
+  <span class="chip" data-kind="status">Uncategorized {{ counts.uncategorized }}</span>
+  <span class="chip" data-kind="status">System {{ "chosen" if counts.system_chosen else "empty" }}</span>
+  <span class="chip" data-kind="status">Map-ready {{ "yes" if counts.map_ready else "no" }}</span>
   <span class="chip">Sheet {{ counts.sheet_mode }}</span>
   <span class="chip">Missing video {{ counts.missing_video }}</span>
 </div>
@@ -19,6 +24,7 @@
 
 <p class="decision"><strong>Closure:</strong> {{ state.last_feedback }}</p>
 
+<div class="jobs">
 <div class="panel">
   <p class="who">Advisor proposes</p>
   {% for p in state.proposals %}
@@ -71,7 +77,7 @@
   {% endif %}
 </div>
 
-<div class="panel">
+<div class="panel span">
   <p class="who">Design map — left-click would edit; right-click would delete (sample)</p>
   <div class="map" id="design-map">
     {% for m in state.map_marks %}
@@ -97,9 +103,11 @@
     <p><a href="/print">Print packet</a></p>
   {% endif %}
 </div>
+</div>
 
 <div class="proto">
   Prototype-only: reset in-memory sample.
   <form method="post" action="/reset"><button class="ghost" type="submit">Reset sample</button></form>
   <p class="state">{{ counts | tojson }}</p>
+</div>
 </div>

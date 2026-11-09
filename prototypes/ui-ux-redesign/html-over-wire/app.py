@@ -1,6 +1,6 @@
 """PROTOTYPE (issue 90) — HTML-over-the-wire.
 
-Starlette + Jinja2 + htmx. Guided next-action. Editorial paper/ink.
+Starlette + Jinja2 + htmx. Guided next-action. Blue sans-serif shell.
 In-memory sample only. Bind 127.0.0.1:8771. Does not write the curated store.
 """
 
@@ -24,6 +24,7 @@ from sample_store import counts, fresh, next_action  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(HERE / "templates"))
+BLUE_CSS = (ROOT / "blue_shell.css").read_text(encoding="utf-8")
 STATE = fresh()
 HOST = "127.0.0.1"
 PORT = 8771
@@ -37,6 +38,7 @@ def ctx(request: Request, extra: dict | None = None) -> dict:
         "next": next_action(STATE),
         "prototype_name": "HTML-over-the-wire",
         "port": PORT,
+        "blue_css": BLUE_CSS,
     }
     if extra:
         payload.update(extra)

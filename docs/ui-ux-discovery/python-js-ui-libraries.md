@@ -213,13 +213,14 @@ htmx is still the JS that preserves the spec-70 contract. Alpine.js is the light
 
 These are **demonstrations**, not a lock. Each pair is tied to one 88 paradigm and one 87 visual candidate.
 
-### 7.1 HTML-over-the-wire — guided next-action + editorial paper/ink
+### 7.1 HTML-over-the-wire — guided next-action + blue sans shell
 
 - **Python:** Starlette 1.10.0 + Jinja2 3.1.6 + Uvicorn 0.54.0 + python-multipart 0.0.33 + MarkupSafe 3.0.4
 - **JS:** htmx 2.0.11
 - **Principles shown:** 2 (proposal vs Accept), 3 (chips), 5 (next-action object), 6 (Convert gated on named moves), 7 (feedback after accept/place/convert/print), busy Propose/Convert via `hx-indicator`
 - **Official samples:** [Starlette templates](https://www.starlette.io/templates/), [htmx `hx-indicator`](https://htmx.org/attributes/hx-indicator/), [htmx `hx-post`](https://htmx.org/attributes/hx-post/)
 - **This ticket:** [`prototypes/ui-ux-redesign/html-over-wire/`](../../prototypes/ui-ux-redesign/html-over-wire/) — http://127.0.0.1:8771/
+- **Visual restyle:** shared [`blue_shell.css`](../../prototypes/ui-ux-redesign/blue_shell.css) (navy appbar, ice canvas, Segoe UI / Helvetica / Arial). Distinct from spec-70 cream/serif paper-ink; 88 paradigm is unchanged.
 
 FastAPI could host the same HTML; this prototype used Starlette to keep the extra smaller and to avoid shipping Swagger UI to the coach.
 
