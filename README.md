@@ -12,7 +12,7 @@ Organizes local instructionals against [BJJ Fanatics](https://bjjfanatics.com/) 
 
 | Command | Purpose |
 |--------|---------|
-| `py -3 -m bjj_pipeline run` | One command: match, organize, detect, transcribe (skip finished work; `--apply` to write) |
+| `py -3 -m bjj_pipeline run` | One command: match, organize, detect, transcribe, prepare (skip finished work; `--apply` to write) |
 | `py -3 -m bjj_pipeline organize` | Scrape a BJJ Fanatics product page and reorganize a local folder as a Jellyfin/TMM TV show (NFO, artwork, volumes, named chapters) |
 | `py -3 -m bjj_pipeline match` | Match local folder names to BJJ Fanatics product URLs and write `bjjfanatics_matches.csv` |
 | `py -3 -m bjj_pipeline chapters` | Detect title-card chapter starts, OCR titles, write sidecar CSVs, optionally embed chapters into the video |
@@ -218,19 +218,19 @@ py -3 -m pytest tests/test_curated_store.py tests/test_cleanup.py tests/test_pro
 
 ## Typical pipeline workflow
 
-Order is **match → organize (concat into volumes) → detect if needed → transcribe**.
+Order is **match → organize (concat into volumes) → detect if needed → transcribe → prepare**.
 
-One command walks top-level instructional folders. Default stages are **match, organize, detect, transcribe**. Detect skips a volume that already has container chapters or a sidecar chapter file. A season that still looks like uncombined chapter files warns and skips detect unless `--force-stage detect`. Visual embed stays opt-in (`--embed`); `--apply` writes detect sidecars only.
+One command walks top-level instructional folders. Default stages are **match, organize, detect, transcribe, prepare**. Detect skips a volume that already has container chapters or a sidecar chapter file. A season that still looks like uncombined chapter files warns and skips detect unless `--force-stage detect`. Visual embed stays opt-in (`--embed`); `--apply` writes detect sidecars only.
 
 ### One pipeline command
 
-Dry-run a library (prints SKIP / RUN / FAIL; writes nothing; does not decode or Whisper):
+Dry-run a library (prints SKIP / RUN / FAIL; writes nothing; does not decode, Whisper, or call Ollama):
 
 ```powershell
 py -3 -m bjj_pipeline run --library "path\to\instructionals" --corpus "path\to\transcript-corpus"
 ```
 
-Apply match, organize, detect, and transcribe. `--embed` is a separate flag for visual sidecar remux; `--apply` does not embed.
+Apply match, organize, detect, transcribe, and prepare. `--embed` is a separate flag for visual sidecar remux; `--apply` does not embed.
 
 ```powershell
 py -3 -m bjj_pipeline run --library "path\to\instructionals" --corpus "path\to\transcript-corpus" --apply
@@ -238,11 +238,11 @@ py -3 -m bjj_pipeline run --library "path\to\instructionals" --corpus "path\to\t
 
 | Flag | Meaning |
 |------|---------|
-| (omit `--apply`) | Dry run: print SKIP / RUN / FAIL, no writes, no decode, no speech |
-| `--apply` | Write match CSV, organize volumes, detect sidecars, and transcripts. Does **not** embed chapter sidecars |
+| (omit `--apply`) | Dry run: print SKIP / RUN / FAIL, no writes, no decode, no speech, no Ollama |
+| `--apply` | Write match CSV, organize volumes, detect sidecars, transcripts, and chapter speech. Does **not** embed chapter sidecars |
 | `--embed` | Visual remux of sidecar chapter files into volumes. Opt-in; not implied by `--apply` |
 | `--force` | Re-run every selected stage even when its artifact exists |
-| `--force-stage match\|organize\|detect\|transcribe` | Re-run only that unit |
+| `--force-stage match\|organize\|detect\|transcribe\|prepare` | Re-run only that unit |
 | `--matches` | Match CSV path (default: `LIBRARY/bjjfanatics_matches.csv`) |
 
 Skip unless `--force` / `--force-stage`:
@@ -253,12 +253,22 @@ Skip unless `--force` / `--force-stage`:
 | organize | The show folder already has `tvshow.nfo` **and** at least one `Season ##` folder |
 | detect | The volume already has container chapters, or a sidecar chapter file exists. Uncombined chapter-file seasons warn and skip unless `--force-stage detect` |
 | transcribe | The mirrored corpus JSON already has a `segments` list (empty list counts as finished) |
+| prepare | Every real chapter on the mirrored corpus JSON already has `transcript_cleaned` |
 
 A CSV product URL is the organize URL with no yes/no prompt. One product URL per instructional folder. Missing URL outside a terminal fails that instructional's organize. Leftover multi-instructional bundle folders are out of this pipeline; flatten them by hand.
 
 Organize concatenates per-chapter downloads into volumes (Fanatics titles; starts from each source file's duration). There is no operator path that splits a volume into chapter files or splits a bundle show.
 
 Transcribe walks the **post-organize** tree (combined volumes under `Season ##`). Corpus JSON mirrors that tree under `--corpus`. A corpus written from pre-concat chapter files is not skip-stable after concat.
+
+Prepare updates that existing corpus JSON in place after transcribe. Whisper `segments` stay. Skip when every real chapter already has `transcript_cleaned`. Dry-run does not call Ollama; `--force` or `--force-stage prepare` re-runs chapter speech.
+
+| Variable | Default | Meaning |
+|----------|---------|---------|
+| `BJJ_LLM_BASE_URL` | `http://localhost:11434/v1` | Local Ollama base URL |
+| `BJJ_LLM_MODEL` | `qwen3.5:4b` | Local model tag. Operators may set `qwen3:4b-instruct` if that tag is missing |
+
+Live 4B sample (laptop class, not the 27B production box): install Ollama (`winget install --id Ollama.Ollama -e --accept-package-agreements --accept-source-agreements`), `ollama pull qwen3.5:4b`, set `BJJ_LLM_BASE_URL=http://localhost:11434/v1`. `complete_chat` posts `reasoning_effort` `none` (OpenAI-compat off-switch; `/v1` ignores native `think`), `response_format` JSON, and `options.num_ctx` 2048. `/v1` still loads 4096 unless you `ollama create` a `PARAMETER num_ctx 2048` alias. Copy a volume JSON out of the 529-volume library before scoring; do not overwrite the corpus in place.
 
 Repair of an already-organized show stays `py -3 -m bjj_pipeline organize --repair`; it is not a pipeline stage.
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import json
 from pathlib import Path
 
 import run_pipeline
@@ -16,7 +17,7 @@ def _show(library: Path, name: str) -> Path:
 
 
 def _standins():
-    calls = {"match": [], "organize": [], "detect": [], "transcribe": []}
+    calls = {"match": [], "organize": [], "detect": [], "transcribe": [], "prepare": []}
 
     def match(folder: Path) -> str:
         calls["match"].append(folder)
@@ -40,18 +41,31 @@ def _standins():
 
     def transcribe(video: Path, output: Path, *, force: bool) -> int:
         calls["transcribe"].append({"video": video, "output": output, "force": force})
+        if output.is_file():
+            return 0
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text('{"segments": []}', encoding="utf-8")
         return 0
 
-    return calls, match, organize, detect, transcribe
+    def prepare(json_path: Path, corpus_root: Path, video_library_root: Path | None = None) -> int:
+        calls["prepare"].append(
+            {
+                "json_path": json_path,
+                "corpus_root": corpus_root,
+                "video_library_root": video_library_root,
+            }
+        )
+        return 0
+
+    return calls, match, organize, detect, transcribe, prepare
 
 
 def _run(library: Path, corpus: Path, *, apply: bool = False, **kwargs):
-    calls, match, organize, detect, transcribe = _standins()
+    calls, match, organize, detect, transcribe, prepare = _standins()
     buf = io.StringIO()
     kwargs.setdefault("chapter_count", lambda _video: 0)
     kwargs.setdefault("isatty", False)
+    inject_prepare = kwargs.pop("inject_prepare", True)
     code = run_pipeline.run(
         library,
         corpus,
@@ -60,6 +74,7 @@ def _run(library: Path, corpus: Path, *, apply: bool = False, **kwargs):
         organize=organize,
         detect=detect,
         transcribe=transcribe,
+        **({"prepare": prepare} if inject_prepare else {}),
         stdout=buf,
         **kwargs,
     )
@@ -93,6 +108,7 @@ def test_apply_runs_match_organize_detect_transcribe(tmp_path: Path):
     assert "organize" in out.lower()
     assert "detect" in out.lower()
     assert "transcribe" in out.lower()
+    assert "prepare" in out.lower()
 
 
 def test_dry_run_writes_nothing_and_does_not_transcribe(tmp_path: Path):
@@ -257,7 +273,7 @@ def test_missing_url_outside_terminal_fails_organize(tmp_path: Path):
     library.mkdir()
     show = _show(library, "New Wave Jiu Jitsu")
     corpus = tmp_path / "corpus"
-    calls, match, organize, detect, transcribe = _standins()
+    calls, match, organize, detect, transcribe, prepare = _standins()
 
     def no_url(folder: Path) -> str:
         calls["match"].append(folder)
@@ -272,6 +288,7 @@ def test_missing_url_outside_terminal_fails_organize(tmp_path: Path):
         organize=organize,
         detect=detect,
         transcribe=transcribe,
+        prepare=prepare,
         chapter_count=lambda _video: 0,
         stdout=buf,
         isatty=False,
@@ -321,7 +338,7 @@ def test_missing_url_in_terminal_calls_organize_on_apply(tmp_path: Path):
     library.mkdir()
     show = _show(library, "New Wave Jiu Jitsu")
     corpus = tmp_path / "corpus"
-    calls, match, organize, detect, transcribe = _standins()
+    calls, match, organize, detect, transcribe, prepare = _standins()
 
     def no_url(folder: Path) -> str:
         calls["match"].append(folder)
@@ -336,6 +353,7 @@ def test_missing_url_in_terminal_calls_organize_on_apply(tmp_path: Path):
         organize=organize,
         detect=detect,
         transcribe=transcribe,
+        prepare=prepare,
         chapter_count=lambda _video: 0,
         stdout=buf,
         isatty=True,
@@ -483,7 +501,7 @@ def test_failed_stage_exits_1(tmp_path: Path):
     library.mkdir()
     _show(library, "Half Guard Anthology")
     corpus = tmp_path / "corpus"
-    calls, match, organize, detect, transcribe = _standins()
+    calls, match, organize, detect, transcribe, prepare = _standins()
 
     def boom(folder: Path, url: str | None, *, apply: bool) -> int:
         calls["organize"].append({"folder": folder, "url": url, "apply": apply})
@@ -498,6 +516,7 @@ def test_failed_stage_exits_1(tmp_path: Path):
         organize=boom,
         detect=detect,
         transcribe=transcribe,
+        prepare=prepare,
         chapter_count=lambda _video: 0,
         stdout=buf,
         isatty=False,
@@ -515,7 +534,7 @@ def test_transcribe_walks_post_organize_volumes_not_pre_concat_clips(tmp_path: P
     (show / "01 - Intro.mp4").write_bytes(b"clip")
     corpus = tmp_path / "corpus"
 
-    calls, match, organize, detect, transcribe = _standins()
+    calls, match, organize, detect, transcribe, prepare = _standins()
 
     def organize_to_volume(folder: Path, url: str | None, *, apply: bool) -> int:
         calls["organize"].append({"folder": folder, "url": url, "apply": apply})
@@ -535,6 +554,7 @@ def test_transcribe_walks_post_organize_volumes_not_pre_concat_clips(tmp_path: P
         organize=organize_to_volume,
         detect=detect,
         transcribe=transcribe,
+        prepare=prepare,
         chapter_count=lambda _video: 0,
         stdout=buf,
         isatty=False,
@@ -771,4 +791,497 @@ def test_parser_force_stage_includes_detect():
         ]
     )
     assert args.force_stage == "detect"
-    assert run_pipeline.DEFAULT_STAGES == ("match", "organize", "detect", "transcribe")
+    assert run_pipeline.DEFAULT_STAGES == (
+        "match",
+        "organize",
+        "detect",
+        "transcribe",
+        "prepare",
+    )
+    assert run_pipeline.STAGE_CHOICES == (
+        "match",
+        "organize",
+        "detect",
+        "transcribe",
+        "prepare",
+        "embed",
+    )
+
+
+def _eligible_payload() -> dict:
+    return {
+        "video_file": "S01E01 - Volume 1.mp4",
+        "chapters": [
+            {"title": "Guard", "start": 0.0, "end": 300.0},
+            {"title": "Pass", "start": 300.0, "end": 600.0},
+        ],
+        "language": "en",
+        "segments": [
+            {"start": 10.0, "end": 20.0, "text": "in guard"},
+            {"start": 290.0, "end": 310.0, "text": "straddling the start"},
+        ],
+    }
+
+
+def _write_corpus_json(path: Path, payload: dict) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
+def _prepare_line(out: str, status: str) -> str:
+    for line in out.splitlines():
+        if line.startswith(status) and "prepare" in line:
+            return line
+    return ""
+
+
+def test_parser_force_stage_includes_prepare():
+    args = run_pipeline.build_parser().parse_args(
+        [
+            "--library",
+            r"D:\instructionals",
+            "--corpus",
+            r"D:\corpus",
+            "--force-stage",
+            "prepare",
+        ]
+    )
+    assert args.force_stage == "prepare"
+
+
+def test_embed_does_not_imply_prepare(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    _organized_show(library, "Half Guard Anthology", ["S01E01 - Volume 1.mp4"])
+    corpus = tmp_path / "corpus"
+
+    code, out, calls = _run(
+        library, corpus, apply=True, stages=("match",), embed=True
+    )
+
+    assert code == 0
+    assert calls["prepare"] == []
+    assert "prepare" not in out.lower()
+    assert "embed" in out.lower()
+
+
+def test_dry_run_prints_run_for_prepare_and_does_not_call_it(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(
+        library, "Arm Bars by John Danaher", ["S01E01 - Volume 1.mp4"]
+    )
+    corpus = tmp_path / "corpus"
+    out_json = (
+        corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    )
+    _write_corpus_json(out_json, _eligible_payload())
+    before = out_json.read_bytes()
+
+    code, out, calls = _run(
+        library, corpus, apply=False, chapter_count=lambda _video: 2
+    )
+
+    assert code == 0
+    assert calls["prepare"] == []
+    assert out_json.read_bytes() == before
+    assert _prepare_line(out, "RUN")
+    assert not _prepare_line(out, "FAIL")
+
+
+def test_dry_run_runs_prepare_when_only_transcript_raw_present(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(
+        library, "Arm Bars by John Danaher", ["S01E01 - Volume 1.mp4"]
+    )
+    corpus = tmp_path / "corpus"
+    out_json = (
+        corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    )
+    payload = _eligible_payload()
+    for chapter in payload["chapters"]:
+        chapter["transcript_raw"] = "<10.00> already nested"
+    _write_corpus_json(out_json, payload)
+    before = out_json.read_bytes()
+
+    code, out, calls = _run(
+        library, corpus, apply=False, chapter_count=lambda _video: 2
+    )
+
+    assert code == 0
+    assert calls["prepare"] == []
+    assert out_json.read_bytes() == before
+    assert _prepare_line(out, "RUN")
+    assert not _prepare_line(out, "SKIP")
+
+
+def test_dry_run_skips_prepare_when_transcript_cleaned_present(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(
+        library, "Arm Bars by John Danaher", ["S01E01 - Volume 1.mp4"]
+    )
+    corpus = tmp_path / "corpus"
+    out_json = (
+        corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    )
+    payload = _eligible_payload()
+    for chapter in payload["chapters"]:
+        chapter["transcript_cleaned"] = "pared"
+    _write_corpus_json(out_json, payload)
+    before = out_json.read_bytes()
+
+    code, out, calls = _run(
+        library, corpus, apply=False, chapter_count=lambda _video: 2
+    )
+
+    assert code == 0
+    assert calls["prepare"] == []
+    assert out_json.read_bytes() == before
+    assert _prepare_line(out, "SKIP")
+    assert not _prepare_line(out, "RUN")
+
+
+def test_apply_calls_prepare_on_eligible_volume(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(
+        library, "Arm Bars by John Danaher", ["S01E01 - Volume 1.mp4"]
+    )
+    corpus = tmp_path / "corpus"
+    out_json = (
+        corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    )
+    _write_corpus_json(out_json, _eligible_payload())
+
+    code, out, calls = _run(
+        library, corpus, apply=True, chapter_count=lambda _video: 2
+    )
+
+    assert code == 0
+    assert [item["json_path"] for item in calls["prepare"]] == [out_json]
+    assert calls["prepare"][0]["corpus_root"] == corpus
+    assert calls["prepare"][0]["video_library_root"] == library
+    assert _prepare_line(out, "RUN")
+
+
+def test_apply_nests_and_pares_via_default_prepare(tmp_path: Path, monkeypatch):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(
+        library, "Arm Bars by John Danaher", ["S01E01 - Volume 1.mp4"]
+    )
+    corpus = tmp_path / "corpus"
+    out_json = (
+        corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    )
+    _write_corpus_json(out_json, _eligible_payload())
+    calls_model: list[str] = []
+
+    def fake_complete(prompt: str) -> str:
+        calls_model.append(prompt)
+        return json.dumps({"transcript_cleaned": "pared", "suggested_tags": []})
+
+    monkeypatch.setattr("bjj_pipeline.prepare.complete_chat", fake_complete)
+
+    code, out, calls = _run(
+        library,
+        corpus,
+        apply=True,
+        chapter_count=lambda _video: 2,
+        inject_prepare=False,
+        stages=("prepare",),
+    )
+
+    assert code == 0
+    assert calls["prepare"] == []
+    assert len(calls_model) == 2
+    data = json.loads(out_json.read_text(encoding="utf-8"))
+    guard, passing = data["chapters"]
+    assert "<290.00>" in guard["transcript_raw"]
+    assert "<290.00>" in passing["transcript_raw"]
+    assert guard["transcript_cleaned"] == "pared"
+    assert passing["transcript_cleaned"] == "pared"
+    assert guard["suggested_tags"] == []
+    assert guard["previous_chapter"] == ""
+    assert guard["next_chapter"] == "Pass"
+    assert passing["previous_chapter"] == "Guard"
+    assert passing["next_chapter"] == ""
+    assert guard["instructor"] == "John Danaher"
+    assert guard["instructional"] == show.name
+    assert guard["volume"] == "S01E01 - Volume 1.mp4"
+    assert data["segments"][1]["text"] == "straddling the start"
+    assert _prepare_line(out, "RUN")
+
+
+def test_second_apply_skips_prepare_when_transcript_cleaned_present(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(
+        library, "Arm Bars by John Danaher", ["S01E01 - Volume 1.mp4"]
+    )
+    corpus = tmp_path / "corpus"
+    out_json = (
+        corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    )
+    payload = _eligible_payload()
+    for chapter in payload["chapters"]:
+        chapter["transcript_cleaned"] = "pared"
+    _write_corpus_json(out_json, payload)
+
+    code, out, calls = _run(
+        library, corpus, apply=True, chapter_count=lambda _video: 2
+    )
+
+    assert code == 0
+    assert calls["prepare"] == []
+    assert _prepare_line(out, "SKIP")
+    assert not _prepare_line(out, "RUN")
+
+
+def test_transcript_raw_alone_does_not_skip_prepare(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(
+        library, "Arm Bars by John Danaher", ["S01E01 - Volume 1.mp4"]
+    )
+    corpus = tmp_path / "corpus"
+    out_json = (
+        corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    )
+    payload = _eligible_payload()
+    for chapter in payload["chapters"]:
+        chapter["transcript_raw"] = "<10.00> already nested"
+    _write_corpus_json(out_json, payload)
+
+    code, out, calls = _run(
+        library, corpus, apply=True, chapter_count=lambda _video: 2
+    )
+
+    assert code == 0
+    assert calls["prepare"]
+    assert _prepare_line(out, "RUN")
+
+
+def test_force_stage_prepare_reruns_when_transcript_cleaned_present(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(
+        library, "Arm Bars by John Danaher", ["S01E01 - Volume 1.mp4"]
+    )
+    corpus = tmp_path / "corpus"
+    out_json = (
+        corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    )
+    payload = _eligible_payload()
+    for chapter in payload["chapters"]:
+        chapter["transcript_cleaned"] = "pared"
+    _write_corpus_json(out_json, payload)
+
+    code, out, calls = _run(
+        library,
+        corpus,
+        apply=True,
+        force_stage="prepare",
+        chapter_count=lambda _video: 2,
+    )
+
+    assert code == 0
+    assert calls["match"] == []
+    assert calls["organize"] == []
+    assert [item["json_path"] for item in calls["prepare"]] == [out_json]
+    assert _prepare_line(out, "RUN")
+
+
+def test_force_includes_prepare(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(
+        library, "Arm Bars by John Danaher", ["S01E01 - Volume 1.mp4"]
+    )
+    corpus = tmp_path / "corpus"
+    out_json = (
+        corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    )
+    payload = _eligible_payload()
+    for chapter in payload["chapters"]:
+        chapter["transcript_cleaned"] = "pared"
+    _write_corpus_json(out_json, payload)
+
+    code, out, calls = _run(
+        library, corpus, apply=True, force=True, chapter_count=lambda _video: 2
+    )
+
+    assert code == 0
+    assert calls["prepare"]
+    assert _prepare_line(out, "RUN")
+
+
+def test_completer_down_nests_raw_prints_fail_then_retry_fills_cleaned(
+    tmp_path: Path, monkeypatch
+):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(
+        library, "Arm Bars by John Danaher", ["S01E01 - Volume 1.mp4"]
+    )
+    corpus = tmp_path / "corpus"
+    out_json = (
+        corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    )
+    _write_corpus_json(out_json, _eligible_payload())
+
+    def down(_prompt: str) -> str:
+        raise OSError("connection refused")
+
+    monkeypatch.setattr("bjj_pipeline.prepare.complete_chat", down)
+    code, out, _calls = _run(
+        library,
+        corpus,
+        apply=True,
+        chapter_count=lambda _video: 2,
+        inject_prepare=False,
+        stages=("prepare",),
+    )
+
+    assert code == 1
+    fail_line = _prepare_line(out, "FAIL")
+    assert fail_line
+    assert "model half" in fail_line
+    data = json.loads(out_json.read_text(encoding="utf-8"))
+    guard, passing = data["chapters"]
+    assert "<290.00>" in guard["transcript_raw"]
+    assert "<290.00>" in passing["transcript_raw"]
+    assert "transcript_cleaned" not in guard
+    assert "suggested_tags" not in guard
+
+    def up(_prompt: str) -> str:
+        return json.dumps({"transcript_cleaned": "pared later", "suggested_tags": []})
+
+    monkeypatch.setattr("bjj_pipeline.prepare.complete_chat", up)
+    code, out, _calls = _run(
+        library,
+        corpus,
+        apply=True,
+        chapter_count=lambda _video: 2,
+        inject_prepare=False,
+        stages=("prepare",),
+    )
+
+    assert code == 0
+    assert _prepare_line(out, "RUN")
+    data = json.loads(out_json.read_text(encoding="utf-8"))
+    guard, passing = data["chapters"]
+    assert guard["transcript_cleaned"] == "pared later"
+    assert passing["transcript_cleaned"] == "pared later"
+    assert guard["suggested_tags"] == []
+
+
+def test_prepare_skips_whole_recording_chapter(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(
+        library, "Arm Bars by John Danaher", ["S01E01 - Volume 1.mp4"]
+    )
+    corpus = tmp_path / "corpus"
+    out_json = (
+        corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    )
+    _write_corpus_json(
+        out_json,
+        {
+            "video_file": "S01E01 - Volume 1.mp4",
+            "chapters": [{"title": "Volume 1", "start": 0.0, "end": 1000.0}],
+            "language": "en",
+            "segments": [
+                {"start": 10.0, "end": 20.0, "text": "in guard"},
+                {"start": 900.0, "end": 910.0, "text": "after"},
+            ],
+        },
+    )
+
+    code, out, calls = _run(
+        library, corpus, apply=True, chapter_count=lambda _video: 2
+    )
+
+    assert code == 0
+    assert calls["prepare"] == []
+    assert _prepare_line(out, "SKIP")
+
+
+def test_prepare_skips_single_partial_chapter(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(
+        library, "Arm Bars by John Danaher", ["S01E01 - Volume 1.mp4"]
+    )
+    corpus = tmp_path / "corpus"
+    out_json = (
+        corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    )
+    _write_corpus_json(
+        out_json,
+        {
+            "video_file": "S01E01 - Volume 1.mp4",
+            "chapters": [{"title": "Intro", "start": 0.0, "end": 30.0}],
+            "language": "en",
+            "segments": [
+                {"start": 10.0, "end": 20.0, "text": "in guard"},
+                {"start": 40.0, "end": 50.0, "text": "after"},
+            ],
+        },
+    )
+
+    code, out, calls = _run(
+        library, corpus, apply=True, chapter_count=lambda _video: 2
+    )
+
+    assert code == 0
+    assert calls["prepare"] == []
+    assert _prepare_line(out, "SKIP")
+
+
+def test_prepare_fail_exits_1(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(
+        library, "Arm Bars by John Danaher", ["S01E01 - Volume 1.mp4"]
+    )
+    corpus = tmp_path / "corpus"
+    out_json = (
+        corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    )
+    _write_corpus_json(out_json, _eligible_payload())
+    calls, match, organize, detect, transcribe, prepare = _standins()
+
+    def boom(json_path: Path, corpus_root: Path, video_library_root: Path | None = None) -> int:
+        calls["prepare"].append(
+            {
+                "json_path": json_path,
+                "corpus_root": corpus_root,
+                "video_library_root": video_library_root,
+            }
+        )
+        return 1
+
+    buf = io.StringIO()
+    code = run_pipeline.run(
+        library,
+        corpus,
+        apply=True,
+        match=match,
+        organize=organize,
+        detect=detect,
+        transcribe=transcribe,
+        prepare=boom,
+        chapter_count=lambda _video: 2,
+        stdout=buf,
+        isatty=False,
+    )
+
+    assert code == 1
+    fail_line = _prepare_line(buf.getvalue(), "FAIL")
+    assert fail_line
+    assert "model half" in fail_line

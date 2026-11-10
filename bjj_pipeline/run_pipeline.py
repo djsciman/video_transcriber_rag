@@ -1,4 +1,4 @@
-"""One command that sequences match, organize, detect, and transcribe."""
+"""One command that sequences match, organize, detect, transcribe, and prepare."""
 
 from __future__ import annotations
 
@@ -10,13 +10,14 @@ from typing import Callable, Sequence, TextIO
 
 from .match_bjjfanatics import collect_folders
 
-DEFAULT_STAGES = ("match", "organize", "detect", "transcribe")
-STAGE_CHOICES = ("match", "organize", "detect", "transcribe", "embed")
+DEFAULT_STAGES = ("match", "organize", "detect", "transcribe", "prepare")
+STAGE_CHOICES = ("match", "organize", "detect", "transcribe", "prepare", "embed")
 
 MatchFn = Callable[[Path], str]
 OrganizeFn = Callable[..., int]
 DetectFn = Callable[..., int]
 TranscribeFn = Callable[..., int]
+PrepareFn = Callable[..., int]
 ChapterCountFn = Callable[[Path], int]
 
 
@@ -63,6 +64,21 @@ def _default_transcribe(video: Path, output: Path, *, force: bool) -> int:
         count_hotword_tokens=batch_panoscribe.default_count_hotword_tokens,
     )
     return 0 if result in {"created", "updated", "unchanged"} else 1
+
+
+def _default_prepare(
+    json_path: Path,
+    corpus_root: Path,
+    video_library_root: Path | None = None,
+) -> int:
+    from .prepare import complete_chat, prepare_volume
+
+    return prepare_volume(
+        json_path,
+        corpus_root,
+        video_library_root,
+        completer=complete_chat,
+    )
 
 
 def _default_chapter_count(video: Path) -> int:
@@ -173,6 +189,38 @@ def _transcript_done(output: Path) -> bool:
     return bool(info["segments_present"])
 
 
+def _prepare_eligible(output: Path) -> bool:
+    from . import batch_panoscribe
+    from .prepare import _eligible_chapters
+
+    try:
+        _data, info = batch_panoscribe.inspect_transcript(output)
+    except batch_panoscribe.TranscriptError:
+        return False
+    if not info["segments_present"]:
+        return False
+    chapters = info["chapters"]
+    segments = info["segments"] if isinstance(info["segments"], list) else []
+    return _eligible_chapters(chapters, segments)
+
+
+def _prepare_done(output: Path) -> bool:
+    from . import batch_panoscribe
+    from .prepare import _real_chapters
+
+    try:
+        _data, info = batch_panoscribe.inspect_transcript(output)
+    except batch_panoscribe.TranscriptError:
+        return False
+    chapters = info["chapters"]
+    if not isinstance(chapters, list) or not chapters:
+        return False
+    real = _real_chapters(chapters)
+    if not real:
+        return False
+    return all(isinstance(chapter.get("transcript_cleaned"), str) for chapter in real)
+
+
 def _stream_isatty(stdin, isatty: bool | None) -> bool:
     if isatty is not None:
         return isatty
@@ -194,6 +242,7 @@ def run(
     organize: OrganizeFn | None = None,
     detect: DetectFn | None = None,
     transcribe: TranscribeFn | None = None,
+    prepare: PrepareFn | None = None,
     chapter_count: ChapterCountFn | None = None,
     stdin=None,
     stdout: TextIO | None = None,
@@ -209,6 +258,7 @@ def run(
     organize_fn = organize or _default_organize
     detect_fn = detect or _default_detect
     transcribe_fn = transcribe or _default_transcribe
+    prepare_fn = prepare or _default_prepare
     chapter_count_fn = chapter_count or _default_chapter_count
     selected = _selected_stages(stages, embed)
     csv_rows = _load_csv(matches_path)
@@ -336,6 +386,34 @@ def run(
                     else:
                         _print(stdout, "RUN", "transcribe", label)
 
+        if "prepare" in selected:
+            redo = _forced("prepare", force, force_stage)
+            for video in _walk_volumes(folder):
+                output = _transcript_path(library, corpus, video)
+                label = _rel(library, video)
+                eligible = _prepare_eligible(output)
+                done = _prepare_done(output)
+                if not eligible:
+                    _print(stdout, "SKIP", "prepare", label)
+                    continue
+                if done and not redo:
+                    _print(stdout, "SKIP", "prepare", label)
+                    continue
+                if not apply:
+                    _print(stdout, "RUN", "prepare", label)
+                    continue
+                try:
+                    code = prepare_fn(output, corpus, library)
+                except Exception as exc:  # noqa: BLE001
+                    _print(stdout, "FAIL", "prepare", label, str(exc))
+                    failed = True
+                else:
+                    if code:
+                        _print(stdout, "FAIL", "prepare", label, "model half")
+                        failed = True
+                    else:
+                        _print(stdout, "RUN", "prepare", label)
+
         if "embed" in selected:
             redo = _forced("embed", force, force_stage)
             if not apply:
@@ -373,7 +451,7 @@ def _transcript_path(library: Path, corpus: Path, video: Path) -> Path:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Match, organize, detect, and transcribe a library of instructionals."
+        description="Match, organize, detect, transcribe, and prepare a library of instructionals."
     )
     parser.add_argument("--library", type=Path, required=True, help="Root of instructional folders.")
     parser.add_argument("--corpus", type=Path, required=True, help="Root for transcript JSON.")
@@ -386,7 +464,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--apply",
         action="store_true",
-        help="Write match, organize, detect sidecars, and transcribe. Default is a dry run.",
+        help="Write match, organize, detect sidecars, transcribe, and prepare. Default is a dry run.",
     )
     parser.add_argument("--force", action="store_true", help="Re-run every selected stage.")
     parser.add_argument(
