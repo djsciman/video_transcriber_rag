@@ -106,7 +106,7 @@ _Avoid_: class, module
 
 **Technique**:
 A lesson that explains a movement in detail before the students perform it. In the same class, its drill follows with nothing between them, and the partner job challenges the student who performs the technique.
-_Avoid_: lecture
+_Avoid_: lecture, extracted technique
 
 **Drill**:
 A lesson of regular core movements that students perform with little further instruction against opponents who resist in a predictable way. It carries the partner job as text. A drill may sit in a class with no technique ahead of it.
@@ -147,6 +147,10 @@ _Avoid_: category, path level
 **Named move**:
 One catalog movement such as Hip bump sweep. It consists of a start position plus top, bottom, or neutral; a type of move; and an end (a position plus top, bottom, or neutral, or a submission). Citations belong here. A lesson may connect here.
 _Avoid_: path, leaf, sequence
+
+**Extracted technique**:
+One independently taught movement taken from a chapter. It carries start occupancy and position, a type of move, end occupancy and position or a submission, a named move when known, the mechanical steps, and the times in that volume where it is shown. It is one findable row the coach uses to find teaching before accept. It is not a Technique lesson and not an accepted citation.
+_Avoid_: technique, citation, named move
 
 **Submission**:
 A catalog finishing hold. A named move may end here. It is not a position.
