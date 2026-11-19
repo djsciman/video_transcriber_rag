@@ -70,6 +70,9 @@ def _default_prepare(
     json_path: Path,
     corpus_root: Path,
     video_library_root: Path | None = None,
+    *,
+    llm: bool = False,
+    force: bool = False,
 ) -> int:
     from .prepare import complete_chat, prepare_volume
 
@@ -77,7 +80,8 @@ def _default_prepare(
         json_path,
         corpus_root,
         video_library_root,
-        completer=complete_chat,
+        completer=complete_chat if llm else None,
+        force=force,
     )
 
 
@@ -189,38 +193,6 @@ def _transcript_done(output: Path) -> bool:
     return bool(info["segments_present"])
 
 
-def _prepare_eligible(output: Path) -> bool:
-    from . import batch_panoscribe
-    from .prepare import _eligible_chapters
-
-    try:
-        _data, info = batch_panoscribe.inspect_transcript(output)
-    except batch_panoscribe.TranscriptError:
-        return False
-    if not info["segments_present"]:
-        return False
-    chapters = info["chapters"]
-    segments = info["segments"] if isinstance(info["segments"], list) else []
-    return _eligible_chapters(chapters, segments)
-
-
-def _prepare_done(output: Path) -> bool:
-    from . import batch_panoscribe
-    from .prepare import _real_chapters
-
-    try:
-        _data, info = batch_panoscribe.inspect_transcript(output)
-    except batch_panoscribe.TranscriptError:
-        return False
-    chapters = info["chapters"]
-    if not isinstance(chapters, list) or not chapters:
-        return False
-    real = _real_chapters(chapters)
-    if not real:
-        return False
-    return all(isinstance(chapter.get("transcript_cleaned"), str) for chapter in real)
-
-
 def _stream_isatty(stdin, isatty: bool | None) -> bool:
     if isatty is not None:
         return isatty
@@ -237,6 +209,7 @@ def run(
     force: bool = False,
     force_stage: str | None = None,
     embed: bool = False,
+    llm: bool = False,
     stages: Sequence[str] | None = None,
     match: MatchFn | None = None,
     organize: OrganizeFn | None = None,
@@ -258,7 +231,21 @@ def run(
     organize_fn = organize or _default_organize
     detect_fn = detect or _default_detect
     transcribe_fn = transcribe or _default_transcribe
-    prepare_fn = prepare or _default_prepare
+    if prepare is None:
+        def prepare_fn(
+            json_path: Path,
+            corpus_root: Path,
+            video_library_root: Path | None = None,
+        ) -> int:
+            return _default_prepare(
+                json_path,
+                corpus_root,
+                video_library_root,
+                llm=llm,
+                force=_forced("prepare", force, force_stage),
+            )
+    else:
+        prepare_fn = prepare
     chapter_count_fn = chapter_count or _default_chapter_count
     selected = _selected_stages(stages, embed)
     csv_rows = _load_csv(matches_path)
@@ -387,12 +374,14 @@ def run(
                         _print(stdout, "RUN", "transcribe", label)
 
         if "prepare" in selected:
+            from .prepare import prepare_done, prepare_eligible
+
             redo = _forced("prepare", force, force_stage)
             for video in _walk_volumes(folder):
                 output = _transcript_path(library, corpus, video)
                 label = _rel(library, video)
-                eligible = _prepare_eligible(output)
-                done = _prepare_done(output)
+                eligible = prepare_eligible(output)
+                done = prepare_done(output, llm=llm)
                 if not eligible:
                     _print(stdout, "SKIP", "prepare", label)
                     continue
@@ -478,6 +467,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Embed sidecar chapter files into volumes. Apply does not imply embed.",
     )
+    parser.add_argument(
+        "--llm",
+        action="store_true",
+        help="During prepare, call Grok 4.3 to fill transcript_cleaned and techniques.",
+    )
     return parser
 
 
@@ -491,6 +485,7 @@ def main(argv: list[str] | None = None) -> int:
         force=args.force,
         force_stage=args.force_stage,
         embed=args.embed,
+        llm=args.llm,
     )
 
 

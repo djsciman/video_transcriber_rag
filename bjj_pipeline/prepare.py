@@ -1,48 +1,52 @@
 """Nest raw chapter speech and fill LLM-pared keys on a transcribed volume JSON.
 
-Long chapters are split on Whisper span boundaries into windows of
-``WINDOW_SPAN_COUNT`` spans that overlap by ``WINDOW_OVERLAP_SPANS`` span.
+``--llm`` sends one full chapter plus the markdown prepare spec to chat
+completion. Skip a chapter that already has ``transcript_cleaned``.
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import re
+import sys
 import urllib.request
 import xml.etree.ElementTree as ET
+from functools import lru_cache
 from pathlib import Path
-from typing import Callable
+from typing import Callable, TextIO
 
-from .batch_panoscribe import _atomic_write_json
+from .batch_panoscribe import (
+    TranscriptError,
+    _atomic_write_json,
+    inspect_transcript,
+    output_path_for,
+    walk_videos,
+)
 
 SEASON_FOLDER = re.compile(r"^Season\s*(\d+)$", re.IGNORECASE)
 _BY = re.compile(r"\s+by\s+", re.IGNORECASE)
-_TOKEN = re.compile(r"[a-z0-9]+")
-_STOP = frozenset(
-    {"the", "a", "an", "of", "and", "to", "in", "on", "for", "with", "from", "vs"}
-)
 
 Completer = Callable[[str], str]
 
-WINDOW_SPAN_COUNT = 4
-WINDOW_OVERLAP_SPANS = 1
-DEFAULT_LLM_BASE_URL = "http://localhost:11434/v1"
-# Official Ollama 4B tag. Operators set BJJ_LLM_MODEL=qwen3:4b-instruct if missing.
-DEFAULT_LLM_MODEL = "qwen3.5:4b"
-SEED_PATH = Path(__file__).resolve().parents[1] / "docs" / "enrichment-seed" / "seed.json"
+DEFAULT_LLM_BASE_URL = "https://api.x.ai/v1"
+DEFAULT_LLM_MODEL = "grok-4.3"
+DEFAULT_REASONING_EFFORT = "low"
+PROMPT_PATH = Path(__file__).resolve().parents[1] / "docs" / "prepare-llm-prompt.md"
 
-OCCUPANCY = ("top", "bottom", "neutral")
-RULESETS = ("gi", "no-gi", "both")
-HOP_FIELDS = (
-    "start_position",
-    "start_occupancy",
-    "move_type",
-    "end",
-    "end_occupancy",
+TECHNIQUE_STRINGS = (
     "named_move",
     "ruleset",
+    "move_type",
+    "start_occupancy",
+    "start_position",
+    "end_occupancy",
+    "end_position",
+    "technique_steps",
+    "main_ideas",
 )
+TECHNIQUE_LISTS = ("source_time_ranges", "suggested_tags")
 
 
 def prepare_volume(
@@ -50,6 +54,8 @@ def prepare_volume(
     corpus_root: Path,
     video_library_root: Path | None = None,
     completer: Completer | None = None,
+    *,
+    force: bool = False,
 ) -> int:
     """Rewrite ``json_path`` with nested raw speech and, when possible, pared keys.
 
@@ -60,10 +66,13 @@ def prepare_volume(
     if not isinstance(payload, dict):
         return 0
     chapters = payload.get("chapters")
-    segments = payload.get("segments")
-    if not isinstance(segments, list):
-        segments = []
-    if not _eligible_chapters(chapters, segments):
+    raw_segments = payload.get("segments")
+    has_segments = isinstance(raw_segments, list)
+    segments = raw_segments if has_segments else []
+    if has_segments:
+        if not _eligible_chapters(chapters, segments):
+            return 0
+    elif not _eligible_nested(chapters):
         return 0
 
     instructional = _instructional_name(json_path, corpus_root)
@@ -72,7 +81,6 @@ def prepare_volume(
     if not isinstance(volume, str):
         volume = ""
 
-    vocab = _seed_vocab() if completer is not None else None
     model_ok = True
     nested: list = []
     for index, chapter in enumerate(chapters):
@@ -91,18 +99,28 @@ def prepare_volume(
         updated["volume"] = volume
         updated["previous_chapter"] = previous
         updated["next_chapter"] = next_title
-        overlapping = _overlapping_spans(chapter, segments)
-        updated["transcript_raw"] = _join_raw(overlapping)
-        if completer is not None and vocab is not None:
-            try:
-                cleaned, tags = _pare_chapter(updated, overlapping, completer, vocab)
-            except Exception:
-                model_ok = False
-            else:
-                updated["transcript_cleaned"] = cleaned
-                updated["suggested_tags"] = tags
+        if has_segments:
+            overlapping = _overlapping_spans(chapter, segments)
+            updated["transcript_raw"] = _join_raw(overlapping)
+        else:
+            existing_raw = updated.get("transcript_raw")
+            if not isinstance(existing_raw, str):
+                updated["transcript_raw"] = ""
+        if completer is not None:
+            raw = updated.get("transcript_raw")
+            raw_text = raw if isinstance(raw, str) else ""
+            already = isinstance(updated.get("transcript_cleaned"), str)
+            if raw_text.strip() and (force or not already):
+                try:
+                    parsed = _enrich_chapter(updated, completer)
+                except Exception:
+                    model_ok = False
+                else:
+                    updated["transcript_cleaned"] = parsed["transcript_cleaned"]
+                    updated["techniques"] = parsed["techniques"]
         nested.append(updated)
     payload["chapters"] = nested
+    payload.pop("segments", None)
     _atomic_write_json(json_path, payload)
     return 0 if model_ok else 1
 
@@ -117,21 +135,32 @@ def complete_chat(
     opener = urllib.request.urlopen if urlopen is None else urlopen
     base = os.environ.get("BJJ_LLM_BASE_URL", DEFAULT_LLM_BASE_URL).rstrip("/")
     model = os.environ.get("BJJ_LLM_MODEL", DEFAULT_LLM_MODEL)
+    spec = _llm_spec()
+    user = prompt
+    stripped = spec.strip()
+    if prompt.startswith(stripped):
+        user = prompt[len(stripped) :].lstrip()
     url = f"{base}/chat/completions"
     body = json.dumps(
         {
             "model": model,
-            "messages": [{"role": "user", "content": prompt}],
+            "messages": [
+                {"role": "system", "content": spec},
+                {"role": "user", "content": user},
+            ],
             "temperature": 0,
-            "reasoning_effort": "none",
+            "reasoning_effort": DEFAULT_REASONING_EFFORT,
             "response_format": {"type": "json_object"},
-            "options": {"num_ctx": 2048},
         }
     ).encode("utf-8")
+    headers = {"Content-Type": "application/json"}
+    key = os.environ.get("XAI_API_KEY", "")
+    if key:
+        headers["Authorization"] = f"Bearer {key}"
     request = urllib.request.Request(
         url,
         data=body,
-        headers={"Content-Type": "application/json"},
+        headers=headers,
         method="POST",
     )
     with opener(request, timeout=timeout) as resp:
@@ -161,6 +190,52 @@ def _eligible_chapters(chapters, segments: list) -> bool:
         return False
     if _covers_whole_recording(chapters, segments):
         return False
+    return True
+
+
+def _eligible_nested(chapters) -> bool:
+    if not isinstance(chapters, list):
+        return False
+    real = _real_chapters(chapters)
+    if len(real) < 2:
+        return False
+    return all(isinstance(chapter.get("transcript_raw"), str) for chapter in real)
+
+
+def prepare_eligible(output: Path) -> bool:
+    try:
+        _data, info = inspect_transcript(output)
+    except TranscriptError:
+        return False
+    chapters = info["chapters"]
+    if info["segments_present"] and isinstance(info["segments"], list):
+        return _eligible_chapters(chapters, info["segments"])
+    return _eligible_nested(chapters)
+
+
+def _chapter_needs_llm(chapter: dict) -> bool:
+    raw = chapter.get("transcript_raw")
+    if not isinstance(raw, str) or not raw.strip():
+        return False
+    return not isinstance(chapter.get("transcript_cleaned"), str)
+
+
+def prepare_done(output: Path, *, llm: bool = False) -> bool:
+    try:
+        _data, info = inspect_transcript(output)
+    except TranscriptError:
+        return False
+    chapters = info["chapters"]
+    if not isinstance(chapters, list) or not chapters:
+        return False
+    real = _real_chapters(chapters)
+    if not real:
+        return False
+    nested = all(isinstance(chapter.get("transcript_raw"), str) for chapter in real)
+    if not nested:
+        return False
+    if llm:
+        return not any(_chapter_needs_llm(chapter) for chapter in real)
     return True
 
 
@@ -248,176 +323,51 @@ def _join_raw(spans: list[dict]) -> str:
     return " ".join(parts)
 
 
-def _transcript_raw(chapter: dict, segments: list) -> str:
-    return _join_raw(_overlapping_spans(chapter, segments))
+@lru_cache(maxsize=1)
+def _llm_spec() -> str:
+    return PROMPT_PATH.read_text(encoding="utf-8")
 
 
-def _seed_vocab() -> dict:
-    seed = json.loads(SEED_PATH.read_text(encoding="utf-8"))
-    move_types = [item["id"] for item in seed.get("move_types") or [] if item.get("id")]
-    start_ids = [item["id"] for item in seed.get("starting_positions") or [] if item.get("id")]
-    endings = seed.get("ending_positions_or_submissions") or []
-    end_ids = [item["id"] for item in endings if item.get("id")]
-    submission_ids = {
-        item["id"]
-        for item in endings
-        if item.get("kind") == "submission" and item.get("id")
-    }
-    named: list[str] = []
-    seen: set[str] = set()
-    for path in seed.get("paths") or []:
-        for leaf in path.get("leaves") or []:
-            name = leaf.get("name")
-            if isinstance(name, str) and name not in seen:
-                seen.add(name)
-                named.append(name)
-    hints: list[str] = []
-    hint_seen: set[str] = set()
-
-    def add_hints(item: dict) -> None:
-        for ref in item.get("cross_refs") or []:
-            if isinstance(ref, dict):
-                name = ref.get("name")
-                if isinstance(name, str) and name not in hint_seen:
-                    hint_seen.add(name)
-                    hints.append(name)
-
-    for item in seed.get("starting_positions") or []:
-        add_hints(item)
-    for item in endings:
-        add_hints(item)
-    for path in seed.get("paths") or []:
-        for leaf in path.get("leaves") or []:
-            add_hints(leaf)
-    return {
-        "move_types": move_types,
-        "start_ids": start_ids,
-        "end_ids": end_ids,
-        "submission_ids": submission_ids,
-        "named_moves": named,
-        "hints": hints,
-        "start_labels": {
-            item["id"]: item.get("label") or item["id"]
-            for item in seed.get("starting_positions") or []
-            if item.get("id")
-        },
-        "end_labels": {
-            item["id"]: item.get("label") or item["id"]
-            for item in endings
-            if item.get("id")
-        },
-        "move_labels": {
-            item["id"]: item.get("label") or item["id"]
-            for item in seed.get("move_types") or []
-            if item.get("id")
-        },
-    }
-
-
-def _title_tokens(*titles: str) -> set[str]:
-    tokens: set[str] = set()
-    for title in titles:
-        if not isinstance(title, str):
-            continue
-        for tok in _TOKEN.findall(title.lower()):
-            if len(tok) >= 3 and tok not in _STOP:
-                tokens.add(tok)
-    return tokens
-
-
-def _filter_named_moves(names: list[str], tokens: set[str]) -> list[str]:
-    if not tokens:
-        return list(names)
-    matched = [name for name in names if any(tok in name.lower() for tok in tokens)]
-    if len(matched) < 5:
-        return list(names)
-    return matched
-
-
-def _span_windows(spans: list[dict]) -> list[list[dict]]:
-    if len(spans) <= WINDOW_SPAN_COUNT:
-        return [spans]
-    windows: list[list[dict]] = []
-    start = 0
-    step = WINDOW_SPAN_COUNT - WINDOW_OVERLAP_SPANS
-    while start < len(spans):
-        end = min(start + WINDOW_SPAN_COUNT, len(spans))
-        windows.append(spans[start:end])
-        if end >= len(spans):
-            break
-        start += step
-    return windows
-
-
-def _build_prompt(
-    chapter: dict,
-    raw: str,
-    vocab: dict,
-    named_moves: list[str],
-    *,
-    context: str = "",
-) -> str:
-    move_lines = [
-        f"- {move_id} ({vocab['move_labels'].get(move_id, move_id)})"
-        for move_id in vocab["move_types"]
-    ]
-    start_lines = [
-        f"- {start_id} ({vocab['start_labels'].get(start_id, start_id)})"
-        for start_id in vocab["start_ids"]
-    ]
-    end_lines = [
-        f"- {end_id} ({vocab['end_labels'].get(end_id, end_id)})"
-        for end_id in vocab["end_ids"]
-    ]
-    named_lines = [f"- {name}" for name in named_moves]
-    speech_lines = (
-        ["Context (do not repeat):", context, "", "Pare only this speech:", raw]
-        if context
-        else ["Chapter speech:", raw]
-    )
+def _chapter_user_message(chapter: dict) -> str:
+    title = chapter.get("title", "")
+    if not isinstance(title, str):
+        title = ""
     return "\n".join(
         [
-            "Pare filler, false starts, idioms, and empty turns of phrase from the chapter speech.",
-            "Keep chapter titles and names already used in this volume's speech, including instructor names.",
-            "Repair mistranscribed grappling words using the chapter titles and the allow-list.",
-            "Add (inside …) or (outside …) from context without replacing an inside/outside word already spoken.",
-            "Inside is toward the primary body connection; outside is away from it.",
-            "Occupancy is top, bottom, or neutral (neutral is standing or clinch).",
-            "Return JSON only with keys transcript_cleaned (string) and suggested_tags (array of hop objects).",
-            "Each hop object: start_position, start_occupancy, move_type, end, end_occupancy, named_move, ruleset.",
-            "Use only allow-list ids and named-move names. No system field. Do not store family.",
-            "end_occupancy must be an empty string when end is a submission.",
-            "ruleset is gi, no-gi, or both.",
-            "suggested_tags is [] when nothing fits. Do not use strings in suggested_tags.",
-            "",
             f"instructor: {chapter.get('instructor', '')}",
             f"instructional: {chapter.get('instructional', '')}",
             f"volume: {chapter.get('volume', '')}",
-            f"chapter: {chapter.get('title', '')}",
+            f"chapter: {title}",
             f"previous_chapter: {chapter.get('previous_chapter', '')}",
             f"next_chapter: {chapter.get('next_chapter', '')}",
             "",
-            "Occupancy: top, bottom, neutral",
-            "Types of move:",
-            *move_lines,
+            "Chapter speech:",
             "",
-            "Start positions (id):",
-            *start_lines,
-            "",
-            "Ends (id):",
-            *end_lines,
-            "",
-            "NAMED_MOVES:",
-            *named_lines,
-            "END_NAMED_MOVES",
-            "",
-            f"Repair hints (judo/wrestling names, not hop ids): {', '.join(vocab['hints'])}",
-            "",
-            *speech_lines,
-            "",
-            "Return JSON only. suggested_tags is an array of hop objects, not strings.",
+            str(chapter.get("transcript_raw") or ""),
         ]
     )
+
+
+def _llm_prompt(chapter: dict) -> str:
+    return _llm_spec().rstrip() + "\n\n" + _chapter_user_message(chapter)
+
+
+def _string_list(value: object) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [item for item in value if isinstance(item, str)]
+
+
+def _normalize_technique(raw: object) -> dict | None:
+    if not isinstance(raw, dict):
+        return None
+    technique: dict = {}
+    for field in TECHNIQUE_STRINGS:
+        value = raw.get(field, "")
+        technique[field] = value if isinstance(value, str) else ""
+    for field in TECHNIQUE_LISTS:
+        technique[field] = _string_list(raw.get(field))
+    return technique
 
 
 def _parse_completion(text: str) -> dict:
@@ -442,85 +392,99 @@ def _parse_completion(text: str) -> dict:
     cleaned = data.get("transcript_cleaned")
     if not isinstance(cleaned, str):
         raise ValueError("no cleaned")
-    tags = data.get("suggested_tags", [])
-    if not isinstance(tags, list):
-        raise ValueError("bad tags")
-    return {"transcript_cleaned": cleaned, "suggested_tags": tags}
+    raw_techniques = data.get("techniques")
+    if not isinstance(raw_techniques, list):
+        raise ValueError("bad techniques")
+    techniques = []
+    for item in raw_techniques:
+        technique = _normalize_technique(item)
+        if technique is not None:
+            techniques.append(technique)
+    return {"transcript_cleaned": cleaned, "techniques": techniques}
 
 
-def _clean_hop(raw: object, vocab: dict, named: set[str]) -> dict | None:
-    if not isinstance(raw, dict):
-        return None
-    hop = {}
-    for field in HOP_FIELDS:
-        value = raw.get(field, "")
-        hop[field] = value if isinstance(value, str) else ""
-    if hop["start_occupancy"] not in OCCUPANCY:
-        return None
-    if hop["move_type"] not in vocab["move_types"]:
-        return None
-    if hop["start_position"] not in vocab["start_ids"]:
-        return None
-    if hop["end"] not in vocab["end_ids"]:
-        return None
-    if hop["named_move"] not in named:
-        return None
-    if hop["ruleset"] not in RULESETS:
-        return None
-    if hop["end"] in vocab["submission_ids"]:
-        if hop["end_occupancy"] != "":
-            return None
-    elif hop["end_occupancy"] not in OCCUPANCY:
-        return None
-    return hop
+def _enrich_chapter(chapter: dict, completer: Completer) -> dict:
+    return _parse_completion(completer(_llm_prompt(chapter)))
 
 
-def _merge_hops(hops: list[dict]) -> list[dict]:
-    seen: set[tuple] = set()
-    merged: list[dict] = []
-    for hop in hops:
-        key = tuple(hop[field] for field in HOP_FIELDS)
-        if key in seen:
-            continue
-        seen.add(key)
-        merged.append(hop)
-    return merged
+def _print(stdout: TextIO, status: str, name: str, reason: str = "") -> None:
+    line = f"{status:<4}  {'prepare':<10}  {name}"
+    if reason:
+        line += f"  ({reason})"
+    stdout.write(line + "\n")
 
 
-def _pare_chapter(
-    chapter: dict,
-    spans: list[dict],
-    completer: Completer,
-    vocab: dict,
-) -> tuple[str, list[dict]]:
-    named = _filter_named_moves(
-        vocab["named_moves"],
-        _title_tokens(
-            str(chapter.get("title") or ""),
-            str(chapter.get("previous_chapter") or ""),
-            str(chapter.get("next_chapter") or ""),
-        ),
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Walk transcribed volumes and nest chapter speech. Skip finished "
+            "volumes; --force re-runs. --llm also fills transcript_cleaned."
+        )
     )
-    named_set = set(named)
-    texts: list[str] = []
-    hops: list[dict] = []
-    for index, window in enumerate(_span_windows(spans)):
-        if index == 0:
-            prompt = _build_prompt(chapter, _join_raw(window), vocab, named)
-        else:
-            overlap = window[:WINDOW_OVERLAP_SPANS]
-            rest = window[WINDOW_OVERLAP_SPANS:]
-            prompt = _build_prompt(
-                chapter,
-                _join_raw(rest),
-                vocab,
-                named,
-                context=_join_raw(overlap),
+    parser.add_argument("--library", type=Path, required=True, help="Root of instructional folders.")
+    parser.add_argument("--corpus", type=Path, required=True, help="Root for transcript JSON.")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Re-run prepare even when the skip artifact already exists.",
+    )
+    parser.add_argument(
+        "--llm",
+        action="store_true",
+        help="Call Grok 4.3 to fill transcript_cleaned and techniques.",
+    )
+    return parser
+
+
+def run(
+    library: Path,
+    corpus: Path,
+    *,
+    force: bool = False,
+    llm: bool = False,
+    completer: Completer | None = None,
+    stdout: TextIO | None = None,
+) -> int:
+    library = Path(library)
+    corpus = Path(corpus)
+    stdout = stdout if stdout is not None else sys.stdout
+    if llm:
+        completer_fn = complete_chat if completer is None else completer
+    else:
+        completer_fn = None
+    failed = False
+    for video in walk_videos(library):
+        output = output_path_for(video, library, corpus)
+        try:
+            label = str(video.relative_to(library))
+        except ValueError:
+            label = str(video)
+        if not prepare_eligible(output):
+            _print(stdout, "SKIP", label)
+            continue
+        if prepare_done(output, llm=llm) and not force:
+            _print(stdout, "SKIP", label)
+            continue
+        try:
+            code = prepare_volume(
+                output, corpus, library, completer=completer_fn, force=force
             )
-        parsed = _parse_completion(completer(prompt))
-        texts.append(parsed["transcript_cleaned"])
-        for hop in parsed["suggested_tags"]:
-            cleaned = _clean_hop(hop, vocab, named_set)
-            if cleaned is not None:
-                hops.append(cleaned)
-    return " ".join(texts), _merge_hops(hops)
+        except Exception as exc:  # noqa: BLE001
+            _print(stdout, "FAIL", label, str(exc))
+            failed = True
+        else:
+            if code:
+                _print(stdout, "FAIL", label, "model half")
+                failed = True
+            else:
+                _print(stdout, "RUN", label)
+    return 1 if failed else 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    return run(args.library, args.corpus, force=args.force, llm=args.llm)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -46,7 +46,7 @@ def test_prepare_overwrites_in_place_and_copies_overlapping_span(tmp_path: Path)
 
     assert list(corpus.rglob("*.json")) == [json_path]
     data = json.loads(json_path.read_text(encoding="utf-8"))
-    assert data["segments"] == SEGMENTS
+    assert "segments" not in data
     guard, passing = data["chapters"]
     assert "<290.00>" in guard["transcript_raw"]
     assert "<290.00>" in passing["transcript_raw"]
@@ -56,9 +56,8 @@ def test_prepare_overwrites_in_place_and_copies_overlapping_span(tmp_path: Path)
     assert "<300.00>" in passing["transcript_raw"]
     assert "after chapters" not in guard["transcript_raw"]
     assert "after chapters" not in passing["transcript_raw"]
-    assert data["segments"][4]["text"] == "after chapters"
     assert "transcript_cleaned" not in guard
-    assert "suggested_tags" not in guard
+    assert "techniques" not in guard
 
 
 def test_empty_previous_on_first_and_empty_next_on_last(tmp_path: Path):
@@ -238,40 +237,24 @@ def test_prepare_accepts_injected_completer():
     ]
 
 
-VALID_HOP = {
-    "start_position": "closed-guard",
+EMPTY_PARE = json.dumps({"transcript_cleaned": "pared guard", "techniques": []})
+
+STAR_TECHNIQUE = {
+    "named_move": "2-on-1 sweep*",
+    "ruleset": "no-gi",
+    "move_type": "sweep",
     "start_occupancy": "bottom",
-    "move_type": "submission",
-    "end": "armbar",
-    "end_occupancy": "",
-    "named_move": "Armbar from closed guard",
-    "ruleset": "both",
+    "start_position": "butterfly-guard",
+    "end_occupancy": "top",
+    "end_position": "mount*",
+    "technique_steps": "1. Butterfly guard, bottom: take the two-on-one.",
+    "main_ideas": "Follow faster than you throw him so you finish on top.",
+    "source_time_ranges": ["2248.00-2580.00"],
+    "suggested_tags": ["two-on-one opposite arm"],
 }
 
-PARE_JSON = json.dumps(
-    {
-        "transcript_cleaned": "pared guard",
-        "suggested_tags": [
-            {**VALID_HOP, "system": "not-a-field"},
-            {**VALID_HOP, "named_move": "not-a-real-move"},
-            {**VALID_HOP, "start_occupancy": "side"},
-            {**VALID_HOP, "end_occupancy": "top"},
-        ],
-    }
-)
 
-
-def _named_moves_from_prompt(prompt: str) -> list[str]:
-    start = prompt.index("NAMED_MOVES:\n") + len("NAMED_MOVES:\n")
-    end = prompt.index("\nEND_NAMED_MOVES")
-    block = prompt[start:end].strip()
-    names = []
-    for line in block.splitlines():
-        names.append(line[2:] if line.startswith("- ") else line)
-    return names
-
-
-def test_fake_completer_writes_cleaned_keys_and_keeps_overlap(tmp_path: Path):
+def test_fake_completer_writes_cleaned_and_empty_techniques(tmp_path: Path):
     corpus = tmp_path / "corpus"
     json_path = corpus / SHOW / "Season 01" / "vol.json"
     _write_volume(json_path, _two_chapter_payload())
@@ -279,14 +262,14 @@ def test_fake_completer_writes_cleaned_keys_and_keeps_overlap(tmp_path: Path):
 
     def completer(prompt: str) -> str:
         prompts.append(prompt)
-        return PARE_JSON
+        return EMPTY_PARE
 
     code = prepare_volume(json_path, corpus, completer=completer)
 
     assert code == 0
     assert len(prompts) == 2
     data = json.loads(json_path.read_text(encoding="utf-8"))
-    assert data["segments"] == SEGMENTS
+    assert "segments" not in data
     guard, passing = data["chapters"]
     assert "<290.00>" in guard["transcript_raw"]
     assert "<290.00>" in passing["transcript_raw"]
@@ -294,15 +277,17 @@ def test_fake_completer_writes_cleaned_keys_and_keeps_overlap(tmp_path: Path):
     assert "straddling the start" in passing["transcript_raw"]
     assert guard["transcript_cleaned"] == "pared guard"
     assert passing["transcript_cleaned"] == "pared guard"
-    assert guard["suggested_tags"] == [VALID_HOP]
-    assert passing["suggested_tags"] == [VALID_HOP]
-    assert "system" not in guard["suggested_tags"][0]
+    assert guard["techniques"] == []
+    assert passing["techniques"] == []
+    assert "suggested_tags" not in guard
     prompt = prompts[0]
-    assert "- takedown (Takedown)" in prompt
-    assert "- closed-guard (Closed guard)" in prompt
-    assert "- armbar (Armbar)" in prompt
-    assert "Keep chapter titles and names already used in this volume's speech" in prompt
-    assert "Occupancy: top, bottom, neutral" in prompt or "Occupancy:" in prompt
+    assert "Pare BJJ Instructional Chapter" in prompt
+    assert "Chapter speech:" in prompt
+    assert "<10.00>" in prompt
+    assert "<290.00>" in prompt
+    assert "<300.00>" in prompt
+    assert "instructor:" in prompt
+    assert "chapter: Guard" in prompt
 
 
 def test_completer_down_keeps_raw_omits_cleaned(tmp_path: Path):
@@ -322,8 +307,8 @@ def test_completer_down_keeps_raw_omits_cleaned(tmp_path: Path):
     assert "<290.00>" in passing["transcript_raw"]
     assert "transcript_cleaned" not in guard
     assert "transcript_cleaned" not in passing
-    assert "suggested_tags" not in guard
-    assert "suggested_tags" not in passing
+    assert "techniques" not in guard
+    assert "techniques" not in passing
 
 
 def test_unusable_completion_omits_cleaned_keys(tmp_path: Path):
@@ -340,10 +325,10 @@ def test_unusable_completion_omits_cleaned_keys(tmp_path: Path):
     guard = json.loads(json_path.read_text(encoding="utf-8"))["chapters"][0]
     assert "transcript_raw" in guard
     assert "transcript_cleaned" not in guard
-    assert "suggested_tags" not in guard
+    assert "techniques" not in guard
 
 
-def test_windowed_chapter_stitches_text_and_dedupes_hops(tmp_path: Path):
+def test_one_completer_call_per_chapter_sends_full_raw(tmp_path: Path):
     corpus = tmp_path / "corpus"
     json_path = corpus / SHOW / "Season 01" / "vol.json"
     spans = [
@@ -365,93 +350,126 @@ def test_windowed_chapter_stitches_text_and_dedupes_hops(tmp_path: Path):
 
     def completer(prompt: str) -> str:
         prompts.append(prompt)
-        n = len(prompts)
+        return json.dumps({"transcript_cleaned": f"chapter {len(prompts)}", "techniques": []})
+
+    code = prepare_volume(json_path, corpus, completer=completer)
+
+    assert code == 0
+    assert len(prompts) == 2
+    assert "<0.00>" in prompts[0]
+    assert "<50.00>" in prompts[0]
+    assert "later pass" not in prompts[0]
+    assert "later pass" in prompts[1]
+    assert "Pare BJJ Instructional Chapter" in prompts[0]
+    data = json.loads(json_path.read_text(encoding="utf-8"))
+    guard, passing = data["chapters"]
+    assert guard["transcript_cleaned"] == "chapter 1"
+    assert passing["transcript_cleaned"] == "chapter 2"
+
+
+def test_starred_hop_fields_persist_on_technique(tmp_path: Path):
+    corpus = tmp_path / "corpus"
+    json_path = corpus / SHOW / "Season 01" / "vol.json"
+    _write_volume(json_path, _two_chapter_payload())
+
+    def completer(_prompt: str) -> str:
         return json.dumps(
             {
-                "transcript_cleaned": f"window {n}",
-                "suggested_tags": [VALID_HOP, VALID_HOP],
+                "transcript_cleaned": "pared",
+                "techniques": [{**STAR_TECHNIQUE, "extra": "drop-me"}],
             }
         )
 
     code = prepare_volume(json_path, corpus, completer=completer)
 
     assert code == 0
-    assert len(prompts) == 3
-    assert "<30.00>" in prompts[0]
-    assert "<30.00>" in prompts[1]
-    assert "<40.00>" not in prompts[0]
-    assert "<0.00>" not in prompts[1]
-    assert "Chapter speech:" in prompts[0]
-    assert "Context (do not repeat):" not in prompts[0]
-    assert "Context (do not repeat):" in prompts[1]
-    assert "Pare only this speech:" in prompts[1]
+    guard = json.loads(json_path.read_text(encoding="utf-8"))["chapters"][0]
+    assert guard["techniques"] == [STAR_TECHNIQUE]
+
+
+def test_cleaned_chapter_is_not_sent_again(tmp_path: Path):
+    corpus = tmp_path / "corpus"
+    json_path = corpus / SHOW / "Season 01" / "vol.json"
+    _write_volume(json_path, _two_chapter_payload())
+    prepare_volume(json_path, corpus)
     data = json.loads(json_path.read_text(encoding="utf-8"))
-    guard, passing = data["chapters"]
-    assert guard["transcript_cleaned"] == "window 1 window 2"
-    assert passing["transcript_cleaned"] == "window 3"
-    assert guard["suggested_tags"] == [VALID_HOP]
-
-
-def test_specific_title_sends_short_named_move_list(tmp_path: Path):
-    corpus = tmp_path / "corpus"
-    json_path = corpus / SHOW / "Season 01" / "vol.json"
-    payload = _two_chapter_payload()
-    payload["chapters"][0]["title"] = "Hip bump sweep"
-    payload["chapters"][1]["title"] = "Hip bump sweep"
-    _write_volume(json_path, payload)
+    data["chapters"][0]["transcript_cleaned"] = "already"
+    _write_volume(json_path, data)
     prompts: list[str] = []
 
     def completer(prompt: str) -> str:
         prompts.append(prompt)
-        return json.dumps({"transcript_cleaned": "pared", "suggested_tags": []})
+        return EMPTY_PARE
 
-    prepare_volume(json_path, corpus, completer=completer)
+    code = prepare_volume(json_path, corpus, completer=completer)
 
-    names = _named_moves_from_prompt(prompts[0])
-    assert "Hip bump sweep" in names
-    assert "Rear naked choke" not in names
-    assert len(names) >= 5
+    assert code == 0
+    assert len(prompts) == 1
+    assert "chapter: Pass" in prompts[0]
+    guard, passing = json.loads(json_path.read_text(encoding="utf-8"))["chapters"]
+    assert guard["transcript_cleaned"] == "already"
+    assert passing["transcript_cleaned"] == "pared guard"
 
 
-def test_vague_title_sends_full_named_move_list(tmp_path: Path):
+def test_empty_raw_skips_completer(tmp_path: Path):
     corpus = tmp_path / "corpus"
     json_path = corpus / SHOW / "Season 01" / "vol.json"
-    payload = _two_chapter_payload()
-    payload["chapters"][0]["title"] = "Volume 1"
-    payload["chapters"][1]["title"] = "Volume 2"
-    _write_volume(json_path, payload)
-    prompts: list[str] = []
-
-    def completer(prompt: str) -> str:
-        prompts.append(prompt)
-        return json.dumps({"transcript_cleaned": "pared", "suggested_tags": []})
-
-    prepare_volume(json_path, corpus, completer=completer)
-
-    names = _named_moves_from_prompt(prompts[0])
-    seed = json.loads(
-        (
-            Path(__file__).resolve().parents[1]
-            / "docs"
-            / "enrichment-seed"
-            / "seed.json"
-        ).read_text(encoding="utf-8")
+    _write_volume(
+        json_path,
+        {
+            "video_file": VOLUME,
+            "chapters": [
+                {"title": "Guard", "start": 0.0, "end": 300.0, "transcript_raw": ""},
+                {
+                    "title": "Pass",
+                    "start": 300.0,
+                    "end": 600.0,
+                    "transcript_raw": "hello",
+                },
+            ],
+            "language": "en",
+        },
     )
-    full = []
-    seen: set[str] = set()
-    for path in seed["paths"]:
-        for leaf in path["leaves"]:
-            name = leaf["name"]
-            if name not in seen:
-                seen.add(name)
-                full.append(name)
-    assert names == full
-    assert "Rear naked choke" in names
-    assert "Hip bump sweep" in names
+    prompts: list[str] = []
+
+    def completer(prompt: str) -> str:
+        prompts.append(prompt)
+        return EMPTY_PARE
+
+    code = prepare_volume(json_path, corpus, completer=completer)
+
+    assert code == 0
+    assert len(prompts) == 1
+    guard, passing = json.loads(json_path.read_text(encoding="utf-8"))["chapters"]
+    assert "transcript_cleaned" not in guard
+    assert passing["transcript_cleaned"] == "pared guard"
+
+
+def test_force_repares_cleaned_chapter(tmp_path: Path):
+    corpus = tmp_path / "corpus"
+    json_path = corpus / SHOW / "Season 01" / "vol.json"
+    _write_volume(json_path, _two_chapter_payload())
+    prepare_volume(json_path, corpus, completer=lambda _p: EMPTY_PARE)
+    prompts: list[str] = []
+
+    def completer(prompt: str) -> str:
+        prompts.append(prompt)
+        return json.dumps({"transcript_cleaned": "again", "techniques": []})
+
+    code = prepare_volume(json_path, corpus, completer=completer, force=True)
+
+    assert code == 0
+    assert len(prompts) == 2
+    guard = json.loads(json_path.read_text(encoding="utf-8"))["chapters"][0]
+    assert guard["transcript_cleaned"] == "again"
 
 
 def test_complete_chat_posts_openai_body(monkeypatch):
-    from bjj_pipeline.prepare import DEFAULT_LLM_MODEL, complete_chat
+    from bjj_pipeline.prepare import (
+        DEFAULT_LLM_MODEL,
+        DEFAULT_REASONING_EFFORT,
+        complete_chat,
+    )
 
     recorded: dict = {}
 
@@ -471,24 +489,30 @@ def test_complete_chat_posts_openai_body(monkeypatch):
         recorded["url"] = req.full_url
         recorded["body"] = json.loads(req.data.decode("utf-8"))
         recorded["timeout"] = timeout
+        recorded["authorization"] = req.headers.get("Authorization")
         return FakeResponse()
 
     monkeypatch.setenv("BJJ_LLM_BASE_URL", "http://example.test/v1")
-    monkeypatch.setenv("BJJ_LLM_MODEL", "qwen-test")
+    monkeypatch.setenv("BJJ_LLM_MODEL", "grok-test")
+    monkeypatch.setenv("XAI_API_KEY", "secret-key")
     text = complete_chat("pare this", urlopen=fake_urlopen)
 
     assert text == "pared json"
     assert recorded["url"] == "http://example.test/v1/chat/completions"
-    assert recorded["body"]["model"] == "qwen-test"
-    assert recorded["body"]["messages"] == [{"role": "user", "content": "pare this"}]
+    assert recorded["body"]["model"] == "grok-test"
+    assert recorded["body"]["messages"][0]["role"] == "system"
+    assert "Pare BJJ Instructional Chapter" in recorded["body"]["messages"][0]["content"]
+    assert recorded["body"]["messages"][1] == {"role": "user", "content": "pare this"}
     assert recorded["body"]["temperature"] == 0
-    assert recorded["body"]["reasoning_effort"] == "none"
+    assert recorded["body"]["reasoning_effort"] == "low"
     assert recorded["body"]["response_format"] == {"type": "json_object"}
-    assert recorded["body"]["options"] == {"num_ctx": 2048}
+    assert "options" not in recorded["body"]
+    assert recorded["authorization"] == "Bearer secret-key"
+    assert DEFAULT_REASONING_EFFORT == "low"
 
     monkeypatch.delenv("BJJ_LLM_BASE_URL")
     monkeypatch.delenv("BJJ_LLM_MODEL")
     complete_chat("again", urlopen=fake_urlopen)
-    assert recorded["url"] == "http://localhost:11434/v1/chat/completions"
+    assert recorded["url"] == "https://api.x.ai/v1/chat/completions"
     assert recorded["body"]["model"] == DEFAULT_LLM_MODEL
-    assert DEFAULT_LLM_MODEL == "qwen3.5:4b"
+    assert DEFAULT_LLM_MODEL == "grok-4.3"

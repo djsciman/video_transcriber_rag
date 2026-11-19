@@ -18,4 +18,4 @@ Skip artifacts today: match skips a folder that already has a product URL in the
 
 ## Consequences
 
-A corpus built from pre-concat chapter files is not skip-stable after organize concatenates those clips into volumes. Force on transcribe re-runs speech only; chapter and `video_file` stamps still happen in the same write. Force organize re-plans; repair stays a separate operator path.
+A corpus built from pre-concat chapter files is not skip-stable after organize concatenates those clips into volumes. Force on transcribe re-runs speech only; chapter and `video_file` stamps still happen in the same write. Force organize re-plans; repair stays a separate operator path. Prepare `--llm` skip is per chapter (`transcript_cleaned`); see ADR-0005.

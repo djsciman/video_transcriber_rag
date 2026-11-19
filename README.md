@@ -17,6 +17,7 @@ Organizes local instructionals against [BJJ Fanatics](https://bjjfanatics.com/) 
 | `py -3 -m bjj_pipeline match` | Match local folder names to BJJ Fanatics product URLs and write `bjjfanatics_matches.csv` |
 | `py -3 -m bjj_pipeline chapters` | Detect title-card chapter starts, OCR titles, write sidecar CSVs, optionally embed chapters into the video |
 | `py -3 -m bjj_pipeline transcribe` | Walk a video tree and complete each transcript: speech only when missing, container chapters, and `video_file` |
+| `py -3 -m bjj_pipeline prepare` | Walk transcribed volumes, nest chapter speech; skip finished `transcript_raw`; `--llm` pares with Grok 4.3; `--force` re-runs |
 | `py -3 -m bjj_pipeline scan` | Report library completeness (combined volumes, named chapters, NFO, playback, transcripts) and write a markdown drill-down |
 
 ### Coach-only advising (`coach_app`)
@@ -224,7 +225,7 @@ One command walks top-level instructional folders. Default stages are **match, o
 
 ### One pipeline command
 
-Dry-run a library (prints SKIP / RUN / FAIL; writes nothing; does not decode, Whisper, or call Ollama):
+Dry-run a library (prints SKIP / RUN / FAIL; writes nothing; does not decode, Whisper, or call the xAI API):
 
 ```powershell
 py -3 -m bjj_pipeline run --library "path\to\instructionals" --corpus "path\to\transcript-corpus"
@@ -238,11 +239,12 @@ py -3 -m bjj_pipeline run --library "path\to\instructionals" --corpus "path\to\t
 
 | Flag | Meaning |
 |------|---------|
-| (omit `--apply`) | Dry run: print SKIP / RUN / FAIL, no writes, no decode, no speech, no Ollama |
+| (omit `--apply`) | Dry run: print SKIP / RUN / FAIL, no writes, no decode, no speech, no xAI API |
 | `--apply` | Write match CSV, organize volumes, detect sidecars, transcripts, and chapter speech. Does **not** embed chapter sidecars |
 | `--embed` | Visual remux of sidecar chapter files into volumes. Opt-in; not implied by `--apply` |
 | `--force` | Re-run every selected stage even when its artifact exists |
 | `--force-stage match\|organize\|detect\|transcribe\|prepare` | Re-run only that unit |
+| `--llm` | During prepare, call Grok 4.3 for `transcript_cleaned` / `techniques`. Default is nest-only |
 | `--matches` | Match CSV path (default: `LIBRARY/bjjfanatics_matches.csv`) |
 
 Skip unless `--force` / `--force-stage`:
@@ -253,7 +255,7 @@ Skip unless `--force` / `--force-stage`:
 | organize | The show folder already has `tvshow.nfo` **and** at least one `Season ##` folder |
 | detect | The volume already has container chapters, or a sidecar chapter file exists. Uncombined chapter-file seasons warn and skip unless `--force-stage detect` |
 | transcribe | The mirrored corpus JSON already has a `segments` list (empty list counts as finished) |
-| prepare | Every real chapter on the mirrored corpus JSON already has `transcript_cleaned` |
+| prepare | Every real chapter already has `transcript_raw`. With `--llm`, nest is done and every chapter with speech already has `transcript_cleaned` |
 
 A CSV product URL is the organize URL with no yes/no prompt. One product URL per instructional folder. Missing URL outside a terminal fails that instructional's organize. Leftover multi-instructional bundle folders are out of this pipeline; flatten them by hand.
 
@@ -261,14 +263,13 @@ Organize concatenates per-chapter downloads into volumes (Fanatics titles; start
 
 Transcribe walks the **post-organize** tree (combined volumes under `Season ##`). Corpus JSON mirrors that tree under `--corpus`. A corpus written from pre-concat chapter files is not skip-stable after concat.
 
-Prepare updates that existing corpus JSON in place after transcribe. Whisper `segments` stay. Skip when every real chapter already has `transcript_cleaned`. Dry-run does not call Ollama; `--force` or `--force-stage prepare` re-runs chapter speech.
+Prepare updates that existing corpus JSON in place after transcribe. It nests chapter speech, then drops Whisper `segments`. Default is nest-only (credits, neighbors, `transcript_raw`); it does not call the xAI API. Skip when every real chapter already has `transcript_raw`. `--llm` sends one full chapter plus [`docs/prepare-llm-prompt.md`](docs/prepare-llm-prompt.md) to Grok 4.3 (`reasoning_effort` low) and writes `transcript_cleaned` and `techniques`. A chapter with `transcript_cleaned` is skipped; empty `transcript_raw` is not sent. Dry-run does not call the API; `--force` or `--force-stage prepare` re-runs chapter speech including already-cleaned chapters. Prepaid `XAI_API_KEY` credits are required; SuperGrok weekly quota is not used.
 
 | Variable | Default | Meaning |
 |----------|---------|---------|
-| `BJJ_LLM_BASE_URL` | `http://localhost:11434/v1` | Local Ollama base URL |
-| `BJJ_LLM_MODEL` | `qwen3.5:4b` | Local model tag. Operators may set `qwen3:4b-instruct` if that tag is missing |
-
-Live 4B sample (laptop class, not the 27B production box): install Ollama (`winget install --id Ollama.Ollama -e --accept-package-agreements --accept-source-agreements`), `ollama pull qwen3.5:4b`, set `BJJ_LLM_BASE_URL=http://localhost:11434/v1`. `complete_chat` posts `reasoning_effort` `none` (OpenAI-compat off-switch; `/v1` ignores native `think`), `response_format` JSON, and `options.num_ctx` 2048. `/v1` still loads 4096 unless you `ollama create` a `PARAMETER num_ctx 2048` alias. Copy a volume JSON out of the 529-volume library before scoring; do not overwrite the corpus in place.
+| `XAI_API_KEY` | (unset) | Bearer token for `api.x.ai`. Buy prepaid credits in the xAI console. |
+| `BJJ_LLM_BASE_URL` | `https://api.x.ai/v1` | OpenAI-compatible chat base URL |
+| `BJJ_LLM_MODEL` | `grok-4.3` | Chat model id |
 
 Repair of an already-organized show stays `py -3 -m bjj_pipeline organize --repair`; it is not a pipeline stage.
 
@@ -450,7 +451,7 @@ The drill-down is written to `completeness_scan_results_<date-time>.md` in the r
 ├── GLOSSARY.md               # Domain vocabulary
 ├── README.md
 ├── pyproject.toml            # extras: organize, transcribe, all (installs bjj_pipeline)
-├── bjj_pipeline/             # py -m bjj_pipeline match|organize|chapters|scan|transcribe|run
+├── bjj_pipeline/             # py -m bjj_pipeline match|organize|chapters|scan|transcribe|prepare|run
 │   ├── organizer/            # Scrape, match, NFO, concat
 │   ├── run_pipeline.py
 │   ├── generate_chapters.py

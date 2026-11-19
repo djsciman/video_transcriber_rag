@@ -631,6 +631,7 @@ def test_parser_omitting_apply_is_dry_run():
     assert args.embed is False
     assert args.force is False
     assert args.force_stage is None
+    assert args.llm is False
 
 
 def _organized_show(library: Path, name: str, videos: list[str]) -> Path:
@@ -836,6 +837,13 @@ def _prepare_line(out: str, status: str) -> str:
     return ""
 
 
+def test_parser_llm_defaults_off():
+    args = run_pipeline.build_parser().parse_args(
+        ["--library", r"D:\instructionals", "--corpus", r"D:\corpus", "--llm"]
+    )
+    assert args.llm is True
+
+
 def test_parser_force_stage_includes_prepare():
     args = run_pipeline.build_parser().parse_args(
         [
@@ -890,7 +898,7 @@ def test_dry_run_prints_run_for_prepare_and_does_not_call_it(tmp_path: Path):
     assert not _prepare_line(out, "FAIL")
 
 
-def test_dry_run_runs_prepare_when_only_transcript_raw_present(tmp_path: Path):
+def test_dry_run_skips_prepare_when_transcript_raw_present(tmp_path: Path):
     library = tmp_path / "lib"
     library.mkdir()
     show = _organized_show(
@@ -913,8 +921,8 @@ def test_dry_run_runs_prepare_when_only_transcript_raw_present(tmp_path: Path):
     assert code == 0
     assert calls["prepare"] == []
     assert out_json.read_bytes() == before
-    assert _prepare_line(out, "RUN")
-    assert not _prepare_line(out, "SKIP")
+    assert _prepare_line(out, "SKIP")
+    assert not _prepare_line(out, "RUN")
 
 
 def test_dry_run_skips_prepare_when_transcript_cleaned_present(tmp_path: Path):
@@ -929,12 +937,13 @@ def test_dry_run_skips_prepare_when_transcript_cleaned_present(tmp_path: Path):
     )
     payload = _eligible_payload()
     for chapter in payload["chapters"]:
+        chapter["transcript_raw"] = "<10.00> already nested"
         chapter["transcript_cleaned"] = "pared"
     _write_corpus_json(out_json, payload)
     before = out_json.read_bytes()
 
     code, out, calls = _run(
-        library, corpus, apply=False, chapter_count=lambda _video: 2
+        library, corpus, apply=False, llm=True, chapter_count=lambda _video: 2
     )
 
     assert code == 0
@@ -982,7 +991,7 @@ def test_apply_nests_and_pares_via_default_prepare(tmp_path: Path, monkeypatch):
 
     def fake_complete(prompt: str) -> str:
         calls_model.append(prompt)
-        return json.dumps({"transcript_cleaned": "pared", "suggested_tags": []})
+        return json.dumps({"transcript_cleaned": "pared", "techniques": []})
 
     monkeypatch.setattr("bjj_pipeline.prepare.complete_chat", fake_complete)
 
@@ -990,6 +999,7 @@ def test_apply_nests_and_pares_via_default_prepare(tmp_path: Path, monkeypatch):
         library,
         corpus,
         apply=True,
+        llm=True,
         chapter_count=lambda _video: 2,
         inject_prepare=False,
         stages=("prepare",),
@@ -1004,7 +1014,7 @@ def test_apply_nests_and_pares_via_default_prepare(tmp_path: Path, monkeypatch):
     assert "<290.00>" in passing["transcript_raw"]
     assert guard["transcript_cleaned"] == "pared"
     assert passing["transcript_cleaned"] == "pared"
-    assert guard["suggested_tags"] == []
+    assert guard["techniques"] == []
     assert guard["previous_chapter"] == ""
     assert guard["next_chapter"] == "Pass"
     assert passing["previous_chapter"] == "Guard"
@@ -1012,7 +1022,44 @@ def test_apply_nests_and_pares_via_default_prepare(tmp_path: Path, monkeypatch):
     assert guard["instructor"] == "John Danaher"
     assert guard["instructional"] == show.name
     assert guard["volume"] == "S01E01 - Volume 1.mp4"
-    assert data["segments"][1]["text"] == "straddling the start"
+    assert "segments" not in data
+    assert _prepare_line(out, "RUN")
+
+
+def test_apply_nests_without_llm_by_default(tmp_path: Path, monkeypatch):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(
+        library, "Arm Bars by John Danaher", ["S01E01 - Volume 1.mp4"]
+    )
+    corpus = tmp_path / "corpus"
+    out_json = (
+        corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    )
+    _write_corpus_json(out_json, _eligible_payload())
+
+    def boom(_prompt: str) -> str:
+        raise AssertionError("prepare must not call the local LLM by default")
+
+    monkeypatch.setattr("bjj_pipeline.prepare.complete_chat", boom)
+
+    code, out, calls = _run(
+        library,
+        corpus,
+        apply=True,
+        chapter_count=lambda _video: 2,
+        inject_prepare=False,
+        stages=("prepare",),
+    )
+
+    assert code == 0
+    assert calls["prepare"] == []
+    data = json.loads(out_json.read_text(encoding="utf-8"))
+    guard, passing = data["chapters"]
+    assert "<290.00>" in guard["transcript_raw"]
+    assert "transcript_cleaned" not in guard
+    assert "transcript_cleaned" not in passing
+    assert "segments" not in data
     assert _prepare_line(out, "RUN")
 
 
@@ -1028,11 +1075,12 @@ def test_second_apply_skips_prepare_when_transcript_cleaned_present(tmp_path: Pa
     )
     payload = _eligible_payload()
     for chapter in payload["chapters"]:
+        chapter["transcript_raw"] = "<10.00> already nested"
         chapter["transcript_cleaned"] = "pared"
     _write_corpus_json(out_json, payload)
 
     code, out, calls = _run(
-        library, corpus, apply=True, chapter_count=lambda _video: 2
+        library, corpus, apply=True, llm=True, chapter_count=lambda _video: 2
     )
 
     assert code == 0
@@ -1057,7 +1105,7 @@ def test_transcript_raw_alone_does_not_skip_prepare(tmp_path: Path):
     _write_corpus_json(out_json, payload)
 
     code, out, calls = _run(
-        library, corpus, apply=True, chapter_count=lambda _video: 2
+        library, corpus, apply=True, llm=True, chapter_count=lambda _video: 2
     )
 
     assert code == 0
@@ -1141,6 +1189,7 @@ def test_completer_down_nests_raw_prints_fail_then_retry_fills_cleaned(
         library,
         corpus,
         apply=True,
+        llm=True,
         chapter_count=lambda _video: 2,
         inject_prepare=False,
         stages=("prepare",),
@@ -1155,16 +1204,17 @@ def test_completer_down_nests_raw_prints_fail_then_retry_fills_cleaned(
     assert "<290.00>" in guard["transcript_raw"]
     assert "<290.00>" in passing["transcript_raw"]
     assert "transcript_cleaned" not in guard
-    assert "suggested_tags" not in guard
+    assert "techniques" not in guard
 
     def up(_prompt: str) -> str:
-        return json.dumps({"transcript_cleaned": "pared later", "suggested_tags": []})
+        return json.dumps({"transcript_cleaned": "pared later", "techniques": []})
 
     monkeypatch.setattr("bjj_pipeline.prepare.complete_chat", up)
     code, out, _calls = _run(
         library,
         corpus,
         apply=True,
+        llm=True,
         chapter_count=lambda _video: 2,
         inject_prepare=False,
         stages=("prepare",),
@@ -1176,7 +1226,7 @@ def test_completer_down_nests_raw_prints_fail_then_retry_fills_cleaned(
     guard, passing = data["chapters"]
     assert guard["transcript_cleaned"] == "pared later"
     assert passing["transcript_cleaned"] == "pared later"
-    assert guard["suggested_tags"] == []
+    assert guard["techniques"] == []
 
 
 def test_prepare_skips_whole_recording_chapter(tmp_path: Path):
