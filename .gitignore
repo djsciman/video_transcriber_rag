@@ -5,3 +5,4 @@
 /bjj_pipeline/__pycache__
 /bjj_pipeline/organizer/__pycache__
 *.pyc
+/.venv/
