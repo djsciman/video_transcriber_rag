@@ -1,4 +1,4 @@
-"""py -3 -m bjj_pipeline match|organize|chapters|scan|transcribe|prepare|run"""
+"""py -3 -m bjj_pipeline match|organize|chapters|scan|transcribe|prepare|compare-llm|run"""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ _COMMAND_MODULES = {
     "scan": "bjj_pipeline.completeness_scan",
     "transcribe": "bjj_pipeline.batch_panoscribe",
     "prepare": "bjj_pipeline.prepare",
+    "compare-llm": "bjj_pipeline.compare_llm",
     "run": "bjj_pipeline.run_pipeline",
 }
 

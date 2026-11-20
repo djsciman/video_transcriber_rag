@@ -470,7 +470,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--llm",
         action="store_true",
-        help="During prepare, call Grok 4.3 to fill transcript_cleaned and techniques.",
+        help="During prepare, call Grok 4.3 to fill transcript_cleaned, concepts, suggested_tags, and techniques.",
     )
     return parser
 

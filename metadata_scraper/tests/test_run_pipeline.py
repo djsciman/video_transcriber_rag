@@ -939,6 +939,8 @@ def test_dry_run_skips_prepare_when_transcript_cleaned_present(tmp_path: Path):
     for chapter in payload["chapters"]:
         chapter["transcript_raw"] = "<10.00> already nested"
         chapter["transcript_cleaned"] = "pared"
+        chapter["concepts"] = ["pared idea"]
+        chapter["suggested_tags"] = ["pared"]
     _write_corpus_json(out_json, payload)
     before = out_json.read_bytes()
 
@@ -991,7 +993,14 @@ def test_apply_nests_and_pares_via_default_prepare(tmp_path: Path, monkeypatch):
 
     def fake_complete(prompt: str) -> str:
         calls_model.append(prompt)
-        return json.dumps({"transcript_cleaned": "pared", "techniques": []})
+        return json.dumps(
+            {
+                "transcript_cleaned": "pared",
+                "concepts": ["pared idea"],
+                "suggested_tags": ["pared"],
+                "techniques": [],
+            }
+        )
 
     monkeypatch.setattr("bjj_pipeline.prepare.complete_chat", fake_complete)
 
@@ -1014,6 +1023,8 @@ def test_apply_nests_and_pares_via_default_prepare(tmp_path: Path, monkeypatch):
     assert "<290.00>" in passing["transcript_raw"]
     assert guard["transcript_cleaned"] == "pared"
     assert passing["transcript_cleaned"] == "pared"
+    assert guard["concepts"] == ["pared idea"]
+    assert guard["suggested_tags"] == ["pared"]
     assert guard["techniques"] == []
     assert guard["previous_chapter"] == ""
     assert guard["next_chapter"] == "Pass"
@@ -1077,6 +1088,8 @@ def test_second_apply_skips_prepare_when_transcript_cleaned_present(tmp_path: Pa
     for chapter in payload["chapters"]:
         chapter["transcript_raw"] = "<10.00> already nested"
         chapter["transcript_cleaned"] = "pared"
+        chapter["concepts"] = ["pared idea"]
+        chapter["suggested_tags"] = ["pared"]
     _write_corpus_json(out_json, payload)
 
     code, out, calls = _run(
@@ -1207,7 +1220,14 @@ def test_completer_down_nests_raw_prints_fail_then_retry_fills_cleaned(
     assert "techniques" not in guard
 
     def up(_prompt: str) -> str:
-        return json.dumps({"transcript_cleaned": "pared later", "techniques": []})
+        return json.dumps(
+            {
+                "transcript_cleaned": "pared later",
+                "concepts": ["later idea"],
+                "suggested_tags": ["later"],
+                "techniques": [],
+            }
+        )
 
     monkeypatch.setattr("bjj_pipeline.prepare.complete_chat", up)
     code, out, _calls = _run(

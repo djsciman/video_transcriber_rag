@@ -4,13 +4,14 @@
 
 Process one BJJ instructional video chapter and extract its instructional content into a clean, structured representation.
 
-Produce three distinct representations:
+Produce four distinct representations:
 
 1. **`transcript_cleaned`** — A faithful, readable version of the instructor's speech, with verbal clutter and redundant repetition removed.
-2. **`technique_steps`** — An executable mechanical sequence for each independently taught technique.
-3. **`main_ideas`** — Two or three pithy, imperative statements of the ideas that bear the most weight. This is not a re-summarization of the steps.
+2. **`concepts`** — Independent ideas in that cleaned speech, boiled down for a coach or advisor. One array entry per distinct idea.
+3. **`technique_steps`** — An executable mechanical sequence for each independently taught technique.
+4. **`main_ideas`** — Two or three pithy, imperative statements of the ideas that bear the most weight for that technique. This is not a re-summarization of the steps.
 
-Also classify each extracted technique using the seed vocabularies. Put that classification on the technique object. Extract `suggested_tags` as keywords from `main_ideas`.
+Also classify each extracted technique using the seed vocabularies. Put that classification on the technique object. Extract technique `suggested_tags` as keywords from `main_ideas`. Extract chapter `suggested_tags` as keywords from `concepts`.
 
 The seed is primarily a terminology source for cleaning the transcript. Tag fields may be filled more freely: a strong seed match is written as-is; an educated guess or a value with no seed match is written with a trailing `*`.
 
@@ -107,13 +108,14 @@ Process the chapter in the following order:
 1. Read the complete transcript and supplied metadata.
 2. Identify the instructional subject and distinguish actual teaching from introductions, commentary, and incidental speech.
 3. Clean the transcript while preserving meaningful instruction.
-4. Identify distinct, independently taught techniques.
-5. Reconcile demonstrations, repetitions, variations, and corrections.
-6. Reconstruct each technique's mechanical sequence.
-7. Extract the most valuable lessons the athlete should remember.
-8. Classify each technique: strong seed matches unmarked, guesses and unmatched values with `*`.
-9. Validate the relationships between steps, concepts, and hop classifications.
-10. Produce the final JSON.
+4. Distill independent ideas from the cleaned speech into `concepts`.
+5. Identify distinct, independently taught techniques.
+6. Reconcile demonstrations, repetitions, variations, and corrections.
+7. Reconstruct each technique's mechanical sequence.
+8. Extract the most valuable lessons the athlete should remember.
+9. Classify each technique: strong seed matches unmarked, guesses and unmatched values with `*`.
+10. Validate the relationships between steps, concepts, and hop classifications.
+11. Produce the final JSON.
 
 Do not expose intermediate reasoning or analysis. Return only the completed output.
 
@@ -137,6 +139,33 @@ Apply these rules:
 The result must be continuous, readable prose without timestamps.
 
 Do not remove meaningful teaching simply because it is repeated during a demonstration.
+
+## 5b. Chapter concepts
+
+`concepts` is the coach/advisor access layer for the chapter. It is not a second copy of `transcript_cleaned`, and it is not `main_ideas` (those live on each technique).
+
+Write an array of strings. Each string is one independent idea taken from `transcript_cleaned`, boiled down so a coach can retrieve the point without the exposition that surrounds it.
+
+Rules:
+
+- A focused chapter usually has exactly one concept.
+- Add another entry only when the chapter actually teaches a distinct second idea, not because the instructor talked for a long time or restated the same point.
+- A long section that is still one idea stays one concept. Do not split a ramble into many entries.
+- Strip setup, encouragement, recap, and play-by-play already captured in `technique_steps`.
+- Keep the distinction, constraint, or principle the coach must retain.
+- Do not invent ideas that are not in the chapter.
+- Conceptual, posture, grip, and theory chapters still get `concepts` even when `techniques` is empty.
+- Prefer a few dense sentences per entry over a paragraph.
+
+### Chapter suggested tags
+
+`suggested_tags` on the chapter is an array of keyword strings extracted from `concepts`.
+
+Pull the load-bearing terms and short phrases from those concept strings. Do not invent tags from `transcript_cleaned`, `technique_steps`, or outside knowledge. Do not put hop objects in this array.
+
+If `concepts` is empty, return `[]`.
+
+Technique objects still have their own `suggested_tags`, extracted from that technique's `main_ideas`.
 
 ## 6. Technique identification
 
@@ -561,7 +590,13 @@ This field provides traceability to the original video without compromising tran
 Return exactly one JSON object with these root-level fields:
 
 - `transcript_cleaned`
+- `concepts`
+- `suggested_tags`
 - `techniques`
+
+`concepts` is an array of strings. Typically one string; more only when the chapter contains distinct ideas.
+
+Chapter `suggested_tags` is an array of keyword strings extracted from `concepts`.
 
 Each technique object must contain these fields, in this order:
 
@@ -592,6 +627,14 @@ Do not add other fields.
 ```json
 {
   "transcript_cleaned": "From closed guard, sit up, hip bump, and finish in mount. Keep the underhook as you move forward. If the opponent posts, continue driving toward the shoulder.",
+  "concepts": [
+    "Win the underhook and get your hips under him before the bump; keep traveling toward the posted shoulder so the reversal finishes in mount."
+  ],
+  "suggested_tags": [
+    "win the underhook",
+    "hips underneath",
+    "travel toward the posted shoulder"
+  ],
   "techniques": [
     {
       "named_move": "Hip bump sweep",
@@ -625,6 +668,12 @@ For a chapter that discusses posture, grips, positional theory, or conceptual ma
 ```json
 {
   "transcript_cleaned": "The cleaned chapter speech goes here.",
+  "concepts": [
+    "One boiled-down idea the coach should retain from this chapter."
+  ],
+  "suggested_tags": [
+    "keyword from that idea"
+  ],
   "techniques": []
 }
 ```
@@ -656,6 +705,20 @@ Before returning the JSON, validate the entire result.
 - The sequence begins with the actual starting position and ends with the demonstrated result.
 - No steps have been added to meet an arbitrary count.
 
+### Concepts validation
+
+- `concepts` is an array of strings.
+- A focused chapter has one entry.
+- Extra entries exist only for distinct ideas, not for length of speech.
+- Each string is boiled down for a coach or advisor; it is not a restatement of `transcript_cleaned`.
+- No idea appears that the chapter did not teach.
+
+### Chapter suggested-tags validation
+
+- Chapter `suggested_tags` is an array of strings.
+- Every tag is a keyword or short phrase taken from `concepts`.
+- No hop objects appear in chapter `suggested_tags`.
+
 ### Main-ideas validation
 
 - Two or three pithy imperative sentences. Never more.
@@ -682,7 +745,7 @@ Before returning the JSON, validate the entire result.
 
 ### Structural validation
 
-- The root object contains exactly the two required fields.
+- The root object contains exactly the four required fields.
 - Every technique object contains exactly the eleven required fields.
 - Hop fields are strings.
 - `suggested_tags` is an array of strings.

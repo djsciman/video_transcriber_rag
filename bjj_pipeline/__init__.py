@@ -2,4 +2,13 @@
 
 __version__ = "0.2.0"
 
-COMMANDS = ("match", "organize", "chapters", "scan", "transcribe", "prepare", "run")
+COMMANDS = (
+    "match",
+    "organize",
+    "chapters",
+    "scan",
+    "transcribe",
+    "prepare",
+    "compare-llm",
+    "run",
+)

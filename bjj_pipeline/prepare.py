@@ -1,7 +1,8 @@
 """Nest raw chapter speech and fill LLM-pared keys on a transcribed volume JSON.
 
-``--llm`` sends one full chapter plus the markdown prepare spec to chat
-completion. Skip a chapter that already has ``transcript_cleaned``.
+Default ``--llm`` is one Completer call per chapter with the combined
+prepare spec. ``--method staged`` is two Completer calls on the same
+model (cleanup then extract).
 """
 
 from __future__ import annotations
@@ -11,6 +12,7 @@ import json
 import os
 import re
 import sys
+import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 from functools import lru_cache
@@ -30,10 +32,52 @@ _BY = re.compile(r"\s+by\s+", re.IGNORECASE)
 
 Completer = Callable[[str], str]
 
+DEFAULT_LLM_PROVIDER = "xai"
 DEFAULT_LLM_BASE_URL = "https://api.x.ai/v1"
 DEFAULT_LLM_MODEL = "grok-4.3"
 DEFAULT_REASONING_EFFORT = "low"
+DEFAULT_LLM_METHOD = "one-call"
+DEFAULT_ANTHROPIC_VERSION = "2023-06-01"
 PROMPT_PATH = Path(__file__).resolve().parents[1] / "docs" / "prepare-llm-prompt.md"
+CLEANUP_PROMPT_PATH = (
+    Path(__file__).resolve().parents[1] / "docs" / "prepare-llm-cleanup.md"
+)
+EXTRACT_PROMPT_PATH = (
+    Path(__file__).resolve().parents[1] / "docs" / "prepare-llm-extract.md"
+)
+LLM_METHODS = ("one-call", "staged")
+CLEANUP_SPEC_MAX_CHARS = 8000
+EXTRACT_SPEC_MAX_CHARS = 16000
+
+LLM_PROVIDERS = {
+    "xai": {
+        "kind": "openai",
+        "base_url": "https://api.x.ai/v1",
+        "model": "grok-4.3",
+        "key_env": "XAI_API_KEY",
+        "reasoning_effort": "low",
+    },
+    "openai": {
+        "kind": "openai",
+        "base_url": "https://api.openai.com/v1",
+        "model": "gpt-5.4-mini",
+        "key_env": "OPENAI_API_KEY",
+        "reasoning_effort": None,
+    },
+    "anthropic": {
+        "kind": "anthropic",
+        "base_url": "https://api.anthropic.com",
+        "model": "claude-haiku-5-5",
+        "key_env": "ANTHROPIC_API_KEY",
+        "reasoning_effort": None,
+        "max_tokens": 16384,
+    },
+}
+LLM_PROVIDER_ALIASES = {
+    "grok": "xai",
+    "gpt": "openai",
+    "claude": "anthropic",
+}
 
 TECHNIQUE_STRINGS = (
     "named_move",
@@ -47,6 +91,84 @@ TECHNIQUE_STRINGS = (
     "main_ideas",
 )
 TECHNIQUE_LISTS = ("source_time_ranges", "suggested_tags")
+_TAG_SPLIT = re.compile(r"[.?!;,]")
+_TAG_STOPWORDS = frozenset(
+    {
+        "a",
+        "an",
+        "the",
+        "and",
+        "or",
+        "but",
+        "if",
+        "then",
+        "so",
+        "as",
+        "at",
+        "by",
+        "for",
+        "from",
+        "in",
+        "into",
+        "of",
+        "on",
+        "onto",
+        "to",
+        "with",
+        "without",
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "being",
+        "it",
+        "its",
+        "this",
+        "that",
+        "these",
+        "those",
+        "you",
+        "your",
+        "we",
+        "our",
+        "he",
+        "she",
+        "they",
+        "them",
+        "his",
+        "her",
+        "their",
+        "not",
+        "no",
+        "do",
+        "does",
+        "did",
+        "can",
+        "could",
+        "should",
+        "must",
+        "will",
+        "when",
+        "while",
+        "after",
+        "before",
+        "over",
+        "under",
+        "up",
+        "down",
+        "out",
+        "off",
+        "about",
+        "just",
+        "also",
+        "very",
+        "more",
+        "most",
+        "than",
+    }
+)
 
 
 def prepare_volume(
@@ -55,13 +177,18 @@ def prepare_volume(
     video_library_root: Path | None = None,
     completer: Completer | None = None,
     *,
+    cleaner: Completer | None = None,
+    extractor: Completer | None = None,
     force: bool = False,
+    max_llm_calls: int | None = None,
 ) -> int:
     """Rewrite ``json_path`` with nested raw speech and, when possible, pared keys.
 
-    Returns 0 on nest success (and model success when ``completer`` is set).
+    Returns 0 on nest success (and model success when a Completer is set).
     Returns 1 when nesting ran but the model half failed.
     """
+    if completer is not None and (cleaner is not None or extractor is not None):
+        raise ValueError("do not pass completer with cleaner/extractor")
     payload = json.loads(json_path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         return 0
@@ -83,6 +210,7 @@ def prepare_volume(
 
     model_ok = True
     nested: list = []
+    llm_calls = 0
     for index, chapter in enumerate(chapters):
         if not isinstance(chapter, dict):
             nested.append(chapter)
@@ -109,15 +237,32 @@ def prepare_volume(
         if completer is not None:
             raw = updated.get("transcript_raw")
             raw_text = raw if isinstance(raw, str) else ""
-            already = isinstance(updated.get("transcript_cleaned"), str)
+            already = _chapter_has_llm(updated)
             if raw_text.strip() and (force or not already):
+                if max_llm_calls is not None and llm_calls >= max_llm_calls:
+                    nested.append(updated)
+                    continue
+                llm_calls += 1
                 try:
                     parsed = _enrich_chapter(updated, completer)
                 except Exception:
                     model_ok = False
                 else:
                     updated["transcript_cleaned"] = parsed["transcript_cleaned"]
+                    updated["concepts"] = parsed["concepts"]
+                    updated["suggested_tags"] = parsed["suggested_tags"]
                     updated["techniques"] = parsed["techniques"]
+        elif cleaner is not None or extractor is not None:
+            ok, llm_calls = _enrich_staged(
+                updated,
+                cleaner=cleaner,
+                extractor=extractor,
+                force=force,
+                max_llm_calls=max_llm_calls,
+                llm_calls=llm_calls,
+            )
+            if not ok:
+                model_ok = False
         nested.append(updated)
     payload["chapters"] = nested
     payload.pop("segments", None)
@@ -125,36 +270,114 @@ def prepare_volume(
     return 0 if model_ok else 1
 
 
+def resolve_llm_provider(name: str | None = None) -> str:
+    raw = (name or os.environ.get("BJJ_LLM_PROVIDER") or DEFAULT_LLM_PROVIDER).strip().lower()
+    resolved = LLM_PROVIDER_ALIASES.get(raw, raw)
+    if resolved not in LLM_PROVIDERS:
+        allowed = ", ".join(sorted(LLM_PROVIDERS))
+        raise ValueError(f"unknown llm provider {raw!r}; choose one of: {allowed}")
+    return resolved
+
+
+def _read_json(opener, request: urllib.request.Request, timeout: float) -> dict:
+    try:
+        with opener(request, timeout=timeout) as resp:
+            raw = resp.read()
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace") if exc.fp or hasattr(exc, "read") else ""
+        snippet = detail.strip().replace("\n", " ")[:400]
+        raise RuntimeError(f"HTTP {exc.code} {snippet}".strip()) from exc
+    if isinstance(raw, bytes):
+        return json.loads(raw.decode("utf-8"))
+    return json.loads(raw)
+
+
+def make_completer(
+    provider: str | None = None,
+    model: str | None = None,
+    *,
+    spec: str | None = None,
+    reasoning_effort: str | None = None,
+) -> Completer:
+    def completer(prompt: str) -> str:
+        return complete_chat(
+            prompt,
+            provider=provider,
+            model=model,
+            spec=spec,
+            reasoning_effort=reasoning_effort,
+        )
+
+    return completer
+
+
 def complete_chat(
     prompt: str,
     *,
+    provider: str | None = None,
+    model: str | None = None,
+    spec: str | None = None,
+    reasoning_effort: str | None = None,
     urlopen=None,
     timeout: float = 600,
 ) -> str:
-    """POST an OpenAI-compatible chat completion via stdlib urllib."""
+    """POST a chat completion to xAI, OpenAI, or Anthropic via stdlib urllib."""
     opener = urllib.request.urlopen if urlopen is None else urlopen
-    base = os.environ.get("BJJ_LLM_BASE_URL", DEFAULT_LLM_BASE_URL).rstrip("/")
-    model = os.environ.get("BJJ_LLM_MODEL", DEFAULT_LLM_MODEL)
-    spec = _llm_spec()
+    name = resolve_llm_provider(provider)
+    cfg = LLM_PROVIDERS[name]
+    spec_text = _llm_spec() if spec is None else spec
     user = prompt
-    stripped = spec.strip()
-    if prompt.startswith(stripped):
+    stripped = spec_text.strip()
+    if stripped and prompt.startswith(stripped):
         user = prompt[len(stripped) :].lstrip()
+    chosen_model = model or os.environ.get("BJJ_LLM_MODEL") or cfg["model"]
+    if cfg["kind"] == "anthropic":
+        return _complete_anthropic(
+            user,
+            spec=spec_text,
+            model=chosen_model,
+            cfg=cfg,
+            opener=opener,
+            timeout=timeout,
+        )
+    return _complete_openai_compat(
+        user,
+        spec=spec_text,
+        model=chosen_model,
+        cfg=cfg,
+        opener=opener,
+        timeout=timeout,
+        reasoning_effort=reasoning_effort,
+    )
+
+
+def _complete_openai_compat(
+    user: str,
+    *,
+    spec: str,
+    model: str,
+    cfg: dict,
+    opener,
+    timeout: float,
+    reasoning_effort: str | None = None,
+) -> str:
+    base = os.environ.get("BJJ_LLM_BASE_URL", cfg["base_url"]).rstrip("/")
     url = f"{base}/chat/completions"
-    body = json.dumps(
-        {
-            "model": model,
-            "messages": [
-                {"role": "system", "content": spec},
-                {"role": "user", "content": user},
-            ],
-            "temperature": 0,
-            "reasoning_effort": DEFAULT_REASONING_EFFORT,
-            "response_format": {"type": "json_object"},
-        }
-    ).encode("utf-8")
+    payload: dict = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": spec},
+            {"role": "user", "content": user},
+        ],
+        "temperature": 0,
+        "response_format": {"type": "json_object"},
+    }
+    default_effort = cfg.get("reasoning_effort")
+    if default_effort:
+        payload["reasoning_effort"] = reasoning_effort or default_effort
+    body = json.dumps(payload).encode("utf-8")
     headers = {"Content-Type": "application/json"}
-    key = os.environ.get("XAI_API_KEY", "")
+    key = os.environ.get(cfg["key_env"], "")
     if key:
         headers["Authorization"] = f"Bearer {key}"
     request = urllib.request.Request(
@@ -163,16 +386,63 @@ def complete_chat(
         headers=headers,
         method="POST",
     )
-    with opener(request, timeout=timeout) as resp:
-        raw = resp.read()
-    if isinstance(raw, bytes):
-        payload = json.loads(raw.decode("utf-8"))
-    else:
-        payload = json.loads(raw)
-    content = payload["choices"][0]["message"]["content"]
+    data = _read_json(opener, request, timeout)
+    content = data["choices"][0]["message"]["content"]
     if not isinstance(content, str):
         raise ValueError("empty completion")
     return content
+
+
+def _complete_anthropic(
+    user: str,
+    *,
+    spec: str,
+    model: str,
+    cfg: dict,
+    opener,
+    timeout: float,
+) -> str:
+    base = os.environ.get("BJJ_LLM_BASE_URL", cfg["base_url"]).rstrip("/")
+    url = f"{base}/v1/messages"
+    payload = {
+        "model": model,
+        "max_tokens": cfg["max_tokens"],
+        "system": spec,
+        "messages": [{"role": "user", "content": user}],
+        "thinking": {"type": "disabled"},
+    }
+    body = json.dumps(payload).encode("utf-8")
+    headers = {
+        "Content-Type": "application/json",
+        "anthropic-version": DEFAULT_ANTHROPIC_VERSION,
+    }
+    key = os.environ.get(cfg["key_env"], "")
+    if key:
+        headers["x-api-key"] = key
+    request = urllib.request.Request(
+        url,
+        data=body,
+        headers=headers,
+        method="POST",
+    )
+    data = _read_json(opener, request, timeout)
+    blocks = data.get("content")
+    parts = [
+        block.get("text")
+        for block in blocks
+        if isinstance(block, dict) and block.get("type") == "text" and isinstance(block.get("text"), str)
+    ] if isinstance(blocks, list) else []
+    text = "".join(parts)
+    if not text:
+        kinds = [
+            block.get("type")
+            for block in (blocks or [])
+            if isinstance(block, dict)
+        ]
+        raise ValueError(
+            f"empty completion (stop_reason={data.get('stop_reason')!r}, block_types={kinds})"
+        )
+    return text
 
 
 def _real_chapters(chapters: list) -> list:
@@ -213,14 +483,31 @@ def prepare_eligible(output: Path) -> bool:
     return _eligible_nested(chapters)
 
 
+def _chapter_has_llm(chapter: dict) -> bool:
+    return (
+        isinstance(chapter.get("transcript_cleaned"), str)
+        and isinstance(chapter.get("concepts"), list)
+        and isinstance(chapter.get("suggested_tags"), list)
+    )
+
+
 def _chapter_needs_llm(chapter: dict) -> bool:
     raw = chapter.get("transcript_raw")
     if not isinstance(raw, str) or not raw.strip():
         return False
-    return not isinstance(chapter.get("transcript_cleaned"), str)
+    return not _chapter_has_llm(chapter)
 
 
-def prepare_done(output: Path, *, llm: bool = False) -> bool:
+def _chapter_needs_staged(chapter: dict) -> bool:
+    raw = chapter.get("transcript_raw")
+    if not isinstance(raw, str) or not raw.strip():
+        return False
+    if not isinstance(chapter.get("transcript_cleaned"), str):
+        return True
+    return not isinstance(chapter.get("concepts"), list)
+
+
+def prepare_done(output: Path, *, llm: bool = False, method: str = DEFAULT_LLM_METHOD) -> bool:
     try:
         _data, info = inspect_transcript(output)
     except TranscriptError:
@@ -235,7 +522,8 @@ def prepare_done(output: Path, *, llm: bool = False) -> bool:
     if not nested:
         return False
     if llm:
-        return not any(_chapter_needs_llm(chapter) for chapter in real)
+        needs = _chapter_needs_staged if method == "staged" else _chapter_needs_llm
+        return not any(needs(chapter) for chapter in real)
     return True
 
 
@@ -328,7 +616,27 @@ def _llm_spec() -> str:
     return PROMPT_PATH.read_text(encoding="utf-8")
 
 
-def _chapter_user_message(chapter: dict) -> str:
+@lru_cache(maxsize=1)
+def _cleanup_spec() -> str:
+    text = CLEANUP_PROMPT_PATH.read_text(encoding="utf-8")
+    if len(text) >= CLEANUP_SPEC_MAX_CHARS:
+        raise ValueError(
+            f"cleanup spec is {len(text)} chars; must be under {CLEANUP_SPEC_MAX_CHARS}"
+        )
+    return text
+
+
+@lru_cache(maxsize=1)
+def _extract_spec() -> str:
+    text = EXTRACT_PROMPT_PATH.read_text(encoding="utf-8")
+    if len(text) >= EXTRACT_SPEC_MAX_CHARS:
+        raise ValueError(
+            f"extract spec is {len(text)} chars; must be under {EXTRACT_SPEC_MAX_CHARS}"
+        )
+    return text
+
+
+def _chapter_user_message(chapter: dict, speech_key: str = "transcript_raw") -> str:
     title = chapter.get("title", "")
     if not isinstance(title, str):
         title = ""
@@ -343,13 +651,18 @@ def _chapter_user_message(chapter: dict) -> str:
             "",
             "Chapter speech:",
             "",
-            str(chapter.get("transcript_raw") or ""),
+            str(chapter.get(speech_key) or ""),
         ]
     )
 
 
-def _llm_prompt(chapter: dict) -> str:
-    return _llm_spec().rstrip() + "\n\n" + _chapter_user_message(chapter)
+def _llm_prompt(
+    chapter: dict,
+    spec: str | None = None,
+    speech_key: str = "transcript_raw",
+) -> str:
+    text = _llm_spec() if spec is None else spec
+    return text.rstrip() + "\n\n" + _chapter_user_message(chapter, speech_key)
 
 
 def _string_list(value: object) -> list[str]:
@@ -370,7 +683,7 @@ def _normalize_technique(raw: object) -> dict | None:
     return technique
 
 
-def _parse_completion(text: str) -> dict:
+def _json_object(text: str) -> dict:
     if not isinstance(text, str) or not text.strip():
         raise ValueError("empty completion")
     blob = text.strip()
@@ -389,9 +702,22 @@ def _parse_completion(text: str) -> dict:
     data = json.loads(blob[start : end + 1])
     if not isinstance(data, dict):
         raise ValueError("not object")
+    return data
+
+
+def _parse_completion(text: str) -> dict:
+    data = _json_object(text)
     cleaned = data.get("transcript_cleaned")
     if not isinstance(cleaned, str):
         raise ValueError("no cleaned")
+    raw_concepts = data.get("concepts")
+    if not isinstance(raw_concepts, list):
+        raise ValueError("bad concepts")
+    concepts = [item for item in raw_concepts if isinstance(item, str)]
+    raw_tags = data.get("suggested_tags")
+    if not isinstance(raw_tags, list):
+        raise ValueError("bad suggested_tags")
+    suggested_tags = [item for item in raw_tags if isinstance(item, str)]
     raw_techniques = data.get("techniques")
     if not isinstance(raw_techniques, list):
         raise ValueError("bad techniques")
@@ -400,7 +726,125 @@ def _parse_completion(text: str) -> dict:
         technique = _normalize_technique(item)
         if technique is not None:
             techniques.append(technique)
-    return {"transcript_cleaned": cleaned, "techniques": techniques}
+    return {
+        "transcript_cleaned": cleaned,
+        "concepts": concepts,
+        "suggested_tags": suggested_tags,
+        "techniques": techniques,
+    }
+
+
+def _parse_cleanup(text: str) -> str:
+    cleaned = _json_object(text).get("transcript_cleaned")
+    if not isinstance(cleaned, str):
+        raise ValueError("no cleaned")
+    return cleaned
+
+
+def _parse_extract(text: str) -> tuple[list[str], list[dict]]:
+    data = _json_object(text)
+    raw_concepts = data.get("concepts")
+    if not isinstance(raw_concepts, list):
+        raise ValueError("bad concepts")
+    concepts = [item for item in raw_concepts if isinstance(item, str)]
+    raw_techniques = data.get("techniques")
+    if not isinstance(raw_techniques, list):
+        raise ValueError("bad techniques")
+    techniques = []
+    for item in raw_techniques:
+        technique = _normalize_technique(item)
+        if technique is None:
+            continue
+        technique["suggested_tags"] = _derive_tags(technique.get("main_ideas") or "")
+        techniques.append(technique)
+    return concepts, techniques
+
+
+def _derive_tags(source: str | list[str]) -> list[str]:
+    if isinstance(source, list):
+        texts = [item for item in source if isinstance(item, str)]
+    elif isinstance(source, str):
+        texts = [source]
+    else:
+        texts = []
+    found: list[str] = []
+    seen: set[str] = set()
+    for text in texts:
+        for part in _TAG_SPLIT.split(text):
+            fragment = " ".join(part.split())
+            if not fragment:
+                continue
+            words = fragment.split()
+            if len(words) > 8:
+                continue
+            if all(word.lower().strip("*.,") in _TAG_STOPWORDS for word in words):
+                continue
+            key = fragment.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            found.append(fragment)
+    return found
+
+
+def _drop_llm_keys(chapter: dict, *, keep_cleaned: bool = False) -> None:
+    if not keep_cleaned:
+        chapter.pop("transcript_cleaned", None)
+    chapter.pop("concepts", None)
+    chapter.pop("techniques", None)
+    chapter.pop("suggested_tags", None)
+
+
+def _enrich_staged(
+    chapter: dict,
+    *,
+    cleaner: Completer | None,
+    extractor: Completer | None,
+    force: bool,
+    max_llm_calls: int | None,
+    llm_calls: int,
+) -> tuple[bool, int]:
+    raw = chapter.get("transcript_raw")
+    raw_text = raw if isinstance(raw, str) else ""
+    if not raw_text.strip():
+        return True, llm_calls
+    cleaned_ok = isinstance(chapter.get("transcript_cleaned"), str)
+    if cleaner is not None and (force or not cleaned_ok):
+        if max_llm_calls is None or llm_calls < max_llm_calls:
+            llm_calls += 1
+            try:
+                cleaned = _parse_cleanup(
+                    cleaner(_llm_prompt(chapter, spec=_cleanup_spec()))
+                )
+            except Exception:
+                _drop_llm_keys(chapter)
+                return False, llm_calls
+            chapter["transcript_cleaned"] = cleaned
+            _drop_llm_keys(chapter, keep_cleaned=True)
+    cleaned_ok = isinstance(chapter.get("transcript_cleaned"), str)
+    if extractor is not None and cleaned_ok and (
+        force or not isinstance(chapter.get("concepts"), list)
+    ):
+        if max_llm_calls is None or llm_calls < max_llm_calls:
+            llm_calls += 1
+            try:
+                concepts, techniques = _parse_extract(
+                    extractor(
+                        _llm_prompt(
+                            chapter,
+                            spec=_extract_spec(),
+                            speech_key="transcript_cleaned",
+                        )
+                    )
+                )
+            except Exception:
+                _drop_llm_keys(chapter, keep_cleaned=True)
+                return False, llm_calls
+            chapter["concepts"] = concepts
+            chapter["techniques"] = techniques
+    if isinstance(chapter.get("concepts"), list):
+        chapter["suggested_tags"] = _derive_tags(chapter["concepts"])
+    return True, llm_calls
 
 
 def _enrich_chapter(chapter: dict, completer: Completer) -> dict:
@@ -418,7 +862,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Walk transcribed volumes and nest chapter speech. Skip finished "
-            "volumes; --force re-runs. --llm also fills transcript_cleaned."
+            "volumes; --force re-runs. --llm also fills transcript_cleaned, "
+            "concepts, suggested_tags, and techniques. Default --method is "
+            "one-call; staged is cleanup then extract on the same model."
         )
     )
     parser.add_argument("--library", type=Path, required=True, help="Root of instructional folders.")
@@ -431,7 +877,31 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--llm",
         action="store_true",
-        help="Call Grok 4.3 to fill transcript_cleaned and techniques.",
+        help=(
+            "Call the chat API to fill transcript_cleaned, concepts, "
+            "suggested_tags, and techniques. Default provider is xAI Grok 4.3."
+        ),
+    )
+    parser.add_argument(
+        "--method",
+        choices=LLM_METHODS,
+        default=DEFAULT_LLM_METHOD,
+        help=(
+            "How --llm calls the model: one-call (default, combined spec) or "
+            "staged (cleanup at low reasoning, then extract at medium). "
+            "--provider and --model apply to both."
+        ),
+    )
+    parser.add_argument(
+        "--provider",
+        choices=sorted(LLM_PROVIDERS),
+        default=DEFAULT_LLM_PROVIDER,
+        help="Chat vendor for --llm (xai, openai, anthropic). Env: BJJ_LLM_PROVIDER.",
+    )
+    parser.add_argument(
+        "--model",
+        default=None,
+        help="Override the provider default model. Env: BJJ_LLM_MODEL.",
     )
     return parser
 
@@ -442,16 +912,31 @@ def run(
     *,
     force: bool = False,
     llm: bool = False,
+    method: str = DEFAULT_LLM_METHOD,
+    provider: str | None = None,
+    model: str | None = None,
+    max_llm_calls: int | None = None,
     completer: Completer | None = None,
+    cleaner: Completer | None = None,
+    extractor: Completer | None = None,
     stdout: TextIO | None = None,
 ) -> int:
     library = Path(library)
     corpus = Path(corpus)
     stdout = stdout if stdout is not None else sys.stdout
-    if llm:
-        completer_fn = complete_chat if completer is None else completer
-    else:
-        completer_fn = None
+    staged = llm and method == "staged"
+    completer_fn: Completer | None = None
+    cleaner_fn: Completer | None = None
+    extractor_fn: Completer | None = None
+    if staged:
+        cleaner_fn = cleaner or make_completer(
+            provider, model, spec=_cleanup_spec(), reasoning_effort="low"
+        )
+        extractor_fn = extractor or make_completer(
+            provider, model, spec=_extract_spec(), reasoning_effort="medium"
+        )
+    elif llm:
+        completer_fn = completer if completer is not None else make_completer(provider, model)
     failed = False
     for video in walk_videos(library):
         output = output_path_for(video, library, corpus)
@@ -462,12 +947,19 @@ def run(
         if not prepare_eligible(output):
             _print(stdout, "SKIP", label)
             continue
-        if prepare_done(output, llm=llm) and not force:
+        if prepare_done(output, llm=llm, method=method) and not force:
             _print(stdout, "SKIP", label)
             continue
         try:
             code = prepare_volume(
-                output, corpus, library, completer=completer_fn, force=force
+                output,
+                corpus,
+                library,
+                completer=completer_fn,
+                cleaner=cleaner_fn,
+                extractor=extractor_fn,
+                force=force,
+                max_llm_calls=max_llm_calls,
             )
         except Exception as exc:  # noqa: BLE001
             _print(stdout, "FAIL", label, str(exc))
@@ -483,7 +975,15 @@ def run(
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    return run(args.library, args.corpus, force=args.force, llm=args.llm)
+    return run(
+        args.library,
+        args.corpus,
+        force=args.force,
+        llm=args.llm,
+        method=args.method,
+        provider=args.provider,
+        model=args.model,
+    )
 
 
 if __name__ == "__main__":

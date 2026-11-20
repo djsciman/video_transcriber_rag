@@ -10,7 +10,16 @@ from pathlib import Path
 import pytest
 
 REPO = Path(__file__).resolve().parents[1]
-SUBCOMMANDS = ("match", "organize", "chapters", "scan", "transcribe", "prepare", "run")
+SUBCOMMANDS = (
+    "match",
+    "organize",
+    "chapters",
+    "scan",
+    "transcribe",
+    "prepare",
+    "compare-llm",
+    "run",
+)
 
 SHIMS = (
     (REPO / "generate_chapters.py", "chapters"),
@@ -78,17 +87,27 @@ def test_no_split_bundles_shim():
 def test_readme_operator_path_lists_prepare():
     text = (REPO / "README.md").read_text(encoding="utf-8")
     assert "`py -3 -m bjj_pipeline prepare`" in text
-    assert "Walk transcribed volumes, nest chapter speech; skip finished `transcript_raw`; `--llm` pares with Grok 4.3; `--force` re-runs" in text
+    assert "Walk transcribed volumes, nest chapter speech; skip finished `transcript_raw`" in text
+    assert "`--llm` pares with Grok 4.3" in text
+    assert "`--method staged`" in text
+    assert "`--force` re-runs" in text
     assert "Default stages are **match, organize, detect, transcribe, prepare**." in text
     assert "Apply match, organize, detect, transcribe, and prepare." in text
     assert "`--force-stage match\\|organize\\|detect\\|transcribe\\|prepare`" in text
     assert "| prepare | Every real chapter" in text
     assert "`transcript_cleaned`" in text
+    assert "`concepts`" in text
+    assert "`suggested_tags`" in text
     assert "`BJJ_LLM_BASE_URL`" in text
     assert "`https://api.x.ai/v1`" in text
     assert "`BJJ_LLM_MODEL`" in text
     assert "`grok-4.3`" in text
     assert "`XAI_API_KEY`" in text
+    assert "`OPENAI_API_KEY`" in text
+    assert "`ANTHROPIC_API_KEY`" in text
+    assert "`BJJ_LLM_PROVIDER`" in text
+    assert "`py -3 -m bjj_pipeline compare-llm`" in text
+    assert "--methods one-call,staged" in text
     assert "in place" in text
     assert "`segments`" in text
 

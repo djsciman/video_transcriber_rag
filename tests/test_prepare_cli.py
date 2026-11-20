@@ -59,14 +59,42 @@ def _completer(calls: list[str] | None = None):
     def completer(prompt: str) -> str:
         if calls is not None:
             calls.append(prompt)
-        return json.dumps({"transcript_cleaned": "pared", "techniques": []})
+        return json.dumps(
+            {
+                "transcript_cleaned": "pared",
+                "concepts": ["pared idea"],
+                "suggested_tags": ["pared"],
+                "techniques": [],
+            }
+        )
+
+    return completer
+
+
+def _cleanup_completer(calls: list[str] | None = None):
+    def completer(prompt: str) -> str:
+        if calls is not None:
+            calls.append(prompt)
+        return json.dumps({"transcript_cleaned": "pared"})
+
+    return completer
+
+
+def _extract_completer(calls: list[str] | None = None):
+    def completer(prompt: str) -> str:
+        if calls is not None:
+            calls.append(prompt)
+        return json.dumps({"concepts": ["pared idea"], "techniques": []})
 
     return completer
 
 
 def _run(library: Path, corpus: Path, **kwargs):
     buf = io.StringIO()
-    if kwargs.get("llm"):
+    if kwargs.get("llm") and kwargs.get("method") == "staged":
+        kwargs.setdefault("cleaner", _cleanup_completer())
+        kwargs.setdefault("extractor", _extract_completer())
+    elif kwargs.get("llm"):
         kwargs.setdefault("completer", _completer())
     code = prepare.run(library, corpus, stdout=buf, **kwargs)
     return code, buf.getvalue()
@@ -88,6 +116,9 @@ def test_help_exits_0(capsys):
     assert "--corpus" in help_text
     assert "--force" in help_text
     assert "--llm" in help_text
+    assert "--provider" in help_text
+    assert "--model" in help_text
+    assert "--method" in help_text
 
 
 def test_missing_library_or_corpus_fails():
@@ -100,6 +131,34 @@ def test_missing_library_or_corpus_fails():
     with pytest.raises(SystemExit) as exc:
         prepare.main(["--corpus", "y"])
     assert exc.value.code != 0
+
+
+def test_parser_provider_and_model():
+    args = prepare.build_parser().parse_args(
+        [
+            "--library",
+            "lib",
+            "--corpus",
+            "corpus",
+            "--llm",
+            "--provider",
+            "openai",
+            "--model",
+            "gpt-4.1-mini",
+        ]
+    )
+    assert args.provider == "openai"
+    assert args.model == "gpt-4.1-mini"
+    defaulted = prepare.build_parser().parse_args(
+        ["--library", "lib", "--corpus", "corpus", "--llm"]
+    )
+    assert defaulted.provider == "xai"
+    assert defaulted.model is None
+    assert defaulted.method == "one-call"
+    staged = prepare.build_parser().parse_args(
+        ["--library", "lib", "--corpus", "corpus", "--llm", "--method", "staged"]
+    )
+    assert staged.method == "staged"
 
 
 def test_parser_has_force_and_llm_not_apply():
@@ -177,6 +236,10 @@ def test_llm_pares_eligible_unfinished(tmp_path: Path):
     guard, passing = data["chapters"]
     assert guard["transcript_cleaned"] == "pared"
     assert passing["transcript_cleaned"] == "pared"
+    assert guard["concepts"] == ["pared idea"]
+    assert passing["concepts"] == ["pared idea"]
+    assert guard["suggested_tags"] == ["pared"]
+    assert passing["suggested_tags"] == ["pared"]
     assert "<290.00>" in guard["transcript_raw"]
     assert guard["title"] == "Guard"
     assert passing["title"] == "Pass"
@@ -189,6 +252,8 @@ def test_finished_transcript_cleaned_skips_with_llm(tmp_path: Path):
     for chapter in payload["chapters"]:
         chapter["transcript_raw"] = "<10.00> already nested"
         chapter["transcript_cleaned"] = "already pared"
+        chapter["concepts"] = ["already boiled"]
+        chapter["suggested_tags"] = ["already"]
     _write_json(json_path, payload)
     before = json_path.read_bytes()
     calls: list[str] = []
@@ -328,7 +393,14 @@ def test_model_fail_continues_walk(tmp_path: Path):
         seen["n"] += 1
         if seen["n"] == 1:
             raise OSError("down")
-        return json.dumps({"transcript_cleaned": "pared", "techniques": []})
+        return json.dumps(
+            {
+                "transcript_cleaned": "pared",
+                "concepts": ["pared idea"],
+                "suggested_tags": ["pared"],
+                "techniques": [],
+            }
+        )
 
     code, out = _run(library, corpus, llm=True, completer=flaky)
 
@@ -372,6 +444,8 @@ def test_mixed_library_prepares_only_unfinished(tmp_path: Path):
     for chapter in done["chapters"]:
         chapter["transcript_raw"] = "<10.00> already nested"
         chapter["transcript_cleaned"] = "already"
+        chapter["concepts"] = ["already boiled"]
+        chapter["suggested_tags"] = ["already"]
     _write_json(first, done)
     unfinished = _eligible_payload()
     unfinished["video_file"] = videos[1].name
@@ -390,3 +464,55 @@ def test_mixed_library_prepares_only_unfinished(tmp_path: Path):
         "transcript_cleaned"
     ] == "pared"
     assert len(calls) == 2
+
+
+def test_staged_cli_two_calls_and_skip(tmp_path: Path):
+    library, corpus, videos = _tree(tmp_path)
+    json_path = _json_for(corpus, videos[0], library)
+    _write_json(json_path, _eligible_payload())
+    clean_calls: list[str] = []
+    extract_calls: list[str] = []
+
+    code, out = _run(
+        library,
+        corpus,
+        llm=True,
+        method="staged",
+        cleaner=_cleanup_completer(clean_calls),
+        extractor=_extract_completer(extract_calls),
+    )
+
+    assert code == 0
+    assert len(clean_calls) == 2
+    assert len(extract_calls) == 2
+    assert _prepare_line(out, "RUN")
+    data = json.loads(json_path.read_text(encoding="utf-8"))
+    assert data["chapters"][0]["transcript_cleaned"] == "pared"
+    assert data["chapters"][0]["concepts"] == ["pared idea"]
+    assert data["chapters"][0]["suggested_tags"] == ["pared idea"]
+
+    before = json_path.read_bytes()
+    code, out = _run(
+        library,
+        corpus,
+        llm=True,
+        method="staged",
+        cleaner=_cleanup_completer(clean_calls),
+        extractor=_extract_completer(extract_calls),
+    )
+    assert code == 0
+    assert json_path.read_bytes() == before
+    assert _prepare_line(out, "SKIP")
+
+
+def test_default_llm_stays_one_call(tmp_path: Path):
+    library, corpus, videos = _tree(tmp_path)
+    json_path = _json_for(corpus, videos[0], library)
+    _write_json(json_path, _eligible_payload())
+    calls: list[str] = []
+
+    code, _out = _run(library, corpus, llm=True, completer=_completer(calls))
+
+    assert code == 0
+    assert len(calls) == 2
+    assert "Pare BJJ Instructional Chapter" in calls[0]

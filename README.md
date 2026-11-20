@@ -17,7 +17,8 @@ Organizes local instructionals against [BJJ Fanatics](https://bjjfanatics.com/) 
 | `py -3 -m bjj_pipeline match` | Match local folder names to BJJ Fanatics product URLs and write `bjjfanatics_matches.csv` |
 | `py -3 -m bjj_pipeline chapters` | Detect title-card chapter starts, OCR titles, write sidecar CSVs, optionally embed chapters into the video |
 | `py -3 -m bjj_pipeline transcribe` | Walk a video tree and complete each transcript: speech only when missing, container chapters, and `video_file` |
-| `py -3 -m bjj_pipeline prepare` | Walk transcribed volumes, nest chapter speech; skip finished `transcript_raw`; `--llm` pares with Grok 4.3; `--force` re-runs |
+| `py -3 -m bjj_pipeline prepare` | Walk transcribed volumes, nest chapter speech; skip finished `transcript_raw`; `--llm` pares with Grok 4.3 (default one-call; `--method staged` is cleanup then extract); `--force` re-runs |
+| `py -3 -m bjj_pipeline compare-llm` | Copy a user-specified sample of corpus volumes and compare vendors, or one-call vs staged on one lightweight SKU, without writing the live corpus |
 | `py -3 -m bjj_pipeline scan` | Report library completeness (combined volumes, named chapters, NFO, playback, transcripts) and write a markdown drill-down |
 
 ### Coach-only advising (`coach_app`)
@@ -244,7 +245,7 @@ py -3 -m bjj_pipeline run --library "path\to\instructionals" --corpus "path\to\t
 | `--embed` | Visual remux of sidecar chapter files into volumes. Opt-in; not implied by `--apply` |
 | `--force` | Re-run every selected stage even when its artifact exists |
 | `--force-stage match\|organize\|detect\|transcribe\|prepare` | Re-run only that unit |
-| `--llm` | During prepare, call Grok 4.3 for `transcript_cleaned` / `techniques`. Default is nest-only |
+| `--llm` | During prepare, call Grok 4.3 for `transcript_cleaned` / `concepts` / `suggested_tags` / `techniques`. Default is nest-only. Default method is one-call; `prepare --llm --method staged` is opt-in |
 | `--matches` | Match CSV path (default: `LIBRARY/bjjfanatics_matches.csv`) |
 
 Skip unless `--force` / `--force-stage`:
@@ -255,7 +256,7 @@ Skip unless `--force` / `--force-stage`:
 | organize | The show folder already has `tvshow.nfo` **and** at least one `Season ##` folder |
 | detect | The volume already has container chapters, or a sidecar chapter file exists. Uncombined chapter-file seasons warn and skip unless `--force-stage detect` |
 | transcribe | The mirrored corpus JSON already has a `segments` list (empty list counts as finished) |
-| prepare | Every real chapter already has `transcript_raw`. With `--llm`, nest is done and every chapter with speech already has `transcript_cleaned` |
+| prepare | Every real chapter already has `transcript_raw`. With `--llm` (one-call), nest is done and every chapter with speech already has `transcript_cleaned`, `concepts`, and `suggested_tags`. With `--method staged`, nest is done and every chapter with speech already has a `transcript_cleaned` string and a `concepts` list |
 
 A CSV product URL is the organize URL with no yes/no prompt. One product URL per instructional folder. Missing URL outside a terminal fails that instructional's organize. Leftover multi-instructional bundle folders are out of this pipeline; flatten them by hand.
 
@@ -263,13 +264,22 @@ Organize concatenates per-chapter downloads into volumes (Fanatics titles; start
 
 Transcribe walks the **post-organize** tree (combined volumes under `Season ##`). Corpus JSON mirrors that tree under `--corpus`. A corpus written from pre-concat chapter files is not skip-stable after concat.
 
-Prepare updates that existing corpus JSON in place after transcribe. It nests chapter speech, then drops Whisper `segments`. Default is nest-only (credits, neighbors, `transcript_raw`); it does not call the xAI API. Skip when every real chapter already has `transcript_raw`. `--llm` sends one full chapter plus [`docs/prepare-llm-prompt.md`](docs/prepare-llm-prompt.md) to Grok 4.3 (`reasoning_effort` low) and writes `transcript_cleaned` and `techniques`. A chapter with `transcript_cleaned` is skipped; empty `transcript_raw` is not sent. Dry-run does not call the API; `--force` or `--force-stage prepare` re-runs chapter speech including already-cleaned chapters. Prepaid `XAI_API_KEY` credits are required; SuperGrok weekly quota is not used.
+Prepare updates that existing corpus JSON in place after transcribe. It nests chapter speech, then drops Whisper `segments`. Default is nest-only (credits, neighbors, `transcript_raw`); it does not call the xAI API. Skip when every real chapter already has `transcript_raw`.
+
+`--llm` default method is **one-call**: one Completer per chapter plus [`docs/prepare-llm-prompt.md`](docs/prepare-llm-prompt.md) at `reasoning_effort` low (when the adapter posts that field), writing `transcript_cleaned`, `concepts`, chapter `suggested_tags`, and `techniques`. Skip a chapter that already has `transcript_cleaned` as a string plus `concepts` and `suggested_tags` as lists; empty `transcript_raw` is not sent.
+
+`--method staged` is opt-in: two Completer calls on the same `--provider` / `--model` (default still xAI `grok-4.3`). Cleanup uses [`docs/prepare-llm-cleanup.md`](docs/prepare-llm-cleanup.md) at low reasoning and writes only `transcript_cleaned`. Extract uses [`docs/prepare-llm-extract.md`](docs/prepare-llm-extract.md) at medium reasoning (posted when that provider already sends `reasoning_effort`; omitted on OpenAI and Anthropic) and writes `concepts` and `techniques`. Staged `suggested_tags` are derived in prepare from `concepts` and `main_ideas`. Cleanup skip when `transcript_cleaned` is a string; extract skip when `concepts` is a list; empty raw skips both; failed cleanup does not extract; failed extract keeps cleaned speech.
+
+`--provider` and `--model` (and `BJJ_LLM_PROVIDER` / `BJJ_LLM_MODEL`) apply to one-call, cleanup, and extract. Dry-run does not call the API; `--force` or `--force-stage prepare` re-runs the selected method. Prepaid credits for the selected provider are required (`XAI_API_KEY`, `OPENAI_API_KEY`, or `ANTHROPIC_API_KEY`); SuperGrok weekly quota is not used.
 
 | Variable | Default | Meaning |
 |----------|---------|---------|
 | `XAI_API_KEY` | (unset) | Bearer token for `api.x.ai`. Buy prepaid credits in the xAI console. |
-| `BJJ_LLM_BASE_URL` | `https://api.x.ai/v1` | OpenAI-compatible chat base URL |
-| `BJJ_LLM_MODEL` | `grok-4.3` | Chat model id |
+| `OPENAI_API_KEY` | (unset) | Bearer token for `api.openai.com`. |
+| `ANTHROPIC_API_KEY` | (unset) | `x-api-key` for `api.anthropic.com`. |
+| `BJJ_LLM_PROVIDER` | `xai` | Chat vendor: `xai`, `openai`, or `anthropic` (aliases `grok`, `gpt`, `claude`). |
+| `BJJ_LLM_BASE_URL` | `https://api.x.ai/v1` | OpenAI-compatible chat base URL (xAI/OpenAI). Anthropic uses `https://api.anthropic.com`. |
+| `BJJ_LLM_MODEL` | `grok-4.3` | Chat model id override. Defaults: xAI `grok-4.3`, OpenAI `gpt-5.4-mini`, Anthropic `claude-haiku-5-5`. |
 
 Repair of an already-organized show stays `py -3 -m bjj_pipeline organize --repair`; it is not a pipeline stage.
 
@@ -421,6 +431,42 @@ Options:
 | `--force` | Re-run speech even when a `segments` list already exists |
 
 On Windows, paths of 260+ characters are opened with the `\\?\` extended-length prefix so long mirrored corpus paths still work when Long Paths are disabled. Speech scratch JSON is written under the system temp directory so a long volume name cannot push that scratch path over the limit.
+
+### Compare LLM vendors on a sample
+
+`py -3 -m bjj_pipeline compare-llm` copies **user-specified** corpus JSON volumes into `--out/<provider>/`, strips prior `transcript_cleaned` / `concepts` / `suggested_tags` / `techniques`, and runs the same `--llm` prepare against each vendor. The live corpus is not written. `--max-chapters` caps chapters per volume, per provider (or per method). Staged spends two Completer calls per chapter. A $5 prepaid key can cover a diverse sample.
+
+A **method bake-off** is a separate path: `--methods one-call,staged` with one `--provider` and one `--model` (one lightweight SKU) writes `--out/one-call/` and `--out/staged/`. Both methods use that same pair. The live corpus is not written. The report places cleaned length, `concepts`, named moves, and `techniques` counts from each method next to each other, plus the usual bake-off metrics. Do not mix vendors or mix model IDs inside this bake-off. Vendor-vs-vendor compare stays `--providers`.
+
+Set the keys in the process environment (PowerShell session, not the repo):
+
+```powershell
+$env:XAI_API_KEY = "xai-..."
+$env:OPENAI_API_KEY = "sk-..."
+$env:ANTHROPIC_API_KEY = "sk-ant-..."
+```
+
+Dry-run prints the sample, chapter counts, and which keys are set:
+
+```powershell
+py -3 -m bjj_pipeline compare-llm --corpus "path\to\transcript-corpus" --out "path\to\llm-bakeoff" --volume "Arm Bars Enter The System by John Danaher\Season 01\S01E01 - Volume 1.json" --dry-run
+```
+
+Run the sample (repeat `--volume`, or pass `--volumes-file` with one corpus-relative JSON path per line):
+
+```powershell
+py -3 -m bjj_pipeline compare-llm --corpus "path\to\transcript-corpus" --out "path\to\llm-bakeoff" --library "path\to\instructionals" --volume "Arm Bars Enter The System by John Danaher\Season 01\S01E01 - Volume 1.json" --max-chapters 6
+```
+
+Writes `--out/report.json` and `--out/report.md` with per-chapter concepts, tags, named moves, and cleaned length by provider. Also writes `--out/metrics.json` and `--out/metrics.md`: raw-token coverage, novel-token rate, cleaned/raw length, leftover timestamps, out-of-bounds time ranges, duplicate `named_move`, starred guesses, empty extract on move-like titles, and the ten chapters with the lowest pairwise cleaned-text F1. Rebuild those files without API calls with `--from-existing`. Default `--providers` is `xai,openai,anthropic`. Defaults: Grok 4.3 (low reasoning), `gpt-5.4-mini`, `claude-haiku-5-5`.
+
+One vendor on the live corpus stays `py -3 -m bjj_pipeline prepare --llm --provider openai`.
+
+Compare one-call vs staged on copies of the same volumes (one provider, one model):
+
+```powershell
+py -3 -m bjj_pipeline compare-llm --corpus "path\to\transcript-corpus" --out "path\to\method-bakeoff" --methods one-call,staged --provider xai --model grok-4.3 --volume "Arm Bars Enter The System by John Danaher\Season 01\S01E01 - Volume 1.json"
+```
 
 ### Scan library completeness
 
