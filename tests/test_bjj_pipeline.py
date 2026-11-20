@@ -89,7 +89,8 @@ def test_readme_operator_path_lists_prepare():
     assert "`py -3 -m bjj_pipeline prepare`" in text
     assert "Walk transcribed volumes, nest chapter speech; skip finished `transcript_raw`" in text
     assert "`--llm` pares with Grok 4.3" in text
-    assert "`--method staged`" in text
+    assert "`--method one-call`" in text
+    assert "default staged" in text
     assert "`--force` re-runs" in text
     assert "Default stages are **match, organize, detect, transcribe, prepare**." in text
     assert "Apply match, organize, detect, transcribe, and prepare." in text

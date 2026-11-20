@@ -991,7 +991,7 @@ def test_apply_nests_and_pares_via_default_prepare(tmp_path: Path, monkeypatch):
     _write_corpus_json(out_json, _eligible_payload())
     calls_model: list[str] = []
 
-    def fake_complete(prompt: str) -> str:
+    def fake_complete(prompt: str, **_kwargs) -> str:
         calls_model.append(prompt)
         return json.dumps(
             {
@@ -1016,7 +1016,7 @@ def test_apply_nests_and_pares_via_default_prepare(tmp_path: Path, monkeypatch):
 
     assert code == 0
     assert calls["prepare"] == []
-    assert len(calls_model) == 2
+    assert len(calls_model) == 4
     data = json.loads(out_json.read_text(encoding="utf-8"))
     guard, passing = data["chapters"]
     assert "<290.00>" in guard["transcript_raw"]
@@ -1024,7 +1024,7 @@ def test_apply_nests_and_pares_via_default_prepare(tmp_path: Path, monkeypatch):
     assert guard["transcript_cleaned"] == "pared"
     assert passing["transcript_cleaned"] == "pared"
     assert guard["concepts"] == ["pared idea"]
-    assert guard["suggested_tags"] == ["pared"]
+    assert guard["suggested_tags"] == ["pared idea"]
     assert guard["techniques"] == []
     assert guard["previous_chapter"] == ""
     assert guard["next_chapter"] == "Pass"

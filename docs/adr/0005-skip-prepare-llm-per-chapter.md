@@ -4,13 +4,13 @@ status: accepted
 
 # Skip prepare `--llm` per chapter
 
-`--llm` calls a paid chat model per chapter. A volume-grain skip would re-send finished chapters after a mid-volume fail. Default `--llm` is still **one Completer call per chapter** with [`docs/prepare-llm-prompt.md`](../prepare-llm-prompt.md) and `reasoning_effort` low when the adapter posts that field. `--method staged` is a second, opt-in path: two Completer calls on the **same** `--provider` / `--model` (cleanup at low reasoning, extract at medium). Cleanup and extract each have a short spec. There is no volume-wide cleanup call.
+`--llm` calls a paid chat model per chapter. A volume-grain skip would re-send finished chapters after a mid-volume fail. Default `--llm` is **staged**: two Completer calls on the **same** `--provider` / `--model` (cleanup at low reasoning, extract at medium) with the short specs. `--method one-call` keeps one Completer call per chapter with [`docs/prepare-llm-prompt.md`](../prepare-llm-prompt.md) and `reasoning_effort` low when the adapter posts that field. There is no volume-wide cleanup call. Default flipped to staged after the Anthropic Haiku 5.5 method bake-off (#117).
 
-## One-call skip (default)
+## One-call skip
 
 Skip a chapter when `transcript_cleaned` is already a string and `concepts` and `suggested_tags` are already lists. Skip a chapter with empty `transcript_raw`. The volume is finished for one-call `--llm` when no remaining chapter still needs a call. `--force` / `--force-stage prepare` re-sends chapters that already have cleaned speech.
 
-## Staged skip
+## Staged skip (default)
 
 Cleanup is done when `transcript_cleaned` is a string. Extract is done when `concepts` is a list. `suggested_tags` is not a staged skip key; on that path they are derived in prepare from `concepts` and `main_ideas`. Empty `transcript_raw` skips both stages. Failed cleanup leaves LLM keys off and does not extract. Failed extract keeps cleaned speech. `--force` re-sends both staged stages. The volume is finished for staged `--llm` when nest is done and no remaining chapter still needs cleanup or extract.
 

@@ -74,13 +74,26 @@ def _default_prepare(
     llm: bool = False,
     force: bool = False,
 ) -> int:
-    from .prepare import complete_chat, prepare_volume
+    from .prepare import (
+        _cleanup_spec,
+        _extract_spec,
+        make_completer,
+        prepare_volume,
+    )
 
+    if not llm:
+        return prepare_volume(
+            json_path,
+            corpus_root,
+            video_library_root,
+            force=force,
+        )
     return prepare_volume(
         json_path,
         corpus_root,
         video_library_root,
-        completer=complete_chat if llm else None,
+        cleaner=make_completer(spec=_cleanup_spec(), reasoning_effort="low"),
+        extractor=make_completer(spec=_extract_spec(), reasoning_effort="medium"),
         force=force,
     )
 
@@ -470,7 +483,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--llm",
         action="store_true",
-        help="During prepare, call Grok 4.3 to fill transcript_cleaned, concepts, suggested_tags, and techniques.",
+        help="During prepare, staged cleanup then extract for transcript_cleaned, concepts, suggested_tags, and techniques.",
     )
     return parser
 

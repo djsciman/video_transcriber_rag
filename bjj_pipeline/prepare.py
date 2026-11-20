@@ -1,8 +1,7 @@
 """Nest raw chapter speech and fill LLM-pared keys on a transcribed volume JSON.
 
-Default ``--llm`` is one Completer call per chapter with the combined
-prepare spec. ``--method staged`` is two Completer calls on the same
-model (cleanup then extract).
+Default ``--llm`` is staged: two Completer calls per chapter on the same
+model (cleanup then extract). ``--method one-call`` keeps the combined spec.
 """
 
 from __future__ import annotations
@@ -36,7 +35,7 @@ DEFAULT_LLM_PROVIDER = "xai"
 DEFAULT_LLM_BASE_URL = "https://api.x.ai/v1"
 DEFAULT_LLM_MODEL = "grok-4.3"
 DEFAULT_REASONING_EFFORT = "low"
-DEFAULT_LLM_METHOD = "one-call"
+DEFAULT_LLM_METHOD = "staged"
 DEFAULT_ANTHROPIC_VERSION = "2023-06-01"
 PROMPT_PATH = Path(__file__).resolve().parents[1] / "docs" / "prepare-llm-prompt.md"
 CLEANUP_PROMPT_PATH = (
@@ -864,7 +863,7 @@ def build_parser() -> argparse.ArgumentParser:
             "Walk transcribed volumes and nest chapter speech. Skip finished "
             "volumes; --force re-runs. --llm also fills transcript_cleaned, "
             "concepts, suggested_tags, and techniques. Default --method is "
-            "one-call; staged is cleanup then extract on the same model."
+            "staged (cleanup then extract); one-call keeps the combined spec."
         )
     )
     parser.add_argument("--library", type=Path, required=True, help="Root of instructional folders.")
@@ -887,9 +886,8 @@ def build_parser() -> argparse.ArgumentParser:
         choices=LLM_METHODS,
         default=DEFAULT_LLM_METHOD,
         help=(
-            "How --llm calls the model: one-call (default, combined spec) or "
-            "staged (cleanup at low reasoning, then extract at medium). "
-            "--provider and --model apply to both."
+            "How --llm calls the model: staged (default, cleanup then extract) "
+            "or one-call (combined spec). --provider and --model apply to both."
         ),
     )
     parser.add_argument(

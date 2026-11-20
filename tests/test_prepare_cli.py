@@ -91,7 +91,8 @@ def _extract_completer(calls: list[str] | None = None):
 
 def _run(library: Path, corpus: Path, **kwargs):
     buf = io.StringIO()
-    if kwargs.get("llm") and kwargs.get("method") == "staged":
+    method = kwargs.get("method", prepare.DEFAULT_LLM_METHOD)
+    if kwargs.get("llm") and method == "staged":
         kwargs.setdefault("cleaner", _cleanup_completer())
         kwargs.setdefault("extractor", _extract_completer())
     elif kwargs.get("llm"):
@@ -154,11 +155,11 @@ def test_parser_provider_and_model():
     )
     assert defaulted.provider == "xai"
     assert defaulted.model is None
-    assert defaulted.method == "one-call"
-    staged = prepare.build_parser().parse_args(
-        ["--library", "lib", "--corpus", "corpus", "--llm", "--method", "staged"]
+    assert defaulted.method == "staged"
+    one_call = prepare.build_parser().parse_args(
+        ["--library", "lib", "--corpus", "corpus", "--llm", "--method", "one-call"]
     )
-    assert staged.method == "staged"
+    assert one_call.method == "one-call"
 
 
 def test_parser_has_force_and_llm_not_apply():
@@ -225,7 +226,9 @@ def test_llm_pares_eligible_unfinished(tmp_path: Path):
     _write_json(json_path, _eligible_payload())
     calls: list[str] = []
 
-    code, out = _run(library, corpus, llm=True, completer=_completer(calls))
+    code, out = _run(
+        library, corpus, llm=True, method="one-call", completer=_completer(calls)
+    )
 
     assert code == 0
     assert calls
@@ -258,7 +261,9 @@ def test_finished_transcript_cleaned_skips_with_llm(tmp_path: Path):
     before = json_path.read_bytes()
     calls: list[str] = []
 
-    code, out = _run(library, corpus, llm=True, completer=_completer(calls))
+    code, out = _run(
+        library, corpus, llm=True, method="one-call", completer=_completer(calls)
+    )
 
     assert code == 0
     assert calls == []
@@ -276,7 +281,9 @@ def test_transcript_raw_alone_does_not_skip_with_llm(tmp_path: Path):
     _write_json(json_path, payload)
     calls: list[str] = []
 
-    code, out = _run(library, corpus, llm=True, completer=_completer(calls))
+    code, out = _run(
+        library, corpus, llm=True, method="one-call", completer=_completer(calls)
+    )
 
     assert code == 0
     assert calls
@@ -292,7 +299,14 @@ def test_force_reruns_when_cleaned_keys_exist(tmp_path: Path):
     _write_json(json_path, payload)
     calls: list[str] = []
 
-    code, out = _run(library, corpus, llm=True, force=True, completer=_completer(calls))
+    code, out = _run(
+        library,
+        corpus,
+        llm=True,
+        method="one-call",
+        force=True,
+        completer=_completer(calls),
+    )
 
     assert code == 0
     assert calls
@@ -360,7 +374,7 @@ def test_model_down_nests_raw_prints_fail_exits_1(tmp_path: Path):
     def down(_prompt: str) -> str:
         raise OSError("connection refused")
 
-    code, out = _run(library, corpus, llm=True, completer=down)
+    code, out = _run(library, corpus, llm=True, method="one-call", completer=down)
 
     assert code == 1
     fail = _prepare_line(out, "FAIL")
@@ -402,7 +416,7 @@ def test_model_fail_continues_walk(tmp_path: Path):
             }
         )
 
-    code, out = _run(library, corpus, llm=True, completer=flaky)
+    code, out = _run(library, corpus, llm=True, method="one-call", completer=flaky)
 
     assert code == 1
     assert _prepare_line(out, "FAIL")
@@ -425,7 +439,9 @@ def test_extras_and_trailers_are_not_walked(tmp_path: Path):
     (trailers / "promo.mp4").write_bytes(b"promo")
     calls: list[str] = []
 
-    code, out = _run(library, corpus, llm=True, completer=_completer(calls))
+    code, out = _run(
+        library, corpus, llm=True, method="one-call", completer=_completer(calls)
+    )
 
     assert code == 0
     assert "sample.mp4" not in out
@@ -452,7 +468,9 @@ def test_mixed_library_prepares_only_unfinished(tmp_path: Path):
     _write_json(second, unfinished)
     calls: list[str] = []
 
-    code, out = _run(library, corpus, llm=True, completer=_completer(calls))
+    code, out = _run(
+        library, corpus, llm=True, method="one-call", completer=_completer(calls)
+    )
 
     assert code == 0
     assert _prepare_line(out, "SKIP")
@@ -505,14 +523,24 @@ def test_staged_cli_two_calls_and_skip(tmp_path: Path):
     assert _prepare_line(out, "SKIP")
 
 
-def test_default_llm_stays_one_call(tmp_path: Path):
+def test_default_llm_is_staged(tmp_path: Path):
     library, corpus, videos = _tree(tmp_path)
     json_path = _json_for(corpus, videos[0], library)
     _write_json(json_path, _eligible_payload())
-    calls: list[str] = []
+    clean_calls: list[str] = []
+    extract_calls: list[str] = []
 
-    code, _out = _run(library, corpus, llm=True, completer=_completer(calls))
+    code, _out = _run(
+        library,
+        corpus,
+        llm=True,
+        cleaner=_cleanup_completer(clean_calls),
+        extractor=_extract_completer(extract_calls),
+    )
 
     assert code == 0
-    assert len(calls) == 2
-    assert "Pare BJJ Instructional Chapter" in calls[0]
+    assert len(clean_calls) == 2
+    assert len(extract_calls) == 2
+    assert "Pare chapter speech" in clean_calls[0]
+    assert "Extract concepts and techniques" in extract_calls[0]
+    assert "Pare BJJ Instructional Chapter" not in clean_calls[0]

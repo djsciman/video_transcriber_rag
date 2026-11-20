@@ -17,7 +17,7 @@ Organizes local instructionals against [BJJ Fanatics](https://bjjfanatics.com/) 
 | `py -3 -m bjj_pipeline match` | Match local folder names to BJJ Fanatics product URLs and write `bjjfanatics_matches.csv` |
 | `py -3 -m bjj_pipeline chapters` | Detect title-card chapter starts, OCR titles, write sidecar CSVs, optionally embed chapters into the video |
 | `py -3 -m bjj_pipeline transcribe` | Walk a video tree and complete each transcript: speech only when missing, container chapters, and `video_file` |
-| `py -3 -m bjj_pipeline prepare` | Walk transcribed volumes, nest chapter speech; skip finished `transcript_raw`; `--llm` pares with Grok 4.3 (default one-call; `--method staged` is cleanup then extract); `--force` re-runs |
+| `py -3 -m bjj_pipeline prepare` | Walk transcribed volumes, nest chapter speech; skip finished `transcript_raw`; `--llm` pares with Grok 4.3 (default staged cleanup then extract; `--method one-call` is the combined spec); `--force` re-runs |
 | `py -3 -m bjj_pipeline compare-llm` | Copy a user-specified sample of corpus volumes and compare vendors, or one-call vs staged on one lightweight SKU, without writing the live corpus |
 | `py -3 -m bjj_pipeline scan` | Report library completeness (combined volumes, named chapters, NFO, playback, transcripts) and write a markdown drill-down |
 
@@ -245,7 +245,7 @@ py -3 -m bjj_pipeline run --library "path\to\instructionals" --corpus "path\to\t
 | `--embed` | Visual remux of sidecar chapter files into volumes. Opt-in; not implied by `--apply` |
 | `--force` | Re-run every selected stage even when its artifact exists |
 | `--force-stage match\|organize\|detect\|transcribe\|prepare` | Re-run only that unit |
-| `--llm` | During prepare, call Grok 4.3 for `transcript_cleaned` / `concepts` / `suggested_tags` / `techniques`. Default is nest-only. Default method is one-call; `prepare --llm --method staged` is opt-in |
+| `--llm` | During prepare, call Grok 4.3 for `transcript_cleaned` / `concepts` / `suggested_tags` / `techniques`. Default is nest-only. Default method is staged; `prepare --llm --method one-call` keeps the combined spec |
 | `--matches` | Match CSV path (default: `LIBRARY/bjjfanatics_matches.csv`) |
 
 Skip unless `--force` / `--force-stage`:
@@ -256,7 +256,7 @@ Skip unless `--force` / `--force-stage`:
 | organize | The show folder already has `tvshow.nfo` **and** at least one `Season ##` folder |
 | detect | The volume already has container chapters, or a sidecar chapter file exists. Uncombined chapter-file seasons warn and skip unless `--force-stage detect` |
 | transcribe | The mirrored corpus JSON already has a `segments` list (empty list counts as finished) |
-| prepare | Every real chapter already has `transcript_raw`. With `--llm` (one-call), nest is done and every chapter with speech already has `transcript_cleaned`, `concepts`, and `suggested_tags`. With `--method staged`, nest is done and every chapter with speech already has a `transcript_cleaned` string and a `concepts` list |
+| prepare | Every real chapter already has `transcript_raw`. With `--llm` (staged), nest is done and every chapter with speech already has a `transcript_cleaned` string and a `concepts` list. With `--method one-call`, nest is done and every chapter with speech already has `transcript_cleaned`, `concepts`, and `suggested_tags` |
 
 A CSV product URL is the organize URL with no yes/no prompt. One product URL per instructional folder. Missing URL outside a terminal fails that instructional's organize. Leftover multi-instructional bundle folders are out of this pipeline; flatten them by hand.
 
@@ -266,9 +266,9 @@ Transcribe walks the **post-organize** tree (combined volumes under `Season ##`)
 
 Prepare updates that existing corpus JSON in place after transcribe. It nests chapter speech, then drops Whisper `segments`. Default is nest-only (credits, neighbors, `transcript_raw`); it does not call the xAI API. Skip when every real chapter already has `transcript_raw`.
 
-`--llm` default method is **one-call**: one Completer per chapter plus [`docs/prepare-llm-prompt.md`](docs/prepare-llm-prompt.md) at `reasoning_effort` low (when the adapter posts that field), writing `transcript_cleaned`, `concepts`, chapter `suggested_tags`, and `techniques`. Skip a chapter that already has `transcript_cleaned` as a string plus `concepts` and `suggested_tags` as lists; empty `transcript_raw` is not sent.
+`--llm` default method is **staged**: two Completer calls on the same `--provider` / `--model` (default still xAI `grok-4.3`). Cleanup uses [`docs/prepare-llm-cleanup.md`](docs/prepare-llm-cleanup.md) at low reasoning and writes only `transcript_cleaned`. Extract uses [`docs/prepare-llm-extract.md`](docs/prepare-llm-extract.md) at medium reasoning (posted when that provider already sends `reasoning_effort`; omitted on OpenAI and Anthropic) and writes `concepts` and `techniques`. Staged `suggested_tags` are derived in prepare from `concepts` and `main_ideas`. Cleanup skip when `transcript_cleaned` is a string; extract skip when `concepts` is a list; empty raw skips both; failed cleanup does not extract; failed extract keeps cleaned speech.
 
-`--method staged` is opt-in: two Completer calls on the same `--provider` / `--model` (default still xAI `grok-4.3`). Cleanup uses [`docs/prepare-llm-cleanup.md`](docs/prepare-llm-cleanup.md) at low reasoning and writes only `transcript_cleaned`. Extract uses [`docs/prepare-llm-extract.md`](docs/prepare-llm-extract.md) at medium reasoning (posted when that provider already sends `reasoning_effort`; omitted on OpenAI and Anthropic) and writes `concepts` and `techniques`. Staged `suggested_tags` are derived in prepare from `concepts` and `main_ideas`. Cleanup skip when `transcript_cleaned` is a string; extract skip when `concepts` is a list; empty raw skips both; failed cleanup does not extract; failed extract keeps cleaned speech.
+`--method one-call` keeps one Completer per chapter plus [`docs/prepare-llm-prompt.md`](docs/prepare-llm-prompt.md) at `reasoning_effort` low (when the adapter posts that field), writing `transcript_cleaned`, `concepts`, chapter `suggested_tags`, and `techniques`. Skip a chapter that already has `transcript_cleaned` as a string plus `concepts` and `suggested_tags` as lists; empty `transcript_raw` is not sent.
 
 `--provider` and `--model` (and `BJJ_LLM_PROVIDER` / `BJJ_LLM_MODEL`) apply to one-call, cleanup, and extract. Dry-run does not call the API; `--force` or `--force-stage prepare` re-runs the selected method. Prepaid credits for the selected provider are required (`XAI_API_KEY`, `OPENAI_API_KEY`, or `ANTHROPIC_API_KEY`); SuperGrok weekly quota is not used.
 
