@@ -84,6 +84,7 @@ def _run(
     chapters=None,
     ocr: bool = False,
     force: bool = False,
+    video=None,
     speech_available: bool | None = True,
     chapter_available: bool | None = True,
     count_hotword_tokens: Callable[[str], int] | None = None,
@@ -95,6 +96,7 @@ def _run(
             output_dir,
             ocr=ocr,
             force=force,
+            video=video,
             speech_command=speech,
             chapter_command=chapters,
             speech_available=speech_available,
@@ -115,6 +117,38 @@ class EmptyAndBadInputTest(unittest.TestCase):
             self.assertIn("Updated: 0", out)
             self.assertIn("Unchanged: 0", out)
             self.assertIn("Failed: 0", out)
+
+    def test_select_videos_file_and_folder(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "lib"
+            season = root / "Show" / "Season 01"
+            a = _write_video(season / "S01E01 - Volume 1.mp4")
+            b = _write_video(season / "S01E02 - Volume 2.mp4")
+            _write_video(root / "Show" / "other.txt")
+            files = batch_panoscribe.select_videos(root, a.relative_to(root))
+            self.assertEqual([p.name for p in files], [a.name])
+            folder = batch_panoscribe.select_videos(root, Path("Show") / "Season 01")
+            names = {p.name for p in folder}
+            self.assertEqual(names, {a.name, b.name})
+            with self.assertRaises(ValueError):
+                batch_panoscribe.select_videos(root, Path("missing.mp4"))
+
+    def test_video_flag_limits_transcribe_walk(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            library = root / "in"
+            a = _write_video(library / "Show" / "Season 01" / "a.mp4")
+            _write_video(library / "Show" / "Season 01" / "b.mp4")
+            status, out = _run(
+                library,
+                root / "out",
+                speech=_speech_writer(),
+                chapters=_chapter_reader(),
+                video=a.relative_to(library),
+            )
+            self.assertEqual(status, 0)
+            self.assertIn("a.mp4", out)
+            self.assertNotIn("b.mp4", out)
 
     def test_non_directory_exits_1(self):
         with tempfile.TemporaryDirectory() as tmp:

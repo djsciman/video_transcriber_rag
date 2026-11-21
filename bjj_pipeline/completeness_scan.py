@@ -20,6 +20,11 @@ means ``tvshow.nfo`` in that show folder under the library root.
 
 Playback uses ffprobe to open the file, then ffmpeg decodes one second at
 the start and one second at the midpoint. Use --skip-decode to open only.
+
+Prepare is complete only when both halves are done: nest (``transcript_raw``
+on real chapters) and model (staged ``--llm``: ``transcript_cleaned`` string
+and ``concepts`` list on chapters with speech). Missing either half fails
+prepare for that volume; the drill-down names the missing half.
 """
 
 from __future__ import annotations
@@ -39,6 +44,7 @@ from . import batch_panoscribe
 from .batch_panoscribe import io_path, output_path_for, walk_videos
 from .organizer.layout import IGNORE_DIR_NAMES
 from .organizer.naming import VOL, parse_video
+from .prepare import prepare_done
 
 _HERE = Path(__file__).resolve().parent
 _REPO = _HERE.parent if _HERE.name == "bjj_pipeline" else _HERE
@@ -88,12 +94,14 @@ class ScanReport:
     instructional_nfo_count: int
     playback_error_count: int
     missing_transcript_count: int
+    incomplete_prepare_count: int
     split_by_chapters: list[Gap]
     missing_named_chapters: list[Gap]
     missing_video_nfo: list[Gap]
     missing_instructional_nfo: list[Gap]
     playback_errors: list[Gap]
     missing_transcripts: list[Gap]
+    incomplete_prepare: list[Gap]
 
 
 def percent(part: int, whole: int) -> str:
@@ -138,6 +146,20 @@ def video_nfo_path(video: Path) -> Path:
 
 def transcript_exists(path: Path) -> bool:
     return io_path(path).is_file()
+
+
+def prepare_gap_notes(path: Path) -> list[str]:
+    """Names missing prepare halves. Empty means nest and model are both done."""
+    nested = prepare_done(path, llm=False)
+    modeled = prepare_done(path, llm=True)
+    if nested and modeled:
+        return []
+    notes: list[str] = []
+    if not nested:
+        notes.append("schema (nest) not done")
+    if not modeled:
+        notes.append("model (--llm) not done")
+    return notes
 
 
 def is_generic_chapter_title(title: str) -> bool:
@@ -389,12 +411,14 @@ def scan(
     missing_video_nfo: list[Gap] = []
     playback_errors: list[Gap] = []
     missing_transcripts: list[Gap] = []
+    incomplete_prepare: list[Gap] = []
 
     combined_count = 0
     named_count = 0
     video_nfo_count = 0
     playback_error_count = 0
     missing_transcript_count = 0
+    incomplete_prepare_count = 0
 
     total = len(videos)
     for index, video in enumerate(videos, start=1):
@@ -438,6 +462,10 @@ def scan(
             missing_transcripts.append(
                 Gap(rel, [f"missing {display_rel(dest, transcripts)}"])
             )
+        notes = prepare_gap_notes(dest)
+        if notes:
+            incomplete_prepare_count += 1
+            incomplete_prepare.append(Gap(rel, notes))
 
     missing_instructional_nfo: list[Gap] = []
     instructional_nfo_count = 0
@@ -462,12 +490,14 @@ def scan(
         instructional_nfo_count=instructional_nfo_count,
         playback_error_count=playback_error_count,
         missing_transcript_count=missing_transcript_count,
+        incomplete_prepare_count=incomplete_prepare_count,
         split_by_chapters=split_by_chapters,
         missing_named_chapters=missing_named_chapters,
         missing_video_nfo=missing_video_nfo,
         missing_instructional_nfo=missing_instructional_nfo,
         playback_errors=playback_errors,
         missing_transcripts=missing_transcripts,
+        incomplete_prepare=incomplete_prepare,
     )
 
 
@@ -505,6 +535,11 @@ def format_aggregate(report: ScanReport) -> str:
         (
             "Videos with corresponding transcripts",
             v - report.missing_transcript_count,
+            v,
+        ),
+        (
+            "Videos with prepare complete (nest and model)",
+            v - report.incomplete_prepare_count,
             v,
         ),
     ]
@@ -565,6 +600,11 @@ def format_markdown(report: ScanReport) -> str:
             f"{v - report.missing_transcript_count} | {v} | "
             f"{percent(v - report.missing_transcript_count, v)} |"
         ),
+        (
+            f"| Videos with prepare complete (nest and model) | "
+            f"{v - report.incomplete_prepare_count} | {v} | "
+            f"{percent(v - report.incomplete_prepare_count, v)} |"
+        ),
         "",
         "Every aggregate percent is a meeting rate. Items below do not meet "
         "the rubric.",
@@ -589,6 +629,12 @@ def format_markdown(report: ScanReport) -> str:
         _gap_block(
             "Videos without corresponding transcripts",
             report.missing_transcripts,
+        )
+    )
+    lines.extend(
+        _gap_block(
+            "Videos without complete prepare",
+            report.incomplete_prepare,
         )
     )
     return "\n".join(lines).rstrip() + "\n"

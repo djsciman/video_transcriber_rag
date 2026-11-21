@@ -47,6 +47,7 @@ def test_run_help_lists_library_and_corpus():
     assert proc.returncode == 0
     assert "--library" in proc.stdout
     assert "--corpus" in proc.stdout
+    assert "--video" in proc.stdout
 
 
 @pytest.mark.parametrize("command", SUBCOMMANDS)
@@ -107,6 +108,7 @@ def test_readme_operator_path_lists_prepare():
     assert "`OPENAI_API_KEY`" in text
     assert "`ANTHROPIC_API_KEY`" in text
     assert "`BJJ_LLM_PROVIDER`" in text
+    assert "`--video`" in text
     assert "`py -3 -m bjj_pipeline compare-llm`" in text
     assert "--methods one-call,staged" in text
     assert "in place" in text

@@ -23,7 +23,7 @@ from .batch_panoscribe import (
     _atomic_write_json,
     inspect_transcript,
     output_path_for,
-    walk_videos,
+    select_videos,
 )
 
 SEASON_FOLDER = re.compile(r"^Season\s*(\d+)$", re.IGNORECASE)
@@ -901,6 +901,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Override the provider default model. Env: BJJ_LLM_MODEL.",
     )
+    parser.add_argument(
+        "--video",
+        type=Path,
+        default=None,
+        help="Limit to this video file or folder under --library.",
+    )
     return parser
 
 
@@ -917,6 +923,7 @@ def run(
     completer: Completer | None = None,
     cleaner: Completer | None = None,
     extractor: Completer | None = None,
+    video: Path | str | None = None,
     stdout: TextIO | None = None,
 ) -> int:
     library = Path(library)
@@ -935,8 +942,13 @@ def run(
         )
     elif llm:
         completer_fn = completer if completer is not None else make_completer(provider, model)
+    try:
+        videos = select_videos(library, video)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 2
     failed = False
-    for video in walk_videos(library):
+    for video in videos:
         output = output_path_for(video, library, corpus)
         try:
             label = str(video.relative_to(library))
@@ -981,6 +993,7 @@ def main(argv: list[str] | None = None) -> int:
         method=args.method,
         provider=args.provider,
         model=args.model,
+        video=args.video,
     )
 
 

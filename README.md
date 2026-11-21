@@ -17,7 +17,7 @@ Organizes local instructionals against [BJJ Fanatics](https://bjjfanatics.com/) 
 | `py -3 -m bjj_pipeline match` | Match local folder names to BJJ Fanatics product URLs and write `bjjfanatics_matches.csv` |
 | `py -3 -m bjj_pipeline chapters` | Detect title-card chapter starts, OCR titles, write sidecar CSVs, optionally embed chapters into the video |
 | `py -3 -m bjj_pipeline transcribe` | Walk a video tree and complete each transcript: speech only when missing, container chapters, and `video_file` |
-| `py -3 -m bjj_pipeline prepare` | Walk transcribed volumes, nest chapter speech; skip finished `transcript_raw`; `--llm` pares with Grok 4.3 (default staged cleanup then extract; `--method one-call` is the combined spec); `--force` re-runs |
+| `py -3 -m bjj_pipeline prepare` | Walk transcribed volumes, nest chapter speech; skip finished `transcript_raw`; `--llm` pares with Grok 4.3 (default staged cleanup then extract; `--method one-call` is the combined spec); `--video` limits to one file or folder; `--force` re-runs |
 | `py -3 -m bjj_pipeline compare-llm` | Copy a user-specified sample of corpus volumes and compare vendors, or one-call vs staged on one lightweight SKU, without writing the live corpus |
 | `py -3 -m bjj_pipeline scan` | Report library completeness (combined volumes, named chapters, NFO, playback, transcripts) and write a markdown drill-down |
 
@@ -246,6 +246,7 @@ py -3 -m bjj_pipeline run --library "path\to\instructionals" --corpus "path\to\t
 | `--force` | Re-run every selected stage even when its artifact exists |
 | `--force-stage match\|organize\|detect\|transcribe\|prepare` | Re-run only that unit |
 | `--llm` | During prepare, call Grok 4.3 for `transcript_cleaned` / `concepts` / `suggested_tags` / `techniques`. Default is nest-only. Default method is staged; `prepare --llm --method one-call` keeps the combined spec |
+| `--video` | Limit detect, transcribe, and prepare to this video file or folder under `--library` (absolute, or relative to `--library`) |
 | `--matches` | Match CSV path (default: `LIBRARY/bjjfanatics_matches.csv`) |
 
 Skip unless `--force` / `--force-stage`:
@@ -264,7 +265,7 @@ Organize concatenates per-chapter downloads into volumes (Fanatics titles; start
 
 Transcribe walks the **post-organize** tree (combined volumes under `Season ##`). Corpus JSON mirrors that tree under `--corpus`. A corpus written from pre-concat chapter files is not skip-stable after concat.
 
-Prepare updates that existing corpus JSON in place after transcribe. It nests chapter speech, then drops Whisper `segments`. Default is nest-only (credits, neighbors, `transcript_raw`); it does not call the xAI API. Skip when every real chapter already has `transcript_raw`.
+Prepare updates that existing corpus JSON in place after transcribe. It nests chapter speech, then drops Whisper `segments`. Default is nest-only (credits, neighbors, `transcript_raw`); it does not call the xAI API. Skip when every real chapter already has `transcript_raw`. `--video` limits the walk to one file or folder under `--library` (absolute path, or relative to `--library`).
 
 `--llm` default method is **staged**: two Completer calls on the same `--provider` / `--model` (default still xAI `grok-4.3`). Cleanup uses [`docs/prepare-llm-cleanup.md`](docs/prepare-llm-cleanup.md) at low reasoning and writes only `transcript_cleaned`. Extract uses [`docs/prepare-llm-extract.md`](docs/prepare-llm-extract.md) at medium reasoning (posted when that provider already sends `reasoning_effort`; omitted on OpenAI and Anthropic) and writes `concepts` and `techniques`. Staged `suggested_tags` are derived in prepare from `concepts` and `main_ideas`. Cleanup skip when `transcript_cleaned` is a string; extract skip when `concepts` is a list; empty raw skips both; failed cleanup does not extract; failed extract keeps cleaned speech.
 
@@ -429,6 +430,7 @@ Options:
 |------|---------|
 | `--ocr` / `--no-ocr` | On-screen OCR for speech requests only (default: off) |
 | `--force` | Re-run speech even when a `segments` list already exists |
+| `--video` | Limit to this video file or folder under `input_dir` |
 
 On Windows, paths of 260+ characters are opened with the `\\?\` extended-length prefix so long mirrored corpus paths still work when Long Paths are disabled. Speech scratch JSON is written under the system temp directory so a long volume name cannot push that scratch path over the limit.
 
@@ -486,6 +488,7 @@ Checks:
 | Instructional NFO | `tvshow.nfo` in that show folder under the library root |
 | Play without errors | ffprobe opens the file, and an ffmpeg sample decode at the start and midpoint reports no error |
 | Corresponding transcript | Mirrored `.json` exists under the transcript root |
+| Prepare complete | Nest (`transcript_raw` on real chapters) **and** staged `--llm` (`transcript_cleaned` string and `concepts` list on chapters with speech). Missing either half fails the volume; the drill-down names the missing half |
 
 The drill-down is written to `completeness_scan_results_<date-time>.md` in the repository root. Pass `--output` to choose another path. Pass `--skip-decode` to open each file with ffprobe only.
 

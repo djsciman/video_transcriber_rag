@@ -160,6 +160,17 @@ def test_parser_provider_and_model():
         ["--library", "lib", "--corpus", "corpus", "--llm", "--method", "one-call"]
     )
     assert one_call.method == "one-call"
+    limited = prepare.build_parser().parse_args(
+        [
+            "--library",
+            "lib",
+            "--corpus",
+            "corpus",
+            "--video",
+            "Show\\Season 01\\S01E01.mp4",
+        ]
+    )
+    assert limited.video == Path("Show") / "Season 01" / "S01E01.mp4"
 
 
 def test_parser_has_force_and_llm_not_apply():
@@ -544,3 +555,26 @@ def test_default_llm_is_staged(tmp_path: Path):
     assert "Pare chapter speech" in clean_calls[0]
     assert "Extract concepts and techniques" in extract_calls[0]
     assert "Pare BJJ Instructional Chapter" not in clean_calls[0]
+
+
+def test_video_flag_limits_walk_to_one_file(tmp_path: Path):
+    library, corpus, videos = _tree(
+        tmp_path, "S01E01 - Volume 1.mp4", "S01E02 - Volume 2.mp4"
+    )
+    for video in videos:
+        _write_json(_json_for(corpus, video, library), _eligible_payload())
+    rel = videos[1].relative_to(library)
+
+    code, out = _run(library, corpus, video=rel)
+
+    assert code == 0
+    assert "S01E02 - Volume 2.mp4" in out
+    assert "S01E01 - Volume 1.mp4" not in out
+
+
+def test_video_flag_rejects_path_outside_library(tmp_path: Path):
+    library, corpus, _videos = _tree(tmp_path)
+    outside = tmp_path / "other.mp4"
+    outside.write_bytes(b"x")
+    code, _out = _run(library, corpus, video=outside)
+    assert code == 2

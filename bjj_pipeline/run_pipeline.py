@@ -190,10 +190,14 @@ def _organize_done(folder: Path) -> bool:
     return any(child.is_dir() and season_folder_number(child.name) is not None for child in children)
 
 
-def _walk_volumes(folder: Path) -> list[Path]:
+def _walk_volumes(folder: Path, selected: list[Path] | None = None) -> list[Path]:
     from . import batch_panoscribe
 
-    return batch_panoscribe.walk_videos(folder)
+    videos = batch_panoscribe.walk_videos(folder)
+    if selected is None:
+        return videos
+    wanted = {path.resolve() for path in selected}
+    return [path for path in videos if path.resolve() in wanted]
 
 
 def _transcript_done(output: Path) -> bool:
@@ -223,6 +227,7 @@ def run(
     force_stage: str | None = None,
     embed: bool = False,
     llm: bool = False,
+    video: Path | str | None = None,
     stages: Sequence[str] | None = None,
     match: MatchFn | None = None,
     organize: OrganizeFn | None = None,
@@ -264,7 +269,24 @@ def run(
     csv_rows = _load_csv(matches_path)
     failed = False
 
+    only_videos: list[Path] | None = None
+    if video is not None:
+        from .batch_panoscribe import select_videos
+
+        try:
+            only_videos = select_videos(library, video)
+        except ValueError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 2
+
     folders = [folder for folder, _name in collect_folders(library)]
+    if only_videos is not None:
+        wanted = {path.resolve() for path in only_videos}
+        folders = [
+            folder
+            for folder in folders
+            if any(path.is_relative_to(folder.resolve()) for path in wanted)
+        ]
     for folder in folders:
         key = str(folder.resolve())
         url = _csv_url(csv_rows, folder)
@@ -311,7 +333,7 @@ def run(
 
         if "detect" in selected:
             redo = _forced("detect", force, force_stage)
-            videos = _walk_volumes(folder)
+            videos = _walk_volumes(folder, only_videos)
             counts: dict[Path, int] = {}
             for video in videos:
                 try:
@@ -362,7 +384,7 @@ def run(
 
         if "transcribe" in selected:
             redo = _forced("transcribe", force, force_stage)
-            for video in _walk_volumes(folder):
+            for video in _walk_volumes(folder, only_videos):
                 output = _transcript_path(library, corpus, video)
                 done = _transcript_done(output)
                 label = _rel(library, video)
@@ -390,7 +412,7 @@ def run(
             from .prepare import prepare_done, prepare_eligible
 
             redo = _forced("prepare", force, force_stage)
-            for video in _walk_volumes(folder):
+            for video in _walk_volumes(folder, only_videos):
                 output = _transcript_path(library, corpus, video)
                 label = _rel(library, video)
                 eligible = prepare_eligible(output)
@@ -419,10 +441,10 @@ def run(
         if "embed" in selected:
             redo = _forced("embed", force, force_stage)
             if not apply:
-                for video in _walk_volumes(folder):
+                for video in _walk_volumes(folder, only_videos):
                     _print(stdout, "RUN", "embed", _rel(library, video))
                 continue
-            for video in _walk_volumes(folder):
+            for video in _walk_volumes(folder, only_videos):
                 try:
                     code = detect_fn(video, force=redo, apply=True)
                 except Exception as exc:  # noqa: BLE001
@@ -485,6 +507,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="During prepare, staged cleanup then extract for transcript_cleaned, concepts, suggested_tags, and techniques.",
     )
+    parser.add_argument(
+        "--video",
+        type=Path,
+        default=None,
+        help="Limit detect, transcribe, and prepare to this video file or folder under --library.",
+    )
     return parser
 
 
@@ -499,6 +527,7 @@ def main(argv: list[str] | None = None) -> int:
         force_stage=args.force_stage,
         embed=args.embed,
         llm=args.llm,
+        video=args.video,
     )
 
 

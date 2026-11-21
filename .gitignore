@@ -6,3 +6,4 @@
 /bjj_pipeline/organizer/__pycache__
 *.pyc
 /.venv/
+*.pyc

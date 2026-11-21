@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import json
 import tempfile
 import unittest
 import unittest.mock
@@ -186,6 +187,10 @@ class ScanTreeTests(unittest.TestCase):
                 "Videos with corresponding transcripts: 1/3 (33.3%)",
                 out,
             )
+            self.assertIn(
+                "Videos with prepare complete (nest and model): 0/3 (0.0%)",
+                out,
+            )
             self.assertTrue(dest.is_file())
             md = dest.read_text(encoding="utf-8")
             self.assertIn("# Completeness scan", md)
@@ -201,8 +206,15 @@ class ScanTreeTests(unittest.TestCase):
             self.assertIn("no tvshow.nfo", md)
             self.assertIn("| Videos that play without errors | 2 | 3 | 66.7% |", md)
             self.assertIn("| Videos with corresponding transcripts | 1 | 3 | 33.3% |", md)
+            self.assertIn(
+                "| Videos with prepare complete (nest and model) | 0 | 3 | 0.0% |",
+                md,
+            )
             self.assertIn("## Videos that do not play or open with errors", md)
             self.assertIn("## Videos without corresponding transcripts", md)
+            self.assertIn("## Videos without complete prepare", md)
+            self.assertIn("schema (nest) not done", md)
+            self.assertIn("model (--llm) not done", md)
             self.assertNotIn("Inside Passing by Wardzinski - S01E01 - Volume 1.mp4", md.split("## Videos split by chapters")[1].split("## ")[0])
 
     def test_default_output_name_uses_clock(self):
@@ -264,6 +276,114 @@ class ScanTreeTests(unittest.TestCase):
         chapters = completeness_scan._chapters_from_payload(payload)
         self.assertTrue(completeness_scan.has_named_chapters(chapters))
         self.assertEqual(chapters[1]["title"], "Arm Bar")
+
+
+def _chapter_payload(*, cleaned: bool) -> str:
+    chapter = {
+        "title": "Guard",
+        "start": 0.0,
+        "end": 10.0,
+        "transcript_raw": "<0.00> keep the elbow tight",
+    }
+    if cleaned:
+        chapter["transcript_cleaned"] = "Keep the elbow tight."
+        chapter["concepts"] = ["Keep the elbow tight."]
+    return json.dumps({"chapters": [chapter], "video_file": "Volume 1.mp4"})
+
+
+class PrepareGapTests(unittest.TestCase):
+    def test_missing_json_fails_both_halves(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            missing = Path(tmp) / "gone.json"
+            notes = completeness_scan.prepare_gap_notes(missing)
+            self.assertEqual(
+                notes,
+                ["schema (nest) not done", "model (--llm) not done"],
+            )
+
+    def test_empty_json_fails_both_halves(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "empty.json"
+            _write_text(path, "{}")
+            notes = completeness_scan.prepare_gap_notes(path)
+            self.assertEqual(
+                notes,
+                ["schema (nest) not done", "model (--llm) not done"],
+            )
+
+    def test_nest_without_model_fails_whole_prepare(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "nested.json"
+            _write_text(path, _chapter_payload(cleaned=False))
+            notes = completeness_scan.prepare_gap_notes(path)
+            self.assertEqual(notes, ["model (--llm) not done"])
+
+    def test_nest_and_model_pass(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ready.json"
+            _write_text(path, _chapter_payload(cleaned=True))
+            self.assertEqual(completeness_scan.prepare_gap_notes(path), [])
+
+    def test_scan_lists_which_prepare_half_is_missing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            library = root / "videos"
+            transcripts = root / "json"
+            nested = (
+                library
+                / "Show by Coach"
+                / "Season 01"
+                / "Show by Coach - S01E01 - Volume 1.mp4"
+            )
+            ready = (
+                library
+                / "Show by Coach"
+                / "Season 01"
+                / "Show by Coach - S01E02 - Volume 2.mp4"
+            )
+            _write_video(nested)
+            _write_video(ready)
+            _write_text(
+                transcripts
+                / "Show by Coach"
+                / "Season 01"
+                / "Show by Coach - S01E01 - Volume 1.json",
+                _chapter_payload(cleaned=False),
+            )
+            _write_text(
+                transcripts
+                / "Show by Coach"
+                / "Season 01"
+                / "Show by Coach - S01E02 - Volume 2.json",
+                _chapter_payload(cleaned=True),
+            )
+            inspect = _by_name(
+                {
+                    nested.name: _inspect(chapters=_named_chapters()),
+                    ready.name: _inspect(chapters=_named_chapters()),
+                }
+            )
+            dest = root / "report.md"
+            stdout = io.StringIO()
+            with redirect_stdout(stdout):
+                status = completeness_scan.run(
+                    library,
+                    transcripts,
+                    output=dest,
+                    inspect_video=inspect,
+                    require_tools=False,
+                )
+            self.assertEqual(status, 0)
+            self.assertIn(
+                "Videos with prepare complete (nest and model): 1/2 (50.0%)",
+                stdout.getvalue(),
+            )
+            md = dest.read_text(encoding="utf-8")
+            self.assertIn("## Videos without complete prepare", md)
+            self.assertIn("Show by Coach - S01E01 - Volume 1.mp4", md)
+            self.assertIn("model (--llm) not done", md)
+            self.assertNotIn("schema (nest) not done", md)
+            self.assertNotIn("Show by Coach - S01E02 - Volume 2.mp4", md.split("## Videos without complete prepare")[1])
 
 
 if __name__ == "__main__":

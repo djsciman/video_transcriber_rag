@@ -161,7 +161,40 @@ def walk_videos(input_dir: Path) -> list[Path]:
     return videos
 
 
-def transcripts_by_video(input_dir: Path, output_dir: Path) -> list[tuple[Path, list[Path]]]:
+def select_videos(library: Path, video: Path | str | None = None) -> list[Path]:
+    """Videos under ``library``, optionally limited to one file or subfolder.
+
+    ``video`` may be absolute or relative to ``library``. It must exist under
+    ``library``. A file must be a video; a directory is walked like ``library``.
+    """
+    library = Path(library)
+    if video is None:
+        return walk_videos(library)
+    raw = Path(video)
+    target = raw if raw.is_absolute() else library / raw
+    lib_res = io_path(library).resolve()
+    tgt_res = io_path(target).resolve()
+    try:
+        rel = tgt_res.relative_to(lib_res)
+    except ValueError as exc:
+        raise ValueError(f"{target} is not under {library}") from exc
+    logical = library / rel
+    on_disk = io_path(logical)
+    if on_disk.is_file():
+        if not is_video(logical):
+            raise ValueError(f"{logical} is not a video file")
+        return [logical]
+    if on_disk.is_dir():
+        return walk_videos(logical)
+    raise ValueError(f"{logical} does not exist")
+
+
+def transcripts_by_video(
+    input_dir: Path,
+    output_dir: Path,
+    *,
+    only: Path | str | None = None,
+) -> list[tuple[Path, list[Path]]]:
     """Pair each transcript path with the videos that mirror onto it.
 
     Two videos that share a folder and a file name aside from the extension
@@ -169,7 +202,7 @@ def transcripts_by_video(input_dir: Path, output_dir: Path) -> list[tuple[Path, 
     """
     grouped: dict[Path, list[Path]] = {}
     order: list[Path] = []
-    for video in walk_videos(input_dir):
+    for video in select_videos(input_dir, only):
         # Rebuild a path relative to input_dir without the extended prefix.
         try:
             rel = video.relative_to(io_path(input_dir))
@@ -543,6 +576,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Re-run speech even when a segments list already exists.",
     )
+    parser.add_argument(
+        "--video",
+        type=Path,
+        default=None,
+        help="Limit to this video file or folder under input_dir.",
+    )
     return parser
 
 
@@ -697,6 +736,7 @@ def run(
     *,
     ocr: bool = False,
     force: bool = False,
+    video: Path | str | None = None,
     speech_command: SpeechCommand | None = None,
     chapter_command: ChapterCommand | None = None,
     speech_available: bool | None = None,
@@ -721,7 +761,11 @@ def run(
     chapter_command = chapter_command or extract_chapters
     count_hotword_tokens = count_hotword_tokens or default_count_hotword_tokens
 
-    pairs = transcripts_by_video(input_dir, output_dir)
+    try:
+        pairs = transcripts_by_video(input_dir, output_dir, only=video)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 2
     if not pairs:
         print("Found 0 video(s)")
         print("\nDone. Created: 0  Updated: 0  Unchanged: 0  Failed: 0")
@@ -786,7 +830,13 @@ def run(
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    return run(args.input_dir, args.output_dir, ocr=args.ocr, force=args.force)
+    return run(
+        args.input_dir,
+        args.output_dir,
+        ocr=args.ocr,
+        force=args.force,
+        video=args.video,
+    )
 
 
 if __name__ == "__main__":
