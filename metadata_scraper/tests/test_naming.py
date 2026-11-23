@@ -4,6 +4,7 @@ from bjj_organizer.naming import (
     episode_display_title,
     episode_filename,
     parse_video,
+    pick_chapter_title,
     sanitize_filename,
     show_title,
     volume_episode_filename,
@@ -116,6 +117,20 @@ def test_fanatics_segment_filename():
     assert parsed.chapter_number == 2
     assert parsed.local_title is not None
     assert parsed.local_title.startswith("Stepping On Hip")
+
+
+def test_pick_chapter_title_prefers_scrape_over_filename():
+    parsed = parse_video(
+        Path(
+            "7394571878498-02-01- Key Details Of Shoulder Crunch Sumi Gaeshi"
+            " High Elbow Shoulder To Shoulder.mp4"
+        )
+    )
+    scrape = "Key Details Of Shoulder Crunch Sumi Gaeshi - High Elbow Shoulder To Shoulder"
+    assert pick_chapter_title(parsed, scrape, 1) == scrape
+    assert pick_chapter_title(parsed, "", 1) == parsed.local_title
+    assert pick_chapter_title(parsed, "  ", 2) == parsed.local_title
+    assert pick_chapter_title(parse_video(Path("GordonRyanVol1.mp4")), "", 1) == "Chapter 1"
 
 
 def test_already_named_segment():

@@ -146,6 +146,8 @@ def test_match_season_segmented_preserves_vol_ch_order():
     assert result.mode == "segmented"
     assert [(i.volume_number, i.chapter_number) for i in result.items] == [(1, 1), (1, 2), (2, 1)]
     assert result.items[0].chapter_title == "Introduction"
+    assert result.items[1].chapter_title == "Collar And Sleeve"
+    assert result.items[2].chapter_title == "World One Outside Control"
     assert result.items[0].parsed.path.name.endswith("Introduction.mp4")
 
 

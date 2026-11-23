@@ -302,8 +302,6 @@ def pick_volume_title(parsed: ParsedVideo, volume_name: str, volume_number: int)
 
 
 def pick_chapter_title(parsed: ParsedVideo, scraped_title: str, chapter_number: int) -> str:
-    if parsed.is_segmented_name and parsed.local_title:
-        return parsed.local_title
     scraped = (scraped_title or "").strip()
     if scraped:
         return scraped
