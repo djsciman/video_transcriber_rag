@@ -346,7 +346,7 @@ def test_ineligible_skips_even_with_force(tmp_path: Path):
         json_path,
         {
             "video_file": VIDEO,
-            "chapters": [{"title": "Volume 1", "start": 0.0, "end": 1000.0}],
+            "chapters": [],
             "segments": list(SEGMENTS),
         },
     )

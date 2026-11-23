@@ -88,6 +88,11 @@ class CombinedVolumeTests(unittest.TestCase):
         path = Path("Feet To Floor - S01E01 - Stance.mp4")
         self.assertFalse(completeness_scan.is_combined_volume(path, []))
 
+    def test_jellyfin_chapter_title_with_one_named_chapter_is_combined(self):
+        path = Path("Feet To Floor - S01E01 - Stance.mp4")
+        chapters = [{"title": "Stance", "start": 0.0, "end": 600.0}]
+        self.assertTrue(completeness_scan.is_combined_volume(path, chapters))
+
     def test_jellyfin_chapter_title_with_markers_is_combined(self):
         path = Path("Triangles - S01E01 - Triangles.mp4")
         self.assertTrue(completeness_scan.is_combined_volume(path, _named_chapters()))
@@ -108,8 +113,12 @@ class NamedChapterTests(unittest.TestCase):
         ]
         self.assertFalse(completeness_scan.has_named_chapters(chapters))
 
-    def test_single_chapter_fails(self):
+    def test_single_named_chapter_passes(self):
         chapters = [{"title": "Stance", "start": 0.0, "end": 600.0}]
+        self.assertTrue(completeness_scan.has_named_chapters(chapters))
+
+    def test_single_generic_chapter_fails(self):
+        chapters = [{"title": "Chapter 1", "start": 0.0, "end": 600.0}]
         self.assertFalse(completeness_scan.has_named_chapters(chapters))
 
     def test_empty_fails(self):
@@ -276,6 +285,25 @@ class ScanTreeTests(unittest.TestCase):
         chapters = completeness_scan._chapters_from_payload(payload)
         self.assertTrue(completeness_scan.has_named_chapters(chapters))
         self.assertEqual(chapters[1]["title"], "Arm Bar")
+
+    def test_single_introduction_chapter_takes_episode_title(self):
+        payload = {
+            "chapters": [
+                {
+                    "start_time": "0.000",
+                    "end_time": "600.000",
+                    "tags": {"title": "Introduction"},
+                },
+            ]
+        }
+        video = Path(
+            "Passing the Guard - Go Further Faster "
+            "by John Danaher - S01E04 - Toreando Pass.mp4"
+        )
+        chapters = completeness_scan._chapters_from_payload(payload, video)
+        self.assertEqual(chapters[0]["title"], "Toreando Pass")
+        self.assertTrue(completeness_scan.has_named_chapters(chapters))
+        self.assertTrue(completeness_scan.is_combined_volume(video, chapters))
 
 
 def _chapter_payload(*, cleaned: bool) -> str:

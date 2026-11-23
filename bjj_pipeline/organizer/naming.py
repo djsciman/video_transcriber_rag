@@ -41,6 +41,8 @@ NEW_TOKEN = re.compile(r"(?<![A-Za-z])NEW(?![A-Za-z])", re.IGNORECASE)
 # It is a real course volume on some pages, not a side file.
 SUMMARY_TOKEN = re.compile(r"(executive\s*summary|executivesummary)", re.IGNORECASE)
 EXTRA_TOKEN = re.compile(r"(\bbonus\b|\bsample\b)", re.IGNORECASE)
+# A "DVD Bonus N" file is a numbered disc of the set, not a leftover extra.
+DVD_BONUS = re.compile(r"(?:DVD|VOL(?:UME)?)\s+BONUS\s+(\d+)", re.IGNORECASE)
 VOL_PART = re.compile(
     r"(?:VOL(?:UME)?|DVD)\s*(\d+)\s*(?:PT|PART)\s*(\d+)",
     re.IGNORECASE,
@@ -169,14 +171,23 @@ def _strip_suffixes(title: str, *suffixes: str) -> str:
     return result
 
 
+def dvd_bonus_number(path: Path) -> int | None:
+    """Return N from a `DVD Bonus N` / `Volume Bonus N` disc name."""
+    stem, _ = collapse_video_stem(path)
+    match = DVD_BONUS.search(_strip_noise(stem))
+    return int(match.group(1)) if match else None
+
+
 def parse_video(path: Path, season_title: str = "", show_stem: str = "") -> ParsedVideo:
     stem, ext = collapse_video_stem(path)
     raw = _strip_noise(stem)
     is_new = bool(NEW_TOKEN.search(raw))
-    is_extra = bool(EXTRA_TOKEN.search(raw))
+    dvd_bonus = DVD_BONUS.search(raw)
+    is_extra = bool(EXTRA_TOKEN.search(raw)) and dvd_bonus is None
     already_named = bool(SXXEYY.search(raw))
     working = NEW_TOKEN.sub(" ", raw)
-    working = EXTRA_TOKEN.sub(" ", working)
+    if dvd_bonus is None:
+        working = EXTRA_TOKEN.sub(" ", working)
     working = SUMMARY_TOKEN.sub(" ", working)
     working = re.sub(r"\s+", " ", working).strip()
 
@@ -188,7 +199,9 @@ def parse_video(path: Path, season_title: str = "", show_stem: str = "") -> Pars
 
     fan = FANATICS_SEGMENT.match(working)
     named = NAMED_SEGMENT.match(working)
-    if fan:
+    if dvd_bonus:
+        remainder = DVD_BONUS.sub(" ", working).strip()
+    elif fan:
         volume = int(fan.group(2))
         chapter = int(fan.group(3))
         remainder = fan.group(4).strip()
@@ -237,6 +250,9 @@ def parse_video(path: Path, season_title: str = "", show_stem: str = "") -> Pars
     local_title = remainder if _looks_descriptive(remainder) else None
     if local_title and not is_segmented_name:
         local_title = re.sub(r"^\d+\s*[-.]?\s*", "", local_title).strip() or local_title
+    # YouTube DVD rips keep the show name in the stem; that is not a volume title.
+    if local_title and YOUTUBE_ID.search(stem) and not is_segmented_name:
+        local_title = None
 
     return ParsedVideo(
         path=path,
@@ -294,3 +310,29 @@ def pick_chapter_title(parsed: ParsedVideo, scraped_title: str, chapter_number: 
     if parsed.local_title:
         return parsed.local_title
     return f"Chapter {chapter_number}"
+
+
+_PLACEHOLDER_CHAPTER = re.compile(
+    r"^(chapter(\s+\d+)?|untitled|continued|introduction)$",
+    re.IGNORECASE,
+)
+
+
+def is_placeholder_chapter_title(title: str) -> bool:
+    return not str(title or "").strip() or bool(
+        _PLACEHOLDER_CHAPTER.fullmatch(str(title).strip())
+    )
+
+
+def sole_chapter_title(parsed: ParsedVideo, current: str = "") -> str:
+    """Name a volume's only chapter.
+
+    Keep a real title. Replace Introduction / Chapter N / continued with the
+    episode title from the filename when that name exists.
+    """
+    current = (current or "").strip()
+    if current and not is_placeholder_chapter_title(current):
+        return current
+    if parsed.local_title:
+        return parsed.local_title
+    return current or "Chapter 1"

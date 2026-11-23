@@ -13,6 +13,8 @@ def test_timestamp_formats():
     assert parse_timestamp_ms("0- 2:44") == 0
     assert parse_timestamp_ms("0-2:44") == 0
     assert parse_timestamp_ms("11:55 - 25:41") == (11 * 60 + 55) * 1000
+    assert parse_timestamp_ms("2:44 - (16:02)") == (2 * 60 + 44) * 1000
+    assert parse_timestamp_ms("55:16 - (1:00:49)") == (55 * 60 + 16) * 1000
     assert parse_timestamp_ms("nope") is None
 
 

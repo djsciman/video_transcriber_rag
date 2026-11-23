@@ -15,4 +15,4 @@ Prepare writes chapter speech onto the existing chapter objects: instructor, ins
 
 ## Consequences
 
-Extra keys on a chapter survive a later transcribe write only while title, start, and end still match. Volumes with no real chapters, or one chapter covering the whole recording, are left unchanged. Chapter speech is not a cleaned statement and does not enter the curated store.
+Extra keys on a chapter survive a later transcribe write only while title, start, and end still match. Volumes with no real chapters are left unchanged. A volume with one named chapter is nested like any other. Chapter speech is not a cleaned statement and does not enter the curated store.

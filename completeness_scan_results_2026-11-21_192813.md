@@ -1,0 +1,626 @@
+# Completeness scan
+
+Scanned: 2026-11-21 19:28:13
+
+- Video library: `W:\BJJ Instructional Videos Jellyfin`
+- Transcript root: `C:\Users\dumbo\Documents\GitHub\bjj_transcripts\library`
+- Videos: 498
+- Instructionals: 78
+
+## Aggregate
+
+| Check | Count | Total | Percent |
+| --- | ---: | ---: | ---: |
+| Videos combined into volumes (not split by chapters) | 456 | 498 | 91.6% |
+| Videos with named chapters | 435 | 498 | 87.3% |
+| Videos with NFO metadata | 440 | 498 | 88.4% |
+| Instructionals with NFO metadata | 76 | 78 | 97.4% |
+| Videos that play without errors | 498 | 498 | 100.0% |
+| Videos with corresponding transcripts | 498 | 498 | 100.0% |
+| Videos with prepare complete (nest and model) | 419 | 498 | 84.1% |
+
+Every aggregate percent is a meeting rate. Items below do not meet the rubric.
+
+## Videos split by chapters (not combined)
+
+42 item(s).
+
+- `Danaher - GFF Passing\Season 01\Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Toreando Pass.mp4`
+  - Jellyfin episode titled 'Toreando Pass' with 1 container chapter(s)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-01- Chokes - Paper Cut Choke.mp4`
+  - segmented filename (volume 18 chapter 1)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-02- Reverse Paper Cut Choke.mp4`
+  - segmented filename (volume 18 chapter 2)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-03- Scissor Choke.mp4`
+  - segmented filename (volume 18 chapter 3)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-04- Von Flue Choke.mp4`
+  - segmented filename (volume 18 chapter 4)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-05- North South Choke To Brabo Choke.mp4`
+  - segmented filename (volume 18 chapter 5)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-06- Far Side Lapel Choke.mp4`
+  - segmented filename (volume 18 chapter 6)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-07- Step Over Lapel Choke.mp4`
+  - segmented filename (volume 18 chapter 7)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-08- Lapel Cross Choke With Options.mp4`
+  - segmented filename (volume 18 chapter 8)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-09- Lapel Baseball Choke.mp4`
+  - segmented filename (volume 18 chapter 9)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-10- Kimura Grip To Arm Triangle And Ezekiel Choke.mp4`
+  - segmented filename (volume 18 chapter 10)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-11- Kimura Grip To Triangle From The Back.mp4`
+  - segmented filename (volume 18 chapter 11)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-01- Half Guard Pass - Classic Half Guard To 3 Quarter Mount Option 1.mp4`
+  - segmented filename (volume 19 chapter 1)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-02- Classic Half Guard To 3 Quarter Mount Option 2.mp4`
+  - segmented filename (volume 19 chapter 2)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-03- Z Guard Sprawl Pass.mp4`
+  - segmented filename (volume 19 chapter 3)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-04- Level Change In Half Guard.mp4`
+  - segmented filename (volume 19 chapter 4)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-05- Knee Shield Half To Three Quarter Mount, Conquer In The Shield.mp4`
+  - segmented filename (volume 19 chapter 5)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-06- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg.mp4`
+  - segmented filename (volume 19 chapter 6)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-07- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg 2.mp4`
+  - segmented filename (volume 19 chapter 7)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-08- Tripod Pass With Face Turn To 3 Quarter Mount.mp4`
+  - segmented filename (volume 19 chapter 8)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-09- Shin Across The Belly Half Guard Pass.mp4`
+  - segmented filename (volume 19 chapter 9)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-10- Beating The Other Hook In A Half Guard.mp4`
+  - segmented filename (volume 19 chapter 10)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-11- 3 Quarters Mount Arm Triangle.mp4`
+  - segmented filename (volume 19 chapter 11)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-12- Ezekiel Option From 3 Quarters Mount.mp4`
+  - segmented filename (volume 19 chapter 12)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-01- Hip Smashing Through Half Guard - Far Hip Knee Slide To Smash.mp4`
+  - segmented filename (volume 20 chapter 1)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-02- Knee Shield Smash.mp4`
+  - segmented filename (volume 20 chapter 2)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-03- Headquarters Position Entry And Knee Weave.mp4`
+  - segmented filename (volume 20 chapter 3)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-04- Leg Pummel To Headquarters Mount And Smash.mp4`
+  - segmented filename (volume 20 chapter 4)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-05- Conquering The Bottom Leg In The Knee In Smash.mp4`
+  - segmented filename (volume 20 chapter 5)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-06- Conquering The Bottom Leg In Reinforce In Lapel.mp4`
+  - segmented filename (volume 20 chapter 6)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-07- Inverted Half Guard To Back Take.mp4`
+  - segmented filename (volume 20 chapter 7)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-08- Inverted Half Guard Mount Escape Counter.mp4`
+  - segmented filename (volume 20 chapter 8)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-09- Inverted Half Guard To Rolling Back Take.mp4`
+  - segmented filename (volume 20 chapter 9)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-01- Smashing Through Different Guards - Smash Pass Against Half Butterfly Guard.mp4`
+  - segmented filename (volume 21 chapter 1)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-02- Countering Half Butterfly Sweep With Knee In Smash.mp4`
+  - segmented filename (volume 21 chapter 2)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-03- Knee In Smashing Against Seated Butterfly Guard.mp4`
+  - segmented filename (volume 21 chapter 3)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-04- Knee In Smash Shin To Shin Counter.mp4`
+  - segmented filename (volume 21 chapter 4)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-05- Slx Knee In Smash.mp4`
+  - segmented filename (volume 21 chapter 5)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-06- Slx Pass To Mount.mp4`
+  - segmented filename (volume 21 chapter 6)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-07- Slx Knee In Smash 2.mp4`
+  - segmented filename (volume 21 chapter 7)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-08- De La Riva Pass To Headquarters To Smash.mp4`
+  - segmented filename (volume 21 chapter 8)
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-09- Dlr Leg Drag And Knee In Smash Pass.mp4`
+  - segmented filename (volume 21 chapter 9)
+
+## Videos without named chapters
+
+63 item(s).
+
+- `Couch - Finishing Leg Locks\FinishingleglocksbyJacobCouch1.mp4`
+  - 0 container chapters
+- `Couch - Finishing Leg Locks\FinishingleglocksbyJacobCouch2.mp4`
+  - 0 container chapters
+- `Couch - Finishing Leg Locks\FinishingleglocksbyJacobCouch3.mp4`
+  - 0 container chapters
+- `Couch - Finishing Leg Locks\FinishingleglocksbyJacobCouch4.mp4`
+  - 0 container chapters
+- `Danaher - GFF Passing\Season 01\Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Toreando Pass.mp4`
+  - 1 container chapter(s): Toreando Pass
+- `Giles - HG Anthology\Season 01\Half Guard Anthology by Lachlan Giles - S01E08 - Volume 8.mp4`
+  - 1 container chapter(s): 11 Z GUARD, KIMURA, AND NARRATED ROLLING
+- `Hall - Hip Bump\TheHipBumpbyRyanHall3.mp4`
+  - 0 container chapters
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E01 - Volume 1.mp4`
+  - 1 container chapter(s): Introduction
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E02 - Volume 2.mp4`
+  - 1 container chapter(s): Introduction
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E03 - Volume 3.mp4`
+  - 1 container chapter(s): Introduction
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E04 - Volume 4.mp4`
+  - 1 container chapter(s): Introduction
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E05 - Volume 5.mp4`
+  - 1 container chapter(s): Introduction
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E06 - Volume 6.mp4`
+  - 1 container chapter(s): Introduction
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E07 - Volume 7.mp4`
+  - 1 container chapter(s): Introduction
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E08 - Volume 8.mp4`
+  - 1 container chapter(s): Introduction
+- `Ryan - SysAtk Seated OG\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E07 - Volume 7 Rolling.mp4`
+  - 1 container chapter(s): Introduction
+- `Ryan - SysAtk The Guard\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E08 - Volume 8.mp4`
+  - 1 container chapter(s): Rolling Commentary
+- `Wardzinski - Bfly Rediscovered 2\Season 01\Butterfly Guard Re-Discovered 2 by Adam Wardzinski - S01E01 - Volume 1-pt2.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-01- Chokes - Paper Cut Choke.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-02- Reverse Paper Cut Choke.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-03- Scissor Choke.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-04- Von Flue Choke.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-05- North South Choke To Brabo Choke.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-06- Far Side Lapel Choke.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-07- Step Over Lapel Choke.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-08- Lapel Cross Choke With Options.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-09- Lapel Baseball Choke.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-10- Kimura Grip To Arm Triangle And Ezekiel Choke.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-11- Kimura Grip To Triangle From The Back.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-01- Half Guard Pass - Classic Half Guard To 3 Quarter Mount Option 1.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-02- Classic Half Guard To 3 Quarter Mount Option 2.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-03- Z Guard Sprawl Pass.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-04- Level Change In Half Guard.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-05- Knee Shield Half To Three Quarter Mount, Conquer In The Shield.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-06- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-07- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg 2.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-08- Tripod Pass With Face Turn To 3 Quarter Mount.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-09- Shin Across The Belly Half Guard Pass.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-10- Beating The Other Hook In A Half Guard.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-11- 3 Quarters Mount Arm Triangle.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-12- Ezekiel Option From 3 Quarters Mount.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-01- Hip Smashing Through Half Guard - Far Hip Knee Slide To Smash.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-02- Knee Shield Smash.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-03- Headquarters Position Entry And Knee Weave.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-04- Leg Pummel To Headquarters Mount And Smash.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-05- Conquering The Bottom Leg In The Knee In Smash.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-06- Conquering The Bottom Leg In Reinforce In Lapel.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-07- Inverted Half Guard To Back Take.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-08- Inverted Half Guard Mount Escape Counter.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-09- Inverted Half Guard To Rolling Back Take.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-01- Smashing Through Different Guards - Smash Pass Against Half Butterfly Guard.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-02- Countering Half Butterfly Sweep With Knee In Smash.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-03- Knee In Smashing Against Seated Butterfly Guard.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-04- Knee In Smash Shin To Shin Counter.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-05- Slx Knee In Smash.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-06- Slx Pass To Mount.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-07- Slx Knee In Smash 2.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-08- De La Riva Pass To Headquarters To Smash.mp4`
+  - 0 container chapters
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-09- Dlr Leg Drag And Knee In Smash Pass.mp4`
+  - 0 container chapters
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol1.mp4`
+  - 0 container chapters
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol2.mp4`
+  - 0 container chapters
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol3.mp4`
+  - 0 container chapters
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol4.mp4`
+  - 0 container chapters
+
+## Videos without NFO metadata
+
+58 item(s).
+
+- `Cornelius - Worm Guard\Keenan Cornelius   The Worm Guard DVD 1 [ZofVvwJcx4k].webm`
+  - no sidecar .nfo
+- `Cornelius - Worm Guard\Keenan Cornelius   The Worm Guard DVD 2 [5F2YZ4hN2Y0].webm`
+  - no sidecar .nfo
+- `Cornelius - Worm Guard\Keenan Cornelius   The Worm Guard DVD Bonus 2 [lk9nfD8vCPk].webm`
+  - no sidecar .nfo
+- `Cornelius - Worm Guard\Keenan Cornelius  - The Worm Guard DVD Bonus 1 [aCzfpDzlTiU].webm`
+  - no sidecar .nfo
+- `Couch - Finishing Leg Locks\FinishingleglocksbyJacobCouch1.mp4`
+  - no sidecar .nfo
+- `Couch - Finishing Leg Locks\FinishingleglocksbyJacobCouch2.mp4`
+  - no sidecar .nfo
+- `Couch - Finishing Leg Locks\FinishingleglocksbyJacobCouch3.mp4`
+  - no sidecar .nfo
+- `Couch - Finishing Leg Locks\FinishingleglocksbyJacobCouch4.mp4`
+  - no sidecar .nfo
+- `Hall - Hip Bump\TheHipBumpbyRyanHall1.mp4`
+  - no sidecar .nfo
+- `Hall - Hip Bump\TheHipBumpbyRyanHall2.mp4`
+  - no sidecar .nfo
+- `Hall - Hip Bump\TheHipBumpbyRyanHall3.mp4`
+  - no sidecar .nfo
+- `Hall - Hip Bump\TheHipBumpbyRyanHall4.mp4`
+  - no sidecar .nfo
+- `Wardzinski - Bfly Rediscovered 2\Season 01\Butterfly Guard Re-Discovered 2 by Adam Wardzinski - S01E01 - Volume 1-pt1.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-01- Chokes - Paper Cut Choke.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-02- Reverse Paper Cut Choke.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-03- Scissor Choke.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-04- Von Flue Choke.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-05- North South Choke To Brabo Choke.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-06- Far Side Lapel Choke.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-07- Step Over Lapel Choke.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-08- Lapel Cross Choke With Options.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-09- Lapel Baseball Choke.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-10- Kimura Grip To Arm Triangle And Ezekiel Choke.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-11- Kimura Grip To Triangle From The Back.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-01- Half Guard Pass - Classic Half Guard To 3 Quarter Mount Option 1.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-02- Classic Half Guard To 3 Quarter Mount Option 2.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-03- Z Guard Sprawl Pass.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-04- Level Change In Half Guard.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-05- Knee Shield Half To Three Quarter Mount, Conquer In The Shield.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-06- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-07- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg 2.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-08- Tripod Pass With Face Turn To 3 Quarter Mount.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-09- Shin Across The Belly Half Guard Pass.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-10- Beating The Other Hook In A Half Guard.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-11- 3 Quarters Mount Arm Triangle.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-12- Ezekiel Option From 3 Quarters Mount.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-01- Hip Smashing Through Half Guard - Far Hip Knee Slide To Smash.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-02- Knee Shield Smash.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-03- Headquarters Position Entry And Knee Weave.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-04- Leg Pummel To Headquarters Mount And Smash.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-05- Conquering The Bottom Leg In The Knee In Smash.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-06- Conquering The Bottom Leg In Reinforce In Lapel.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-07- Inverted Half Guard To Back Take.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-08- Inverted Half Guard Mount Escape Counter.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-09- Inverted Half Guard To Rolling Back Take.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-01- Smashing Through Different Guards - Smash Pass Against Half Butterfly Guard.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-02- Countering Half Butterfly Sweep With Knee In Smash.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-03- Knee In Smashing Against Seated Butterfly Guard.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-04- Knee In Smash Shin To Shin Counter.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-05- Slx Knee In Smash.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-06- Slx Pass To Mount.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-07- Slx Knee In Smash 2.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-08- De La Riva Pass To Headquarters To Smash.mp4`
+  - no sidecar .nfo
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-09- Dlr Leg Drag And Knee In Smash Pass.mp4`
+  - no sidecar .nfo
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol1.mp4`
+  - no sidecar .nfo
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol2.mp4`
+  - no sidecar .nfo
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol3.mp4`
+  - no sidecar .nfo
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol4.mp4`
+  - no sidecar .nfo
+
+## Instructionals without NFO metadata
+
+2 item(s).
+
+- `Wardzinski - PP Bundle`
+  - no tvshow.nfo
+- `Wiltse - Daisy Fresh Knee Slice`
+  - no tvshow.nfo
+
+## Videos that do not play or open with errors
+
+0 item(s).
+
+None.
+
+## Videos without corresponding transcripts
+
+0 item(s).
+
+None.
+
+## Videos without complete prepare
+
+79 item(s).
+
+- `Couch - Finishing Leg Locks\FinishingleglocksbyJacobCouch1.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Couch - Finishing Leg Locks\FinishingleglocksbyJacobCouch2.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Couch - Finishing Leg Locks\FinishingleglocksbyJacobCouch3.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Couch - Finishing Leg Locks\FinishingleglocksbyJacobCouch4.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF Guard Retention\Season 01\Guard Retention BJJ Fundamentals - Go Further Faster by John Danaher - S01E02 - The Big Picture and 2 Requirements of Guard Retention.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF HG Pass Pins\Season 01\Half Guard Passing and Dynamic Pins BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Introduction.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF HG Pass Pins\Season 01\Half Guard Passing and Dynamic Pins BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Passing Half Guard.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF Passing\Season 01\Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E02 - Knee Post Method of Opening Closed Guard.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF Passing\Season 01\Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E03 - Double Under, Over Under, and Knee Cut Passes.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF Passing\Season 01\Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Toreando Pass.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF Passing\Season 01\Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E06 - Break Connections and Maintain Top Position.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF Strangles Turtle\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E05 - Ezekiel Strangle.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF Strangles Turtle\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E06 - Turtle Breakdowns.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E01 - Volume 1.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E02 - Volume 2.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E03 - Volume 3.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E04 - Volume 4.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E05 - Volume 5.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E06 - Volume 6.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E07 - Volume 7.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E08 - Volume 8.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Giles - HG Anthology\Season 01\Half Guard Anthology by Lachlan Giles - S01E08 - Volume 8.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Hall - Hip Bump\TheHipBumpbyRyanHall3.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E01 - Volume 1.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E02 - Volume 2.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E03 - Volume 3.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E04 - Volume 4.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E05 - Volume 5.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E06 - Volume 6.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E07 - Volume 7.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E08 - Volume 8.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - SysAtk Seated OG\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E07 - Volume 7 Rolling.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - SysAtk The Guard\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E08 - Volume 8.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - Bfly Rediscovered 2\Season 01\Butterfly Guard Re-Discovered 2 by Adam Wardzinski - S01E01 - Volume 1-pt2.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-01- Chokes - Paper Cut Choke.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-02- Reverse Paper Cut Choke.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-03- Scissor Choke.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-04- Von Flue Choke.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-05- North South Choke To Brabo Choke.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-06- Far Side Lapel Choke.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-07- Step Over Lapel Choke.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-08- Lapel Cross Choke With Options.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-09- Lapel Baseball Choke.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-10- Kimura Grip To Arm Triangle And Ezekiel Choke.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-18-11- Kimura Grip To Triangle From The Back.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-01- Half Guard Pass - Classic Half Guard To 3 Quarter Mount Option 1.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-02- Classic Half Guard To 3 Quarter Mount Option 2.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-03- Z Guard Sprawl Pass.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-04- Level Change In Half Guard.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-05- Knee Shield Half To Three Quarter Mount, Conquer In The Shield.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-06- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-07- Knee Shield Half To Three Quarter Mount, Conquer In The Bottom Leg 2.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-08- Tripod Pass With Face Turn To 3 Quarter Mount.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-09- Shin Across The Belly Half Guard Pass.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-10- Beating The Other Hook In A Half Guard.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-11- 3 Quarters Mount Arm Triangle.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-19-12- Ezekiel Option From 3 Quarters Mount.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-01- Hip Smashing Through Half Guard - Far Hip Knee Slide To Smash.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-02- Knee Shield Smash.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-03- Headquarters Position Entry And Knee Weave.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-04- Leg Pummel To Headquarters Mount And Smash.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-05- Conquering The Bottom Leg In The Knee In Smash.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-06- Conquering The Bottom Leg In Reinforce In Lapel.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-07- Inverted Half Guard To Back Take.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-08- Inverted Half Guard Mount Escape Counter.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-20-09- Inverted Half Guard To Rolling Back Take.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-01- Smashing Through Different Guards - Smash Pass Against Half Butterfly Guard.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-02- Countering Half Butterfly Sweep With Knee In Smash.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-03- Knee In Smashing Against Seated Butterfly Guard.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-04- Knee In Smash Shin To Shin Counter.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-05- Slx Knee In Smash.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-06- Slx Pass To Mount.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-07- Slx Knee In Smash 2.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-08- De La Riva Pass To Headquarters To Smash.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - PP Bundle\Polish Power Smash Passing By Adam Wardzinski\7187341508706-21-09- Dlr Leg Drag And Knee In Smash Pass.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol1.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol2.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol3.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol4.mp4`
+  - schema (nest) not done
+  - model (--llm) not done

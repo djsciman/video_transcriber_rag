@@ -59,6 +59,21 @@ def test_executive_summary_disc_counts_as_a_volume():
     assert [item.parsed.path.name for item in result.items[::3]] == [path.name for path in files]
 
 
+def test_dvd_bonus_discs_follow_main_volumes():
+    files = [
+        Path("Keenan Cornelius   The Worm Guard DVD 1 [ZofVvwJcx4k].webm"),
+        Path("Keenan Cornelius   The Worm Guard DVD 2 [5F2YZ4hN2Y0].webm"),
+        Path("Keenan Cornelius  - The Worm Guard DVD Bonus 1 [aCzfpDzlTiU].webm"),
+        Path("Keenan Cornelius   The Worm Guard DVD Bonus 2 [lk9nfD8vCPk].webm"),
+    ]
+    result = match_season(files, _vols(4, chapters_each=2))
+    assert result.mode == "volume"
+    assert result.extras == []
+    assert [item.parsed.volume_number for item in result.items[::2]] == [1, 2, 3, 4]
+    assert [item.parsed.path.name for item in result.items[::2]] == [path.name for path in files]
+    assert "DVD Bonus" in " ".join(result.warnings)
+
+
 def test_too_few_files_aborts():
     files = [Path("TitleVol1.mp4"), Path("TitleVol2.mp4")]
     with pytest.raises(MatchError, match="Fewer local videos"):

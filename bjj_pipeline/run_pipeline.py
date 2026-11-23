@@ -207,7 +207,7 @@ def _transcript_done(output: Path) -> bool:
         _data, info = batch_panoscribe.inspect_transcript(output)
     except batch_panoscribe.TranscriptError:
         return False
-    return bool(info["segments_present"])
+    return bool(info["transcript_raw_present"])
 
 
 def _stream_isatty(stdin, isatty: bool | None) -> bool:

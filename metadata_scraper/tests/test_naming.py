@@ -8,6 +8,12 @@ from bjj_organizer.naming import (
     show_title,
     volume_episode_filename,
 )
+from bjj_organizer.show_folders import (
+    LONG_FOLDER_FROM_SHORT,
+    SHOW_FOLDER_NAMES,
+    dest_show_folder,
+    show_display_title,
+)
 
 
 def test_show_title_adds_by_and_does_not_duplicate():
@@ -42,6 +48,7 @@ def test_volume_regex_table():
         assert not parsed.is_segmented_name, name
     worm = parse_video(Path("Keenan Cornelius   The Worm Guard DVD 1 [ZofVvwJcx4k].webm"))
     assert worm.volume_number == 1
+    assert worm.local_title is None
     assert worm.extension == ".webm"
 
 
@@ -81,7 +88,9 @@ def test_new_and_extra_and_double_ext():
     assert not parsed.is_extra
     assert parsed.extension == ".mp4"
     parsed = parse_video(Path("Keenan Cornelius   The Worm Guard DVD Bonus 1 [ZofVvwJcx4k].webm"))
-    assert parsed.is_extra
+    assert not parsed.is_extra
+    assert parsed.volume_number is None
+    assert parsed.local_title is None
     assert parsed.extension == ".webm"
 
 
@@ -138,3 +147,32 @@ def test_sanitize_and_episode_filename():
     assert show_title("The Collar and Sleeve System Pt 1", ["Mikey Musumeci"]) == (
         "The Collar and Sleeve System Part One by Mikey Musumeci"
     )
+
+
+def test_show_folder_map_is_unique_and_stable():
+    shorts = list(SHOW_FOLDER_NAMES.values())
+    assert len(shorts) == len(set(shorts))
+    assert len(SHOW_FOLDER_NAMES) == 81
+    long_name = "Arm Bars Enter The System by John Danaher"
+    short = "Danaher - ETS Arm Bars"
+    assert dest_show_folder(long_name, ["John Danaher"]) == short
+    assert dest_show_folder(short, ["John Danaher"]) == short
+    gff_old = "Closed Guard BJJ Fundamentals - Go Further Faster by John Danaher"
+    gff_new = "Closed Guard - Go Further Faster by John Danaher"
+    gff_short = "Danaher - GFF Closed Guard"
+    assert dest_show_folder(gff_old, ["John Danaher"]) == gff_short
+    assert dest_show_folder(gff_new, ["John Danaher"]) == gff_short
+    assert show_display_title(gff_short, ["John Danaher"]) == gff_new
+    assert show_display_title(gff_short, ["John Danaher"], nfo_title=gff_old) == gff_new
+    assert show_display_title(short, ["John Danaher"]) == (
+        "Arm Bars Enter The System by John Danaher"
+    )
+    assert show_display_title(
+        short, ["John Danaher"], nfo_title="Arm Bars Enter The System by John Danaher"
+    ) == "Arm Bars Enter The System by John Danaher"
+    assert LONG_FOLDER_FROM_SHORT[short] == long_name
+    mica = dest_show_folder("Galvao Style Back Attacks by Mica Galvao", ["Mica Galvao"])
+    andre = dest_show_folder("Passing Modern Guard by Andre Galvao", ["Andre Galvao"])
+    assert mica != andre
+    assert mica.startswith("Mica Galvao")
+    assert andre.startswith("Andre Galvao")

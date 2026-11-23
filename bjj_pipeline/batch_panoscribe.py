@@ -86,6 +86,33 @@ def _win_extended_path(absolute: str) -> str:
     return "\\\\?\\" + absolute
 
 
+def _strip_extended(text: str) -> str:
+    if text.startswith("\\\\?\\UNC\\"):
+        return "\\\\" + text[8:]
+    if text.startswith("\\\\?\\"):
+        return text[4:]
+    return text
+
+
+def _plain_abs(path: Path) -> str:
+    """Absolute path without a Windows ``\\\\?\\`` prefix, for containment checks."""
+    return _strip_extended(os.path.abspath(os.fspath(path)))
+
+
+def _rel_under(root: Path, path: Path) -> Path:
+    """Return ``path`` relative to ``root``, or raise ValueError."""
+    root_s = _plain_abs(root)
+    path_s = _plain_abs(path)
+    root_key = os.path.normcase(root_s)
+    path_key = os.path.normcase(path_s)
+    if path_key == root_key:
+        return Path()
+    prefix = root_key if root_key.endswith(os.sep) else root_key + os.sep
+    if not path_key.startswith(prefix):
+        raise ValueError(f"{path} is not under {root}")
+    return Path(os.path.relpath(path_s, root_s))
+
+
 def _mkstemp(*, prefix: str, suffix: str, directory: Path | None = None) -> tuple[int, Path]:
     """Create a temp file. On Windows the directory is extended-length.
 
@@ -108,8 +135,12 @@ def round_chapter_time(value: float) -> float:
     return round(float(value) * 1000.0) / 1000.0
 
 
-def normalize_container_chapters(raw_chapters: list[dict]) -> list[dict]:
+def normalize_container_chapters(
+    raw_chapters: list[dict], video: Path | None = None
+) -> list[dict]:
     """Normalize container chapters to stored transcript shape."""
+    from .organizer.naming import parse_video, sole_chapter_title
+
     chapters = []
     for index, chapter in enumerate(raw_chapters, start=1):
         title = str(chapter.get("title") or "").strip()
@@ -121,6 +152,10 @@ def normalize_container_chapters(raw_chapters: list[dict]) -> list[dict]:
                 "start": round_chapter_time(chapter["start"]),
                 "end": round_chapter_time(chapter["end"]),
             }
+        )
+    if len(chapters) == 1 and video is not None:
+        chapters[0]["title"] = sole_chapter_title(
+            parse_video(Path(video)), chapters[0]["title"]
         )
     return chapters
 
@@ -135,7 +170,8 @@ def extract_chapters(video_path: Path, *, command=None) -> list[dict]:
 
     video_path = io_path(video_path)
     return normalize_container_chapters(
-        read_container_chapters(video_path, command=command)
+        read_container_chapters(video_path, command=command),
+        video=video_path,
     )
 
 
@@ -172,12 +208,7 @@ def select_videos(library: Path, video: Path | str | None = None) -> list[Path]:
         return walk_videos(library)
     raw = Path(video)
     target = raw if raw.is_absolute() else library / raw
-    lib_res = io_path(library).resolve()
-    tgt_res = io_path(target).resolve()
-    try:
-        rel = tgt_res.relative_to(lib_res)
-    except ValueError as exc:
-        raise ValueError(f"{target} is not under {library}") from exc
+    rel = _rel_under(library, target)
     logical = library / rel
     on_disk = io_path(logical)
     if on_disk.is_file():
@@ -310,12 +341,26 @@ class TranscriptError(Exception):
         self.reason = reason
 
 
+def has_transcript_raw(chapters: object) -> bool:
+    """True when every titled chapter already has nested ``transcript_raw``."""
+    if not isinstance(chapters, list) or not chapters:
+        return False
+    for chapter in chapters:
+        if not isinstance(chapter, dict):
+            return False
+        if not str(chapter.get("title") or "").strip():
+            return False
+        if not isinstance(chapter.get("transcript_raw"), str):
+            return False
+    return True
+
+
 def inspect_transcript(path: Path) -> tuple[dict | None, dict]:
     """Load a transcript and report which fields are present.
 
     Returns ``(data_or_None_if_missing, info)`` where ``info`` has:
     ``segments_present``, ``segments``, ``chapters_present``, ``chapters``,
-    ``video_file_present``, ``video_file``.
+    ``transcript_raw_present``, ``video_file_present``, ``video_file``.
     """
     io_target = io_path(path)
     if not io_target.exists():
@@ -324,6 +369,7 @@ def inspect_transcript(path: Path) -> tuple[dict | None, dict]:
             "segments": None,
             "chapters_present": False,
             "chapters": None,
+            "transcript_raw_present": False,
             "video_file_present": False,
             "video_file": None,
         }
@@ -388,6 +434,7 @@ def inspect_transcript(path: Path) -> tuple[dict | None, dict]:
         "segments": segments,
         "chapters_present": chapters_present,
         "chapters": chapters,
+        "transcript_raw_present": has_transcript_raw(chapters),
         "video_file_present": video_file_present,
         "video_file": video_file,
     }
@@ -574,7 +621,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--force",
         action="store_true",
-        help="Re-run speech even when a segments list already exists.",
+        help="Re-run speech even when nested transcript_raw already exists.",
     )
     parser.add_argument(
         "--video",
@@ -609,7 +656,7 @@ def process_volume(
         _fail_line(str(video), e.reason)
         return f"fail:{e.reason}"
 
-    need_speech = force or not info["segments_present"]
+    need_speech = force or not info["transcript_raw_present"]
     container_chapters = None
     container_error = None
     hotwords = None
@@ -617,7 +664,10 @@ def process_volume(
     # Always need the container when creating/updating chapters, and before speech
     # so hotwords can be built. A failure is recorded and speech may still run.
     try:
-        container_chapters = normalize_container_chapters(chapter_command(io_path(video)))
+        container_chapters = normalize_container_chapters(
+            chapter_command(io_path(video)),
+            video=video,
+        )
     except Exception as e:
         container_error = e
 
@@ -780,7 +830,7 @@ def run(
             _existing, info = inspect_transcript(out)
         except TranscriptError:
             continue
-        if force or not info["segments_present"]:
+        if force or not info["transcript_raw_present"]:
             needs_speech = True
 
     if needs_speech:

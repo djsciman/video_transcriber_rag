@@ -1,0 +1,3320 @@
+# Completeness scan
+
+Scanned: 2026-11-22 17:30:20
+
+- Video library: `W:\BJJ Instructional Videos Jellyfin`
+- Transcript root: `C:\Users\dumbo\Documents\GitHub\bjj_transcripts\library`
+- Videos: 738
+- Instructionals: 85
+
+## Aggregate
+
+| Check | Count | Total | Percent |
+| --- | ---: | ---: | ---: |
+| Videos combined into volumes (not split by chapters) | 460 | 738 | 62.3% |
+| Videos with named chapters | 451 | 738 | 61.1% |
+| Videos with NFO metadata | 455 | 738 | 61.7% |
+| Instructionals with NFO metadata | 77 | 85 | 90.6% |
+| Videos that play without errors | 737 | 738 | 99.9% |
+| Videos with corresponding transcripts | 448 | 738 | 60.7% |
+| Videos with prepare complete (nest and model) | 415 | 738 | 56.2% |
+
+Every aggregate percent is a meeting rate. Items below do not meet the rubric.
+
+## Videos split by chapters (not combined)
+
+278 item(s).
+
+- `Danaher - MTM Shoulder Crunch\7394571878498-01-01- Introduction.mp4`
+  - segmented filename (volume 1 chapter 1)
+- `Danaher - MTM Shoulder Crunch\7394571878498-01-02- Shoulder Crunch Sumi Gaeshi_ Order Of Operations  From Seated Position, Establish A Grip That Allows You To Get Your Opponent's Hand To The Floor And Gain An Underhook.mp4`
+  - segmented filename (volume 1 chapter 2)
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-01- Key Details Of Shoulder Crunch Sumi Gaeshi  High Elbow Shoulder To Shoulder.mp4`
+  - segmented filename (volume 2 chapter 1)
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-02- The Single Biggest Mistake That People Make With The Shoulder Crunch Grip.mp4`
+  - segmented filename (volume 2 chapter 2)
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-03- Removing The Posts.mp4`
+  - segmented filename (volume 2 chapter 3)
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-04- Forward Shift At An Angle To Prevent Pull Outs.mp4`
+  - segmented filename (volume 2 chapter 4)
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-01- Shifting Your Opponent Off The Centerline.mp4`
+  - segmented filename (volume 3 chapter 1)
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-02- How To Push On Your Opponent's Leg.mp4`
+  - segmented filename (volume 3 chapter 2)
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-03- The Crucial Use Of The Feet In Shoulder Crunch Sumi Gaeshi.mp4`
+  - segmented filename (volume 3 chapter 3)
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-04- Switching Side To Side.mp4`
+  - segmented filename (volume 3 chapter 4)
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-01- Troubleshooting Shoulder Crunch Sumi Gaeshi  The Single Biggest Weak Point Of The Shoulder Crunch Sumi Gaeshi And How To Overcome It.mp4`
+  - segmented filename (volume 4 chapter 1)
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-02- Question_ If The Pinch Headlock Is So Strong, Why Don't We Just Stay With That As Our Sweeping Grip.mp4`
+  - segmented filename (volume 4 chapter 2)
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-04- The Theory Of Closed Grips From Guard Position.mp4`
+  - segmented filename (volume 4 chapter 4)
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-05- The First Step Of The Shoulder Crunch Sumi Gaeshi Series_ Getting The Hand To The Floor.mp4`
+  - segmented filename (volume 4 chapter 5)
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-06- The 2 Stage Method Of Getting The Hand To The Floor.mp4`
+  - segmented filename (volume 4 chapter 6)
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-01- The 2 Most Common Defenses To Shoulder Crunch Sumi Gaeshi And How To Overcome Them  1. The Elbow Slip.mp4`
+  - segmented filename (volume 5 chapter 1)
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-02- 2. The Rock Back  Opponent Rocks Back On Knees  Triangle.mp4`
+  - segmented filename (volume 5 chapter 2)
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-03- Ude Gatame (Straight Arm Lock).mp4`
+  - segmented filename (volume 5 chapter 3)
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-04- Juji Gatame.mp4`
+  - segmented filename (volume 5 chapter 4)
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-05- Hiza Guruma.mp4`
+  - segmented filename (volume 5 chapter 5)
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-01- Opponent On Posted Leg Or Standing  Ashi Garami To Outside Heel Hook.mp4`
+  - segmented filename (volume 6 chapter 1)
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-02- Ashi Garami To Kani Basami.mp4`
+  - segmented filename (volume 6 chapter 2)
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-03- Ashi Garami To Sweep Into Heel Hooks.mp4`
+  - segmented filename (volume 6 chapter 3)
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-04- Ankle Pick Cross Ashi.mp4`
+  - segmented filename (volume 6 chapter 4)
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-01- The Pinch Headlock Series  Hiza Guruma When Your Opponent Is On 2 Knees.mp4`
+  - segmented filename (volume 7 chapter 1)
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-02- Elbow On The Floor Pinch Headlock Sumi Gaeshi.mp4`
+  - segmented filename (volume 7 chapter 2)
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-03- Hand On The Floor Classic Sumi Gaeshi.mp4`
+  - segmented filename (volume 7 chapter 3)
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-04- Ude Gatame From Pinch Headlock.mp4`
+  - segmented filename (volume 7 chapter 4)
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-05- Pinch Headlock To Tight Waist Series.mp4`
+  - segmented filename (volume 7 chapter 5)
+- `Danaher - MTM Shoulder Crunch\7394571878498-08-01- The High Lock Series  Sumi Gaeshi From High Lock.mp4`
+  - segmented filename (volume 8 chapter 1)
+- `Danaher - MTM Shoulder Crunch\7394571878498-08-02- High Lock Into Standing Body Lock.mp4`
+  - segmented filename (volume 8 chapter 2)
+- `Danaher - MTM Shoulder Crunch\7394571878498-08-03- Putting It All Together.mp4`
+  - segmented filename (volume 8 chapter 3)
+- `Jones - Pendejo Guard\6634994040930-01-01- Introduction.mp4`
+  - segmented filename (volume 1 chapter 1)
+- `Jones - Pendejo Guard\6634994040930-01-02- Sweep 1.mp4`
+  - segmented filename (volume 1 chapter 2)
+- `Jones - Pendejo Guard\6634994040930-01-03- Off Balance To Wrestle Up.mp4`
+  - segmented filename (volume 1 chapter 3)
+- `Jones - Pendejo Guard\6634994040930-01-04- Pendulum Fuerte.mp4`
+  - segmented filename (volume 1 chapter 4)
+- `Jones - Pendejo Guard\6634994040930-01-05- False Reap.mp4`
+  - segmented filename (volume 1 chapter 5)
+- `Jones - Pendejo Guard\6634994040930-01-06- Never Before Seen Heel Hook Exposure.mp4`
+  - segmented filename (volume 1 chapter 6)
+- `Ryan - HiPerc Gi Passes\6839466721378-01-01- Intro.mp4`
+  - segmented filename (volume 1 chapter 1)
+- `Ryan - HiPerc Gi Passes\6839466721378-01-02- Spider Guard To Toreando.mp4`
+  - segmented filename (volume 1 chapter 2)
+- `Ryan - HiPerc Gi Passes\6839466721378-01-03- Toreando Footwork.mp4`
+  - segmented filename (volume 1 chapter 3)
+- `Ryan - HiPerc Gi Passes\6839466721378-01-04- Toreando_Leg Drag_X Pass Trilemma.mp4`
+  - segmented filename (volume 1 chapter 4)
+- `Ryan - HiPerc Gi Passes\6839466721378-01-05- Torreando_Longstep Dilemma.mp4`
+  - segmented filename (volume 1 chapter 5)
+- `Ryan - HiPerc Gi Passes\6839466721378-02-01- Long Step Into Half Guard.mp4`
+  - segmented filename (volume 2 chapter 1)
+- `Ryan - HiPerc Gi Passes\6839466721378-02-02- The Luxury Of A Free Hand.mp4`
+  - segmented filename (volume 2 chapter 2)
+- `Ryan - HiPerc Gi Passes\6839466721378-02-03- Basic Half Guard Passes.mp4`
+  - segmented filename (volume 2 chapter 3)
+- `Ryan - HiPerc Gi Passes\6839466721378-02-04- Outro.mp4`
+  - segmented filename (volume 2 chapter 4)
+- `Ryan - PoD Pin Escapes\6687407439970-01-01- Intro To Pin Escapes.mp4`
+  - segmented filename (volume 1 chapter 1)
+- `Ryan - PoD Pin Escapes\6687407439970-01-02- Carrying Body Weight - Torso Vs Frames.mp4`
+  - segmented filename (volume 1 chapter 2)
+- `Ryan - PoD Pin Escapes\6687407439970-01-03- Extension Vs Contraction Concave Vs Convex Shoulders.mp4`
+  - segmented filename (volume 1 chapter 3)
+- `Ryan - PoD Pin Escapes\6687407439970-01-04- Cranium Control.mp4`
+  - segmented filename (volume 1 chapter 4)
+- `Ryan - PoD Pin Escapes\6687407439970-01-07- Escaping Knee On Belly.mp4`
+  - segmented filename (volume 1 chapter 7)
+- `Ryan - PoD Pin Escapes\6687407439970-01-09- Intro To Escaping Side Control.mp4`
+  - segmented filename (volume 1 chapter 9)
+- `Ryan - PoD Pin Escapes\6687407439970-01-10- Side Guard Wins The Game.mp4`
+  - segmented filename (volume 1 chapter 10)
+- `Ryan - PoD Pin Escapes\6687407439970-01-11- Insertion Points.mp4`
+  - segmented filename (volume 1 chapter 11)
+- `Ryan - PoD Pin Escapes\6687407439970-01-12- Inserting The Far Arm.mp4`
+  - segmented filename (volume 1 chapter 12)
+- `Ryan - PoD Pin Escapes\6687407439970-01-13- Inserting Near Side Elbow.mp4`
+  - segmented filename (volume 1 chapter 13)
+- `Ryan - PoD Pin Escapes\6687407439970-01-14- Escaping Vs A Naive Opponent.mp4`
+  - segmented filename (volume 1 chapter 14)
+- `Ryan - PoD Pin Escapes\6687407439970-02-01- Actively Fighting The Far Elbow To Inside Position.mp4`
+  - segmented filename (volume 2 chapter 1)
+- `Ryan - PoD Pin Escapes\6687407439970-02-02- Knee To Hip Contact.mp4`
+  - segmented filename (volume 2 chapter 2)
+- `Ryan - PoD Pin Escapes\6687407439970-02-03- Side Guard.mp4`
+  - segmented filename (volume 2 chapter 3)
+- `Ryan - PoD Pin Escapes\6687407439970-02-04- Basic Reguard From Side Guard.mp4`
+  - segmented filename (volume 2 chapter 4)
+- `Ryan - PoD Pin Escapes\6687407439970-02-05- Recovering From Side Guard Into Clamp.mp4`
+  - segmented filename (volume 2 chapter 5)
+- `Ryan - PoD Pin Escapes\6687407439970-02-06- Side Guard To Te Gatame.mp4`
+  - segmented filename (volume 2 chapter 6)
+- `Ryan - PoD Pin Escapes\6687407439970-02-07- Te Gatame Into The Legs.mp4`
+  - segmented filename (volume 2 chapter 7)
+- `Ryan - PoD Pin Escapes\6687407439970-02-08- Inserting A Far Side Underhook.mp4`
+  - segmented filename (volume 2 chapter 8)
+- `Ryan - PoD Pin Escapes\6687407439970-02-09- Conservative Recovery.mp4`
+  - segmented filename (volume 2 chapter 9)
+- `Ryan - PoD Pin Escapes\6687407439970-02-10- Underhook To Pinch Headlock_shoulder Crunch.mp4`
+  - segmented filename (volume 2 chapter 10)
+- `Ryan - PoD Pin Escapes\6687407439970-02-11- Underhook To Half Guard.mp4`
+  - segmented filename (volume 2 chapter 11)
+- `Ryan - PoD Pin Escapes\6687407439970-02-12- Underhook To Ashi Garami.mp4`
+  - segmented filename (volume 2 chapter 12)
+- `Ryan - PoD Pin Escapes\6687407439970-02-13- Underhook To Wrestling Scenarios.mp4`
+  - segmented filename (volume 2 chapter 13)
+- `Ryan - PoD Pin Escapes\6687407439970-03-01- Leg Grab_reguard Dilemma.mp4`
+  - segmented filename (volume 3 chapter 1)
+- `Ryan - PoD Pin Escapes\6687407439970-03-02- Escaping With A Near Side Underhook.mp4`
+  - segmented filename (volume 3 chapter 2)
+- `Ryan - PoD Pin Escapes\6687407439970-03-03- Opponent Crowds The Hips.mp4`
+  - segmented filename (volume 3 chapter 3)
+- `Ryan - PoD Pin Escapes\6687407439970-03-04- Recovering With A Tricep Post.mp4`
+  - segmented filename (volume 3 chapter 4)
+- `Ryan - PoD Pin Escapes\6687407439970-03-05- Tricep Post To Side Guard.mp4`
+  - segmented filename (volume 3 chapter 5)
+- `Ryan - PoD Pin Escapes\6687407439970-03-06- Tricep Post To Overback Series.mp4`
+  - segmented filename (volume 3 chapter 6)
+- `Ryan - PoD Pin Escapes\6687407439970-03-07- Countering A Reachback Crossface.mp4`
+  - segmented filename (volume 3 chapter 7)
+- `Ryan - PoD Pin Escapes\6687407439970-03-08- Side Kipping.mp4`
+  - segmented filename (volume 3 chapter 8)
+- `Ryan - PoD Pin Escapes\6687407439970-03-09- Side Kip Vs Posted Crossface Hand.mp4`
+  - segmented filename (volume 3 chapter 9)
+- `Ryan - PoD Pin Escapes\6687407439970-03-10- Side Kip Vs Posted Underhook Hand.mp4`
+  - segmented filename (volume 3 chapter 10)
+- `Ryan - PoD Pin Escapes\6687407439970-04-01- INTRO TO DOUBLE UNDERHOOKS.mp4`
+  - segmented filename (volume 4 chapter 1)
+- `Ryan - PoD Pin Escapes\6687407439970-04-02- Escaping On The Pommel.mp4`
+  - segmented filename (volume 4 chapter 2)
+- `Ryan - PoD Pin Escapes\6687407439970-04-03- Pommeling Back Inside.mp4`
+  - segmented filename (volume 4 chapter 3)
+- `Ryan - PoD Pin Escapes\6687407439970-04-04- Intro To Opponent Hip Switching.mp4`
+  - segmented filename (volume 4 chapter 4)
+- `Ryan - PoD Pin Escapes\6687407439970-04-08- Intro To Kesa Gatame.mp4`
+  - segmented filename (volume 4 chapter 8)
+- `Ryan - PoD Pin Escapes\6687407439970-04-09- Escaping As Opponent Pommels.mp4`
+  - segmented filename (volume 4 chapter 9)
+- `Ryan - PoD Pin Escapes\6687407439970-04-10- Escaping Fully Locked Kesa Gatame.mp4`
+  - segmented filename (volume 4 chapter 10)
+- `Ryan - PoD Pin Escapes\6687407439970-04-11- Addressing Other Upper Body Grips - Body Lock.mp4`
+  - segmented filename (volume 4 chapter 11)
+- `Ryan - PoD Pin Escapes\6687407439970-04-12- Tight Waist And Cross Face.mp4`
+  - segmented filename (volume 4 chapter 12)
+- `Ryan - PoD Pin Escapes\6687407439970-04-13- Tight Waist And Near Side Underhook.mp4`
+  - segmented filename (volume 4 chapter 13)
+- `Ryan - PoD Pin Escapes\6687407439970-05-01- Segue To North South.mp4`
+  - segmented filename (volume 5 chapter 1)
+- `Ryan - PoD Pin Escapes\6687407439970-05-02- _Escaping On The Transition Crossface Hand First.mp4`
+  - segmented filename (volume 5 chapter 2)
+- `Ryan - PoD Pin Escapes\6687407439970-05-03- _Escaping On The Transition Underhook Hand First.mp4`
+  - segmented filename (volume 5 chapter 3)
+- `Ryan - PoD Pin Escapes\6687407439970-05-04- _Escaping On The Transition Elbows Inside Shoulders.mp4`
+  - segmented filename (volume 5 chapter 4)
+- `Ryan - PoD Pin Escapes\6687407439970-05-05- _North South Body Positions.mp4`
+  - segmented filename (volume 5 chapter 5)
+- `Ryan - PoD Pin Escapes\6687407439970-05-06- _Opponent.mp4`
+  - segmented filename (volume 5 chapter 6)
+- `Ryan - PoD Pin Escapes\6687407439970-05-07- _The Threat Of Forcing Side Control.mp4`
+  - segmented filename (volume 5 chapter 7)
+- `Ryan - PoD Pin Escapes\6687407439970-05-08- _Opponent Has Knees Down Pommeling Hands Inside.mp4`
+  - segmented filename (volume 5 chapter 8)
+- `Ryan - PoD Pin Escapes\6687407439970-05-09- _Escaping With Knee Elbow Connection.mp4`
+  - segmented filename (volume 5 chapter 9)
+- `Ryan - PoD Pin Escapes\6687407439970-05-10- _High Tripod Pommeling Hands Inside.mp4`
+  - segmented filename (volume 5 chapter 10)
+- `Ryan - PoD Pin Escapes\6687407439970-05-11- _Forcing Side Control - Knees Up Vs Knees Down.mp4`
+  - segmented filename (volume 5 chapter 11)
+- `Ryan - PoD Pin Escapes\6687407439970-05-12- _Escaping As Opponent Moves From North South To Side Control.mp4`
+  - segmented filename (volume 5 chapter 12)
+- `Ryan - PoD Pin Escapes\6687407439970-05-13- _Side Control To Mount - Upper Body Positions.mp4`
+  - segmented filename (volume 5 chapter 13)
+- `Ryan - PoD Pin Escapes\6687407439970-05-14- _Escaping On The Transition -Top Head And Arm.mp4`
+  - segmented filename (volume 5 chapter 14)
+- `Ryan - PoD Pin Escapes\6687407439970-05-15- _Escaping On The Transition - Double Underhooks.mp4`
+  - segmented filename (volume 5 chapter 15)
+- `Ryan - PoD Pin Escapes\6687407439970-05-16- _Escaping On The Transition - Crossface.mp4`
+  - segmented filename (volume 5 chapter 16)
+- `Ryan - PoD Pin Escapes\6687407439970-06-01- Mount Escape Overview.mp4`
+  - segmented filename (volume 6 chapter 1)
+- `Ryan - PoD Pin Escapes\6687407439970-06-02- Opponent.mp4`
+  - segmented filename (volume 6 chapter 2)
+- `Ryan - PoD Pin Escapes\6687407439970-06-03- Bridging And Shrimping.mp4`
+  - segmented filename (volume 6 chapter 3)
+- `Ryan - PoD Pin Escapes\6687407439970-06-04- Basic Knee Elbow Escape.mp4`
+  - segmented filename (volume 6 chapter 4)
+- `Ryan - PoD Pin Escapes\6687407439970-06-05- Inside Elbow Escape.mp4`
+  - segmented filename (volume 6 chapter 5)
+- `Ryan - PoD Pin Escapes\6687407439970-06-06- Clearing Grapevines And Preventing And Underhook.mp4`
+  - segmented filename (volume 6 chapter 6)
+- `Ryan - PoD Pin Escapes\6687407439970-06-07- Separating Crossed Feet.mp4`
+  - segmented filename (volume 6 chapter 7)
+- `Ryan - PoD Pin Escapes\6687407439970-06-08- Knee Elbow Escape_inside Knee Elbow Escape Vs Crossface.mp4`
+  - segmented filename (volume 6 chapter 8)
+- `Ryan - PoD Pin Escapes\6687407439970-06-09- Intro To Kipping.mp4`
+  - segmented filename (volume 6 chapter 9)
+- `Ryan - PoD Pin Escapes\6687407439970-06-10- Solo Kipping Drill.mp4`
+  - segmented filename (volume 6 chapter 10)
+- `Ryan - PoD Pin Escapes\6687407439970-06-11- Types Of Kipping.mp4`
+  - segmented filename (volume 6 chapter 11)
+- `Ryan - PoD Pin Escapes\6687407439970-06-12- Kipping_knee Elbow Dilemma.mp4`
+  - segmented filename (volume 6 chapter 12)
+- `Ryan - PoD Pin Escapes\6687407439970-06-13- Basic Overhead Kip.mp4`
+  - segmented filename (volume 6 chapter 13)
+- `Ryan - PoD Pin Escapes\6687407439970-06-14- Kipping Over A Shoulder.mp4`
+  - segmented filename (volume 6 chapter 14)
+- `Ryan - PoD Pin Escapes\6687407439970-06-15- Side To Side Kipping.mp4`
+  - segmented filename (volume 6 chapter 15)
+- `Ryan - PoD Pin Escapes\6687407439970-06-16- Side Kipping When Opponent Counters Initial Kip.mp4`
+  - segmented filename (volume 6 chapter 16)
+- `Ryan - PoD Pin Escapes\6687407439970-06-17- Kipping To Counter A Long Hook.mp4`
+  - segmented filename (volume 6 chapter 17)
+- `Ryan - PoD Pin Escapes\6687407439970-06-18- Kipping To Counter One Knee Up.mp4`
+  - segmented filename (volume 6 chapter 18)
+- `Ryan - PoD Pin Escapes\6687407439970-07-01- A Deeper Dive Into Arm Positions.mp4`
+  - segmented filename (volume 7 chapter 1)
+- `Ryan - PoD Pin Escapes\6687407439970-07-02- Clearing An Underhook.mp4`
+  - segmented filename (volume 7 chapter 2)
+- `Ryan - PoD Pin Escapes\6687407439970-07-04- Side To Side Kipping Vs Underhook.mp4`
+  - segmented filename (volume 7 chapter 4)
+- `Ryan - PoD Pin Escapes\6687407439970-07-05- Same Concept When Opponent Switches To A Knee Up_long Hook.mp4`
+  - segmented filename (volume 7 chapter 5)
+- `Ryan - PoD Pin Escapes\6687407439970-07-06- Addressing Double Underhooks.mp4`
+  - segmented filename (volume 7 chapter 6)
+- `Ryan - PoD Pin Escapes\6687407439970-07-07- Addressing A High Mount.mp4`
+  - segmented filename (volume 7 chapter 7)
+- `Ryan - PoD Pin Escapes\6687407439970-07-08- Stripping A Figure Four Back Head And Arm.mp4`
+  - segmented filename (volume 7 chapter 8)
+- `Ryan - PoD Pin Escapes\6687407439970-07-09- Preventing A Dismount To Side Control.mp4`
+  - segmented filename (volume 7 chapter 9)
+- `Ryan - PoD Pin Escapes\6687407439970-07-10- Outro.mp4`
+  - segmented filename (volume 7 chapter 10)
+- `Ryan - PoD Pin Escapes\6687407439970-08-01- Intro_Roll 1 - Alex.mp4`
+  - segmented filename (volume 8 chapter 1)
+- `Ryan - PoD Pin Escapes\6687407439970-08-02- Roll 2 - Drew.mp4`
+  - segmented filename (volume 8 chapter 2)
+- `Ryan - PoD Pin Escapes\6687407439970-08-03- Roll 3 - Cristos.mp4`
+  - segmented filename (volume 8 chapter 3)
+- `Ryan - PoD Pin Escapes\6687407439970-08-04- Roll 4 - Alex.mp4`
+  - segmented filename (volume 8 chapter 4)
+- `Ryan - PoD Pin Escapes\6687407439970-08-05- Roll 5 - Drew.mp4`
+  - segmented filename (volume 8 chapter 5)
+- `Ryan - PoD Pin Escapes\6687407439970-09-01- Roll 1 - Alex.mp4`
+  - segmented filename (volume 9 chapter 1)
+- `Ryan - PoD Pin Escapes\6687407439970-09-02- Roll 2 - Drew.mp4`
+  - segmented filename (volume 9 chapter 2)
+- `Ryan - PoD Pin Escapes\6687407439970-09-03- Roll 3 - Cristos.mp4`
+  - segmented filename (volume 9 chapter 3)
+- `Ryan - PoD Pin Escapes\6687407439970-09-04- Roll 4 - Alex.mp4`
+  - segmented filename (volume 9 chapter 4)
+- `Ryan - PoD Pin Escapes\6687407439970-09-05- Roll 5 - Drew.mp4`
+  - segmented filename (volume 9 chapter 5)
+- `Tonon - Break Legs and Hearts\6558700273762-01-01- Introduction.mp4`
+  - segmented filename (volume 1 chapter 1)
+- `Tonon - Break Legs and Hearts\6558700273762-01-02- Introduction To Leg Entanglements.mp4`
+  - segmented filename (volume 1 chapter 2)
+- `Tonon - Break Legs and Hearts\6558700273762-01-03- Intro To Breaking Mechanics _ Lever Wedges And Fulcrum.mp4`
+  - segmented filename (volume 1 chapter 3)
+- `Tonon - Break Legs and Hearts\6558700273762-01-04- Toe Hold.mp4`
+  - segmented filename (volume 1 chapter 4)
+- `Tonon - Break Legs and Hearts\6558700273762-01-05- Outside Heel Hook.mp4`
+  - segmented filename (volume 1 chapter 5)
+- `Tonon - Break Legs and Hearts\6558700273762-01-06- Inverted Heel Hook.mp4`
+  - segmented filename (volume 1 chapter 6)
+- `Tonon - Break Legs and Hearts\6558700273762-01-07- Knee Bar.mp4`
+  - segmented filename (volume 1 chapter 7)
+- `Tonon - Break Legs and Hearts\6558700273762-01-08- Achilles Lock.mp4`
+  - segmented filename (volume 1 chapter 8)
+- `Tonon - Break Legs and Hearts\6558700273762-01-09- Intro To Backup Plans.mp4`
+  - segmented filename (volume 1 chapter 9)
+- `Tonon - Break Legs and Hearts\6558700273762-02-01- Irimi Ashi Garami _ Fundamentals Of Control.mp4`
+  - segmented filename (volume 2 chapter 1)
+- `Tonon - Break Legs and Hearts\6558700273762-02-02- The Power Of Kuzushi.mp4`
+  - segmented filename (volume 2 chapter 2)
+- `Tonon - Break Legs and Hearts\6558700273762-02-03- Advanced Kuzushi.mp4`
+  - segmented filename (volume 2 chapter 3)
+- `Tonon - Break Legs and Hearts\6558700273762-02-04- Tripod Sweeping.mp4`
+  - segmented filename (volume 2 chapter 4)
+- `Tonon - Break Legs and Hearts\6558700273762-02-05- Double Trouble.mp4`
+  - segmented filename (volume 2 chapter 5)
+- `Tonon - Break Legs and Hearts\6558700273762-03-01- Entries _ Entries From Seated.mp4`
+  - segmented filename (volume 3 chapter 1)
+- `Tonon - Break Legs and Hearts\6558700273762-03-02- Hand Fighting Entries From Seated.mp4`
+  - segmented filename (volume 3 chapter 2)
+- `Tonon - Break Legs and Hearts\6558700273762-03-03- Entries From Seated Knee Wrestling.mp4`
+  - segmented filename (volume 3 chapter 3)
+- `Tonon - Break Legs and Hearts\6558700273762-03-04- Standing Entries_ The Kick-out Problem.mp4`
+  - segmented filename (volume 3 chapter 4)
+- `Tonon - Break Legs and Hearts\6558700273762-03-05- Guard Passing Entries.mp4`
+  - segmented filename (volume 3 chapter 5)
+- `Tonon - Break Legs and Hearts\6558700273762-03-06- Top Closed Guard And Half Guard Entries.mp4`
+  - segmented filename (volume 3 chapter 6)
+- `Tonon - Break Legs and Hearts\6558700273762-03-07- Bottom Closed Guard Entries.mp4`
+  - segmented filename (volume 3 chapter 7)
+- `Tonon - Break Legs and Hearts\6558700273762-03-08- Elevation From The Knees.mp4`
+  - segmented filename (volume 3 chapter 8)
+- `Tonon - Break Legs and Hearts\6558700273762-03-09- Escapes From Bottom Pins.mp4`
+  - segmented filename (volume 3 chapter 9)
+- `Tonon - Break Legs and Hearts\6558700273762-03-10- The Inside Foot Pommel.mp4`
+  - segmented filename (volume 3 chapter 10)
+- `Tonon - Break Legs and Hearts\6558700273762-03-11- Attacks Vs Standing Opponents.mp4`
+  - segmented filename (volume 3 chapter 11)
+- `Tonon - Break Legs and Hearts\6558700273762-03-12- Outside Heel Hook.mp4`
+  - segmented filename (volume 3 chapter 12)
+- `Tonon - Break Legs and Hearts\6558700273762-03-13- Toe Hold Vs Heel Hook.mp4`
+  - segmented filename (volume 3 chapter 13)
+- `Tonon - Break Legs and Hearts\6558700273762-03-14- The Path To Cross Ashi Garami.mp4`
+  - segmented filename (volume 3 chapter 14)
+- `Tonon - Break Legs and Hearts\6558700273762-04-01- Outside Ashi Garami _ Advanced Breaking Mechanics.mp4`
+  - segmented filename (volume 4 chapter 1)
+- `Tonon - Break Legs and Hearts\6558700273762-04-02- One Arm One Leg Test.mp4`
+  - segmented filename (volume 4 chapter 2)
+- `Tonon - Break Legs and Hearts\6558700273762-04-03- Heel Knee Bar.mp4`
+  - segmented filename (volume 4 chapter 3)
+- `Tonon - Break Legs and Hearts\6558700273762-04-04- Back Exposure Problem.mp4`
+  - segmented filename (volume 4 chapter 4)
+- `Tonon - Break Legs and Hearts\6558700273762-04-05- Achilles Lock.mp4`
+  - segmented filename (volume 4 chapter 5)
+- `Tonon - Break Legs and Hearts\6558700273762-05-01- Cross Ashi Garami _ Cross Ashi Attacks.mp4`
+  - segmented filename (volume 5 chapter 1)
+- `Tonon - Break Legs and Hearts\6558700273762-05-02- Dragging Entries.mp4`
+  - segmented filename (volume 5 chapter 2)
+- `Tonon - Break Legs and Hearts\6558700273762-05-03- Kani Basami Entries _ Passing Backstep.mp4`
+  - segmented filename (volume 5 chapter 3)
+- `Tonon - Break Legs and Hearts\6558700273762-05-04- De La Riva.mp4`
+  - segmented filename (volume 5 chapter 4)
+- `Tonon - Break Legs and Hearts\6558700273762-05-05- Achilles Lock.mp4`
+  - segmented filename (volume 5 chapter 5)
+- `Tonon - Break Legs and Hearts\6558700273762-05-06- Passing Misdirection.mp4`
+  - segmented filename (volume 5 chapter 6)
+- `Tonon - Break Legs and Hearts\6558700273762-05-07- Unifying The System.mp4`
+  - segmented filename (volume 5 chapter 7)
+- `Tonon - Break Legs and Hearts\6558700273762-06-01- Elevation Entries _ Reverse X Guard.mp4`
+  - segmented filename (volume 6 chapter 1)
+- `Tonon - Break Legs and Hearts\6558700273762-06-02- Sumi Gaeshi.mp4`
+  - segmented filename (volume 6 chapter 2)
+- `Tonon - Break Legs and Hearts\6558700273762-06-03- Yoko Sumi Gaeshi.mp4`
+  - segmented filename (volume 6 chapter 3)
+- `Tonon - Break Legs and Hearts\6558700273762-06-04- Spinning Entries _ Passing.mp4`
+  - segmented filename (volume 6 chapter 4)
+- `Tonon - Break Legs and Hearts\6558700273762-06-05- Imanari Rolls.mp4`
+  - segmented filename (volume 6 chapter 5)
+- `Tonon - Break Legs and Hearts\6558700273762-06-06- Rolling Entries.mp4`
+  - segmented filename (volume 6 chapter 6)
+- `Tonon - Break Legs and Hearts\6558700273762-06-07- Heel First Or Ashi First_.mp4`
+  - segmented filename (volume 6 chapter 7)
+- `Tonon - Break Legs and Hearts\6558700273762-06-08- Knee Bar _ Advanced Breaking Mechanics.mp4`
+  - segmented filename (volume 6 chapter 8)
+- `Tonon - Break Legs and Hearts\6558700273762-06-09- Double Trouble.mp4`
+  - segmented filename (volume 6 chapter 9)
+- `Tonon - Break Legs and Hearts\6558700273762-06-10- Rotating Submissions.mp4`
+  - segmented filename (volume 6 chapter 10)
+- `Tonon - Break Legs and Hearts\6558700273762-06-11- Toe Hold.mp4`
+  - segmented filename (volume 6 chapter 11)
+- `Tonon - Break Legs and Hearts\6558700273762-06-12- Pommeling.mp4`
+  - segmented filename (volume 6 chapter 12)
+- `Tonon - Break Legs and Hearts\6558700273762-07-01- 50_50 - Scissor Me Timbers _ Advanced Breaking Mechanics.mp4`
+  - segmented filename (volume 7 chapter 1)
+- `Tonon - Break Legs and Hearts\6558700273762-07-02- Far Hip Ashi.mp4`
+  - segmented filename (volume 7 chapter 2)
+- `Tonon - Break Legs and Hearts\6558700273762-07-03- Back Side _ Introduction.mp4`
+  - segmented filename (volume 7 chapter 3)
+- `Tonon - Break Legs and Hearts\6558700273762-07-04- 5 Core Entanglements.mp4`
+  - segmented filename (volume 7 chapter 4)
+- `Tonon - Break Legs and Hearts\6558700273762-07-05- Scooping Entries.mp4`
+  - segmented filename (volume 7 chapter 5)
+- `Tonon - Break Legs and Hearts\6558700273762-07-06- Turnout Entries.mp4`
+  - segmented filename (volume 7 chapter 6)
+- `Tonon - Break Legs and Hearts\6558700273762-07-07- Rolling Entries And Inversions.mp4`
+  - segmented filename (volume 7 chapter 7)
+- `Tonon - Break Legs and Hearts\6558700273762-07-08- Cross Achilles Entries.mp4`
+  - segmented filename (volume 7 chapter 8)
+- `Tonon - Break Legs and Hearts\6558700273762-07-09- The Pesky Standing Opponent.mp4`
+  - segmented filename (volume 7 chapter 9)
+- `Tonon - Break Legs and Hearts\6558700273762-07-10- Standing Entries.mp4`
+  - segmented filename (volume 7 chapter 10)
+- `Tonon - Break Legs and Hearts\6558700273762-07-11- Estima Locks.mp4`
+  - segmented filename (volume 7 chapter 11)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-01- Introduction.mp4`
+  - segmented filename (volume 1 chapter 1)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-02- Open Guard - Grip Fighting Defense.mp4`
+  - segmented filename (volume 1 chapter 2)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-03- Grip Fighting Offense.mp4`
+  - segmented filename (volume 1 chapter 3)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-04- Clearing Leg Attachments.mp4`
+  - segmented filename (volume 1 chapter 4)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-05- Outside Passing Xpass.mp4`
+  - segmented filename (volume 1 chapter 5)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-06- Xpass Fail (Don.mp4`
+  - segmented filename (volume 1 chapter 6)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-07- Xpass Follow Up Kick Over.mp4`
+  - segmented filename (volume 1 chapter 7)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-08- Jumping X-Pass.mp4`
+  - segmented filename (volume 1 chapter 8)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-09- Wrestle Up Off Xpass.mp4`
+  - segmented filename (volume 1 chapter 9)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-10- Toreando.mp4`
+  - segmented filename (volume 1 chapter 10)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-11- Toreondo Follow Up.mp4`
+  - segmented filename (volume 1 chapter 11)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-12- Toreando Twitch.mp4`
+  - segmented filename (volume 1 chapter 12)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-13- Staple Leg Same Side Collar.mp4`
+  - segmented filename (volume 1 chapter 13)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-14- Stiff Arm.mp4`
+  - segmented filename (volume 1 chapter 14)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-15- Leg Weave Follow Up.mp4`
+  - segmented filename (volume 1 chapter 15)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-16- Step Over Back Chase.mp4`
+  - segmented filename (volume 1 chapter 16)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-17- Triangle The Legs to finish.mp4`
+  - segmented filename (volume 1 chapter 17)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-18- Toreando Frame Too Strong.mp4`
+  - segmented filename (volume 1 chapter 18)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-19- Windshield Wiping From Bridge.mp4`
+  - segmented filename (volume 1 chapter 19)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-20- Marcelo Sit Out.mp4`
+  - segmented filename (volume 1 chapter 20)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-01- Leg Drags.mp4`
+  - segmented filename (volume 2 chapter 1)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-02- Follow Up Failed Shelf.mp4`
+  - segmented filename (volume 2 chapter 2)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-03- Finishing.mp4`
+  - segmented filename (volume 2 chapter 3)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-04- Power Drag.mp4`
+  - segmented filename (volume 2 chapter 4)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-05- Diving Inside Leg Drag.mp4`
+  - segmented filename (volume 2 chapter 5)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-06- Back Step Through.mp4`
+  - segmented filename (volume 2 chapter 6)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-07- Chasing The Back.mp4`
+  - segmented filename (volume 2 chapter 7)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-08- Chasing The Back Stiff Arm.mp4`
+  - segmented filename (volume 2 chapter 8)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-09- Power Flip.mp4`
+  - segmented filename (volume 2 chapter 9)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-10- Same Side Lapel.mp4`
+  - segmented filename (volume 2 chapter 10)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-11- Leg Weave Finish.mp4`
+  - segmented filename (volume 2 chapter 11)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-12- Shin On Shin Leg Weave.mp4`
+  - segmented filename (volume 2 chapter 12)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-13- Hand Weave.mp4`
+  - segmented filename (volume 2 chapter 13)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-14- Same Side Pants.mp4`
+  - segmented filename (volume 2 chapter 14)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-01- Knee Slice.mp4`
+  - segmented filename (volume 3 chapter 1)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-02- Knee Slice Failure Details.mp4`
+  - segmented filename (volume 3 chapter 2)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-03- Knee Slice Details.mp4`
+  - segmented filename (volume 3 chapter 3)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-04- Shin On Shin.mp4`
+  - segmented filename (volume 3 chapter 4)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-05- Knee Slice Finishing.mp4`
+  - segmented filename (volume 3 chapter 5)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-06- Cross Collar Knee Slice.mp4`
+  - segmented filename (volume 3 chapter 6)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-07- Jumping.mp4`
+  - segmented filename (volume 3 chapter 7)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-01- Leg Weave.mp4`
+  - segmented filename (volume 4 chapter 1)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-02- Leg Weave Finish Variation.mp4`
+  - segmented filename (volume 4 chapter 2)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-03- Under Hook Variations.mp4`
+  - segmented filename (volume 4 chapter 3)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-04- Leg Weave Finish.mp4`
+  - segmented filename (volume 4 chapter 4)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-05- Step Over Finish.mp4`
+  - segmented filename (volume 4 chapter 5)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-06- Taking Mount.mp4`
+  - segmented filename (volume 4 chapter 6)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-07- Over Under Leg Weave.mp4`
+  - segmented filename (volume 4 chapter 7)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-08- Leg Weave Entry From Knee Shield.mp4`
+  - segmented filename (volume 4 chapter 8)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-01- De La Riva.mp4`
+  - segmented filename (volume 5 chapter 1)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-02- Knee Slice.mp4`
+  - segmented filename (volume 5 chapter 2)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-03- Leg Weave From De La Riva.mp4`
+  - segmented filename (volume 5 chapter 3)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-04- Folding Pass.mp4`
+  - segmented filename (volume 5 chapter 4)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-05- Sit Up Da La Riva.mp4`
+  - segmented filename (volume 5 chapter 5)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-06- De La Riva Spider And Lasso.mp4`
+  - segmented filename (volume 5 chapter 6)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-07- Leg Rag From De La Riva.mp4`
+  - segmented filename (volume 5 chapter 7)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-08- Defending Variations On The Ankle.mp4`
+  - segmented filename (volume 5 chapter 8)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-09- Hail De La Riva.mp4`
+  - segmented filename (volume 5 chapter 9)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-10- Contested De La Riva Hook.mp4`
+  - segmented filename (volume 5 chapter 10)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-11- De La Riva Wrestle Up.mp4`
+  - segmented filename (volume 5 chapter 11)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-12- The Suck Up.mp4`
+  - segmented filename (volume 5 chapter 12)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-01- Reverse De La Riva.mp4`
+  - segmented filename (volume 6 chapter 1)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-02- Controlling The Inversion.mp4`
+  - segmented filename (volume 6 chapter 2)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-03- Tucking Knee Under Knee.mp4`
+  - segmented filename (volume 6 chapter 3)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-04- X-pass.mp4`
+  - segmented filename (volume 6 chapter 4)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-05- Smash.mp4`
+  - segmented filename (volume 6 chapter 5)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-06- Circle The Foot.mp4`
+  - segmented filename (volume 6 chapter 6)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-07- Leg Weave Entry.mp4`
+  - segmented filename (volume 6 chapter 7)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-08- Buzzsaw Demonstration.mp4`
+  - segmented filename (volume 6 chapter 8)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-09- Narration Demonstration.mp4`
+  - segmented filename (volume 6 chapter 9)
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-10- Outro.mp4`
+  - segmented filename (volume 6 chapter 10)
+
+## Videos without named chapters
+
+287 item(s).
+
+- `Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E01 - Volume 1.mp4`
+  - 0 container chapters
+- `Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E02 - Volume 2.mp4`
+  - 0 container chapters
+- `Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E03 - Volume 3.mp4`
+  - 0 container chapters
+- `Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E04 - Volume 4.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-01-01- Introduction.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-01-02- Shoulder Crunch Sumi Gaeshi_ Order Of Operations  From Seated Position, Establish A Grip That Allows You To Get Your Opponent's Hand To The Floor And Gain An Underhook.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-01- Key Details Of Shoulder Crunch Sumi Gaeshi  High Elbow Shoulder To Shoulder.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-02- The Single Biggest Mistake That People Make With The Shoulder Crunch Grip.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-03- Removing The Posts.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-04- Forward Shift At An Angle To Prevent Pull Outs.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-01- Shifting Your Opponent Off The Centerline.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-02- How To Push On Your Opponent's Leg.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-03- The Crucial Use Of The Feet In Shoulder Crunch Sumi Gaeshi.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-04- Switching Side To Side.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-01- Troubleshooting Shoulder Crunch Sumi Gaeshi  The Single Biggest Weak Point Of The Shoulder Crunch Sumi Gaeshi And How To Overcome It.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-02- Question_ If The Pinch Headlock Is So Strong, Why Don't We Just Stay With That As Our Sweeping Grip.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-04- The Theory Of Closed Grips From Guard Position.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-05- The First Step Of The Shoulder Crunch Sumi Gaeshi Series_ Getting The Hand To The Floor.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-06- The 2 Stage Method Of Getting The Hand To The Floor.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-01- The 2 Most Common Defenses To Shoulder Crunch Sumi Gaeshi And How To Overcome Them  1. The Elbow Slip.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-02- 2. The Rock Back  Opponent Rocks Back On Knees  Triangle.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-03- Ude Gatame (Straight Arm Lock).mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-04- Juji Gatame.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-05- Hiza Guruma.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-01- Opponent On Posted Leg Or Standing  Ashi Garami To Outside Heel Hook.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-02- Ashi Garami To Kani Basami.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-03- Ashi Garami To Sweep Into Heel Hooks.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-04- Ankle Pick Cross Ashi.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-01- The Pinch Headlock Series  Hiza Guruma When Your Opponent Is On 2 Knees.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-02- Elbow On The Floor Pinch Headlock Sumi Gaeshi.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-03- Hand On The Floor Classic Sumi Gaeshi.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-04- Ude Gatame From Pinch Headlock.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-05- Pinch Headlock To Tight Waist Series.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-08-01- The High Lock Series  Sumi Gaeshi From High Lock.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-08-02- High Lock Into Standing Body Lock.mp4`
+  - 0 container chapters
+- `Danaher - MTM Shoulder Crunch\7394571878498-08-03- Putting It All Together.mp4`
+  - 0 container chapters
+- `Jones - Pendejo Guard\6634994040930-01-01- Introduction.mp4`
+  - 0 container chapters
+- `Jones - Pendejo Guard\6634994040930-01-02- Sweep 1.mp4`
+  - 0 container chapters
+- `Jones - Pendejo Guard\6634994040930-01-03- Off Balance To Wrestle Up.mp4`
+  - 0 container chapters
+- `Jones - Pendejo Guard\6634994040930-01-04- Pendulum Fuerte.mp4`
+  - 0 container chapters
+- `Jones - Pendejo Guard\6634994040930-01-05- False Reap.mp4`
+  - 0 container chapters
+- `Jones - Pendejo Guard\6634994040930-01-06- Never Before Seen Heel Hook Exposure.mp4`
+  - 0 container chapters
+- `Ryan - HiPerc Gi Passes\6839466721378-01-01- Intro.mp4`
+  - 0 container chapters
+- `Ryan - HiPerc Gi Passes\6839466721378-01-02- Spider Guard To Toreando.mp4`
+  - 0 container chapters
+- `Ryan - HiPerc Gi Passes\6839466721378-01-03- Toreando Footwork.mp4`
+  - 0 container chapters
+- `Ryan - HiPerc Gi Passes\6839466721378-01-04- Toreando_Leg Drag_X Pass Trilemma.mp4`
+  - 0 container chapters
+- `Ryan - HiPerc Gi Passes\6839466721378-01-05- Torreando_Longstep Dilemma.mp4`
+  - 0 container chapters
+- `Ryan - HiPerc Gi Passes\6839466721378-02-01- Long Step Into Half Guard.mp4`
+  - 0 container chapters
+- `Ryan - HiPerc Gi Passes\6839466721378-02-02- The Luxury Of A Free Hand.mp4`
+  - 0 container chapters
+- `Ryan - HiPerc Gi Passes\6839466721378-02-03- Basic Half Guard Passes.mp4`
+  - 0 container chapters
+- `Ryan - HiPerc Gi Passes\6839466721378-02-04- Outro.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-01-01- Intro To Pin Escapes.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-01-02- Carrying Body Weight - Torso Vs Frames.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-01-03- Extension Vs Contraction Concave Vs Convex Shoulders.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-01-04- Cranium Control.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-01-07- Escaping Knee On Belly.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-01-09- Intro To Escaping Side Control.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-01-10- Side Guard Wins The Game.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-01-11- Insertion Points.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-01-12- Inserting The Far Arm.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-01-13- Inserting Near Side Elbow.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-01-14- Escaping Vs A Naive Opponent.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-02-01- Actively Fighting The Far Elbow To Inside Position.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-02-02- Knee To Hip Contact.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-02-03- Side Guard.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-02-04- Basic Reguard From Side Guard.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-02-05- Recovering From Side Guard Into Clamp.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-02-06- Side Guard To Te Gatame.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-02-07- Te Gatame Into The Legs.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-02-08- Inserting A Far Side Underhook.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-02-09- Conservative Recovery.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-02-10- Underhook To Pinch Headlock_shoulder Crunch.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-02-11- Underhook To Half Guard.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-02-12- Underhook To Ashi Garami.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-02-13- Underhook To Wrestling Scenarios.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-03-01- Leg Grab_reguard Dilemma.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-03-02- Escaping With A Near Side Underhook.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-03-03- Opponent Crowds The Hips.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-03-04- Recovering With A Tricep Post.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-03-05- Tricep Post To Side Guard.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-03-06- Tricep Post To Overback Series.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-03-07- Countering A Reachback Crossface.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-03-08- Side Kipping.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-03-09- Side Kip Vs Posted Crossface Hand.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-03-10- Side Kip Vs Posted Underhook Hand.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-04-01- INTRO TO DOUBLE UNDERHOOKS.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-04-02- Escaping On The Pommel.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-04-03- Pommeling Back Inside.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-04-04- Intro To Opponent Hip Switching.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-04-08- Intro To Kesa Gatame.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-04-09- Escaping As Opponent Pommels.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-04-10- Escaping Fully Locked Kesa Gatame.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-04-11- Addressing Other Upper Body Grips - Body Lock.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-04-12- Tight Waist And Cross Face.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-04-13- Tight Waist And Near Side Underhook.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-01- Segue To North South.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-02- _Escaping On The Transition Crossface Hand First.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-03- _Escaping On The Transition Underhook Hand First.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-04- _Escaping On The Transition Elbows Inside Shoulders.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-05- _North South Body Positions.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-06- _Opponent.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-07- _The Threat Of Forcing Side Control.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-08- _Opponent Has Knees Down Pommeling Hands Inside.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-09- _Escaping With Knee Elbow Connection.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-10- _High Tripod Pommeling Hands Inside.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-11- _Forcing Side Control - Knees Up Vs Knees Down.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-12- _Escaping As Opponent Moves From North South To Side Control.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-13- _Side Control To Mount - Upper Body Positions.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-14- _Escaping On The Transition -Top Head And Arm.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-15- _Escaping On The Transition - Double Underhooks.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-05-16- _Escaping On The Transition - Crossface.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-01- Mount Escape Overview.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-02- Opponent.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-03- Bridging And Shrimping.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-04- Basic Knee Elbow Escape.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-05- Inside Elbow Escape.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-06- Clearing Grapevines And Preventing And Underhook.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-07- Separating Crossed Feet.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-08- Knee Elbow Escape_inside Knee Elbow Escape Vs Crossface.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-09- Intro To Kipping.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-10- Solo Kipping Drill.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-11- Types Of Kipping.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-12- Kipping_knee Elbow Dilemma.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-13- Basic Overhead Kip.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-14- Kipping Over A Shoulder.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-15- Side To Side Kipping.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-16- Side Kipping When Opponent Counters Initial Kip.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-17- Kipping To Counter A Long Hook.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-06-18- Kipping To Counter One Knee Up.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-07-01- A Deeper Dive Into Arm Positions.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-07-02- Clearing An Underhook.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-07-04- Side To Side Kipping Vs Underhook.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-07-05- Same Concept When Opponent Switches To A Knee Up_long Hook.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-07-06- Addressing Double Underhooks.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-07-07- Addressing A High Mount.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-07-08- Stripping A Figure Four Back Head And Arm.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-07-09- Preventing A Dismount To Side Control.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-07-10- Outro.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-08-01- Intro_Roll 1 - Alex.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-08-02- Roll 2 - Drew.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-08-03- Roll 3 - Cristos.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-08-04- Roll 4 - Alex.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-08-05- Roll 5 - Drew.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-09-01- Roll 1 - Alex.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-09-02- Roll 2 - Drew.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-09-03- Roll 3 - Cristos.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-09-04- Roll 4 - Alex.mp4`
+  - 0 container chapters
+- `Ryan - PoD Pin Escapes\6687407439970-09-05- Roll 5 - Drew.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-01-01- Introduction.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-01-02- Introduction To Leg Entanglements.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-01-03- Intro To Breaking Mechanics _ Lever Wedges And Fulcrum.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-01-04- Toe Hold.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-01-05- Outside Heel Hook.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-01-06- Inverted Heel Hook.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-01-07- Knee Bar.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-01-08- Achilles Lock.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-01-09- Intro To Backup Plans.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-02-01- Irimi Ashi Garami _ Fundamentals Of Control.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-02-02- The Power Of Kuzushi.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-02-03- Advanced Kuzushi.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-02-04- Tripod Sweeping.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-02-05- Double Trouble.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-03-01- Entries _ Entries From Seated.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-03-02- Hand Fighting Entries From Seated.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-03-03- Entries From Seated Knee Wrestling.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-03-04- Standing Entries_ The Kick-out Problem.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-03-05- Guard Passing Entries.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-03-06- Top Closed Guard And Half Guard Entries.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-03-07- Bottom Closed Guard Entries.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-03-08- Elevation From The Knees.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-03-09- Escapes From Bottom Pins.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-03-10- The Inside Foot Pommel.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-03-11- Attacks Vs Standing Opponents.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-03-12- Outside Heel Hook.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-03-13- Toe Hold Vs Heel Hook.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-03-14- The Path To Cross Ashi Garami.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-04-01- Outside Ashi Garami _ Advanced Breaking Mechanics.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-04-02- One Arm One Leg Test.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-04-03- Heel Knee Bar.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-04-04- Back Exposure Problem.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-04-05- Achilles Lock.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-05-01- Cross Ashi Garami _ Cross Ashi Attacks.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-05-02- Dragging Entries.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-05-03- Kani Basami Entries _ Passing Backstep.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-05-04- De La Riva.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-05-05- Achilles Lock.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-05-06- Passing Misdirection.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-05-07- Unifying The System.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-06-01- Elevation Entries _ Reverse X Guard.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-06-02- Sumi Gaeshi.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-06-03- Yoko Sumi Gaeshi.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-06-04- Spinning Entries _ Passing.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-06-05- Imanari Rolls.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-06-06- Rolling Entries.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-06-07- Heel First Or Ashi First_.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-06-08- Knee Bar _ Advanced Breaking Mechanics.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-06-09- Double Trouble.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-06-10- Rotating Submissions.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-06-11- Toe Hold.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-06-12- Pommeling.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-07-01- 50_50 - Scissor Me Timbers _ Advanced Breaking Mechanics.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-07-02- Far Hip Ashi.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-07-03- Back Side _ Introduction.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-07-04- 5 Core Entanglements.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-07-05- Scooping Entries.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-07-06- Turnout Entries.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-07-07- Rolling Entries And Inversions.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-07-08- Cross Achilles Entries.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-07-09- The Pesky Standing Opponent.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-07-10- Standing Entries.mp4`
+  - 0 container chapters
+- `Tonon - Break Legs and Hearts\6558700273762-07-11- Estima Locks.mp4`
+  - 0 container chapters
+- `Wardzinski - Bfly Rediscovered 2\Season 01\Butterfly Guard Re-Discovered 2 by Adam Wardzinski - S01E01 - Volume 1-pt2.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-01- Introduction.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-02- Open Guard - Grip Fighting Defense.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-03- Grip Fighting Offense.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-04- Clearing Leg Attachments.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-05- Outside Passing Xpass.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-06- Xpass Fail (Don.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-07- Xpass Follow Up Kick Over.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-08- Jumping X-Pass.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-09- Wrestle Up Off Xpass.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-10- Toreando.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-11- Toreondo Follow Up.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-12- Toreando Twitch.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-13- Staple Leg Same Side Collar.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-14- Stiff Arm.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-15- Leg Weave Follow Up.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-16- Step Over Back Chase.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-17- Triangle The Legs to finish.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-18- Toreando Frame Too Strong.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-19- Windshield Wiping From Bridge.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-20- Marcelo Sit Out.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-01- Leg Drags.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-02- Follow Up Failed Shelf.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-03- Finishing.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-04- Power Drag.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-05- Diving Inside Leg Drag.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-06- Back Step Through.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-07- Chasing The Back.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-08- Chasing The Back Stiff Arm.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-09- Power Flip.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-10- Same Side Lapel.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-11- Leg Weave Finish.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-12- Shin On Shin Leg Weave.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-13- Hand Weave.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-14- Same Side Pants.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-01- Knee Slice.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-02- Knee Slice Failure Details.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-03- Knee Slice Details.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-04- Shin On Shin.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-05- Knee Slice Finishing.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-06- Cross Collar Knee Slice.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-07- Jumping.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-01- Leg Weave.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-02- Leg Weave Finish Variation.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-03- Under Hook Variations.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-04- Leg Weave Finish.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-05- Step Over Finish.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-06- Taking Mount.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-07- Over Under Leg Weave.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-08- Leg Weave Entry From Knee Shield.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-01- De La Riva.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-02- Knee Slice.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-03- Leg Weave From De La Riva.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-04- Folding Pass.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-05- Sit Up Da La Riva.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-06- De La Riva Spider And Lasso.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-07- Leg Rag From De La Riva.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-08- Defending Variations On The Ankle.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-09- Hail De La Riva.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-10- Contested De La Riva Hook.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-11- De La Riva Wrestle Up.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-12- The Suck Up.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-01- Reverse De La Riva.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-02- Controlling The Inversion.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-03- Tucking Knee Under Knee.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-04- X-pass.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-05- Smash.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-06- Circle The Foot.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-07- Leg Weave Entry.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-08- Buzzsaw Demonstration.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-09- Narration Demonstration.mp4`
+  - 0 container chapters
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-10- Outro.mp4`
+  - 0 container chapters
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol1.mp4`
+  - 0 container chapters
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol2.mp4`
+  - 0 container chapters
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol3.mp4`
+  - 0 container chapters
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol4.mp4`
+  - 0 container chapters
+
+## Videos without NFO metadata
+
+283 item(s).
+
+- `Danaher - MTM Shoulder Crunch\7394571878498-01-01- Introduction.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-01-02- Shoulder Crunch Sumi Gaeshi_ Order Of Operations  From Seated Position, Establish A Grip That Allows You To Get Your Opponent's Hand To The Floor And Gain An Underhook.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-01- Key Details Of Shoulder Crunch Sumi Gaeshi  High Elbow Shoulder To Shoulder.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-02- The Single Biggest Mistake That People Make With The Shoulder Crunch Grip.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-03- Removing The Posts.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-04- Forward Shift At An Angle To Prevent Pull Outs.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-01- Shifting Your Opponent Off The Centerline.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-02- How To Push On Your Opponent's Leg.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-03- The Crucial Use Of The Feet In Shoulder Crunch Sumi Gaeshi.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-04- Switching Side To Side.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-01- Troubleshooting Shoulder Crunch Sumi Gaeshi  The Single Biggest Weak Point Of The Shoulder Crunch Sumi Gaeshi And How To Overcome It.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-02- Question_ If The Pinch Headlock Is So Strong, Why Don't We Just Stay With That As Our Sweeping Grip.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-04- The Theory Of Closed Grips From Guard Position.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-05- The First Step Of The Shoulder Crunch Sumi Gaeshi Series_ Getting The Hand To The Floor.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-06- The 2 Stage Method Of Getting The Hand To The Floor.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-01- The 2 Most Common Defenses To Shoulder Crunch Sumi Gaeshi And How To Overcome Them  1. The Elbow Slip.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-02- 2. The Rock Back  Opponent Rocks Back On Knees  Triangle.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-03- Ude Gatame (Straight Arm Lock).mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-04- Juji Gatame.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-05- Hiza Guruma.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-01- Opponent On Posted Leg Or Standing  Ashi Garami To Outside Heel Hook.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-02- Ashi Garami To Kani Basami.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-03- Ashi Garami To Sweep Into Heel Hooks.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-04- Ankle Pick Cross Ashi.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-01- The Pinch Headlock Series  Hiza Guruma When Your Opponent Is On 2 Knees.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-02- Elbow On The Floor Pinch Headlock Sumi Gaeshi.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-03- Hand On The Floor Classic Sumi Gaeshi.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-04- Ude Gatame From Pinch Headlock.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-05- Pinch Headlock To Tight Waist Series.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-08-01- The High Lock Series  Sumi Gaeshi From High Lock.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-08-02- High Lock Into Standing Body Lock.mp4`
+  - no sidecar .nfo
+- `Danaher - MTM Shoulder Crunch\7394571878498-08-03- Putting It All Together.mp4`
+  - no sidecar .nfo
+- `Jones - Pendejo Guard\6634994040930-01-01- Introduction.mp4`
+  - no sidecar .nfo
+- `Jones - Pendejo Guard\6634994040930-01-02- Sweep 1.mp4`
+  - no sidecar .nfo
+- `Jones - Pendejo Guard\6634994040930-01-03- Off Balance To Wrestle Up.mp4`
+  - no sidecar .nfo
+- `Jones - Pendejo Guard\6634994040930-01-04- Pendulum Fuerte.mp4`
+  - no sidecar .nfo
+- `Jones - Pendejo Guard\6634994040930-01-05- False Reap.mp4`
+  - no sidecar .nfo
+- `Jones - Pendejo Guard\6634994040930-01-06- Never Before Seen Heel Hook Exposure.mp4`
+  - no sidecar .nfo
+- `Ryan - HiPerc Gi Passes\6839466721378-01-01- Intro.mp4`
+  - no sidecar .nfo
+- `Ryan - HiPerc Gi Passes\6839466721378-01-02- Spider Guard To Toreando.mp4`
+  - no sidecar .nfo
+- `Ryan - HiPerc Gi Passes\6839466721378-01-03- Toreando Footwork.mp4`
+  - no sidecar .nfo
+- `Ryan - HiPerc Gi Passes\6839466721378-01-04- Toreando_Leg Drag_X Pass Trilemma.mp4`
+  - no sidecar .nfo
+- `Ryan - HiPerc Gi Passes\6839466721378-01-05- Torreando_Longstep Dilemma.mp4`
+  - no sidecar .nfo
+- `Ryan - HiPerc Gi Passes\6839466721378-02-01- Long Step Into Half Guard.mp4`
+  - no sidecar .nfo
+- `Ryan - HiPerc Gi Passes\6839466721378-02-02- The Luxury Of A Free Hand.mp4`
+  - no sidecar .nfo
+- `Ryan - HiPerc Gi Passes\6839466721378-02-03- Basic Half Guard Passes.mp4`
+  - no sidecar .nfo
+- `Ryan - HiPerc Gi Passes\6839466721378-02-04- Outro.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-01-01- Intro To Pin Escapes.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-01-02- Carrying Body Weight - Torso Vs Frames.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-01-03- Extension Vs Contraction Concave Vs Convex Shoulders.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-01-04- Cranium Control.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-01-07- Escaping Knee On Belly.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-01-09- Intro To Escaping Side Control.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-01-10- Side Guard Wins The Game.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-01-11- Insertion Points.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-01-12- Inserting The Far Arm.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-01-13- Inserting Near Side Elbow.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-01-14- Escaping Vs A Naive Opponent.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-02-01- Actively Fighting The Far Elbow To Inside Position.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-02-02- Knee To Hip Contact.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-02-03- Side Guard.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-02-04- Basic Reguard From Side Guard.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-02-05- Recovering From Side Guard Into Clamp.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-02-06- Side Guard To Te Gatame.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-02-07- Te Gatame Into The Legs.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-02-08- Inserting A Far Side Underhook.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-02-09- Conservative Recovery.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-02-10- Underhook To Pinch Headlock_shoulder Crunch.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-02-11- Underhook To Half Guard.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-02-12- Underhook To Ashi Garami.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-02-13- Underhook To Wrestling Scenarios.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-03-01- Leg Grab_reguard Dilemma.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-03-02- Escaping With A Near Side Underhook.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-03-03- Opponent Crowds The Hips.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-03-04- Recovering With A Tricep Post.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-03-05- Tricep Post To Side Guard.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-03-06- Tricep Post To Overback Series.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-03-07- Countering A Reachback Crossface.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-03-08- Side Kipping.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-03-09- Side Kip Vs Posted Crossface Hand.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-03-10- Side Kip Vs Posted Underhook Hand.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-04-01- INTRO TO DOUBLE UNDERHOOKS.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-04-02- Escaping On The Pommel.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-04-03- Pommeling Back Inside.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-04-04- Intro To Opponent Hip Switching.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-04-08- Intro To Kesa Gatame.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-04-09- Escaping As Opponent Pommels.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-04-10- Escaping Fully Locked Kesa Gatame.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-04-11- Addressing Other Upper Body Grips - Body Lock.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-04-12- Tight Waist And Cross Face.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-04-13- Tight Waist And Near Side Underhook.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-01- Segue To North South.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-02- _Escaping On The Transition Crossface Hand First.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-03- _Escaping On The Transition Underhook Hand First.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-04- _Escaping On The Transition Elbows Inside Shoulders.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-05- _North South Body Positions.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-06- _Opponent.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-07- _The Threat Of Forcing Side Control.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-08- _Opponent Has Knees Down Pommeling Hands Inside.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-09- _Escaping With Knee Elbow Connection.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-10- _High Tripod Pommeling Hands Inside.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-11- _Forcing Side Control - Knees Up Vs Knees Down.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-12- _Escaping As Opponent Moves From North South To Side Control.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-13- _Side Control To Mount - Upper Body Positions.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-14- _Escaping On The Transition -Top Head And Arm.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-15- _Escaping On The Transition - Double Underhooks.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-05-16- _Escaping On The Transition - Crossface.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-01- Mount Escape Overview.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-02- Opponent.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-03- Bridging And Shrimping.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-04- Basic Knee Elbow Escape.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-05- Inside Elbow Escape.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-06- Clearing Grapevines And Preventing And Underhook.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-07- Separating Crossed Feet.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-08- Knee Elbow Escape_inside Knee Elbow Escape Vs Crossface.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-09- Intro To Kipping.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-10- Solo Kipping Drill.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-11- Types Of Kipping.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-12- Kipping_knee Elbow Dilemma.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-13- Basic Overhead Kip.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-14- Kipping Over A Shoulder.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-15- Side To Side Kipping.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-16- Side Kipping When Opponent Counters Initial Kip.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-17- Kipping To Counter A Long Hook.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-06-18- Kipping To Counter One Knee Up.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-07-01- A Deeper Dive Into Arm Positions.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-07-02- Clearing An Underhook.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-07-04- Side To Side Kipping Vs Underhook.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-07-05- Same Concept When Opponent Switches To A Knee Up_long Hook.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-07-06- Addressing Double Underhooks.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-07-07- Addressing A High Mount.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-07-08- Stripping A Figure Four Back Head And Arm.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-07-09- Preventing A Dismount To Side Control.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-07-10- Outro.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-08-01- Intro_Roll 1 - Alex.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-08-02- Roll 2 - Drew.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-08-03- Roll 3 - Cristos.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-08-04- Roll 4 - Alex.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-08-05- Roll 5 - Drew.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-09-01- Roll 1 - Alex.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-09-02- Roll 2 - Drew.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-09-03- Roll 3 - Cristos.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-09-04- Roll 4 - Alex.mp4`
+  - no sidecar .nfo
+- `Ryan - PoD Pin Escapes\6687407439970-09-05- Roll 5 - Drew.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-01-01- Introduction.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-01-02- Introduction To Leg Entanglements.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-01-03- Intro To Breaking Mechanics _ Lever Wedges And Fulcrum.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-01-04- Toe Hold.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-01-05- Outside Heel Hook.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-01-06- Inverted Heel Hook.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-01-07- Knee Bar.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-01-08- Achilles Lock.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-01-09- Intro To Backup Plans.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-02-01- Irimi Ashi Garami _ Fundamentals Of Control.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-02-02- The Power Of Kuzushi.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-02-03- Advanced Kuzushi.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-02-04- Tripod Sweeping.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-02-05- Double Trouble.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-03-01- Entries _ Entries From Seated.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-03-02- Hand Fighting Entries From Seated.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-03-03- Entries From Seated Knee Wrestling.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-03-04- Standing Entries_ The Kick-out Problem.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-03-05- Guard Passing Entries.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-03-06- Top Closed Guard And Half Guard Entries.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-03-07- Bottom Closed Guard Entries.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-03-08- Elevation From The Knees.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-03-09- Escapes From Bottom Pins.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-03-10- The Inside Foot Pommel.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-03-11- Attacks Vs Standing Opponents.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-03-12- Outside Heel Hook.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-03-13- Toe Hold Vs Heel Hook.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-03-14- The Path To Cross Ashi Garami.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-04-01- Outside Ashi Garami _ Advanced Breaking Mechanics.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-04-02- One Arm One Leg Test.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-04-03- Heel Knee Bar.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-04-04- Back Exposure Problem.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-04-05- Achilles Lock.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-05-01- Cross Ashi Garami _ Cross Ashi Attacks.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-05-02- Dragging Entries.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-05-03- Kani Basami Entries _ Passing Backstep.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-05-04- De La Riva.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-05-05- Achilles Lock.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-05-06- Passing Misdirection.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-05-07- Unifying The System.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-06-01- Elevation Entries _ Reverse X Guard.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-06-02- Sumi Gaeshi.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-06-03- Yoko Sumi Gaeshi.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-06-04- Spinning Entries _ Passing.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-06-05- Imanari Rolls.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-06-06- Rolling Entries.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-06-07- Heel First Or Ashi First_.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-06-08- Knee Bar _ Advanced Breaking Mechanics.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-06-09- Double Trouble.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-06-10- Rotating Submissions.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-06-11- Toe Hold.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-06-12- Pommeling.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-07-01- 50_50 - Scissor Me Timbers _ Advanced Breaking Mechanics.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-07-02- Far Hip Ashi.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-07-03- Back Side _ Introduction.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-07-04- 5 Core Entanglements.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-07-05- Scooping Entries.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-07-06- Turnout Entries.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-07-07- Rolling Entries And Inversions.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-07-08- Cross Achilles Entries.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-07-09- The Pesky Standing Opponent.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-07-10- Standing Entries.mp4`
+  - no sidecar .nfo
+- `Tonon - Break Legs and Hearts\6558700273762-07-11- Estima Locks.mp4`
+  - no sidecar .nfo
+- `Wardzinski - Bfly Rediscovered 2\Season 01\Butterfly Guard Re-Discovered 2 by Adam Wardzinski - S01E01 - Volume 1-pt1.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-01- Introduction.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-02- Open Guard - Grip Fighting Defense.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-03- Grip Fighting Offense.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-04- Clearing Leg Attachments.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-05- Outside Passing Xpass.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-06- Xpass Fail (Don.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-07- Xpass Follow Up Kick Over.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-08- Jumping X-Pass.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-09- Wrestle Up Off Xpass.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-10- Toreando.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-11- Toreondo Follow Up.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-12- Toreando Twitch.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-13- Staple Leg Same Side Collar.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-14- Stiff Arm.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-15- Leg Weave Follow Up.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-16- Step Over Back Chase.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-17- Triangle The Legs to finish.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-18- Toreando Frame Too Strong.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-19- Windshield Wiping From Bridge.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-20- Marcelo Sit Out.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-01- Leg Drags.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-02- Follow Up Failed Shelf.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-03- Finishing.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-04- Power Drag.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-05- Diving Inside Leg Drag.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-06- Back Step Through.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-07- Chasing The Back.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-08- Chasing The Back Stiff Arm.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-09- Power Flip.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-10- Same Side Lapel.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-11- Leg Weave Finish.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-12- Shin On Shin Leg Weave.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-13- Hand Weave.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-14- Same Side Pants.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-01- Knee Slice.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-02- Knee Slice Failure Details.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-03- Knee Slice Details.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-04- Shin On Shin.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-05- Knee Slice Finishing.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-06- Cross Collar Knee Slice.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-07- Jumping.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-01- Leg Weave.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-02- Leg Weave Finish Variation.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-03- Under Hook Variations.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-04- Leg Weave Finish.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-05- Step Over Finish.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-06- Taking Mount.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-07- Over Under Leg Weave.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-08- Leg Weave Entry From Knee Shield.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-01- De La Riva.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-02- Knee Slice.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-03- Leg Weave From De La Riva.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-04- Folding Pass.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-05- Sit Up Da La Riva.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-06- De La Riva Spider And Lasso.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-07- Leg Rag From De La Riva.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-08- Defending Variations On The Ankle.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-09- Hail De La Riva.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-10- Contested De La Riva Hook.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-11- De La Riva Wrestle Up.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-12- The Suck Up.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-01- Reverse De La Riva.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-02- Controlling The Inversion.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-03- Tucking Knee Under Knee.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-04- X-pass.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-05- Smash.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-06- Circle The Foot.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-07- Leg Weave Entry.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-08- Buzzsaw Demonstration.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-09- Narration Demonstration.mp4`
+  - no sidecar .nfo
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-10- Outro.mp4`
+  - no sidecar .nfo
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol1.mp4`
+  - no sidecar .nfo
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol2.mp4`
+  - no sidecar .nfo
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol3.mp4`
+  - no sidecar .nfo
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol4.mp4`
+  - no sidecar .nfo
+
+## Instructionals without NFO metadata
+
+8 item(s).
+
+- `Danaher - MTM Shoulder Crunch`
+  - no tvshow.nfo
+- `Jones - Pendejo Guard`
+  - no tvshow.nfo
+- `Polish Power Inside Passing By Adam Wardzinski`
+  - no tvshow.nfo
+- `Ryan - HiPerc Gi Passes`
+  - no tvshow.nfo
+- `Ryan - PoD Pin Escapes`
+  - no tvshow.nfo
+- `Tonon - Break Legs and Hearts`
+  - no tvshow.nfo
+- `Wiltse - Buzzsaw GI Passing`
+  - no tvshow.nfo
+- `Wiltse - Daisy Fresh Knee Slice`
+  - no tvshow.nfo
+
+## Videos that do not play or open with errors
+
+1 item(s).
+
+- `Ryan - PoD Pin Escapes\6687407439970-08-05- Roll 5 - Drew.mp4`
+  - [null @ 00000179de745280] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 25 >= 25
+
+## Videos without corresponding transcripts
+
+290 item(s).
+
+- `Cornelius - Worm Guard\Season 01\Worm Guard Legacy by Keenan Cornelius - S01E01 - Volume 1.webm`
+  - missing Cornelius - Worm Guard\Season 01\Worm Guard Legacy by Keenan Cornelius - S01E01 - Volume 1.json
+- `Cornelius - Worm Guard\Season 01\Worm Guard Legacy by Keenan Cornelius - S01E02 - Volume 2.webm`
+  - missing Cornelius - Worm Guard\Season 01\Worm Guard Legacy by Keenan Cornelius - S01E02 - Volume 2.json
+- `Cornelius - Worm Guard\Season 01\Worm Guard Legacy by Keenan Cornelius - S01E03 - Bonus 1.webm`
+  - missing Cornelius - Worm Guard\Season 01\Worm Guard Legacy by Keenan Cornelius - S01E03 - Bonus 1.json
+- `Cornelius - Worm Guard\Season 01\Worm Guard Legacy by Keenan Cornelius - S01E04 - Bonus 2.webm`
+  - missing Cornelius - Worm Guard\Season 01\Worm Guard Legacy by Keenan Cornelius - S01E04 - Bonus 2.json
+- `Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E01 - Volume 1.mp4`
+  - missing Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E01 - Volume 1.json
+- `Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E02 - Volume 2.mp4`
+  - missing Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E02 - Volume 2.json
+- `Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E03 - Volume 3.mp4`
+  - missing Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E03 - Volume 3.json
+- `Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E04 - Volume 4.mp4`
+  - missing Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E04 - Volume 4.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-01-01- Introduction.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-01-01- Introduction.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-01-02- Shoulder Crunch Sumi Gaeshi_ Order Of Operations  From Seated Position, Establish A Grip That Allows You To Get Your Opponent's Hand To The Floor And Gain An Underhook.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-01-02- Shoulder Crunch Sumi Gaeshi_ Order Of Operations  From Seated Position, Establish A Grip That Allows You To Get Your Opponent's Hand To The Floor And Gain An Underhook.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-01- Key Details Of Shoulder Crunch Sumi Gaeshi  High Elbow Shoulder To Shoulder.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-02-01- Key Details Of Shoulder Crunch Sumi Gaeshi  High Elbow Shoulder To Shoulder.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-02- The Single Biggest Mistake That People Make With The Shoulder Crunch Grip.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-02-02- The Single Biggest Mistake That People Make With The Shoulder Crunch Grip.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-03- Removing The Posts.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-02-03- Removing The Posts.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-04- Forward Shift At An Angle To Prevent Pull Outs.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-02-04- Forward Shift At An Angle To Prevent Pull Outs.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-01- Shifting Your Opponent Off The Centerline.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-03-01- Shifting Your Opponent Off The Centerline.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-02- How To Push On Your Opponent's Leg.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-03-02- How To Push On Your Opponent's Leg.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-03- The Crucial Use Of The Feet In Shoulder Crunch Sumi Gaeshi.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-03-03- The Crucial Use Of The Feet In Shoulder Crunch Sumi Gaeshi.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-04- Switching Side To Side.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-03-04- Switching Side To Side.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-01- Troubleshooting Shoulder Crunch Sumi Gaeshi  The Single Biggest Weak Point Of The Shoulder Crunch Sumi Gaeshi And How To Overcome It.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-04-01- Troubleshooting Shoulder Crunch Sumi Gaeshi  The Single Biggest Weak Point Of The Shoulder Crunch Sumi Gaeshi And How To Overcome It.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-02- Question_ If The Pinch Headlock Is So Strong, Why Don't We Just Stay With That As Our Sweeping Grip.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-04-02- Question_ If The Pinch Headlock Is So Strong, Why Don't We Just Stay With That As Our Sweeping Grip.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-04- The Theory Of Closed Grips From Guard Position.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-04-04- The Theory Of Closed Grips From Guard Position.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-05- The First Step Of The Shoulder Crunch Sumi Gaeshi Series_ Getting The Hand To The Floor.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-04-05- The First Step Of The Shoulder Crunch Sumi Gaeshi Series_ Getting The Hand To The Floor.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-06- The 2 Stage Method Of Getting The Hand To The Floor.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-04-06- The 2 Stage Method Of Getting The Hand To The Floor.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-01- The 2 Most Common Defenses To Shoulder Crunch Sumi Gaeshi And How To Overcome Them  1. The Elbow Slip.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-05-01- The 2 Most Common Defenses To Shoulder Crunch Sumi Gaeshi And How To Overcome Them  1. The Elbow Slip.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-02- 2. The Rock Back  Opponent Rocks Back On Knees  Triangle.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-05-02- 2. The Rock Back  Opponent Rocks Back On Knees  Triangle.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-03- Ude Gatame (Straight Arm Lock).mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-05-03- Ude Gatame (Straight Arm Lock).json
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-04- Juji Gatame.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-05-04- Juji Gatame.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-05- Hiza Guruma.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-05-05- Hiza Guruma.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-01- Opponent On Posted Leg Or Standing  Ashi Garami To Outside Heel Hook.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-06-01- Opponent On Posted Leg Or Standing  Ashi Garami To Outside Heel Hook.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-02- Ashi Garami To Kani Basami.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-06-02- Ashi Garami To Kani Basami.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-03- Ashi Garami To Sweep Into Heel Hooks.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-06-03- Ashi Garami To Sweep Into Heel Hooks.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-04- Ankle Pick Cross Ashi.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-06-04- Ankle Pick Cross Ashi.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-01- The Pinch Headlock Series  Hiza Guruma When Your Opponent Is On 2 Knees.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-07-01- The Pinch Headlock Series  Hiza Guruma When Your Opponent Is On 2 Knees.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-02- Elbow On The Floor Pinch Headlock Sumi Gaeshi.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-07-02- Elbow On The Floor Pinch Headlock Sumi Gaeshi.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-03- Hand On The Floor Classic Sumi Gaeshi.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-07-03- Hand On The Floor Classic Sumi Gaeshi.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-04- Ude Gatame From Pinch Headlock.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-07-04- Ude Gatame From Pinch Headlock.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-05- Pinch Headlock To Tight Waist Series.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-07-05- Pinch Headlock To Tight Waist Series.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-08-01- The High Lock Series  Sumi Gaeshi From High Lock.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-08-01- The High Lock Series  Sumi Gaeshi From High Lock.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-08-02- High Lock Into Standing Body Lock.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-08-02- High Lock Into Standing Body Lock.json
+- `Danaher - MTM Shoulder Crunch\7394571878498-08-03- Putting It All Together.mp4`
+  - missing Danaher - MTM Shoulder Crunch\7394571878498-08-03- Putting It All Together.json
+- `Hall - Hip Bump\Season 01\The Hip Bump by Ryan Hall - S01E01 - Volume 1.mp4`
+  - missing Hall - Hip Bump\Season 01\The Hip Bump by Ryan Hall - S01E01 - Volume 1.json
+- `Hall - Hip Bump\Season 01\The Hip Bump by Ryan Hall - S01E02 - Volume 2.mp4`
+  - missing Hall - Hip Bump\Season 01\The Hip Bump by Ryan Hall - S01E02 - Volume 2.json
+- `Hall - Hip Bump\Season 01\The Hip Bump by Ryan Hall - S01E03 - Volume 3.mp4`
+  - missing Hall - Hip Bump\Season 01\The Hip Bump by Ryan Hall - S01E03 - Volume 3.json
+- `Hall - Hip Bump\Season 01\The Hip Bump by Ryan Hall - S01E04 - Volume 4.mp4`
+  - missing Hall - Hip Bump\Season 01\The Hip Bump by Ryan Hall - S01E04 - Volume 4.json
+- `Jones - Pendejo Guard\6634994040930-01-01- Introduction.mp4`
+  - missing Jones - Pendejo Guard\6634994040930-01-01- Introduction.json
+- `Jones - Pendejo Guard\6634994040930-01-02- Sweep 1.mp4`
+  - missing Jones - Pendejo Guard\6634994040930-01-02- Sweep 1.json
+- `Jones - Pendejo Guard\6634994040930-01-03- Off Balance To Wrestle Up.mp4`
+  - missing Jones - Pendejo Guard\6634994040930-01-03- Off Balance To Wrestle Up.json
+- `Jones - Pendejo Guard\6634994040930-01-04- Pendulum Fuerte.mp4`
+  - missing Jones - Pendejo Guard\6634994040930-01-04- Pendulum Fuerte.json
+- `Jones - Pendejo Guard\6634994040930-01-05- False Reap.mp4`
+  - missing Jones - Pendejo Guard\6634994040930-01-05- False Reap.json
+- `Jones - Pendejo Guard\6634994040930-01-06- Never Before Seen Heel Hook Exposure.mp4`
+  - missing Jones - Pendejo Guard\6634994040930-01-06- Never Before Seen Heel Hook Exposure.json
+- `Ryan - HiPerc Gi Passes\6839466721378-01-01- Intro.mp4`
+  - missing Ryan - HiPerc Gi Passes\6839466721378-01-01- Intro.json
+- `Ryan - HiPerc Gi Passes\6839466721378-01-02- Spider Guard To Toreando.mp4`
+  - missing Ryan - HiPerc Gi Passes\6839466721378-01-02- Spider Guard To Toreando.json
+- `Ryan - HiPerc Gi Passes\6839466721378-01-03- Toreando Footwork.mp4`
+  - missing Ryan - HiPerc Gi Passes\6839466721378-01-03- Toreando Footwork.json
+- `Ryan - HiPerc Gi Passes\6839466721378-01-04- Toreando_Leg Drag_X Pass Trilemma.mp4`
+  - missing Ryan - HiPerc Gi Passes\6839466721378-01-04- Toreando_Leg Drag_X Pass Trilemma.json
+- `Ryan - HiPerc Gi Passes\6839466721378-01-05- Torreando_Longstep Dilemma.mp4`
+  - missing Ryan - HiPerc Gi Passes\6839466721378-01-05- Torreando_Longstep Dilemma.json
+- `Ryan - HiPerc Gi Passes\6839466721378-02-01- Long Step Into Half Guard.mp4`
+  - missing Ryan - HiPerc Gi Passes\6839466721378-02-01- Long Step Into Half Guard.json
+- `Ryan - HiPerc Gi Passes\6839466721378-02-02- The Luxury Of A Free Hand.mp4`
+  - missing Ryan - HiPerc Gi Passes\6839466721378-02-02- The Luxury Of A Free Hand.json
+- `Ryan - HiPerc Gi Passes\6839466721378-02-03- Basic Half Guard Passes.mp4`
+  - missing Ryan - HiPerc Gi Passes\6839466721378-02-03- Basic Half Guard Passes.json
+- `Ryan - HiPerc Gi Passes\6839466721378-02-04- Outro.mp4`
+  - missing Ryan - HiPerc Gi Passes\6839466721378-02-04- Outro.json
+- `Ryan - PoD Pin Escapes\6687407439970-01-01- Intro To Pin Escapes.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-01-01- Intro To Pin Escapes.json
+- `Ryan - PoD Pin Escapes\6687407439970-01-02- Carrying Body Weight - Torso Vs Frames.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-01-02- Carrying Body Weight - Torso Vs Frames.json
+- `Ryan - PoD Pin Escapes\6687407439970-01-03- Extension Vs Contraction Concave Vs Convex Shoulders.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-01-03- Extension Vs Contraction Concave Vs Convex Shoulders.json
+- `Ryan - PoD Pin Escapes\6687407439970-01-04- Cranium Control.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-01-04- Cranium Control.json
+- `Ryan - PoD Pin Escapes\6687407439970-01-07- Escaping Knee On Belly.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-01-07- Escaping Knee On Belly.json
+- `Ryan - PoD Pin Escapes\6687407439970-01-09- Intro To Escaping Side Control.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-01-09- Intro To Escaping Side Control.json
+- `Ryan - PoD Pin Escapes\6687407439970-01-10- Side Guard Wins The Game.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-01-10- Side Guard Wins The Game.json
+- `Ryan - PoD Pin Escapes\6687407439970-01-11- Insertion Points.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-01-11- Insertion Points.json
+- `Ryan - PoD Pin Escapes\6687407439970-01-12- Inserting The Far Arm.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-01-12- Inserting The Far Arm.json
+- `Ryan - PoD Pin Escapes\6687407439970-01-13- Inserting Near Side Elbow.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-01-13- Inserting Near Side Elbow.json
+- `Ryan - PoD Pin Escapes\6687407439970-01-14- Escaping Vs A Naive Opponent.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-01-14- Escaping Vs A Naive Opponent.json
+- `Ryan - PoD Pin Escapes\6687407439970-02-01- Actively Fighting The Far Elbow To Inside Position.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-02-01- Actively Fighting The Far Elbow To Inside Position.json
+- `Ryan - PoD Pin Escapes\6687407439970-02-02- Knee To Hip Contact.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-02-02- Knee To Hip Contact.json
+- `Ryan - PoD Pin Escapes\6687407439970-02-03- Side Guard.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-02-03- Side Guard.json
+- `Ryan - PoD Pin Escapes\6687407439970-02-04- Basic Reguard From Side Guard.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-02-04- Basic Reguard From Side Guard.json
+- `Ryan - PoD Pin Escapes\6687407439970-02-05- Recovering From Side Guard Into Clamp.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-02-05- Recovering From Side Guard Into Clamp.json
+- `Ryan - PoD Pin Escapes\6687407439970-02-06- Side Guard To Te Gatame.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-02-06- Side Guard To Te Gatame.json
+- `Ryan - PoD Pin Escapes\6687407439970-02-07- Te Gatame Into The Legs.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-02-07- Te Gatame Into The Legs.json
+- `Ryan - PoD Pin Escapes\6687407439970-02-08- Inserting A Far Side Underhook.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-02-08- Inserting A Far Side Underhook.json
+- `Ryan - PoD Pin Escapes\6687407439970-02-09- Conservative Recovery.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-02-09- Conservative Recovery.json
+- `Ryan - PoD Pin Escapes\6687407439970-02-10- Underhook To Pinch Headlock_shoulder Crunch.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-02-10- Underhook To Pinch Headlock_shoulder Crunch.json
+- `Ryan - PoD Pin Escapes\6687407439970-02-11- Underhook To Half Guard.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-02-11- Underhook To Half Guard.json
+- `Ryan - PoD Pin Escapes\6687407439970-02-12- Underhook To Ashi Garami.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-02-12- Underhook To Ashi Garami.json
+- `Ryan - PoD Pin Escapes\6687407439970-02-13- Underhook To Wrestling Scenarios.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-02-13- Underhook To Wrestling Scenarios.json
+- `Ryan - PoD Pin Escapes\6687407439970-03-01- Leg Grab_reguard Dilemma.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-03-01- Leg Grab_reguard Dilemma.json
+- `Ryan - PoD Pin Escapes\6687407439970-03-02- Escaping With A Near Side Underhook.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-03-02- Escaping With A Near Side Underhook.json
+- `Ryan - PoD Pin Escapes\6687407439970-03-03- Opponent Crowds The Hips.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-03-03- Opponent Crowds The Hips.json
+- `Ryan - PoD Pin Escapes\6687407439970-03-04- Recovering With A Tricep Post.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-03-04- Recovering With A Tricep Post.json
+- `Ryan - PoD Pin Escapes\6687407439970-03-05- Tricep Post To Side Guard.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-03-05- Tricep Post To Side Guard.json
+- `Ryan - PoD Pin Escapes\6687407439970-03-06- Tricep Post To Overback Series.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-03-06- Tricep Post To Overback Series.json
+- `Ryan - PoD Pin Escapes\6687407439970-03-07- Countering A Reachback Crossface.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-03-07- Countering A Reachback Crossface.json
+- `Ryan - PoD Pin Escapes\6687407439970-03-08- Side Kipping.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-03-08- Side Kipping.json
+- `Ryan - PoD Pin Escapes\6687407439970-03-09- Side Kip Vs Posted Crossface Hand.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-03-09- Side Kip Vs Posted Crossface Hand.json
+- `Ryan - PoD Pin Escapes\6687407439970-03-10- Side Kip Vs Posted Underhook Hand.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-03-10- Side Kip Vs Posted Underhook Hand.json
+- `Ryan - PoD Pin Escapes\6687407439970-04-01- INTRO TO DOUBLE UNDERHOOKS.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-04-01- INTRO TO DOUBLE UNDERHOOKS.json
+- `Ryan - PoD Pin Escapes\6687407439970-04-02- Escaping On The Pommel.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-04-02- Escaping On The Pommel.json
+- `Ryan - PoD Pin Escapes\6687407439970-04-03- Pommeling Back Inside.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-04-03- Pommeling Back Inside.json
+- `Ryan - PoD Pin Escapes\6687407439970-04-04- Intro To Opponent Hip Switching.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-04-04- Intro To Opponent Hip Switching.json
+- `Ryan - PoD Pin Escapes\6687407439970-04-08- Intro To Kesa Gatame.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-04-08- Intro To Kesa Gatame.json
+- `Ryan - PoD Pin Escapes\6687407439970-04-09- Escaping As Opponent Pommels.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-04-09- Escaping As Opponent Pommels.json
+- `Ryan - PoD Pin Escapes\6687407439970-04-10- Escaping Fully Locked Kesa Gatame.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-04-10- Escaping Fully Locked Kesa Gatame.json
+- `Ryan - PoD Pin Escapes\6687407439970-04-11- Addressing Other Upper Body Grips - Body Lock.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-04-11- Addressing Other Upper Body Grips - Body Lock.json
+- `Ryan - PoD Pin Escapes\6687407439970-04-12- Tight Waist And Cross Face.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-04-12- Tight Waist And Cross Face.json
+- `Ryan - PoD Pin Escapes\6687407439970-04-13- Tight Waist And Near Side Underhook.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-04-13- Tight Waist And Near Side Underhook.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-01- Segue To North South.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-01- Segue To North South.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-02- _Escaping On The Transition Crossface Hand First.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-02- _Escaping On The Transition Crossface Hand First.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-03- _Escaping On The Transition Underhook Hand First.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-03- _Escaping On The Transition Underhook Hand First.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-04- _Escaping On The Transition Elbows Inside Shoulders.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-04- _Escaping On The Transition Elbows Inside Shoulders.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-05- _North South Body Positions.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-05- _North South Body Positions.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-06- _Opponent.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-06- _Opponent.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-07- _The Threat Of Forcing Side Control.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-07- _The Threat Of Forcing Side Control.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-08- _Opponent Has Knees Down Pommeling Hands Inside.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-08- _Opponent Has Knees Down Pommeling Hands Inside.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-09- _Escaping With Knee Elbow Connection.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-09- _Escaping With Knee Elbow Connection.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-10- _High Tripod Pommeling Hands Inside.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-10- _High Tripod Pommeling Hands Inside.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-11- _Forcing Side Control - Knees Up Vs Knees Down.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-11- _Forcing Side Control - Knees Up Vs Knees Down.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-12- _Escaping As Opponent Moves From North South To Side Control.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-12- _Escaping As Opponent Moves From North South To Side Control.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-13- _Side Control To Mount - Upper Body Positions.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-13- _Side Control To Mount - Upper Body Positions.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-14- _Escaping On The Transition -Top Head And Arm.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-14- _Escaping On The Transition -Top Head And Arm.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-15- _Escaping On The Transition - Double Underhooks.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-15- _Escaping On The Transition - Double Underhooks.json
+- `Ryan - PoD Pin Escapes\6687407439970-05-16- _Escaping On The Transition - Crossface.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-05-16- _Escaping On The Transition - Crossface.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-01- Mount Escape Overview.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-01- Mount Escape Overview.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-02- Opponent.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-02- Opponent.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-03- Bridging And Shrimping.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-03- Bridging And Shrimping.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-04- Basic Knee Elbow Escape.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-04- Basic Knee Elbow Escape.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-05- Inside Elbow Escape.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-05- Inside Elbow Escape.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-06- Clearing Grapevines And Preventing And Underhook.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-06- Clearing Grapevines And Preventing And Underhook.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-07- Separating Crossed Feet.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-07- Separating Crossed Feet.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-08- Knee Elbow Escape_inside Knee Elbow Escape Vs Crossface.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-08- Knee Elbow Escape_inside Knee Elbow Escape Vs Crossface.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-09- Intro To Kipping.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-09- Intro To Kipping.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-10- Solo Kipping Drill.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-10- Solo Kipping Drill.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-11- Types Of Kipping.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-11- Types Of Kipping.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-12- Kipping_knee Elbow Dilemma.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-12- Kipping_knee Elbow Dilemma.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-13- Basic Overhead Kip.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-13- Basic Overhead Kip.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-14- Kipping Over A Shoulder.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-14- Kipping Over A Shoulder.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-15- Side To Side Kipping.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-15- Side To Side Kipping.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-16- Side Kipping When Opponent Counters Initial Kip.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-16- Side Kipping When Opponent Counters Initial Kip.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-17- Kipping To Counter A Long Hook.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-17- Kipping To Counter A Long Hook.json
+- `Ryan - PoD Pin Escapes\6687407439970-06-18- Kipping To Counter One Knee Up.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-06-18- Kipping To Counter One Knee Up.json
+- `Ryan - PoD Pin Escapes\6687407439970-07-01- A Deeper Dive Into Arm Positions.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-07-01- A Deeper Dive Into Arm Positions.json
+- `Ryan - PoD Pin Escapes\6687407439970-07-02- Clearing An Underhook.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-07-02- Clearing An Underhook.json
+- `Ryan - PoD Pin Escapes\6687407439970-07-04- Side To Side Kipping Vs Underhook.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-07-04- Side To Side Kipping Vs Underhook.json
+- `Ryan - PoD Pin Escapes\6687407439970-07-05- Same Concept When Opponent Switches To A Knee Up_long Hook.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-07-05- Same Concept When Opponent Switches To A Knee Up_long Hook.json
+- `Ryan - PoD Pin Escapes\6687407439970-07-06- Addressing Double Underhooks.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-07-06- Addressing Double Underhooks.json
+- `Ryan - PoD Pin Escapes\6687407439970-07-07- Addressing A High Mount.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-07-07- Addressing A High Mount.json
+- `Ryan - PoD Pin Escapes\6687407439970-07-08- Stripping A Figure Four Back Head And Arm.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-07-08- Stripping A Figure Four Back Head And Arm.json
+- `Ryan - PoD Pin Escapes\6687407439970-07-09- Preventing A Dismount To Side Control.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-07-09- Preventing A Dismount To Side Control.json
+- `Ryan - PoD Pin Escapes\6687407439970-07-10- Outro.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-07-10- Outro.json
+- `Ryan - PoD Pin Escapes\6687407439970-08-01- Intro_Roll 1 - Alex.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-08-01- Intro_Roll 1 - Alex.json
+- `Ryan - PoD Pin Escapes\6687407439970-08-02- Roll 2 - Drew.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-08-02- Roll 2 - Drew.json
+- `Ryan - PoD Pin Escapes\6687407439970-08-03- Roll 3 - Cristos.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-08-03- Roll 3 - Cristos.json
+- `Ryan - PoD Pin Escapes\6687407439970-08-04- Roll 4 - Alex.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-08-04- Roll 4 - Alex.json
+- `Ryan - PoD Pin Escapes\6687407439970-08-05- Roll 5 - Drew.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-08-05- Roll 5 - Drew.json
+- `Ryan - PoD Pin Escapes\6687407439970-09-01- Roll 1 - Alex.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-09-01- Roll 1 - Alex.json
+- `Ryan - PoD Pin Escapes\6687407439970-09-02- Roll 2 - Drew.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-09-02- Roll 2 - Drew.json
+- `Ryan - PoD Pin Escapes\6687407439970-09-03- Roll 3 - Cristos.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-09-03- Roll 3 - Cristos.json
+- `Ryan - PoD Pin Escapes\6687407439970-09-04- Roll 4 - Alex.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-09-04- Roll 4 - Alex.json
+- `Ryan - PoD Pin Escapes\6687407439970-09-05- Roll 5 - Drew.mp4`
+  - missing Ryan - PoD Pin Escapes\6687407439970-09-05- Roll 5 - Drew.json
+- `Tonon - Break Legs and Hearts\6558700273762-01-01- Introduction.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-01-01- Introduction.json
+- `Tonon - Break Legs and Hearts\6558700273762-01-02- Introduction To Leg Entanglements.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-01-02- Introduction To Leg Entanglements.json
+- `Tonon - Break Legs and Hearts\6558700273762-01-03- Intro To Breaking Mechanics _ Lever Wedges And Fulcrum.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-01-03- Intro To Breaking Mechanics _ Lever Wedges And Fulcrum.json
+- `Tonon - Break Legs and Hearts\6558700273762-01-04- Toe Hold.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-01-04- Toe Hold.json
+- `Tonon - Break Legs and Hearts\6558700273762-01-05- Outside Heel Hook.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-01-05- Outside Heel Hook.json
+- `Tonon - Break Legs and Hearts\6558700273762-01-06- Inverted Heel Hook.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-01-06- Inverted Heel Hook.json
+- `Tonon - Break Legs and Hearts\6558700273762-01-07- Knee Bar.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-01-07- Knee Bar.json
+- `Tonon - Break Legs and Hearts\6558700273762-01-08- Achilles Lock.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-01-08- Achilles Lock.json
+- `Tonon - Break Legs and Hearts\6558700273762-01-09- Intro To Backup Plans.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-01-09- Intro To Backup Plans.json
+- `Tonon - Break Legs and Hearts\6558700273762-02-01- Irimi Ashi Garami _ Fundamentals Of Control.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-02-01- Irimi Ashi Garami _ Fundamentals Of Control.json
+- `Tonon - Break Legs and Hearts\6558700273762-02-02- The Power Of Kuzushi.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-02-02- The Power Of Kuzushi.json
+- `Tonon - Break Legs and Hearts\6558700273762-02-03- Advanced Kuzushi.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-02-03- Advanced Kuzushi.json
+- `Tonon - Break Legs and Hearts\6558700273762-02-04- Tripod Sweeping.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-02-04- Tripod Sweeping.json
+- `Tonon - Break Legs and Hearts\6558700273762-02-05- Double Trouble.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-02-05- Double Trouble.json
+- `Tonon - Break Legs and Hearts\6558700273762-03-01- Entries _ Entries From Seated.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-03-01- Entries _ Entries From Seated.json
+- `Tonon - Break Legs and Hearts\6558700273762-03-02- Hand Fighting Entries From Seated.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-03-02- Hand Fighting Entries From Seated.json
+- `Tonon - Break Legs and Hearts\6558700273762-03-03- Entries From Seated Knee Wrestling.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-03-03- Entries From Seated Knee Wrestling.json
+- `Tonon - Break Legs and Hearts\6558700273762-03-04- Standing Entries_ The Kick-out Problem.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-03-04- Standing Entries_ The Kick-out Problem.json
+- `Tonon - Break Legs and Hearts\6558700273762-03-05- Guard Passing Entries.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-03-05- Guard Passing Entries.json
+- `Tonon - Break Legs and Hearts\6558700273762-03-06- Top Closed Guard And Half Guard Entries.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-03-06- Top Closed Guard And Half Guard Entries.json
+- `Tonon - Break Legs and Hearts\6558700273762-03-07- Bottom Closed Guard Entries.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-03-07- Bottom Closed Guard Entries.json
+- `Tonon - Break Legs and Hearts\6558700273762-03-08- Elevation From The Knees.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-03-08- Elevation From The Knees.json
+- `Tonon - Break Legs and Hearts\6558700273762-03-09- Escapes From Bottom Pins.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-03-09- Escapes From Bottom Pins.json
+- `Tonon - Break Legs and Hearts\6558700273762-03-10- The Inside Foot Pommel.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-03-10- The Inside Foot Pommel.json
+- `Tonon - Break Legs and Hearts\6558700273762-03-11- Attacks Vs Standing Opponents.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-03-11- Attacks Vs Standing Opponents.json
+- `Tonon - Break Legs and Hearts\6558700273762-03-12- Outside Heel Hook.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-03-12- Outside Heel Hook.json
+- `Tonon - Break Legs and Hearts\6558700273762-03-13- Toe Hold Vs Heel Hook.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-03-13- Toe Hold Vs Heel Hook.json
+- `Tonon - Break Legs and Hearts\6558700273762-03-14- The Path To Cross Ashi Garami.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-03-14- The Path To Cross Ashi Garami.json
+- `Tonon - Break Legs and Hearts\6558700273762-04-01- Outside Ashi Garami _ Advanced Breaking Mechanics.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-04-01- Outside Ashi Garami _ Advanced Breaking Mechanics.json
+- `Tonon - Break Legs and Hearts\6558700273762-04-02- One Arm One Leg Test.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-04-02- One Arm One Leg Test.json
+- `Tonon - Break Legs and Hearts\6558700273762-04-03- Heel Knee Bar.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-04-03- Heel Knee Bar.json
+- `Tonon - Break Legs and Hearts\6558700273762-04-04- Back Exposure Problem.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-04-04- Back Exposure Problem.json
+- `Tonon - Break Legs and Hearts\6558700273762-04-05- Achilles Lock.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-04-05- Achilles Lock.json
+- `Tonon - Break Legs and Hearts\6558700273762-05-01- Cross Ashi Garami _ Cross Ashi Attacks.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-05-01- Cross Ashi Garami _ Cross Ashi Attacks.json
+- `Tonon - Break Legs and Hearts\6558700273762-05-02- Dragging Entries.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-05-02- Dragging Entries.json
+- `Tonon - Break Legs and Hearts\6558700273762-05-03- Kani Basami Entries _ Passing Backstep.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-05-03- Kani Basami Entries _ Passing Backstep.json
+- `Tonon - Break Legs and Hearts\6558700273762-05-04- De La Riva.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-05-04- De La Riva.json
+- `Tonon - Break Legs and Hearts\6558700273762-05-05- Achilles Lock.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-05-05- Achilles Lock.json
+- `Tonon - Break Legs and Hearts\6558700273762-05-06- Passing Misdirection.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-05-06- Passing Misdirection.json
+- `Tonon - Break Legs and Hearts\6558700273762-05-07- Unifying The System.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-05-07- Unifying The System.json
+- `Tonon - Break Legs and Hearts\6558700273762-06-01- Elevation Entries _ Reverse X Guard.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-06-01- Elevation Entries _ Reverse X Guard.json
+- `Tonon - Break Legs and Hearts\6558700273762-06-02- Sumi Gaeshi.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-06-02- Sumi Gaeshi.json
+- `Tonon - Break Legs and Hearts\6558700273762-06-03- Yoko Sumi Gaeshi.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-06-03- Yoko Sumi Gaeshi.json
+- `Tonon - Break Legs and Hearts\6558700273762-06-04- Spinning Entries _ Passing.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-06-04- Spinning Entries _ Passing.json
+- `Tonon - Break Legs and Hearts\6558700273762-06-05- Imanari Rolls.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-06-05- Imanari Rolls.json
+- `Tonon - Break Legs and Hearts\6558700273762-06-06- Rolling Entries.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-06-06- Rolling Entries.json
+- `Tonon - Break Legs and Hearts\6558700273762-06-07- Heel First Or Ashi First_.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-06-07- Heel First Or Ashi First_.json
+- `Tonon - Break Legs and Hearts\6558700273762-06-08- Knee Bar _ Advanced Breaking Mechanics.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-06-08- Knee Bar _ Advanced Breaking Mechanics.json
+- `Tonon - Break Legs and Hearts\6558700273762-06-09- Double Trouble.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-06-09- Double Trouble.json
+- `Tonon - Break Legs and Hearts\6558700273762-06-10- Rotating Submissions.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-06-10- Rotating Submissions.json
+- `Tonon - Break Legs and Hearts\6558700273762-06-11- Toe Hold.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-06-11- Toe Hold.json
+- `Tonon - Break Legs and Hearts\6558700273762-06-12- Pommeling.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-06-12- Pommeling.json
+- `Tonon - Break Legs and Hearts\6558700273762-07-01- 50_50 - Scissor Me Timbers _ Advanced Breaking Mechanics.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-07-01- 50_50 - Scissor Me Timbers _ Advanced Breaking Mechanics.json
+- `Tonon - Break Legs and Hearts\6558700273762-07-02- Far Hip Ashi.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-07-02- Far Hip Ashi.json
+- `Tonon - Break Legs and Hearts\6558700273762-07-03- Back Side _ Introduction.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-07-03- Back Side _ Introduction.json
+- `Tonon - Break Legs and Hearts\6558700273762-07-04- 5 Core Entanglements.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-07-04- 5 Core Entanglements.json
+- `Tonon - Break Legs and Hearts\6558700273762-07-05- Scooping Entries.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-07-05- Scooping Entries.json
+- `Tonon - Break Legs and Hearts\6558700273762-07-06- Turnout Entries.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-07-06- Turnout Entries.json
+- `Tonon - Break Legs and Hearts\6558700273762-07-07- Rolling Entries And Inversions.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-07-07- Rolling Entries And Inversions.json
+- `Tonon - Break Legs and Hearts\6558700273762-07-08- Cross Achilles Entries.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-07-08- Cross Achilles Entries.json
+- `Tonon - Break Legs and Hearts\6558700273762-07-09- The Pesky Standing Opponent.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-07-09- The Pesky Standing Opponent.json
+- `Tonon - Break Legs and Hearts\6558700273762-07-10- Standing Entries.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-07-10- Standing Entries.json
+- `Tonon - Break Legs and Hearts\6558700273762-07-11- Estima Locks.mp4`
+  - missing Tonon - Break Legs and Hearts\6558700273762-07-11- Estima Locks.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-01- Introduction.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-01- Introduction.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-02- Open Guard - Grip Fighting Defense.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-02- Open Guard - Grip Fighting Defense.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-03- Grip Fighting Offense.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-03- Grip Fighting Offense.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-04- Clearing Leg Attachments.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-04- Clearing Leg Attachments.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-05- Outside Passing Xpass.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-05- Outside Passing Xpass.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-06- Xpass Fail (Don.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-06- Xpass Fail (Don.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-07- Xpass Follow Up Kick Over.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-07- Xpass Follow Up Kick Over.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-08- Jumping X-Pass.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-08- Jumping X-Pass.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-09- Wrestle Up Off Xpass.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-09- Wrestle Up Off Xpass.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-10- Toreando.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-10- Toreando.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-11- Toreondo Follow Up.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-11- Toreondo Follow Up.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-12- Toreando Twitch.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-12- Toreando Twitch.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-13- Staple Leg Same Side Collar.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-13- Staple Leg Same Side Collar.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-14- Stiff Arm.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-14- Stiff Arm.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-15- Leg Weave Follow Up.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-15- Leg Weave Follow Up.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-16- Step Over Back Chase.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-16- Step Over Back Chase.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-17- Triangle The Legs to finish.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-17- Triangle The Legs to finish.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-18- Toreando Frame Too Strong.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-18- Toreando Frame Too Strong.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-19- Windshield Wiping From Bridge.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-19- Windshield Wiping From Bridge.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-20- Marcelo Sit Out.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-01-20- Marcelo Sit Out.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-01- Leg Drags.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-02-01- Leg Drags.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-02- Follow Up Failed Shelf.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-02-02- Follow Up Failed Shelf.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-03- Finishing.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-02-03- Finishing.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-04- Power Drag.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-02-04- Power Drag.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-05- Diving Inside Leg Drag.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-02-05- Diving Inside Leg Drag.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-06- Back Step Through.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-02-06- Back Step Through.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-07- Chasing The Back.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-02-07- Chasing The Back.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-08- Chasing The Back Stiff Arm.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-02-08- Chasing The Back Stiff Arm.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-09- Power Flip.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-02-09- Power Flip.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-10- Same Side Lapel.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-02-10- Same Side Lapel.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-11- Leg Weave Finish.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-02-11- Leg Weave Finish.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-12- Shin On Shin Leg Weave.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-02-12- Shin On Shin Leg Weave.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-13- Hand Weave.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-02-13- Hand Weave.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-14- Same Side Pants.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-02-14- Same Side Pants.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-01- Knee Slice.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-03-01- Knee Slice.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-02- Knee Slice Failure Details.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-03-02- Knee Slice Failure Details.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-03- Knee Slice Details.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-03-03- Knee Slice Details.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-04- Shin On Shin.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-03-04- Shin On Shin.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-05- Knee Slice Finishing.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-03-05- Knee Slice Finishing.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-06- Cross Collar Knee Slice.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-03-06- Cross Collar Knee Slice.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-07- Jumping.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-03-07- Jumping.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-01- Leg Weave.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-04-01- Leg Weave.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-02- Leg Weave Finish Variation.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-04-02- Leg Weave Finish Variation.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-03- Under Hook Variations.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-04-03- Under Hook Variations.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-04- Leg Weave Finish.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-04-04- Leg Weave Finish.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-05- Step Over Finish.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-04-05- Step Over Finish.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-06- Taking Mount.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-04-06- Taking Mount.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-07- Over Under Leg Weave.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-04-07- Over Under Leg Weave.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-08- Leg Weave Entry From Knee Shield.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-04-08- Leg Weave Entry From Knee Shield.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-01- De La Riva.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-05-01- De La Riva.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-02- Knee Slice.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-05-02- Knee Slice.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-03- Leg Weave From De La Riva.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-05-03- Leg Weave From De La Riva.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-04- Folding Pass.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-05-04- Folding Pass.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-05- Sit Up Da La Riva.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-05-05- Sit Up Da La Riva.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-06- De La Riva Spider And Lasso.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-05-06- De La Riva Spider And Lasso.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-07- Leg Rag From De La Riva.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-05-07- Leg Rag From De La Riva.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-08- Defending Variations On The Ankle.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-05-08- Defending Variations On The Ankle.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-09- Hail De La Riva.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-05-09- Hail De La Riva.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-10- Contested De La Riva Hook.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-05-10- Contested De La Riva Hook.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-11- De La Riva Wrestle Up.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-05-11- De La Riva Wrestle Up.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-12- The Suck Up.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-05-12- The Suck Up.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-01- Reverse De La Riva.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-06-01- Reverse De La Riva.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-02- Controlling The Inversion.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-06-02- Controlling The Inversion.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-03- Tucking Knee Under Knee.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-06-03- Tucking Knee Under Knee.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-04- X-pass.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-06-04- X-pass.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-05- Smash.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-06-05- Smash.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-06- Circle The Foot.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-06-06- Circle The Foot.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-07- Leg Weave Entry.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-06-07- Leg Weave Entry.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-08- Buzzsaw Demonstration.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-06-08- Buzzsaw Demonstration.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-09- Narration Demonstration.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-06-09- Narration Demonstration.json
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-10- Outro.mp4`
+  - missing Wiltse - Buzzsaw GI Passing\4542444568674-06-10- Outro.json
+
+## Videos without complete prepare
+
+323 item(s).
+
+- `Cornelius - Worm Guard\Season 01\Worm Guard Legacy by Keenan Cornelius - S01E01 - Volume 1.webm`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Cornelius - Worm Guard\Season 01\Worm Guard Legacy by Keenan Cornelius - S01E02 - Volume 2.webm`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Cornelius - Worm Guard\Season 01\Worm Guard Legacy by Keenan Cornelius - S01E03 - Bonus 1.webm`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Cornelius - Worm Guard\Season 01\Worm Guard Legacy by Keenan Cornelius - S01E04 - Bonus 2.webm`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E01 - Volume 1.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E02 - Volume 2.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E03 - Volume 3.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Couch - Finishing Leg Locks\Season 01\Finishing Leg Locks by Jacob Couch - S01E04 - Volume 4.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF Guard Retention\Season 01\Guard Retention BJJ Fundamentals - Go Further Faster by John Danaher - S01E02 - The Big Picture and 2 Requirements of Guard Retention.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF HG Pass Pins\Season 01\Half Guard Passing and Dynamic Pins BJJ Fundamentals - Go Further Faster by John Danaher - S01E01 - Introduction.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF HG Pass Pins\Season 01\Half Guard Passing and Dynamic Pins BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Passing Half Guard.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF Passing\Season 01\Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E02 - Knee Post Method of Opening Closed Guard.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF Passing\Season 01\Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E03 - Double Under, Over Under, and Knee Cut Passes.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF Passing\Season 01\Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E04 - Toreando Pass.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF Passing\Season 01\Passing the Guard BJJ Fundamentals - Go Further Faster by John Danaher - S01E06 - Break Connections and Maintain Top Position.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF Strangles Turtle\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E05 - Ezekiel Strangle.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - GFF Strangles Turtle\Season 01\Strangles & Turtle Breakdowns BJJ Fundamentals - Go Further Faster by John Danaher - S01E06 - Turtle Breakdowns.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-01-01- Introduction.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-01-02- Shoulder Crunch Sumi Gaeshi_ Order Of Operations  From Seated Position, Establish A Grip That Allows You To Get Your Opponent's Hand To The Floor And Gain An Underhook.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-01- Key Details Of Shoulder Crunch Sumi Gaeshi  High Elbow Shoulder To Shoulder.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-02- The Single Biggest Mistake That People Make With The Shoulder Crunch Grip.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-03- Removing The Posts.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-02-04- Forward Shift At An Angle To Prevent Pull Outs.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-01- Shifting Your Opponent Off The Centerline.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-02- How To Push On Your Opponent's Leg.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-03- The Crucial Use Of The Feet In Shoulder Crunch Sumi Gaeshi.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-03-04- Switching Side To Side.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-01- Troubleshooting Shoulder Crunch Sumi Gaeshi  The Single Biggest Weak Point Of The Shoulder Crunch Sumi Gaeshi And How To Overcome It.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-02- Question_ If The Pinch Headlock Is So Strong, Why Don't We Just Stay With That As Our Sweeping Grip.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-04- The Theory Of Closed Grips From Guard Position.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-05- The First Step Of The Shoulder Crunch Sumi Gaeshi Series_ Getting The Hand To The Floor.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-04-06- The 2 Stage Method Of Getting The Hand To The Floor.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-01- The 2 Most Common Defenses To Shoulder Crunch Sumi Gaeshi And How To Overcome Them  1. The Elbow Slip.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-02- 2. The Rock Back  Opponent Rocks Back On Knees  Triangle.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-03- Ude Gatame (Straight Arm Lock).mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-04- Juji Gatame.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-05-05- Hiza Guruma.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-01- Opponent On Posted Leg Or Standing  Ashi Garami To Outside Heel Hook.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-02- Ashi Garami To Kani Basami.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-03- Ashi Garami To Sweep Into Heel Hooks.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-06-04- Ankle Pick Cross Ashi.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-01- The Pinch Headlock Series  Hiza Guruma When Your Opponent Is On 2 Knees.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-02- Elbow On The Floor Pinch Headlock Sumi Gaeshi.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-03- Hand On The Floor Classic Sumi Gaeshi.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-04- Ude Gatame From Pinch Headlock.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-07-05- Pinch Headlock To Tight Waist Series.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-08-01- The High Lock Series  Sumi Gaeshi From High Lock.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-08-02- High Lock Into Standing Body Lock.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - MTM Shoulder Crunch\7394571878498-08-03- Putting It All Together.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E01 - Volume 1.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E02 - Volume 2.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E03 - Volume 3.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E04 - Volume 4.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E05 - Volume 5.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E06 - Volume 6.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E07 - Volume 7.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Danaher - NW Side Attacks\Season 01\New Wave Jiu Jitsu Side Attacks - Building a Devastating Side Control System by John Danaher - S01E08 - Volume 8.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Giles - HG Anthology\Season 01\Half Guard Anthology by Lachlan Giles - S01E08 - Volume 8.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Hall - Hip Bump\Season 01\The Hip Bump by Ryan Hall - S01E01 - Volume 1.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Hall - Hip Bump\Season 01\The Hip Bump by Ryan Hall - S01E02 - Volume 2.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Hall - Hip Bump\Season 01\The Hip Bump by Ryan Hall - S01E03 - Volume 3.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Hall - Hip Bump\Season 01\The Hip Bump by Ryan Hall - S01E04 - Volume 4.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Jones - Pendejo Guard\6634994040930-01-01- Introduction.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Jones - Pendejo Guard\6634994040930-01-02- Sweep 1.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Jones - Pendejo Guard\6634994040930-01-03- Off Balance To Wrestle Up.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Jones - Pendejo Guard\6634994040930-01-04- Pendulum Fuerte.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Jones - Pendejo Guard\6634994040930-01-05- False Reap.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Jones - Pendejo Guard\6634994040930-01-06- Never Before Seen Heel Hook Exposure.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E01 - Volume 1.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E02 - Volume 2.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E03 - Volume 3.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E04 - Volume 4.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E05 - Volume 5.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E06 - Volume 6.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E07 - Volume 7.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Musumeci - Collar Sleeve 1\Season 01\The Collar and Sleeve System Part One by Mikey Musumeci - S01E08 - Volume 8.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - HiPerc Gi Passes\6839466721378-01-01- Intro.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - HiPerc Gi Passes\6839466721378-01-02- Spider Guard To Toreando.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - HiPerc Gi Passes\6839466721378-01-03- Toreando Footwork.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - HiPerc Gi Passes\6839466721378-01-04- Toreando_Leg Drag_X Pass Trilemma.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - HiPerc Gi Passes\6839466721378-01-05- Torreando_Longstep Dilemma.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - HiPerc Gi Passes\6839466721378-02-01- Long Step Into Half Guard.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - HiPerc Gi Passes\6839466721378-02-02- The Luxury Of A Free Hand.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - HiPerc Gi Passes\6839466721378-02-03- Basic Half Guard Passes.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - HiPerc Gi Passes\6839466721378-02-04- Outro.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-01-01- Intro To Pin Escapes.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-01-02- Carrying Body Weight - Torso Vs Frames.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-01-03- Extension Vs Contraction Concave Vs Convex Shoulders.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-01-04- Cranium Control.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-01-07- Escaping Knee On Belly.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-01-09- Intro To Escaping Side Control.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-01-10- Side Guard Wins The Game.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-01-11- Insertion Points.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-01-12- Inserting The Far Arm.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-01-13- Inserting Near Side Elbow.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-01-14- Escaping Vs A Naive Opponent.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-02-01- Actively Fighting The Far Elbow To Inside Position.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-02-02- Knee To Hip Contact.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-02-03- Side Guard.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-02-04- Basic Reguard From Side Guard.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-02-05- Recovering From Side Guard Into Clamp.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-02-06- Side Guard To Te Gatame.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-02-07- Te Gatame Into The Legs.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-02-08- Inserting A Far Side Underhook.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-02-09- Conservative Recovery.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-02-10- Underhook To Pinch Headlock_shoulder Crunch.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-02-11- Underhook To Half Guard.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-02-12- Underhook To Ashi Garami.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-02-13- Underhook To Wrestling Scenarios.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-03-01- Leg Grab_reguard Dilemma.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-03-02- Escaping With A Near Side Underhook.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-03-03- Opponent Crowds The Hips.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-03-04- Recovering With A Tricep Post.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-03-05- Tricep Post To Side Guard.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-03-06- Tricep Post To Overback Series.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-03-07- Countering A Reachback Crossface.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-03-08- Side Kipping.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-03-09- Side Kip Vs Posted Crossface Hand.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-03-10- Side Kip Vs Posted Underhook Hand.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-04-01- INTRO TO DOUBLE UNDERHOOKS.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-04-02- Escaping On The Pommel.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-04-03- Pommeling Back Inside.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-04-04- Intro To Opponent Hip Switching.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-04-08- Intro To Kesa Gatame.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-04-09- Escaping As Opponent Pommels.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-04-10- Escaping Fully Locked Kesa Gatame.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-04-11- Addressing Other Upper Body Grips - Body Lock.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-04-12- Tight Waist And Cross Face.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-04-13- Tight Waist And Near Side Underhook.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-01- Segue To North South.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-02- _Escaping On The Transition Crossface Hand First.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-03- _Escaping On The Transition Underhook Hand First.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-04- _Escaping On The Transition Elbows Inside Shoulders.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-05- _North South Body Positions.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-06- _Opponent.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-07- _The Threat Of Forcing Side Control.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-08- _Opponent Has Knees Down Pommeling Hands Inside.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-09- _Escaping With Knee Elbow Connection.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-10- _High Tripod Pommeling Hands Inside.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-11- _Forcing Side Control - Knees Up Vs Knees Down.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-12- _Escaping As Opponent Moves From North South To Side Control.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-13- _Side Control To Mount - Upper Body Positions.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-14- _Escaping On The Transition -Top Head And Arm.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-15- _Escaping On The Transition - Double Underhooks.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-05-16- _Escaping On The Transition - Crossface.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-01- Mount Escape Overview.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-02- Opponent.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-03- Bridging And Shrimping.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-04- Basic Knee Elbow Escape.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-05- Inside Elbow Escape.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-06- Clearing Grapevines And Preventing And Underhook.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-07- Separating Crossed Feet.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-08- Knee Elbow Escape_inside Knee Elbow Escape Vs Crossface.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-09- Intro To Kipping.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-10- Solo Kipping Drill.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-11- Types Of Kipping.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-12- Kipping_knee Elbow Dilemma.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-13- Basic Overhead Kip.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-14- Kipping Over A Shoulder.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-15- Side To Side Kipping.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-16- Side Kipping When Opponent Counters Initial Kip.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-17- Kipping To Counter A Long Hook.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-06-18- Kipping To Counter One Knee Up.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-07-01- A Deeper Dive Into Arm Positions.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-07-02- Clearing An Underhook.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-07-04- Side To Side Kipping Vs Underhook.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-07-05- Same Concept When Opponent Switches To A Knee Up_long Hook.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-07-06- Addressing Double Underhooks.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-07-07- Addressing A High Mount.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-07-08- Stripping A Figure Four Back Head And Arm.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-07-09- Preventing A Dismount To Side Control.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-07-10- Outro.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-08-01- Intro_Roll 1 - Alex.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-08-02- Roll 2 - Drew.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-08-03- Roll 3 - Cristos.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-08-04- Roll 4 - Alex.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-08-05- Roll 5 - Drew.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-09-01- Roll 1 - Alex.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-09-02- Roll 2 - Drew.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-09-03- Roll 3 - Cristos.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-09-04- Roll 4 - Alex.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - PoD Pin Escapes\6687407439970-09-05- Roll 5 - Drew.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - SysAtk Seated OG\Season 01\Systematically Attacking From Open Guard Seated Position by Gordon Ryan - S01E07 - Volume 7 Rolling.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Ryan - SysAtk The Guard\Season 01\Systematically Attacking The Guard by Gordon Ryan - S01E08 - Volume 8.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-01-01- Introduction.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-01-02- Introduction To Leg Entanglements.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-01-03- Intro To Breaking Mechanics _ Lever Wedges And Fulcrum.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-01-04- Toe Hold.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-01-05- Outside Heel Hook.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-01-06- Inverted Heel Hook.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-01-07- Knee Bar.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-01-08- Achilles Lock.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-01-09- Intro To Backup Plans.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-02-01- Irimi Ashi Garami _ Fundamentals Of Control.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-02-02- The Power Of Kuzushi.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-02-03- Advanced Kuzushi.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-02-04- Tripod Sweeping.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-02-05- Double Trouble.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-03-01- Entries _ Entries From Seated.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-03-02- Hand Fighting Entries From Seated.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-03-03- Entries From Seated Knee Wrestling.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-03-04- Standing Entries_ The Kick-out Problem.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-03-05- Guard Passing Entries.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-03-06- Top Closed Guard And Half Guard Entries.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-03-07- Bottom Closed Guard Entries.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-03-08- Elevation From The Knees.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-03-09- Escapes From Bottom Pins.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-03-10- The Inside Foot Pommel.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-03-11- Attacks Vs Standing Opponents.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-03-12- Outside Heel Hook.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-03-13- Toe Hold Vs Heel Hook.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-03-14- The Path To Cross Ashi Garami.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-04-01- Outside Ashi Garami _ Advanced Breaking Mechanics.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-04-02- One Arm One Leg Test.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-04-03- Heel Knee Bar.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-04-04- Back Exposure Problem.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-04-05- Achilles Lock.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-05-01- Cross Ashi Garami _ Cross Ashi Attacks.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-05-02- Dragging Entries.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-05-03- Kani Basami Entries _ Passing Backstep.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-05-04- De La Riva.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-05-05- Achilles Lock.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-05-06- Passing Misdirection.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-05-07- Unifying The System.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-06-01- Elevation Entries _ Reverse X Guard.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-06-02- Sumi Gaeshi.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-06-03- Yoko Sumi Gaeshi.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-06-04- Spinning Entries _ Passing.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-06-05- Imanari Rolls.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-06-06- Rolling Entries.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-06-07- Heel First Or Ashi First_.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-06-08- Knee Bar _ Advanced Breaking Mechanics.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-06-09- Double Trouble.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-06-10- Rotating Submissions.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-06-11- Toe Hold.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-06-12- Pommeling.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-07-01- 50_50 - Scissor Me Timbers _ Advanced Breaking Mechanics.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-07-02- Far Hip Ashi.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-07-03- Back Side _ Introduction.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-07-04- 5 Core Entanglements.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-07-05- Scooping Entries.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-07-06- Turnout Entries.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-07-07- Rolling Entries And Inversions.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-07-08- Cross Achilles Entries.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-07-09- The Pesky Standing Opponent.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-07-10- Standing Entries.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Tonon - Break Legs and Hearts\6558700273762-07-11- Estima Locks.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wardzinski - Bfly Rediscovered 2\Season 01\Butterfly Guard Re-Discovered 2 by Adam Wardzinski - S01E01 - Volume 1-pt2.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-01- Introduction.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-02- Open Guard - Grip Fighting Defense.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-03- Grip Fighting Offense.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-04- Clearing Leg Attachments.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-05- Outside Passing Xpass.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-06- Xpass Fail (Don.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-07- Xpass Follow Up Kick Over.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-08- Jumping X-Pass.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-09- Wrestle Up Off Xpass.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-10- Toreando.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-11- Toreondo Follow Up.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-12- Toreando Twitch.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-13- Staple Leg Same Side Collar.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-14- Stiff Arm.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-15- Leg Weave Follow Up.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-16- Step Over Back Chase.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-17- Triangle The Legs to finish.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-18- Toreando Frame Too Strong.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-19- Windshield Wiping From Bridge.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-01-20- Marcelo Sit Out.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-01- Leg Drags.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-02- Follow Up Failed Shelf.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-03- Finishing.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-04- Power Drag.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-05- Diving Inside Leg Drag.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-06- Back Step Through.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-07- Chasing The Back.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-08- Chasing The Back Stiff Arm.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-09- Power Flip.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-10- Same Side Lapel.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-11- Leg Weave Finish.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-12- Shin On Shin Leg Weave.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-13- Hand Weave.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-02-14- Same Side Pants.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-01- Knee Slice.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-02- Knee Slice Failure Details.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-03- Knee Slice Details.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-04- Shin On Shin.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-05- Knee Slice Finishing.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-06- Cross Collar Knee Slice.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-03-07- Jumping.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-01- Leg Weave.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-02- Leg Weave Finish Variation.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-03- Under Hook Variations.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-04- Leg Weave Finish.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-05- Step Over Finish.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-06- Taking Mount.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-07- Over Under Leg Weave.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-04-08- Leg Weave Entry From Knee Shield.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-01- De La Riva.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-02- Knee Slice.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-03- Leg Weave From De La Riva.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-04- Folding Pass.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-05- Sit Up Da La Riva.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-06- De La Riva Spider And Lasso.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-07- Leg Rag From De La Riva.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-08- Defending Variations On The Ankle.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-09- Hail De La Riva.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-10- Contested De La Riva Hook.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-11- De La Riva Wrestle Up.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-05-12- The Suck Up.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-01- Reverse De La Riva.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-02- Controlling The Inversion.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-03- Tucking Knee Under Knee.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-04- X-pass.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-05- Smash.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-06- Circle The Foot.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-07- Leg Weave Entry.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-08- Buzzsaw Demonstration.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-09- Narration Demonstration.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Buzzsaw GI Passing\4542444568674-06-10- Outro.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol1.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol2.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol3.mp4`
+  - schema (nest) not done
+  - model (--llm) not done
+- `Wiltse - Daisy Fresh Knee Slice\AndrewWiltseKneeSliceVol4.mp4`
+  - schema (nest) not done
+  - model (--llm) not done

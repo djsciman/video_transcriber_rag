@@ -133,6 +133,21 @@ class EmptyAndBadInputTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 batch_panoscribe.select_videos(root, Path("missing.mp4"))
 
+    def test_rel_under_strips_windows_extended_prefix(self):
+        root = Path(r"W:\BJJ Instructional Videos Jellyfin")
+        child = Path(
+            r"\\?\W:\BJJ Instructional Videos Jellyfin\New Wave Jiu Jitsu "
+            r"Side Attacks - Building a Devastating Side Control System by "
+            r"John Danaher\Season 01\Volume 6.mp4"
+        )
+        rel = batch_panoscribe._rel_under(root, child)
+        self.assertEqual(
+            rel.parts[0],
+            "New Wave Jiu Jitsu Side Attacks - Building a Devastating "
+            "Side Control System by John Danaher",
+        )
+        self.assertEqual(rel.name, "Volume 6.mp4")
+
     def test_video_flag_limits_transcribe_walk(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -267,6 +282,41 @@ class KeepSpeechTest(unittest.TestCase):
                 json.dumps(
                     {
                         "video_file": "Vol1.mp4",
+                        "chapters": [
+                            {
+                                "title": "Old",
+                                "start": 0.0,
+                                "end": 1.0,
+                                "transcript_raw": "<0.00> kept",
+                            }
+                        ],
+                        "language": "en",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            speech_calls: list = []
+            status, out = _run(
+                root / "in",
+                root / "out",
+                speech=_speech_writer(calls=speech_calls),
+                chapters=_chapter_reader([{"title": "Old", "start": 0.0, "end": 1.0}]),
+            )
+            self.assertEqual(status, 0)
+            self.assertEqual(speech_calls, [])
+            self.assertEqual(_read_json(dest)["chapters"][0]["transcript_raw"], "<0.00> kept")
+            self.assertIn("Unchanged: 1", out)
+
+    def test_segments_without_transcript_raw_requests_speech(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_video(root / "in" / "Vol1.mp4")
+            dest = root / "out" / "Vol1.json"
+            dest.parent.mkdir(parents=True)
+            dest.write_text(
+                json.dumps(
+                    {
+                        "video_file": "Vol1.mp4",
                         "chapters": [{"title": "Old", "start": 0.0, "end": 1.0}],
                         "language": "en",
                         "segments": [{"start": 0.0, "end": 1.0, "text": "kept"}],
@@ -282,11 +332,11 @@ class KeepSpeechTest(unittest.TestCase):
                 chapters=_chapter_reader([{"title": "Old", "start": 0.0, "end": 1.0}]),
             )
             self.assertEqual(status, 0)
-            self.assertEqual(speech_calls, [])
-            self.assertEqual(_read_json(dest)["segments"][0]["text"], "kept")
-            self.assertIn("Unchanged: 1", out)
+            self.assertEqual(len(speech_calls), 1)
+            self.assertEqual(_read_json(dest)["segments"][0]["text"], "hello")
+            self.assertIn("Updated: 1", out)
 
-    def test_empty_segments_list_counts_as_finished_speech(self):
+    def test_transcript_raw_counts_as_finished_speech(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _write_video(root / "in" / "Vol1.mp4")
@@ -296,9 +346,15 @@ class KeepSpeechTest(unittest.TestCase):
                 json.dumps(
                     {
                         "video_file": "Vol1.mp4",
-                        "chapters": [],
+                        "chapters": [
+                            {
+                                "title": "Intro",
+                                "start": 0.0,
+                                "end": 1.0,
+                                "transcript_raw": "<0.00> nested",
+                            }
+                        ],
                         "language": "en",
-                        "segments": [],
                     }
                 ),
                 encoding="utf-8",
@@ -308,7 +364,9 @@ class KeepSpeechTest(unittest.TestCase):
                 root / "in",
                 root / "out",
                 speech=_speech_writer(calls=speech_calls),
-                chapters=_chapter_reader([]),
+                chapters=_chapter_reader(
+                    [{"title": "Intro", "start": 0.0, "end": 1.0}]
+                ),
             )
             self.assertEqual(status, 0)
             self.assertEqual(speech_calls, [])
@@ -410,14 +468,20 @@ class ChapterMergeTest(unittest.TestCase):
             _write_video(root / "in" / "Vol1.mp4")
             dest = root / "out" / "Vol1.json"
             dest.parent.mkdir(parents=True)
-            existing = [{"title": "Keep me", "start": 0.0, "end": 5.0}]
+            existing = [
+                {
+                    "title": "Keep me",
+                    "start": 0.0,
+                    "end": 5.0,
+                    "transcript_raw": "<0.00> nested",
+                }
+            ]
             dest.write_text(
                 json.dumps(
                     {
                         "video_file": "Vol1.mp4",
                         "chapters": existing,
                         "language": "en",
-                        "segments": [{"start": 0.0, "end": 1.0, "text": "x"}],
                     }
                 ),
                 encoding="utf-8",
@@ -469,9 +533,15 @@ class ChapterMergeTest(unittest.TestCase):
                 json.dumps(
                     {
                         "video_file": "Vol1.mp4",
-                        "chapters": [{"title": "Same", "start": 1.0, "end": 2.0}],
+                        "chapters": [
+                            {
+                                "title": "Same",
+                                "start": 1.0,
+                                "end": 2.0,
+                                "transcript_raw": "<1.00> nested",
+                            }
+                        ],
                         "language": "en",
-                        "segments": [{"start": 0.0, "end": 1.0, "text": "x"}],
                     }
                 ),
                 encoding="utf-8",
@@ -694,7 +764,7 @@ class FailureCasesTest(unittest.TestCase):
             )
             self.assertEqual(status, 0)
             data = _read_json(dest)
-            self.assertEqual(data["segments"][0]["text"], "legacy")
+            self.assertEqual(data["segments"][0]["text"], "hello")
             self.assertEqual(data["chapters"][0]["title"], "Added")
             self.assertEqual(data["video_file"], "Vol1.mp4")
             self.assertIn("Updated: 1", out)
@@ -765,9 +835,15 @@ class FailureCasesTest(unittest.TestCase):
             dest.write_text(
                 json.dumps(
                     {
-                        "chapters": [{"title": "Keep", "start": 0.0, "end": 1.0}],
+                        "chapters": [
+                            {
+                                "title": "Keep",
+                                "start": 0.0,
+                                "end": 1.0,
+                                "transcript_raw": "<0.00> nested",
+                            }
+                        ],
                         "language": "en",
-                        "segments": [{"start": 0.0, "end": 1.0, "text": "x"}],
                     }
                 ),
                 encoding="utf-8",
@@ -792,9 +868,15 @@ class FailureCasesTest(unittest.TestCase):
             dest.parent.mkdir(parents=True)
             payload = {
                 "video_file": "Vol1.mp4",
-                "chapters": [{"title": "Keep", "start": 0.0, "end": 1.0}],
+                "chapters": [
+                    {
+                        "title": "Keep",
+                        "start": 0.0,
+                        "end": 1.0,
+                        "transcript_raw": "<0.00> nested",
+                    }
+                ],
                 "language": "en",
-                "segments": [{"start": 0.0, "end": 1.0, "text": "x"}],
             }
             dest.write_text(json.dumps(payload), encoding="utf-8")
             before = dest.read_text(encoding="utf-8")
@@ -869,7 +951,14 @@ class FailureCasesTest(unittest.TestCase):
                     {
                         "video_file": "Vol1.mp4",
                         "language": "en",
-                        "segments": [{"start": 0.0, "end": 1.0, "text": "x"}],
+                        "chapters": [
+                            {
+                                "title": "Old",
+                                "start": 0.0,
+                                "end": 1.0,
+                                "transcript_raw": "<0.00> nested",
+                            }
+                        ],
                     }
                 ),
                 encoding="utf-8",
@@ -970,7 +1059,14 @@ class HotwordTest(unittest.TestCase):
                     {
                         "video_file": "Vol1.mp4",
                         "language": "en",
-                        "segments": [{"start": 0.0, "end": 1.0, "text": "x"}],
+                        "chapters": [
+                            {
+                                "title": "X",
+                                "start": 0.0,
+                                "end": 1.0,
+                                "transcript_raw": "<0.00> nested",
+                            }
+                        ],
                     }
                 ),
                 encoding="utf-8",
@@ -1000,8 +1096,13 @@ class SecondRunStableTest(unittest.TestCase):
                 chapters=_chapter_reader(chapters),
             )
             self.assertEqual(status1, 0)
-            before = (root / "out" / "Vol1.json").read_text(encoding="utf-8")
-            mtime = (root / "out" / "Vol1.json").stat().st_mtime_ns
+            dest = root / "out" / "Vol1.json"
+            payload = json.loads(dest.read_text(encoding="utf-8"))
+            for chapter in payload["chapters"]:
+                chapter["transcript_raw"] = "<0.00> nested"
+            dest.write_text(json.dumps(payload), encoding="utf-8")
+            before = dest.read_text(encoding="utf-8")
+            mtime = dest.stat().st_mtime_ns
             status2, out = _run(
                 root / "in",
                 root / "out",
@@ -1009,8 +1110,8 @@ class SecondRunStableTest(unittest.TestCase):
                 chapters=_chapter_reader(chapters),
             )
             self.assertEqual(status2, 0)
-            self.assertEqual((root / "out" / "Vol1.json").read_text(encoding="utf-8"), before)
-            self.assertEqual((root / "out" / "Vol1.json").stat().st_mtime_ns, mtime)
+            self.assertEqual(dest.read_text(encoding="utf-8"), before)
+            self.assertEqual(dest.stat().st_mtime_ns, mtime)
             self.assertIn("Unchanged: 1", out)
             self.assertIn("Created: 0", out)
             self.assertIn("Updated: 0", out)
@@ -1069,7 +1170,14 @@ class ForceSpeechTest(unittest.TestCase):
                 json.dumps(
                     {
                         "video_file": "Vol1.mp4",
-                        "chapters": [{"title": "Old", "start": 0.0, "end": 1.0}],
+                        "chapters": [
+                            {
+                                "title": "Old",
+                                "start": 0.0,
+                                "end": 1.0,
+                                "transcript_raw": "<0.00> kept",
+                            }
+                        ],
                         "language": "en",
                         "segments": [{"start": 0.0, "end": 1.0, "text": "kept"}],
                     }

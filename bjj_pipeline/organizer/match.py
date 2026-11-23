@@ -5,7 +5,7 @@ from pathlib import Path
 from .chapters import chapters_have_timeline
 from .errors import MatchError
 from .models import Chapter, ChapterMatch, ParsedVideo, SeasonMatch, Volume
-from .naming import parse_video, pick_chapter_title
+from .naming import dvd_bonus_number, parse_video, pick_chapter_title, sole_chapter_title
 
 
 def parse_videos(
@@ -38,7 +38,7 @@ def flatten_chapters(volumes: list[Volume]) -> list[tuple[int, int, Volume, Chap
 
 
 def detect_media_mode(parsed: list[ParsedVideo], volumes: list[Volume]) -> str:
-    work = [p for p in parsed if not p.is_extra]
+    work = [p for p in parsed if not p.is_extra or dvd_bonus_number(p.path) is not None]
     file_count = len(work)
     volume_count = len(volumes)
     chapter_count = len(flatten_chapters(volumes)) if volumes else 0
@@ -71,7 +71,11 @@ def match_volumes(
     numbered: dict[tuple[int, int], list[ParsedVideo]] = {}
     unparsed: list[ParsedVideo] = []
 
+    bonus: list[ParsedVideo] = []
     for item in parsed:
+        if dvd_bonus_number(item.path) is not None:
+            bonus.append(item)
+            continue
         if item.is_extra:
             extras.append(item.path)
             continue
@@ -96,6 +100,20 @@ def match_volumes(
         raise MatchError(f"Duplicate volume {key[0]} with no single NEW winner: {names}")
 
     chosen.sort(key=_sort_key)
+    if bonus:
+        max_vol = max((item.volume_number or 0) for item in chosen) if chosen else 0
+        assigned: list[int] = []
+        for item in sorted(bonus, key=lambda p: dvd_bonus_number(p.path) or 0):
+            number = max_vol + (dvd_bonus_number(item.path) or 0)
+            item.volume_number = number
+            item.is_extra = False
+            chosen.append(item)
+            assigned.append(number)
+        chosen.sort(key=_sort_key)
+        warnings.append(
+            "Treating DVD Bonus disc(s) as volume(s) "
+            + ", ".join(str(n) for n in assigned)
+        )
 
     if not volumes:
         raise MatchError("Product page has no Course Content volumes to match against")
@@ -339,6 +357,11 @@ def _expand_volumes(
             continue
         for c_idx, chapter in enumerate(chapters, start=1):
             end = chapters[c_idx].start_ms if c_idx < len(chapters) else None
+            title = chapter.title.strip() or f"Chapter {c_idx}"
+            if len(chapters) == 1:
+                title = sole_chapter_title(parsed, title)
+                if title != chapter.title:
+                    chapter = Chapter(title, chapter.start_ms)
             items.append(
                 ChapterMatch(
                     parsed=parsed,
@@ -347,7 +370,7 @@ def _expand_volumes(
                     volume_number=v_idx,
                     chapter_number=c_idx,
                     mode="volume",
-                    chapter_title=chapter.title.strip() or f"Chapter {c_idx}",
+                    chapter_title=title,
                     split_start_ms=chapter.start_ms,
                     split_end_ms=end,
                 )
@@ -366,7 +389,7 @@ def match_season(
     extras: list[Path] = []
     work: list[ParsedVideo] = []
     for item in parsed:
-        if item.is_extra:
+        if item.is_extra and dvd_bonus_number(item.path) is None:
             extras.append(item.path)
         else:
             work.append(item)

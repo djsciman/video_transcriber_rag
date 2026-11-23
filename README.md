@@ -13,7 +13,7 @@ Organizes local instructionals against [BJJ Fanatics](https://bjjfanatics.com/) 
 | Command | Purpose |
 |--------|---------|
 | `py -3 -m bjj_pipeline run` | One command: match, organize, detect, transcribe, prepare (skip finished work; `--apply` to write) |
-| `py -3 -m bjj_pipeline organize` | Scrape a BJJ Fanatics product page and reorganize a local folder as a Jellyfin/TMM TV show (NFO, artwork, volumes, named chapters) |
+| `py -3 -m bjj_pipeline organize` | Scrape a BJJ Fanatics product page (or a BrainLearns course page) and reorganize a local folder as a Jellyfin/TMM TV show (NFO, artwork, volumes, named chapters) |
 | `py -3 -m bjj_pipeline match` | Match local folder names to BJJ Fanatics product URLs and write `bjjfanatics_matches.csv` |
 | `py -3 -m bjj_pipeline chapters` | Detect title-card chapter starts, OCR titles, write sidecar CSVs, optionally embed chapters into the video |
 | `py -3 -m bjj_pipeline transcribe` | Walk a video tree and complete each transcript: speech only when missing, container chapters, and `video_file` |
@@ -256,7 +256,7 @@ Skip unless `--force` / `--force-stage`:
 | match | That folder already has a product URL in the match CSV |
 | organize | The show folder already has `tvshow.nfo` **and** at least one `Season ##` folder |
 | detect | The volume already has container chapters, or a sidecar chapter file exists. Uncombined chapter-file seasons warn and skip unless `--force-stage detect` |
-| transcribe | The mirrored corpus JSON already has a `segments` list (empty list counts as finished) |
+| transcribe | Every titled chapter in the mirrored corpus JSON already has `transcript_raw` |
 | prepare | Every real chapter already has `transcript_raw`. With `--llm` (staged), nest is done and every chapter with speech already has a `transcript_cleaned` string and a `concepts` list. With `--method one-call`, nest is done and every chapter with speech already has `transcript_cleaned`, `concepts`, and `suggested_tags` |
 
 A CSV product URL is the organize URL with no yes/no prompt. One product URL per instructional folder. Missing URL outside a terminal fails that instructional's organize. Leftover multi-instructional bundle folders are out of this pipeline; flatten them by hand.
@@ -302,6 +302,8 @@ All commands below are run from the repository root. On Windows prefer `py -3`; 
 ### Organize instructionals
 
 `py -3 -m bjj_pipeline organize` scrapes a BJJ Fanatics product page and reorganizes a local show folder for Jellyfin / TinyMediaManager: `tvshow.nfo`, posters, `Season ##` folders, episode NFO, and (when timestamps exist) named chapter markers. Default is a dry-run.
+
+Show folders on disk are short (`Danaher - ETS Arm Bars`). `tvshow.nfo` `<title>` and episode filenames stay the full instructional name. Organize will rename a long show folder to the short dest and will not restore the long folder name. Keep `Season 01`.
 
 Dry-run one show (searches Fanatics and asks you to confirm the URL in a terminal):
 
@@ -415,7 +417,7 @@ Behavior:
 
 - Recursively finds `.mp4`, `.mkv`, `.avi`, `.mov`, `.webm`, `.m4v`, `.flv`, `.wmv`
 - Mirrors the folder tree under `output_dir` as `.json`
-- Requests speech only when the transcript has no `segments` list (an empty list counts as finished) unless `--force`
+- Requests speech only when a titled chapter is missing `transcript_raw`, unless `--force`
 - `--force` re-runs speech only; chapters and `video_file` still stamp in the same transcript write
 - Passes hard words from that volume’s container chapter titles as faster-whisper hotwords when speech runs
 - Copies container chapters when the stored list is missing or differs; keeps existing chapters when the container is empty
@@ -429,7 +431,7 @@ Options:
 | Flag | Meaning |
 |------|---------|
 | `--ocr` / `--no-ocr` | On-screen OCR for speech requests only (default: off) |
-| `--force` | Re-run speech even when a `segments` list already exists |
+| `--force` | Re-run speech even when nested `transcript_raw` already exists |
 | `--video` | Limit to this video file or folder under `input_dir` |
 
 On Windows, paths of 260+ characters are opened with the `\\?\` extended-length prefix so long mirrored corpus paths still work when Long Paths are disabled. Speech scratch JSON is written under the system temp directory so a long volume name cannot push that scratch path over the limit.
@@ -482,8 +484,8 @@ Checks:
 
 | Check | Meeting means |
 | --- | --- |
-| Combined into volumes | One file per volume, not a per-chapter clip (`id-vol-ch-` names, `NN.NN - title` names, volume part files, or a Jellyfin SxxEyy file whose title is not Volume/DVD and that has fewer than two container chapters) |
-| Named chapters | Two or more container chapters with at least one title other than generic `Chapter N` |
+| Combined into volumes | One file per volume, not a per-chapter clip (`id-vol-ch-` names, `NN.NN - title` names, volume part files, or a Jellyfin SxxEyy file whose title is not Volume/DVD and that has no container chapters). One named chapter is a complete volume |
+| Named chapters | One or more container chapters with at least one title other than generic `Chapter N` |
 | Video NFO | Sidecar `.nfo` next to the video |
 | Instructional NFO | `tvshow.nfo` in that show folder under the library root |
 | Play without errors | ffprobe opens the file, and an ffmpeg sample decode at the start and midpoint reports no error |
@@ -548,7 +550,7 @@ The pipeline writes the raw corpus. `coach_app` is the advising package that adm
 - Close the target video in players before `py -m bjj_pipeline chapters --apply`, pipeline `--embed`, or `py -m bjj_pipeline organize --apply`, or Windows may refuse to replace the file.
 - Old script paths (`generate_chapters.py`, `batch_panoscribe.py`, `completeness_scan.py`, `find_color_frames.py`, `metadata_scraper/run_pipeline.py`, `organize_instructional.py`, `match_bjjfanatics.py`) still run for one cycle and print a deprecation line on stderr.
 - `py -m bjj_pipeline match` takes `--library` and `--output`; it does not hardcode a disk path.
-- `py -m bjj_pipeline organize` without `--url` needs a terminal so it can confirm a Fanatics lookup, unless a matching row in `bjjfanatics_matches.csv` already has a product URL (the pipeline uses that URL with no prompt).
+- `py -m bjj_pipeline organize` without `--url` needs a terminal so it can confirm a Fanatics lookup, unless a matching row in `bjjfanatics_matches.csv` already has a product URL (the pipeline uses that URL with no prompt). `--url` may be a `brainlearns.org` course page when the Fanatics product is gone; that scrape uses Part headings as untimed volume contents. `--url` may also be a local `file://` course JSON (or a course PDF with a sibling `.json`) printed from a Fanatics player.
 - Automatic title-card detection can miss plates held for less than about one second.
 - A hex plate that fails coverage can fall back to a dark-saturated pixel test (high saturation, low value).
 - `py -m bjj_pipeline transcribe` treats two videos that differ only by extension and would share one JSON path as a failure (nothing written for that pair).

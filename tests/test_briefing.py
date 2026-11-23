@@ -83,9 +83,9 @@ def _half_guard_fixtures(store: CuratedStore, *, welcome_giles: bool = True):
         store,
         movement="Knee Lever - Get the underhook from half guard bottom",
         instructor="John Danaher",
-        instructional="Half Guard BJJ Fundamentals - Go Further Faster",
+        instructional="Half Guard - Go Further Faster",
         video_file=(
-            "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher "
+            "Half Guard - Go Further Faster by John Danaher "
             "- S01E04 - Underhooks and Roll Through Sweep.mp4"
         ),
         chapter="Getting to Underhooks",
@@ -98,9 +98,9 @@ def _half_guard_fixtures(store: CuratedStore, *, welcome_giles: bool = True):
         store,
         movement="Tight Waist Series - Winning from underhooks",
         instructor="John Danaher",
-        instructional="Half Guard BJJ Fundamentals - Go Further Faster",
+        instructional="Half Guard - Go Further Faster",
         video_file=(
-            "Half Guard BJJ Fundamentals - Go Further Faster by John Danaher "
+            "Half Guard - Go Further Faster by John Danaher "
             "- S01E04 - Underhooks and Roll Through Sweep.mp4"
         ),
         chapter="Winning From Underhooks - The Tight Waist Series",
@@ -161,7 +161,7 @@ def test_memo_names_open_topic_and_same_ruleset_citations():
     )
     assert shown.instructor == "John Danaher"
     assert shown.instructional == (
-        "Half Guard BJJ Fundamentals - Go Further Faster"
+        "Half Guard - Go Further Faster"
     )
     assert shown.volume == underhook.volume
     assert shown.chapter == "Getting to Underhooks"

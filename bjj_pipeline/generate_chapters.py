@@ -13,8 +13,10 @@ starts (default 6). Slides are joined with " -- ", and repeated text is
 kept once. A frame that fails the plate test ends the title. The opening
 disclaimer is not used: naming starts at the first matched card, and a
 paragraph longer than 160 characters is skipped. A card whose match is
-in the first 15 seconds is titled Introduction. A card with no text is
-titled continued. Those titles are written
+in the first 15 seconds is titled Introduction, except when the video
+has only one chapter: that chapter keeps a real OCR title, or takes the
+episode title from the filename when OCR is Introduction/continued.
+A card with no text is titled continued. Those titles are written
 to the timestamp CSV and to the chapter-names CSV. Without --apply, only
 those files are written. An existing times sidecar skips the scan unless
 --force. With --apply, an existing chapter CSV is embedded and the video
@@ -59,6 +61,7 @@ import tempfile
 from pathlib import Path
 
 from . import find_color_frames
+from .organizer.naming import parse_video, sole_chapter_title
 
 
 # A match this close to 00:00:00 is the opening chapter, not a second one.
@@ -567,13 +570,18 @@ def title_chapters(video, rows, duration, matches, mode, color, hue, sat, val, f
         sys.exit("rapidocr is required to read chapter titles")
     engine = RapidOCR()
     titled = []
+    sole = len(rows) == 1
+    parsed = parse_video(Path(video)) if sole else None
     for _title, start, end in rows:
         anchor = card_anchor(start, end, matches)
         title = collect_title(
             engine, video, anchor, duration, window,
             mode, color, hue, sat, val, fraction, auto,
         )
-        title = opening_chapter_title(title, anchor)
+        if sole:
+            title = sole_chapter_title(parsed, title)
+        else:
+            title = opening_chapter_title(title, anchor)
         titled.append((title, start, end))
         line = (
             f"{find_color_frames.format_timestamp(start)}  "

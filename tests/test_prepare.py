@@ -181,7 +181,7 @@ def test_missing_chapters_leave_file_unchanged(tmp_path: Path):
     assert json_path.read_bytes() == before
 
 
-def test_one_chapter_covering_whole_recording_leave_file_unchanged(tmp_path: Path):
+def test_one_chapter_covering_whole_recording_nests_speech(tmp_path: Path):
     corpus = tmp_path / "corpus"
     json_path = corpus / SHOW / "Season 01" / "vol.json"
     payload = {
@@ -191,14 +191,22 @@ def test_one_chapter_covering_whole_recording_leave_file_unchanged(tmp_path: Pat
         "segments": list(SEGMENTS),
     }
     _write_volume(json_path, payload)
-    before = json_path.read_bytes()
 
     prepare_volume(json_path, corpus)
 
-    assert json_path.read_bytes() == before
+    data = json.loads(json_path.read_text(encoding="utf-8"))
+    assert "segments" not in data
+    chapter = data["chapters"][0]
+    assert chapter["title"] == "Volume 1"
+    assert chapter["previous_chapter"] == ""
+    assert chapter["next_chapter"] == ""
+    assert "<10.00>" in chapter["transcript_raw"]
+    assert "in guard" in chapter["transcript_raw"]
+    assert "<900.00>" in chapter["transcript_raw"]
+    assert "after chapters" in chapter["transcript_raw"]
 
 
-def test_one_partial_chapter_leave_file_unchanged(tmp_path: Path):
+def test_one_partial_chapter_nests_overlapping_speech(tmp_path: Path):
     corpus = tmp_path / "corpus"
     json_path = corpus / SHOW / "Season 01" / "vol.json"
     payload = {
@@ -208,11 +216,34 @@ def test_one_partial_chapter_leave_file_unchanged(tmp_path: Path):
         "segments": list(SEGMENTS),
     }
     _write_volume(json_path, payload)
-    before = json_path.read_bytes()
 
     prepare_volume(json_path, corpus)
 
-    assert json_path.read_bytes() == before
+    data = json.loads(json_path.read_text(encoding="utf-8"))
+    chapter = data["chapters"][0]
+    assert chapter["title"] == "Intro"
+    assert "<10.00>" in chapter["transcript_raw"]
+    assert "in guard" in chapter["transcript_raw"]
+    assert "straddling the start" not in chapter["transcript_raw"]
+    assert "after chapters" not in chapter["transcript_raw"]
+
+
+def test_one_introduction_chapter_takes_episode_title(tmp_path: Path):
+    corpus = tmp_path / "corpus"
+    json_path = corpus / SHOW / "Season 01" / "vol.json"
+    payload = {
+        "video_file": VOLUME,
+        "chapters": [{"title": "Introduction", "start": 0.0, "end": 1000.0}],
+        "language": "en",
+        "segments": list(SEGMENTS),
+    }
+    _write_volume(json_path, payload)
+
+    prepare_volume(json_path, corpus)
+
+    chapter = json.loads(json_path.read_text(encoding="utf-8"))["chapters"][0]
+    assert chapter["title"] == "Volume 1"
+    assert "<10.00>" in chapter["transcript_raw"]
 
 
 def test_two_chapters_one_untitled_leave_file_unchanged(tmp_path: Path):

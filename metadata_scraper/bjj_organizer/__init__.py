@@ -27,9 +27,12 @@ for _name in (
     "nfo",
     "pipeline",
     "repair",
+    "show_folders",
     "split",
     "scrape",
     "scrape.base",
     "scrape.bjj_fanatics",
+    "scrape.brainlearns",
+    "scrape.local",
 ):
     sys.modules[f"{__name__}.{_name}"] = importlib.import_module(f"{_NEW}.{_name}")

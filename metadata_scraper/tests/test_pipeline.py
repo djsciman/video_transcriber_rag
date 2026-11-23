@@ -94,8 +94,11 @@ def test_leaf_plan_and_apply_without_split(tmp_path: Path):
         "Battle Tested Half Guard by Bernardo Faria - S01E01"
     )
     assert plan.seasons[0].episodes[0].title == "Volume 1"
+    assert plan.dest_name == "Faria - Battle Tested Half Guard"
+    assert plan.title == "Battle Tested Half Guard by Bernardo Faria"
     apply_plan(plan, options)
-    dest = show
+    dest = plan.source_dir
+    assert dest.name == "Faria - Battle Tested Half Guard"
     season = dest / "Season 01"
     videos = sorted(p.name for p in season.glob("*.mp4"))
     assert videos[0].startswith("Battle Tested Half Guard by Bernardo Faria - S01E01")
@@ -167,23 +170,81 @@ def test_existing_container_chapters_skip_fanatics_remux(tmp_path: Path, monkeyp
 
     def fake_count(path, ffprobe, command=None):
         probed.append(Path(path).name)
-        return 4
+        return 3
+
+    def fake_titles(path, ffprobe, command=None):
+        return ["Vol1 Chapter 1", "Vol1 Chapter 2", "Vol1 Chapter 3"]
 
     def fake_remux(*args, **kwargs):
         remux_calls.append("remux")
-        raise AssertionError("must not remux Fanatics markers over container chapters")
+        raise AssertionError("must not remux Fanatics markers over matching container chapters")
 
     monkeypatch.setattr("bjj_organizer.pipeline.probe_chapter_count", fake_count)
+    monkeypatch.setattr("bjj_organizer.pipeline.probe_chapter_titles", fake_titles)
     monkeypatch.setattr("bjj_organizer.pipeline.remux_with_chapters", fake_remux)
 
     apply_plan(plan, RuntimeOptions())
 
     assert remux_calls == []
     assert probed == [source.name]
-    season = show / "Season 01"
+    season = plan.source_dir / "Season 01"
     dests = list(season.glob("*.mp4"))
     assert len(dests) == 1
     assert dests[0].read_bytes() == b"x"
+
+
+def test_ocr_container_chapters_are_replaced_from_scrape(tmp_path: Path, monkeypatch):
+    show = tmp_path / "The Hip Bump by Ryan Hall"
+    show.mkdir()
+    source = show / "TheHipBumpbyRyanHall1.mp4"
+    source.write_bytes(b"x")
+    (show / "TheHipBumpbyRyanHall1_chapters.csv").write_text("Chapter,StartTimestamp\n5%5,00:00:36.320\n", encoding="utf-8")
+    product = Product(
+        title="The Hip Bump",
+        instructor="Ryan Hall",
+        plot="Plot",
+        premiered=date(2016, 1, 1),
+        year=2016,
+        tags=["Instructional"],
+        unique_ids={},
+        images=[],
+        volumes=[
+            Volume(
+                "Volume 1",
+                (
+                    Chapter("Introduction", 0),
+                    Chapter("Shapes and Expectations", 33_000),
+                    Chapter("Principles - Base Kuzushi", 365_000),
+                ),
+            )
+        ],
+        source_url="file:///course.json",
+    )
+
+    def scrape(url: str, user_agent: str | None = None) -> Product:
+        return product
+
+    plan = build_plan(show, ["file:///course.json"], RuntimeOptions(), scrape_product=scrape)
+    remux_calls: list[str] = []
+    monkeypatch.setattr("bjj_organizer.pipeline._tool", lambda name, explicit=None: name)
+    monkeypatch.setattr("bjj_organizer.pipeline.probe_chapter_count", lambda *a, **k: 3)
+    monkeypatch.setattr(
+        "bjj_organizer.pipeline.probe_chapter_titles",
+        lambda *a, **k: ["disclaimer", "5%5", "PRINCIPLES"],
+    )
+
+    def fake_remux(src, dest, chapters, *args, **kwargs):
+        remux_calls.append(Path(dest).name)
+        Path(dest).write_bytes(Path(src).read_bytes())
+
+    monkeypatch.setattr("bjj_organizer.pipeline.remux_with_chapters", fake_remux)
+    apply_plan(plan, RuntimeOptions())
+    assert remux_calls
+    dest = plan.source_dir / "Season 01" / remux_calls[0]
+    assert dest.is_file()
+    sidecar = dest.with_name(dest.stem + "_chapters.csv")
+    assert sidecar.is_file()
+    assert not (show / "TheHipBumpbyRyanHall1_chapters.csv").exists()
 
 
 def test_segmented_plan_groups_chapter_files_into_volumes(tmp_path: Path):

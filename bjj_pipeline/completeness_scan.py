@@ -9,10 +9,10 @@ is set.
 A video meets the combined-volume check when it is one file per volume, not
 a per-chapter clip (Fanatics ``id-vol-ch-`` names, ``NN.NN - title`` names,
 or a Jellyfin SxxEyy file whose title is not a Volume/DVD name and whose
-container has fewer than two chapters). Volume part files (VOL1PT1) are
-still uncombined.
+container has no chapters). Volume part files (VOL1PT1) are
+still uncombined. One named container chapter is a complete volume.
 
-Named chapters means two or more container chapters with at least one title
+Named chapters means one or more container chapters with at least one title
 that is not a generic ``Chapter N``.
 
 Video NFO means a sidecar ``.nfo`` next to the video. Instructional NFO
@@ -169,7 +169,7 @@ def is_generic_chapter_title(title: str) -> bool:
 
 
 def has_named_chapters(chapters: list[dict]) -> bool:
-    if len(chapters) < 2:
+    if not chapters:
         return False
     return any(not is_generic_chapter_title(ch.get("title") or "") for ch in chapters)
 
@@ -185,7 +185,7 @@ def is_combined_volume(video: Path, chapters: list[dict]) -> bool:
         return False
     if parsed.part_number is not None:
         return False
-    if len(chapters) >= 2:
+    if chapters:
         return True
     stem = video.stem
     title = parsed.local_title or ""
@@ -225,7 +225,7 @@ def _chapter_bound(chapter: dict, key: str) -> float:
     return ticks * float(num) / float(den)
 
 
-def _chapters_from_payload(payload: dict) -> list[dict]:
+def _chapters_from_payload(payload: dict, video: Path | None = None) -> list[dict]:
     raw: list[dict] = []
     for index, chapter in enumerate(payload.get("chapters") or [], start=1):
         tags = chapter.get("tags") or {}
@@ -239,7 +239,7 @@ def _chapters_from_payload(payload: dict) -> list[dict]:
         start = _chapter_bound(chapter, "start")
         end = _chapter_bound(chapter, "end")
         raw.append({"title": title, "start": start, "end": end})
-    return batch_panoscribe.normalize_container_chapters(raw)
+    return batch_panoscribe.normalize_container_chapters(raw, video=video)
 
 
 def default_probe(video: Path) -> VideoInspection:
@@ -286,7 +286,7 @@ def default_probe(video: Path) -> VideoInspection:
         return VideoInspection(
             open_ok=False,
             open_error=stderr or "ffprobe reported no streams",
-            chapters=_chapters_from_payload(payload),
+            chapters=_chapters_from_payload(payload, video),
         )
     duration = None
     raw_duration = (payload.get("format") or {}).get("duration")
@@ -300,7 +300,7 @@ def default_probe(video: Path) -> VideoInspection:
         open_ok=True,
         open_error=error,
         duration=duration,
-        chapters=_chapters_from_payload(payload),
+        chapters=_chapters_from_payload(payload, video),
     )
 
 

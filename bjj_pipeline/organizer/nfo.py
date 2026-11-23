@@ -54,7 +54,9 @@ def tvshow_xml(plan: ShowPlan) -> ET.Element:
         _text(root, "premiered", plan.premiered.isoformat())
     if plan.year:
         _text(root, "year", plan.year)
-    _text(root, "studio", "BJJ Fanatics")
+    product = plan.show_product or (plan.seasons[0].product if plan.seasons else None)
+    studio = (product.studio if product and product.studio else "BJJ Fanatics")
+    _text(root, "studio", studio)
     if len(plan.instructors) == 1:
         _text(root, "director", plan.instructors[0])
     for index, name in enumerate(plan.instructors):
@@ -65,13 +67,20 @@ def tvshow_xml(plan: ShowPlan) -> ET.Element:
     for season in plan.seasons:
         named = ET.SubElement(root, "namedseason", number=str(season.number))
         named.text = season.source_name
-    show_ids = plan.show_product.unique_ids if plan.show_product else {}
-    product_id = show_ids.get("bjjfanatics")
-    if product_id:
-        _uniqueid(root, "bjjfanatics", product_id, default=True)
-        handle = show_ids.get("bjjfanatics-handle")
-        if handle:
-            _uniqueid(root, "bjjfanatics-handle", handle)
+    show_ids: dict[str, str] = {}
+    if plan.show_product and plan.show_product.unique_ids:
+        show_ids.update(plan.show_product.unique_ids)
+    elif product and product.unique_ids:
+        show_ids.update(product.unique_ids)
+    if show_ids:
+        default_set = False
+        for id_type, value in show_ids.items():
+            if not value:
+                continue
+            _uniqueid(root, id_type, value, default=not default_set)
+            default_set = True
+        if not default_set:
+            _uniqueid(root, "bjjfanatics", plan.unique_id, default=True)
     else:
         _uniqueid(root, "bjjfanatics", plan.unique_id, default=True)
     _lock_metadata(root)
@@ -138,3 +147,14 @@ def write_episode_nfo(show: ShowPlan, season: SeasonPlan, episode: EpisodePlan, 
     path = video_path.with_suffix(".nfo")
     _write(episode_xml(show, season, episode), path)
     return path
+
+
+def read_tvshow_title(folder: Path) -> str:
+    path = folder / "tvshow.nfo"
+    if not path.is_file():
+        return ""
+    try:
+        root = ET.parse(path).getroot()
+    except ET.ParseError:
+        return ""
+    return (root.findtext("title") or "").strip()

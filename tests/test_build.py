@@ -316,7 +316,7 @@ def test_other_side_of_disagreement_is_the_partner_job_stub():
             "step_bullets": ("inside arm wrap the tight waist around their waist",),
             "details": ({"speech_start": 460.91, "text": "wrap the tight waist"},),
         },
-        instructional="Half Guard BJJ Fundamentals - Go Further Faster",
+        instructional="Half Guard - Go Further Faster",
         video_file="Underhooks and Roll Through Sweep.mp4",
         ruleset="gi",
     )

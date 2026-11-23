@@ -60,6 +60,19 @@ def _show() -> ShowPlan:
     )
 
 
+def test_tvshow_nfo_uses_product_studio_and_unique_ids():
+    plan = _show()
+    plan.seasons[0].product.studio = "BudoVideos"
+    plan.seasons[0].product.unique_ids = {
+        "budovideos": "worm-guard-4-dvd-set-by-keenan-cornelius-preowned"
+    }
+    xml = tvshow_xml(plan)
+    blob = __import__("xml.etree.ElementTree", fromlist=["tostring"]).tostring(xml, encoding="unicode")
+    assert "<studio>BudoVideos</studio>" in blob
+    assert 'type="budovideos"' in blob
+    assert "worm-guard-4-dvd-set-by-keenan-cornelius-preowned" in blob
+
+
 def test_tvshow_nfo_lockdata_and_namedseason(tmp_path: Path):
     plan = _show()
     xml = tvshow_xml(plan)

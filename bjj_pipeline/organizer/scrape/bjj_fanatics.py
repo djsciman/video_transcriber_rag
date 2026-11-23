@@ -16,6 +16,9 @@ PLOT_STOP_HEADINGS = (
     "so, what exactly do you get",
     "so, what's on the series",
     "so, whats on the series",
+    "course features",
+    "leave a reply",
+    "you may like",
 )
 SKIP_TAGS = {
     "above-30",
@@ -47,13 +50,23 @@ def _clock_to_ms(text: str) -> int | None:
     return ((hours * 3600) + (minutes * 60) + seconds) * 1000
 
 
+def _unwrap_clock(text: str) -> str:
+    text = text.strip()
+    if text.startswith("(") and text.endswith(")") and text.count("(") == 1:
+        return text[1:-1].strip()
+    return text
+
+
 def parse_timestamp_ms(raw: str) -> int | None:
     text = raw.strip().replace(";", ":")
     # Ranges are "0 - 11:55" or, on some pages, "0- 2:44".
+    # Last chapter of a volume is often "2:44 - (16:02)": start, then
+    # volume end/duration in parentheses.
     if "-" in text:
         left, right = re.split(r"\s*-\s*", text, maxsplit=1)
-        if _clock_to_ms(right.strip()) is not None:
+        if _clock_to_ms(_unwrap_clock(right)) is not None:
             text = left.strip()
+    text = _unwrap_clock(text)
     if not text:
         return None
     return _clock_to_ms(text)
@@ -93,12 +106,16 @@ def _parse_premiered(value: str | None) -> date | None:
     return None
 
 
+def _plot_stop_heading(text: str) -> bool:
+    return re.sub(r"\s+", " ", text).strip().lower() in PLOT_STOP_HEADINGS
+
+
 def clean_plot(body_html: str) -> str:
     if "<!-- split -->" in body_html:
         body_html = body_html.split("<!-- split -->", 1)[0]
     soup = BeautifulSoup(body_html, "lxml")
     for heading in soup.find_all(["h1", "h2", "h3"]):
-        if heading.get_text(" ", strip=True).lower() in PLOT_STOP_HEADINGS:
+        if _plot_stop_heading(heading.get_text(" ", strip=True)):
             for sibling in list(heading.find_all_next()):
                 sibling.decompose()
             heading.decompose()
@@ -234,7 +251,10 @@ def parse_description_volumes(html: str) -> list[Volume]:
         cursor = index + 1
         while cursor < len(nodes):
             nxt = nodes[cursor]
-            if nxt.name not in {"ul", "ol"} and _part_heading(nxt.get_text(" ", strip=True)):
+            heading_text = nxt.get_text(" ", strip=True)
+            if nxt.name not in {"ul", "ol"} and _part_heading(heading_text):
+                break
+            if nxt.name in {"h1", "h2", "h3", "h4"} and _plot_stop_heading(heading_text):
                 break
             if nxt.name in {"ul", "ol"}:
                 for li in nxt.find_all("li", recursive=False):
@@ -242,7 +262,11 @@ def parse_description_volumes(html: str) -> list[Volume]:
                     if title:
                         chapters.append(Chapter(title=title, start_ms=0))
                 cursor += 1
-                break
+                continue
+            if nxt.name in {"h1", "h2", "h3", "h4"}:
+                title = _chapter_title(heading_text)
+                if title:
+                    chapters.append(Chapter(title=title, start_ms=0))
             cursor += 1
         if chapters:
             name = f"Volume {number}"

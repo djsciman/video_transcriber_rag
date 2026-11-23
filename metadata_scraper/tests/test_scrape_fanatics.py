@@ -15,6 +15,27 @@ from bjj_organizer.scrape.bjj_fanatics import (
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
+def test_course_row_keeps_last_chapter_when_end_clock_is_parenthesized():
+    html = """
+    <div class="product__course-content-accordion">
+      <h3 class="product__course-title">Volume 1</h3>
+      <div class="product__course-content">
+        <table>
+          <tr><td>Introduction</td><td>0</td></tr>
+          <tr><td>Shoulder Crunch Sumi Gaeshi: Order Of Operations</td><td>2:44 - (16:02)</td></tr>
+        </table>
+      </div>
+    </div>
+    """
+    volumes = parse_course_content(html)
+    assert [chapter.title for chapter in volumes[0].chapters] == [
+        "Introduction",
+        "Shoulder Crunch Sumi Gaeshi: Order Of Operations",
+    ]
+    assert volumes[0].chapters[0].start_ms == 0
+    assert volumes[0].chapters[1].start_ms == (2 * 60 + 44) * 1000
+
+
 def test_course_row_keeps_chapter_when_range_hyphen_has_no_space():
     html = """
     <div class="product__course-content-accordion">
@@ -277,6 +298,33 @@ def test_description_parts_become_volumes_without_timestamps():
     assert [chapter.title for chapter in volumes[0].chapters] == ["Intro", "Goal setting"]
     assert volumes[1].chapters[1].title == "Jack"
     assert all(chapter.start_ms == 0 for volume in volumes for chapter in volume.chapters)
+
+
+def test_description_parts_collect_lists_and_headings_until_next_part():
+    html = """
+    <h2>Part 1</h2>
+    <ul><li>INTRO</li></ul>
+    <h2>APPALACHIAN MOUNTAIN</h2>
+    <ul>
+      <li>INTRO TO DRILLS</li>
+      <li>WARM UPS</li>
+    </ul>
+    <h2>Part 2</h2>
+    <h2>MOUNTAIN DEW MAYHEM</h2>
+    <ul><li>STANDARD OUTSIDE HEEL HOOK</li></ul>
+    """
+    volumes = parse_description_volumes(html)
+    assert [volume.name for volume in volumes] == ["Volume 1", "Volume 2"]
+    assert [chapter.title for chapter in volumes[0].chapters] == [
+        "INTRO",
+        "APPALACHIAN MOUNTAIN",
+        "INTRO TO DRILLS",
+        "WARM UPS",
+    ]
+    assert [chapter.title for chapter in volumes[1].chapters] == [
+        "MOUNTAIN DEW MAYHEM",
+        "STANDARD OUTSIDE HEEL HOOK",
+    ]
 
 
 def test_product_uses_description_when_page_has_no_accordion():

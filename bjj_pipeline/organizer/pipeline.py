@@ -34,10 +34,10 @@ from .naming import (
     season_folder_number,
     series_stem,
     show_slug,
-    show_title,
     volume_episode_filename,
 )
-from .nfo import write_episode_nfo, write_season_nfo, write_tvshow_nfo
+from .nfo import read_tvshow_title, write_episode_nfo, write_season_nfo, write_tvshow_nfo
+from .show_folders import dest_show_folder, show_display_title
 from .scrape.base import fetch_product
 from .split import remux_copy
 
@@ -61,9 +61,14 @@ class RuntimeOptions:
 
 
 def parse_url_arg(raw: str) -> tuple[str | None, str]:
-    text = raw.strip()
-    if text.startswith("http://") or text.startswith("https://"):
+    text = raw.strip().strip('"')
+    if text.startswith(("http://", "https://", "file://")):
         return None, text
+    local = Path(text).expanduser()
+    if local.suffix.lower() in {".json", ".pdf"}:
+        if not local.is_absolute():
+            local = local.resolve()
+        return None, local.as_uri()
     if "=" in text:
         key, url = text.split("=", 1)
         key, url = key.strip(), url.strip()
@@ -72,7 +77,10 @@ def parse_url_arg(raw: str) -> tuple[str | None, str]:
                 f"Invalid --url {raw!r}. Use a single product URL per instructional folder, "
                 "not SeasonFolder=https://..."
             )
-    raise UsageError(f"Invalid --url {raw!r}. Use a bare https URL.")
+    raise UsageError(
+        f"Invalid --url {raw!r}. Use a bare https URL, file:// course JSON/PDF, "
+        "or a local .json/.pdf path."
+    )
 
 
 def _url_aliases(source_name: str, folder_name: str, show_folder: str) -> list[str]:
@@ -525,7 +533,8 @@ def build_plan(
     instructors = _unique_instructors([s.product.instructor for s in season_plans])
     if show_product and show_product.instructor:
         instructors = _unique_instructors([show_product.instructor])
-    title = show_title(folder.name, instructors)
+    title = show_display_title(folder.name, instructors, read_tvshow_title(folder))
+    dest_name = dest_show_folder(folder.name, instructors)
     for season in season_plans:
         for episode in season.episodes:
             if season.keep_dest:
@@ -556,7 +565,7 @@ def build_plan(
 
     return ShowPlan(
         source_dir=folder,
-        dest_name=title,
+        dest_name=dest_name,
         title=title,
         instructors=instructors,
         seasons=season_plans,
@@ -743,6 +752,33 @@ def _wants_chapter_remux(episode: EpisodePlan, options: RuntimeOptions) -> bool:
     return any(ch.title.strip() for ch in episode.chapters)
 
 
+def _container_chapters_match(source: Path, chapters: list[Chapter], ffprobe: str) -> bool:
+    """True when the file already has the scraped chapter titles."""
+    try:
+        count = probe_chapter_count(source, ffprobe)
+    except Exception:
+        return False
+    if count <= 0:
+        return False
+    wanted = [ch.title.strip() for ch in chapters if ch.title.strip()]
+    if not wanted:
+        return True
+    try:
+        existing = probe_chapter_titles(source, ffprobe)
+    except Exception:
+        return True
+    return [title.strip().casefold() for title in existing] == [title.casefold() for title in wanted]
+
+
+def _relocate_chapter_sidecars(source: Path, dest: Path) -> None:
+    for suffix in ("_chapters.csv", "_chapternames.csv"):
+        sidecar = source.with_name(source.stem + suffix)
+        if not sidecar.is_file():
+            continue
+        target = dest.with_name(dest.stem + suffix)
+        _move_file(sidecar, target)
+
+
 def _needs_ffmpeg(plan: ShowPlan, options: RuntimeOptions) -> bool:
     if options.container == "mkv":
         return True
@@ -766,13 +802,14 @@ def _place_single_file(
     wants_remux = _wants_chapter_remux(episode, options)
     if wants_remux:
         assert ffprobe
-        if probe_chapter_count(source, ffprobe) > 0:
+        if _container_chapters_match(source, episode.chapters, ffprobe):
             wants_remux = False
     if options.container == "mkv" and not wants_remux:
         assert ffmpeg and ffprobe
         remux_copy(source, dest, ffmpeg, ffprobe)
         if source.exists() and source.resolve() != dest.resolve():
             source.unlink()
+        _relocate_chapter_sidecars(source, dest)
         return
     if wants_remux:
         assert ffmpeg and ffprobe
@@ -786,8 +823,10 @@ def _place_single_file(
         )
         if source.exists() and source.resolve() != dest.resolve():
             source.unlink()
+        _relocate_chapter_sidecars(source, dest)
         return
     _move_file(source, dest)
+    _relocate_chapter_sidecars(source, dest)
 
 
 def _repair_step(options: RuntimeOptions, letter: str) -> bool:
@@ -901,6 +940,7 @@ def apply_plan(plan: ShowPlan, options: RuntimeOptions) -> None:
         if plan.dest_name != show_dir.name:
             dest_show = show_dir.with_name(plan.dest_name)
             rename_directory(show_dir, dest_show)
+            plan.source_dir = dest_show
 
 
 def run(

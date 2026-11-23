@@ -8,6 +8,19 @@ from pathlib import Path
 
 import run_pipeline
 
+_DONE_TRANSCRIPT = json.dumps(
+    {
+        "chapters": [
+            {
+                "title": "Volume 1",
+                "start": 0.0,
+                "end": 1.0,
+                "transcript_raw": "<0.00> nested",
+            }
+        ]
+    }
+)
+
 
 def _show(library: Path, name: str) -> Path:
     path = library / name
@@ -44,7 +57,7 @@ def _standins():
         if output.is_file():
             return 0
         output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text('{"segments": []}', encoding="utf-8")
+        output.write_text(_DONE_TRANSCRIPT, encoding="utf-8")
         return 0
 
     def prepare(json_path: Path, corpus_root: Path, video_library_root: Path | None = None) -> int:
@@ -176,7 +189,7 @@ def test_skip_when_artifacts_exist(tmp_path: Path):
     corpus = tmp_path / "corpus"
     out_json = corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
     out_json.parent.mkdir(parents=True)
-    out_json.write_text('{"segments": []}', encoding="utf-8")
+    out_json.write_text(_DONE_TRANSCRIPT, encoding="utf-8")
 
     code, out, calls = _run(library, corpus, apply=True, chapter_count=lambda _video: 2)
 
@@ -203,7 +216,7 @@ def test_force_reruns_all_selected_stages(tmp_path: Path):
     corpus = tmp_path / "corpus"
     out_json = corpus / show.name / "Volume 1.json"
     out_json.parent.mkdir(parents=True)
-    out_json.write_text('{"segments": []}', encoding="utf-8")
+    out_json.write_text(_DONE_TRANSCRIPT, encoding="utf-8")
 
     code, out, calls = _run(library, corpus, apply=True, force=True)
 
@@ -233,7 +246,7 @@ def test_force_stage_reruns_only_that_unit(tmp_path: Path):
     corpus = tmp_path / "corpus"
     out_json = corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
     out_json.parent.mkdir(parents=True)
-    out_json.write_text('{"segments": []}', encoding="utf-8")
+    out_json.write_text(_DONE_TRANSCRIPT, encoding="utf-8")
 
     code, out, calls = _run(
         library, corpus, apply=True, force_stage="organize", chapter_count=lambda _video: 2
@@ -486,7 +499,7 @@ def test_embed_flag_is_separate_from_apply(tmp_path: Path):
     corpus = tmp_path / "corpus"
     out_json = corpus / show.name / "Volume 1.json"
     out_json.parent.mkdir(parents=True)
-    out_json.write_text('{"segments": []}', encoding="utf-8")
+    out_json.write_text(_DONE_TRANSCRIPT, encoding="utf-8")
 
     code, out, calls = _run(library, corpus, apply=True, embed=True)
 
@@ -567,14 +580,14 @@ def test_transcribe_walks_post_organize_volumes_not_pre_concat_clips(tmp_path: P
     assert [item["video"].name for item in calls["detect"]] == ["S01E01 - Volume 1.mp4"]
 
 
-def test_apply_stamps_transcript_when_segments_exist(tmp_path: Path):
+def test_apply_stamps_transcript_when_transcript_raw_exists(tmp_path: Path):
     library = tmp_path / "lib"
     library.mkdir()
     show = _organized_show(library, "Half Guard Anthology", ["S01E01 - Volume 1.mp4"])
     corpus = tmp_path / "corpus"
     out_json = corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
     out_json.parent.mkdir(parents=True)
-    out_json.write_text('{"segments": []}', encoding="utf-8")
+    out_json.write_text(_DONE_TRANSCRIPT, encoding="utf-8")
 
     code, out, calls = _run(library, corpus, apply=True, chapter_count=lambda _video: 2)
 
@@ -585,7 +598,7 @@ def test_apply_stamps_transcript_when_segments_exist(tmp_path: Path):
     assert any(line.startswith("SKIP") and "transcribe" in line for line in out.splitlines())
 
 
-def test_dry_run_skips_transcribe_when_segments_exist(tmp_path: Path):
+def test_dry_run_runs_transcribe_when_only_segments_exist(tmp_path: Path):
     library = tmp_path / "lib"
     library.mkdir()
     show = _organized_show(library, "Half Guard Anthology", ["S01E01 - Volume 1.mp4"])
@@ -593,6 +606,23 @@ def test_dry_run_skips_transcribe_when_segments_exist(tmp_path: Path):
     out_json = corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
     out_json.parent.mkdir(parents=True)
     out_json.write_text('{"segments": []}', encoding="utf-8")
+
+    code, out, calls = _run(library, corpus, apply=False, chapter_count=lambda _video: 2)
+
+    assert code == 0
+    assert calls["transcribe"] == []
+    assert any(line.startswith("RUN") and "transcribe" in line for line in out.splitlines())
+    assert not any(line.startswith("SKIP") and "transcribe" in line for line in out.splitlines())
+
+
+def test_dry_run_skips_transcribe_when_transcript_raw_exists(tmp_path: Path):
+    library = tmp_path / "lib"
+    library.mkdir()
+    show = _organized_show(library, "Half Guard Anthology", ["S01E01 - Volume 1.mp4"])
+    corpus = tmp_path / "corpus"
+    out_json = corpus / show.name / "Season 01" / "S01E01 - Volume 1.json"
+    out_json.parent.mkdir(parents=True)
+    out_json.write_text(_DONE_TRANSCRIPT, encoding="utf-8")
 
     code, out, calls = _run(library, corpus, apply=False, chapter_count=lambda _video: 2)
 
@@ -1249,7 +1279,7 @@ def test_completer_down_nests_raw_prints_fail_then_retry_fills_cleaned(
     assert guard["techniques"] == []
 
 
-def test_prepare_skips_whole_recording_chapter(tmp_path: Path):
+def test_prepare_runs_whole_recording_chapter(tmp_path: Path):
     library = tmp_path / "lib"
     library.mkdir()
     show = _organized_show(
@@ -1273,15 +1303,16 @@ def test_prepare_skips_whole_recording_chapter(tmp_path: Path):
     )
 
     code, out, calls = _run(
-        library, corpus, apply=True, chapter_count=lambda _video: 2
+        library, corpus, apply=True, chapter_count=lambda _video: 1
     )
 
     assert code == 0
-    assert calls["prepare"] == []
-    assert _prepare_line(out, "SKIP")
+    assert len(calls["prepare"]) == 1
+    assert calls["prepare"][0]["json_path"] == out_json
+    assert _prepare_line(out, "RUN")
 
 
-def test_prepare_skips_single_partial_chapter(tmp_path: Path):
+def test_prepare_runs_single_partial_chapter(tmp_path: Path):
     library = tmp_path / "lib"
     library.mkdir()
     show = _organized_show(
@@ -1305,12 +1336,13 @@ def test_prepare_skips_single_partial_chapter(tmp_path: Path):
     )
 
     code, out, calls = _run(
-        library, corpus, apply=True, chapter_count=lambda _video: 2
+        library, corpus, apply=True, chapter_count=lambda _video: 1
     )
 
     assert code == 0
-    assert calls["prepare"] == []
-    assert _prepare_line(out, "SKIP")
+    assert len(calls["prepare"]) == 1
+    assert calls["prepare"][0]["json_path"] == out_json
+    assert _prepare_line(out, "RUN")
 
 
 def test_prepare_fail_exits_1(tmp_path: Path):

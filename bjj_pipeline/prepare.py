@@ -25,6 +25,7 @@ from .batch_panoscribe import (
     output_path_for,
     select_videos,
 )
+from .organizer.naming import parse_video, sole_chapter_title
 
 SEASON_FOLDER = re.compile(r"^Season\s*(\d+)$", re.IGNORECASE)
 _BY = re.compile(r"\s+by\s+", re.IGNORECASE)
@@ -206,6 +207,12 @@ def prepare_volume(
     volume = payload.get("video_file")
     if not isinstance(volume, str):
         volume = ""
+    if len(chapters) == 1 and isinstance(chapters[0], dict):
+        chapters[0] = dict(chapters[0])
+        chapters[0]["title"] = sole_chapter_title(
+            parse_video(Path(volume) if volume else json_path),
+            str(chapters[0].get("title") or ""),
+        )
 
     model_ok = True
     nested: list = []
@@ -455,18 +462,15 @@ def _real_chapters(chapters: list) -> list:
 def _eligible_chapters(chapters, segments: list) -> bool:
     if not isinstance(chapters, list) or not chapters:
         return False
-    if len(_real_chapters(chapters)) < 2:
-        return False
-    if _covers_whole_recording(chapters, segments):
-        return False
-    return True
+    real = _real_chapters(chapters)
+    return bool(real) and len(real) == len(chapters)
 
 
 def _eligible_nested(chapters) -> bool:
     if not isinstance(chapters, list):
         return False
     real = _real_chapters(chapters)
-    if len(real) < 2:
+    if not real or len(real) != len(chapters):
         return False
     return all(isinstance(chapter.get("transcript_raw"), str) for chapter in real)
 
@@ -524,25 +528,6 @@ def prepare_done(output: Path, *, llm: bool = False, method: str = DEFAULT_LLM_M
         needs = _chapter_needs_staged if method == "staged" else _chapter_needs_llm
         return not any(needs(chapter) for chapter in real)
     return True
-
-
-def _covers_whole_recording(chapters: list, segments: list) -> bool:
-    if len(chapters) != 1 or not isinstance(chapters[0], dict):
-        return False
-    chapter = chapters[0]
-    starts = [
-        span["start"]
-        for span in segments
-        if isinstance(span, dict) and "start" in span
-    ]
-    ends = [
-        span["end"]
-        for span in segments
-        if isinstance(span, dict) and "end" in span
-    ]
-    if not starts or not ends:
-        return True
-    return chapter["start"] <= min(starts) and chapter["end"] >= max(ends)
 
 
 def _instructional_name(json_path: Path, corpus_root: Path) -> str:
