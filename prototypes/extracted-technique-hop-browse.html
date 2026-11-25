@@ -106,6 +106,7 @@
     }
     .pill-star { background: var(--star-soft); color: var(--star); }
     .pill-nogi { background: var(--nogi-soft); color: var(--nogi); }
+    .pill-gi { background: #dbeafe; color: var(--gi); }
     .pill-ok { background: var(--ok-soft); color: var(--ok); }
     .pill-proto { background: #e7e5e4; color: #44403c; }
     button {
@@ -138,9 +139,12 @@
       border-radius: 8px;
       background: #fff;
       min-height: 12rem;
+      max-height: 22rem;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
+    .col .opts { overflow: auto; flex: 1; }
     .col h3 {
       margin: 0;
       padding: .45rem .55rem;
@@ -182,11 +186,12 @@
     /* C: facets */
     .c-layout { display: grid; grid-template-columns: 16rem 1fr; gap: .8rem; }
     @media (max-width: 800px) { .c-layout { grid-template-columns: 1fr; } }
-    .facet { margin-bottom: .7rem; }
+    .facet { margin-bottom: .7rem; max-height: 11rem; overflow: auto; }
     .facet h3 { margin: 0 0 .3rem; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
     .facet button { display: block; width: 100%; text-align: left; padding: .35rem .5rem; margin: .15rem 0; }
 
-    .rows { display: flex; flex-direction: column; gap: .45rem; }
+    .rows { display: flex; flex-direction: column; gap: .45rem; max-height: 22rem; overflow: auto; }
+    .chips { max-height: 18rem; overflow: auto; }
     .row {
       text-align: left;
       padding: .7rem .8rem;
@@ -246,9 +251,8 @@
   <header class="page">
     <h1>Hop browse over sample extracted techniques</h1>
     <p class="meta">
-      Three layouts of the same walk on Marcelo Butterfly S01E01.
+      Three layouts of the same walk on 227 rows: Marcelo Butterfly S01E01, Danaher Enter the System leglocks, and Danaher Go Further Faster closed guard.
       Start occupancy, start position, type of move, end, named move, instructor, then a row with steps and a playback time.
-      This volume is all bottom butterfly guard and one instructor; later hops still branch.
     </p>
   </header>
 
@@ -274,17 +278,12 @@
     <button type="button" id="next-v" aria-label="Next variant">→</button>
   </div>
 
+  <script src="extracted-technique-hop-browse-data.js"></script>
   <script>
 (function () {
   "use strict";
 
-  var ROWS = [
-    {"id":"process","instructor":"Marcelo Garcia","instructional":"Butterfly by Marcelo Garcia","volume":"Butterfly by Marcelo Garcia - S01E01 - Volume 1.mp4","chapter_title":"BUTTERFLY SWEEP PROCESS","chapter_start":1055,"named_move":"Butterfly sweep","ruleset":"no-gi","move_type":"sweep","start_occupancy":"bottom","start_position":"butterfly-guard","end_occupancy":"top","end_position":"half-guard","technique_steps":"1. Butterfly guard, bottom: close the distance with a strong posture, elbows closed but able to maneuver, and attack so the opponent has to defend.\n2. Take a good underhook: send the hand deeper, higher and farther, and keep the elbow up rather than clamping it down.\n3. Push his elbow in and concentrate on keeping that arm in; do not push the elbow back and do not pull it in.\n4. Once the underhook is clamped and the elbow is in, go immediately with the sweep; do not hold that position.\n5. Close the distance with the hook, bringing the butt as close as possible to the heels.\n6. Scoop and pull his weight off the ground, then guide that weight so his back goes to the floor, not onto you.\n7. Lift as high as needed while turning halfway so your shoulder and side go to the floor, not a flat back.\n8. Keep the lifting knee pointed up and out, never in, until he falls, so the knee does not buckle and collapse the sweep.\n9. Post the other knee close, down, and closed to help get him off the ground, then lift that hook as well.\n10. Come up and hold the top position, even if the landing is half guard.","main_ideas":"Attack so he has to defend; a deep no-gi underhook with the elbow up only works if you push his elbow in and go immediately. Scoop him off the ground and turn onto your shoulder so his back hits the mat, not you. Keep the lifting knee pointed out until he falls, and hold top even if you land in half guard.","source_time_ranges":["1036.24-1603.98"]},
-    {"id":"reshot","instructor":"Marcelo Garcia","instructional":"Butterfly by Marcelo Garcia","volume":"Butterfly by Marcelo Garcia - S01E01 - Volume 1.mp4","chapter_title":"SHOOT & RESHOOT","chapter_start":1627,"named_move":"Butterfly sweep","ruleset":"no-gi","move_type":"sweep","start_occupancy":"bottom","start_position":"butterfly-guard","end_occupancy":"top","end_position":"mount*","technique_steps":"1. Butterfly guard, bottom: close the distance and commit to the sweep.\n2. When the opponent sinks his weight back so you are not close enough to finish, stay in the middle instead of falling back or backing away to reset.\n3. Scoop forward from there and get under again without going back to sit up.\n4. Compress the same sweep and reshoot immediately so he does not have time to stop you twice.","main_ideas":"Do not back away when he sinks his weight and shuts the first sweep. Reshoot from the middle on a quicker beat so he has to stop you twice.","source_time_ranges":["1637.22-1869.25"]},
-    {"id":"farside","instructor":"Marcelo Garcia","instructional":"Butterfly by Marcelo Garcia","volume":"Butterfly by Marcelo Garcia - S01E01 - Volume 1.mp4","chapter_title":"FAR SIDE SWEEP TO COUNTER UNDERHOOK PASS","chapter_start":1897,"named_move":"Butterfly sweep*","ruleset":"no-gi","move_type":"sweep","start_occupancy":"bottom","start_position":"butterfly-guard","end_occupancy":"top","end_position":"mount*","technique_steps":"1. Butterfly guard, bottom: close the distance and engage with the butterfly sweep setup.\n2. When the opponent is stronger, changes your angle, and drives you the opposite way, go to the mat first, accelerating his dump so you arrive ahead of his move.\n3. As you drop, before he closes into you, frame with the free arm; one arm may already be stuck.\n4. As soon as you have space, repummel and suck the stuck hand out.\n5. Get both hands in front of him and sit up; even without a full sit-up, pummel the underhook and work your way up.\n6. Use your hook to push him off you so you can dig under again.\n7. Get under, secure the underhook, and control him.\n8. Rebuild the same butterfly sweep toward the opposite side: push his elbow in and pick him out of the ground.\n9. As soon as you sit up or get up on your knee, keep moving forward, close the distance, and complete the opposite-side sweep.","main_ideas":"When he dumps you the other way, get to the mat first, frame, and rebuild the same sweep to the opposite side. Reconnect immediately; waiting lets him pin or pass the other underhook.","source_time_ranges":["1908.40-2242.40"]},
-    {"id":"twoonone","instructor":"Marcelo Garcia","instructional":"Butterfly by Marcelo Garcia","volume":"Butterfly by Marcelo Garcia - S01E01 - Volume 1.mp4","chapter_title":"2-ON-1 SWEEP","chapter_start":2248,"named_move":"2-on-1 sweep*","ruleset":"no-gi","move_type":"sweep","start_occupancy":"bottom","start_position":"butterfly-guard","end_occupancy":"top","end_position":"mount*","technique_steps":"1. Butterfly guard, bottom: close the distance, looking for hand control, elbow control, an underhook, or a double underhook.\n2. When the opponent has one knee up, take a two-on-one on the opposite arm (right arm if the left knee is up), controlling the elbow and the wrist. The wrist can come from grabbing the top or grabbing the body.\n3. Connect the two-on-one only long enough to scoop forward and get the butt close to the heels.\n4. Lift with the (inside) hook while maintaining the two-on-one on the arm.\n5. Walk the feet in to stay close as the opponent is thrown, so he cannot use the momentum to recover to his knees.\n6. Get the feet on the ground and come up on top, taking the underhook if available.","main_ideas":"When one knee is up, take the two-on-one on the opposite arm and only help him fall; do not hold the grip. Follow faster than you throw him so you finish on top. If the other knee is up, look for single-leg X, an ankle pick, or a single leg instead.","source_time_ranges":["2242.40-2565.04"]},
-    {"id":"backtake","instructor":"Marcelo Garcia","instructional":"Butterfly by Marcelo Garcia","volume":"Butterfly by Marcelo Garcia - S01E01 - Volume 1.mp4","chapter_title":"KICK SPIN BACKTAKE","chapter_start":2580,"named_move":"Kick spin backtake*","ruleset":"no-gi","move_type":"back-take","start_occupancy":"bottom","start_position":"butterfly-guard","end_occupancy":"top","end_position":"back-control","technique_steps":"1. Butterfly guard, bottom: close the distance. His knee is down. Get a two-on-one and hold it solid.\n2. When the two-on-one is strong, pick him up as high as you can instead of sweeping, so you have room to circle him.\n3. Use the two-on-one to rotate him and the hook to lift him high, and make him turn.\n4. Halfway, take one hook out so he falls inside your hooks; as he turns, the remaining butterfly hook becomes a back hook.\n5. Scoop and keep him up, bring him high, and push the controlled arm away.\n6. At the same time, one hand goes over the shoulder and the other hand keeps this out. Put the other hook if you can.\n7. Establish his back and start looking to get a choke.","main_ideas":"When the knee is down, pick him high off a solid two-on-one and dump him into the remaining hook as it becomes a back hook. Throw first; the back lets you score and finish.","source_time_ranges":["2596.78-2825.60"]}
-  ];
+  var ROWS = window.HOP_BROWSE_ROWS || [];
 
   var STEPS = [
     { key: "occupancy", label: "Start occupancy", get: function (r) { return r.start_occupancy; } },
@@ -486,8 +485,8 @@
     return (
       '<button type="button" class="row' + (selected ? " active" : "") + '" data-open="' + row.id + '">' +
         "<h4>" + pretty(row.named_move) + " " + starMark(row.named_move) + "</h4>" +
-        '<div class="meta">' + row.chapter_title + " · " + fmtTime(t) +
-        ' · <span class="pill pill-nogi">' + row.ruleset + "</span></div>" +
+        '<div class="meta">' + row.instructor + " · " + row.chapter_title + " · " + fmtTime(t) +
+        ' · <span class="pill ' + ({ gi: "pill-gi", "no-gi": "pill-nogi" }[starStrip(row.ruleset)] || "pill-ok") + '">' + row.ruleset + "</span></div>" +
       "</button>"
     );
   }
@@ -522,7 +521,7 @@
     document.getElementById("state-panel").innerHTML =
       "<h2>Walk state</h2><dl class=\"state-grid\">" + hops +
       "<div><dt>Open row</dt><dd>" + (row ? row.chapter_title : "—") + "</dd></div>" +
-      "<div><dt>Matching</dt><dd>" + matching(state.hops).length + " of 5</dd></div>" +
+      "<div><dt>Matching</dt><dd>" + matching(state.hops).length + " of " + ROWS.length + "</dd></div>" +
       "<div><dt>Last change</dt><dd>" + state.lastChanged + "</dd></div>" +
       "<div><dt>Playback</dt><dd>" + (state.playback ? state.playback.label + " " + state.playback.chapter : "—") + "</dd></div>" +
       "</dl>";
@@ -537,7 +536,7 @@
         return '<button type="button" class="opt' + (on ? " active" : "") + '" data-hop="' + step.key + '" data-val="' + encodeURIComponent(o.value) + '">' +
           o.label + '<span class="n">' + o.n + "</span></button>";
       }).join("") || '<div class="empty">Pick the hop before this.</div>';
-      return '<div class="col' + (ready ? "" : " dim") + '"><h3>' + step.label + "</h3>" + items + "</div>";
+      return '<div class="col' + (ready ? "" : " dim") + '"><h3>' + step.label + "</h3><div class=\"opts\">" + items + "</div></div>";
     }).join("");
     var rows = matching(state.hops);
     var list = rows.map(function (r) { return rowCard(r, r.id === state.selectedId); }).join("");
