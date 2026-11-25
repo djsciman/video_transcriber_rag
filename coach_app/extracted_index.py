@@ -38,6 +38,37 @@ _ROW_SELECT = """
 
 _ROW_ORDER = "video_file, chapter_start, kind, array_index"
 
+MINILM_MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"
+MINILM_PROVIDERS = ["CPUExecutionProvider"]
+
+
+def TextEmbedding(*args, **kwargs):
+    """FastEmbed constructor seam. Lazy-imports so tests never load the model."""
+    from fastembed import TextEmbedding as FastEmbedTextEmbedding
+
+    return FastEmbedTextEmbedding(*args, **kwargs)
+
+
+class MiniLMEmbedder:
+    """CPU MiniLM-L6 via FastEmbed. Same model for ingest and query; no prefix."""
+
+    def __init__(self, model=None) -> None:
+        if model is None:
+            model = TextEmbedding(
+                model_name=MINILM_MODEL_ID,
+                providers=MINILM_PROVIDERS,
+            )
+        self._model = model
+
+    def __call__(self, text: str) -> list[float]:
+        return self.embed_query(text)
+
+    def embed_query(self, text: str) -> list[float]:
+        vector = next(iter(self._model.embed([text])))
+        if hasattr(vector, "tolist"):
+            vector = vector.tolist()
+        return [float(x) for x in vector]
+
 
 @dataclass(frozen=True)
 class ExtractedRow:
@@ -167,6 +198,32 @@ class ExtractedIndex:
                     corpus_json_path=json_path,
                     embedding=embedding,
                 )
+
+    def embedding(self, row: ExtractedRow) -> tuple[float, ...] | None:
+        cursor = self._conn.execute(
+            """
+            SELECT embedding FROM extract
+            WHERE video_file = ? AND chapter_title = ? AND chapter_start = ?
+              AND kind = ? AND array_index = ?
+            """,
+            (
+                row.video_file,
+                row.chapter_title,
+                row.chapter_start,
+                row.kind,
+                row.array_index,
+            ),
+        )
+        sql_row = cursor.fetchone()
+        if sql_row is None or sql_row["embedding"] is None:
+            return None
+        return tuple(array.array("f", sql_row["embedding"]))
+
+    def embed_query(self, text: str) -> list[float]:
+        embedder = self._resolve_embedder()
+        if hasattr(embedder, "embed_query"):
+            return list(embedder.embed_query(text))
+        return list(embedder(text))
 
     def rows(self) -> tuple[ExtractedRow, ...]:
         return self._query_rows()
@@ -364,10 +421,13 @@ class ExtractedIndex:
         )
         self._conn.commit()
 
-    def _embedding_blob(self, text: str) -> bytes | None:
+    def _resolve_embedder(self):
         if self._embedder is None:
-            return None
-        vector = self._embedder(text)
+            self._embedder = MiniLMEmbedder()
+        return self._embedder
+
+    def _embedding_blob(self, text: str) -> bytes | None:
+        vector = self._resolve_embedder()(text)
         return array.array("f", vector).tobytes()
 
     def _row_from_sql(self, row: sqlite3.Row) -> ExtractedRow:
