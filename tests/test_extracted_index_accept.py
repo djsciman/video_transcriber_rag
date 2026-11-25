@@ -201,6 +201,7 @@ def test_optional_write_back_updates_only_matching_technique(tmp_path):
         row,
         {"technique_steps": CORRECTED_STEP},
         write_back_corpus=True,
+        corpus_root=tmp_path,
     )
     written = json.loads(corpus.read_text(encoding="utf-8"))
     techniques = written["chapters"][0]["techniques"]
@@ -226,7 +227,9 @@ def test_write_back_after_save_and_accept_strips_star_in_corpus(tmp_path):
     corpus.write_text(json.dumps(payload), encoding="utf-8")
     index = ExtractedIndex(embedder=_stub_embedder)
     index.ingest_chapter(_volume(), payload["chapters"][0], corpus_json_path=corpus)
-    index.save_and_accept(index.rows()[0], {}, write_back_corpus=True)
+    index.save_and_accept(
+        index.rows()[0], {}, write_back_corpus=True, corpus_root=tmp_path
+    )
     written = json.loads(corpus.read_text(encoding="utf-8"))
     assert written["chapters"][0]["techniques"][0]["end_position"] == "mount"
 

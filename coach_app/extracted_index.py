@@ -392,22 +392,54 @@ class ExtractedIndex:
         cursor = self._conn.execute(sql, params)
         return tuple(self._row_from_sql(row) for row in cursor)
 
-    def save(self, row, fields, *, write_back_corpus=False) -> None:
-        self._write_finder(row, fields, accept=False, write_back_corpus=write_back_corpus)
+    def save(self, row, fields, *, write_back_corpus=False, corpus_root=None) -> None:
+        self._write_finder(
+            row,
+            fields,
+            accept=False,
+            write_back_corpus=write_back_corpus,
+            corpus_root=corpus_root,
+        )
 
-    def save_and_accept(self, row, fields, *, write_back_corpus=False) -> None:
-        self._write_finder(row, fields, accept=True, write_back_corpus=write_back_corpus)
+    def save_and_accept(
+        self, row, fields, *, write_back_corpus=False, corpus_root=None
+    ) -> None:
+        self._write_finder(
+            row,
+            fields,
+            accept=True,
+            write_back_corpus=write_back_corpus,
+            corpus_root=corpus_root,
+        )
 
-    def accept(self, row, *, write_back_corpus=False) -> None:
-        self._write_finder(row, {}, accept=True, write_back_corpus=write_back_corpus)
+    def accept(self, row, *, write_back_corpus=False, corpus_root=None) -> None:
+        self._write_finder(
+            row,
+            {},
+            accept=True,
+            write_back_corpus=write_back_corpus,
+            corpus_root=corpus_root,
+        )
 
-    def save_many(self, rows, fields, *, write_back_corpus=False) -> None:
+    def save_many(self, rows, fields, *, write_back_corpus=False, corpus_root=None) -> None:
         for item in rows:
-            self.save(item, fields, write_back_corpus=write_back_corpus)
+            self.save(
+                item,
+                fields,
+                write_back_corpus=write_back_corpus,
+                corpus_root=corpus_root,
+            )
 
-    def save_and_accept_many(self, rows, fields, *, write_back_corpus=False) -> None:
+    def save_and_accept_many(
+        self, rows, fields, *, write_back_corpus=False, corpus_root=None
+    ) -> None:
         for item in rows:
-            self.save_and_accept(item, fields, write_back_corpus=write_back_corpus)
+            self.save_and_accept(
+                item,
+                fields,
+                write_back_corpus=write_back_corpus,
+                corpus_root=corpus_root,
+            )
 
     def close(self) -> None:
         self._conn.close()
@@ -540,7 +572,15 @@ class ExtractedIndex:
         ).fetchone()
         return found is not None
 
-    def _write_finder(self, row, fields, *, accept: bool, write_back_corpus: bool) -> None:
+    def _write_finder(
+        self,
+        row,
+        fields,
+        *,
+        accept: bool,
+        write_back_corpus: bool,
+        corpus_root=None,
+    ) -> None:
         current = self._load_sql(row)
         if accept and current["kind"] == "concept":
             raise ValueError("Concept rows cannot be accepted")
@@ -618,7 +658,7 @@ class ExtractedIndex:
         )
         self._conn.commit()
         if write_back_corpus:
-            self._write_back_technique(current, extract)
+            self._write_back_technique(current, extract, corpus_root=corpus_root)
 
     def _load_sql(self, row) -> sqlite3.Row:
         found = self._conn.execute(
@@ -639,11 +679,15 @@ class ExtractedIndex:
             raise ValueError("Row is not in the extracted index")
         return found
 
-    def _write_back_technique(self, current: sqlite3.Row, extract: dict) -> None:
+    def _write_back_technique(
+        self, current: sqlite3.Row, extract: dict, corpus_root=None
+    ) -> None:
         path_value = current["corpus_json_path"]
         if not path_value:
             return
         path = Path(path_value)
+        if corpus_root is not None:
+            path = Path(corpus_root) / path_value
         if not path.is_file():
             return
         payload = json.loads(path.read_text(encoding="utf-8"))
