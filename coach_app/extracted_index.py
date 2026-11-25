@@ -18,6 +18,25 @@ HOP_FIELDS = (
     "end_position",
 )
 
+_EXTRACT_SELECT = """
+    SELECT video_file, chapter_title, chapter_start, kind, array_index,
+           status, named_move, ruleset, move_type, start_occupancy,
+           start_position, end_occupancy, end_position, technique_steps,
+           main_ideas, concept, instructor, instructional, extract_json
+    FROM extract
+"""
+
+_FTS_COLUMNS = (
+    "named_move",
+    "instructor",
+    "instructional",
+    "chapter_title",
+    "technique_steps",
+    "main_ideas",
+    "suggested_tags",
+    "concept",
+)
+
 
 @dataclass(frozen=True)
 class ExtractedRow:
@@ -150,15 +169,31 @@ class ExtractedIndex:
 
     def rows(self) -> tuple[ExtractedRow, ...]:
         cursor = self._conn.execute(
-            """
-            SELECT video_file, chapter_title, chapter_start, kind, array_index,
-                   status, named_move, ruleset, move_type, start_occupancy,
-                   start_position, end_occupancy, end_position, technique_steps,
-                   main_ideas, concept, instructor, instructional, extract_json
-            FROM extract
-            ORDER BY video_file, chapter_start, kind, array_index
-            """
+            f"{_EXTRACT_SELECT} ORDER BY video_file, chapter_start, kind, array_index"
         )
+        return tuple(self._row_from_sql(row) for row in cursor)
+
+    def keyword_search(self, query, kind="both") -> tuple[ExtractedRow, ...]:
+        text = query.strip() if isinstance(query, str) else ""
+        if not text:
+            return ()
+        sql = f"""
+            {_EXTRACT_SELECT}
+            WHERE rowid IN (
+                SELECT rowid FROM extract_fts WHERE extract_fts MATCH ?
+            )
+        """
+        params: list[str] = [text]
+        if kind == "techniques":
+            sql += " AND kind = ?"
+            params.append("technique")
+        elif kind == "concepts":
+            sql += " AND kind = ?"
+            params.append("concept")
+        elif kind != "both":
+            raise ValueError("kind must be 'techniques', 'concepts', or 'both'")
+        sql += " ORDER BY video_file, chapter_start, kind, array_index"
+        cursor = self._conn.execute(sql, params)
         return tuple(self._row_from_sql(row) for row in cursor)
 
     def close(self) -> None:
@@ -203,6 +238,45 @@ class ExtractedIndex:
             )
             """
         )
+        fts_cols = ", ".join(_FTS_COLUMNS)
+        new_fts_vals = ", ".join(f"new.{col}" for col in _FTS_COLUMNS)
+        old_fts_vals = ", ".join(f"old.{col}" for col in _FTS_COLUMNS)
+        self._conn.execute(
+            f"""
+            CREATE VIRTUAL TABLE IF NOT EXISTS extract_fts USING fts5(
+                {fts_cols},
+                content='extract',
+                content_rowid='rowid'
+            )
+            """
+        )
+        self._conn.execute(
+            f"""
+            CREATE TRIGGER IF NOT EXISTS extract_fts_ai AFTER INSERT ON extract BEGIN
+                INSERT INTO extract_fts(rowid, {fts_cols})
+                VALUES (new.rowid, {new_fts_vals});
+            END
+            """
+        )
+        self._conn.execute(
+            f"""
+            CREATE TRIGGER IF NOT EXISTS extract_fts_ad AFTER DELETE ON extract BEGIN
+                INSERT INTO extract_fts(extract_fts, rowid, {fts_cols})
+                VALUES ('delete', old.rowid, {old_fts_vals});
+            END
+            """
+        )
+        self._conn.execute(
+            f"""
+            CREATE TRIGGER IF NOT EXISTS extract_fts_au AFTER UPDATE ON extract BEGIN
+                INSERT INTO extract_fts(extract_fts, rowid, {fts_cols})
+                VALUES ('delete', old.rowid, {old_fts_vals});
+                INSERT INTO extract_fts(rowid, {fts_cols})
+                VALUES (new.rowid, {new_fts_vals});
+            END
+            """
+        )
+        self._conn.execute("INSERT INTO extract_fts(extract_fts) VALUES ('rebuild')")
         self._conn.commit()
 
     def _upsert(
