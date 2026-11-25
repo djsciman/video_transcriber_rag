@@ -17,6 +17,7 @@ HOP_FIELDS = (
     "end_occupancy",
     "end_position",
 )
+WRITABLE_FIELDS = HOP_FIELDS + ("technique_steps", "main_ideas")
 
 
 @dataclass(frozen=True)
@@ -89,11 +90,16 @@ class ExtractedIndex:
         except (TypeError, ValueError):
             chapter_start = 0.0
         json_path = "" if corpus_json_path is None else str(corpus_json_path)
+        self._clear_unreviewed_for_chapter(video_file, title, chapter_start)
 
         techniques = chapter.get("techniques") if isinstance(chapter, dict) else None
         if isinstance(techniques, list):
             for array_index, item in enumerate(techniques):
                 if not isinstance(item, dict):
+                    continue
+                if self._reviewed_technique_exists(
+                    video_file, title, chapter_start, array_index
+                ):
                     continue
                 extract = dict(item)
                 hops = {
@@ -103,7 +109,7 @@ class ExtractedIndex:
                 steps = item.get("technique_steps") if isinstance(item.get("technique_steps"), str) else ""
                 ideas = item.get("main_ideas") if isinstance(item.get("main_ideas"), str) else ""
                 embedding = self._embedding_blob(
-                    " ".join(part for part in (hops["named_move"], steps, ideas) if part)
+                    self._technique_embed_text(hops["named_move"], steps, ideas)
                 )
                 self._upsert(
                     video_file=video_file,
@@ -161,6 +167,23 @@ class ExtractedIndex:
         )
         return tuple(self._row_from_sql(row) for row in cursor)
 
+    def save(self, row, fields, *, write_back_corpus=False) -> None:
+        self._write_finder(row, fields, accept=False, write_back_corpus=write_back_corpus)
+
+    def save_and_accept(self, row, fields, *, write_back_corpus=False) -> None:
+        self._write_finder(row, fields, accept=True, write_back_corpus=write_back_corpus)
+
+    def accept(self, row, *, write_back_corpus=False) -> None:
+        self._write_finder(row, {}, accept=True, write_back_corpus=write_back_corpus)
+
+    def save_many(self, rows, fields, *, write_back_corpus=False) -> None:
+        for item in rows:
+            self.save(item, fields, write_back_corpus=write_back_corpus)
+
+    def save_and_accept_many(self, rows, fields, *, write_back_corpus=False) -> None:
+        for item in rows:
+            self.save_and_accept(item, fields, write_back_corpus=write_back_corpus)
+
     def close(self) -> None:
         self._conn.close()
 
@@ -204,6 +227,177 @@ class ExtractedIndex:
             """
         )
         self._conn.commit()
+
+    def _clear_unreviewed_for_chapter(
+        self, video_file: str, chapter_title: str, chapter_start: float
+    ) -> None:
+        self._conn.execute(
+            """
+            DELETE FROM extract
+            WHERE video_file = ?
+              AND chapter_title = ?
+              AND chapter_start = ?
+              AND NOT (kind = 'technique' AND status = 'reviewed')
+            """,
+            (video_file, chapter_title, chapter_start),
+        )
+        self._conn.commit()
+
+    def _reviewed_technique_exists(
+        self,
+        video_file: str,
+        chapter_title: str,
+        chapter_start: float,
+        array_index: int,
+    ) -> bool:
+        found = self._conn.execute(
+            """
+            SELECT 1 FROM extract
+            WHERE video_file = ?
+              AND chapter_title = ?
+              AND chapter_start = ?
+              AND kind = 'technique'
+              AND array_index = ?
+              AND status = 'reviewed'
+            """,
+            (video_file, chapter_title, chapter_start, array_index),
+        ).fetchone()
+        return found is not None
+
+    def _write_finder(self, row, fields, *, accept: bool, write_back_corpus: bool) -> None:
+        current = self._load_sql(row)
+        if accept and current["kind"] == "concept":
+            raise ValueError("Concept rows cannot be accepted")
+        hops = {field: current[field] for field in HOP_FIELDS}
+        steps = current["technique_steps"]
+        ideas = current["main_ideas"]
+        extract = json.loads(current["extract_json"] or "{}")
+        if not isinstance(extract, dict):
+            extract = {}
+        for name, value in (fields or {}).items():
+            if name not in WRITABLE_FIELDS:
+                continue
+            text = value if isinstance(value, str) else ""
+            if name in HOP_FIELDS:
+                hops[name] = text
+            elif name == "technique_steps":
+                steps = text
+            else:
+                ideas = text
+            extract[name] = text
+        if accept:
+            hops = {field: hops[field].rstrip("*") for field in HOP_FIELDS}
+            for field in HOP_FIELDS:
+                stored = extract.get(field)
+                if isinstance(stored, str):
+                    extract[field] = stored.rstrip("*")
+        old_text = self._technique_embed_text(
+            current["named_move"], current["technique_steps"], current["main_ideas"]
+        )
+        new_text = self._technique_embed_text(hops["named_move"], steps, ideas)
+        embedding = current["embedding"]
+        if new_text != old_text:
+            embedding = self._embedding_blob(new_text)
+        stripped = {field: hops[field].rstrip("*") for field in HOP_FIELDS}
+        status = "reviewed" if accept else current["status"]
+        self._conn.execute(
+            """
+            UPDATE extract SET
+                status = ?,
+                named_move = ?, ruleset = ?, move_type = ?, start_occupancy = ?,
+                start_position = ?, end_occupancy = ?, end_position = ?,
+                named_move_stripped = ?, ruleset_stripped = ?, move_type_stripped = ?,
+                start_occupancy_stripped = ?, start_position_stripped = ?,
+                end_occupancy_stripped = ?, end_position_stripped = ?,
+                technique_steps = ?, main_ideas = ?, extract_json = ?, embedding = ?
+            WHERE video_file = ? AND chapter_title = ? AND chapter_start = ?
+              AND kind = ? AND array_index = ?
+            """,
+            (
+                status,
+                hops["named_move"],
+                hops["ruleset"],
+                hops["move_type"],
+                hops["start_occupancy"],
+                hops["start_position"],
+                hops["end_occupancy"],
+                hops["end_position"],
+                stripped["named_move"],
+                stripped["ruleset"],
+                stripped["move_type"],
+                stripped["start_occupancy"],
+                stripped["start_position"],
+                stripped["end_occupancy"],
+                stripped["end_position"],
+                steps,
+                ideas,
+                json.dumps(extract),
+                embedding,
+                current["video_file"],
+                current["chapter_title"],
+                current["chapter_start"],
+                current["kind"],
+                current["array_index"],
+            ),
+        )
+        self._conn.commit()
+        if write_back_corpus:
+            self._write_back_technique(current, extract)
+
+    def _load_sql(self, row) -> sqlite3.Row:
+        found = self._conn.execute(
+            """
+            SELECT * FROM extract
+            WHERE video_file = ? AND chapter_title = ? AND chapter_start = ?
+              AND kind = ? AND array_index = ?
+            """,
+            (
+                row.video_file,
+                row.chapter_title,
+                row.chapter_start,
+                row.kind,
+                row.array_index,
+            ),
+        ).fetchone()
+        if found is None:
+            raise ValueError("Row is not in the extracted index")
+        return found
+
+    def _write_back_technique(self, current: sqlite3.Row, extract: dict) -> None:
+        path_value = current["corpus_json_path"]
+        if not path_value:
+            return
+        path = Path(path_value)
+        if not path.is_file():
+            return
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        chapters = payload.get("chapters")
+        if not isinstance(chapters, list):
+            return
+        for chapter in chapters:
+            if not isinstance(chapter, dict):
+                continue
+            title = chapter.get("title")
+            if not isinstance(title, str):
+                title = ""
+            try:
+                start = float(chapter.get("start"))
+            except (TypeError, ValueError):
+                start = 0.0
+            if title != current["chapter_title"] or start != current["chapter_start"]:
+                continue
+            techniques = chapter.get("techniques")
+            if not isinstance(techniques, list):
+                return
+            array_index = current["array_index"]
+            if array_index < 0 or array_index >= len(techniques):
+                return
+            techniques[array_index] = extract
+            path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            return
+
+    def _technique_embed_text(self, named_move: str, steps: str, ideas: str) -> str:
+        return " ".join(part for part in (named_move, steps, ideas) if part)
 
     def _upsert(
         self,
