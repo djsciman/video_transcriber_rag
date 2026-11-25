@@ -57,7 +57,7 @@ The coach's stamp that marks an unreviewed technique in the extracted index as r
 _Avoid_: approve, curate
 
 **Extracted index**:
-The coach-queryable store on the coach's machine. It holds unreviewed techniques, approved techniques, and concepts. A raw technique enters as unreviewed when prepare writes it. A concept string enters as a concept row when prepare writes it. Later prepare rewrites update unreviewed techniques and concepts for that chapter; they leave reviewed techniques. The advisor reads this store with the curated store.
+The coach-queryable store on the coach's machine. It holds unreviewed techniques, approved techniques, and concepts. A raw technique enters as unreviewed when prepare writes it. A concept string enters as a concept row when prepare writes it. Later prepare rewrites update unreviewed techniques and concepts for that chapter; they leave reviewed techniques. Each row holds the keys to that chapter in the corpus so the application can read that chapter's cleaned speech there; the speech is not stored on the row. The advisor reads this store with the curated store.
 _Avoid_: extract index, database, corpus, curated store
 
 **Approved technique**:
@@ -65,7 +65,7 @@ One technique the coach has accepted. It lives in the extracted index with statu
 _Avoid_: extracted technique, technique, raw technique, curated technique, named move, concept
 
 **Concept**:
-An independent coaching point from one chapter. One string in that chapter's concepts list is one extracted-index row, tagged concepts. It has no unreviewed or reviewed stamp. Rows that share instructional, volume, and chapter are siblings.
+An independent coaching point from one chapter. One string in that chapter's concepts list is one extracted-index row, tagged concepts. It has no unreviewed or reviewed stamp and no hop fields. The coach finds it by keyword. Rows that share instructional, volume, and chapter are siblings.
 _Avoid_: raw technique, approved technique, technique, extracted technique, cleaned statement, main ideas
 
 **Teaching body**:
