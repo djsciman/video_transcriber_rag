@@ -35,6 +35,7 @@ HOP_WALK_FILTERS = (
     "named_move",
     "instructor",
 )
+SENTENCE_FIND_HOPS = HOP_FIELDS + ("instructor",)
 
 _ROW_SELECT = """
             SELECT video_file, chapter_title, chapter_start, kind, array_index,
@@ -435,9 +436,23 @@ class ExtractedIndex:
             return ()
         hops, keywords, find_string = parsed
         query = self.embed_query(find_string)
+        walk_hops = {
+            field: value
+            for field, value in hops.items()
+            if field in HOP_WALK_FILTERS
+        }
         hop_ids = None
-        if hops:
-            hop_ids = {_row_id(row) for row in self.hop_walk(**hops)}
+        if walk_hops:
+            hop_ids = {_row_id(row) for row in self.hop_walk(**walk_hops)}
+        ruleset = hops.get("ruleset")
+        if isinstance(ruleset, str) and ruleset.strip():
+            wanted = ruleset.strip().rstrip("*")
+            matching = {
+                _row_id(row)
+                for row in self.rows()
+                if row.kind == "technique" and row.ruleset.rstrip("*") == wanted
+            }
+            hop_ids = matching if hop_ids is None else hop_ids & matching
         keyword_ids = None
         if keywords:
             matched: set[tuple] | None = None
@@ -600,6 +615,26 @@ class ExtractedIndex:
             """
         )
         self._conn.execute("INSERT INTO extract_fts(extract_fts) VALUES ('rebuild')")
+        for column in (
+            "named_move_stripped",
+            "ruleset_stripped",
+            "move_type_stripped",
+            "start_occupancy_stripped",
+            "start_position_stripped",
+            "end_occupancy_stripped",
+            "end_position_stripped",
+            "instructor",
+            "status",
+        ):
+            self._conn.execute(
+                f"CREATE INDEX IF NOT EXISTS extract_{column} ON extract({column})"
+            )
+        self._conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS extract_siblings
+            ON extract(instructional, video_file, chapter_title, chapter_start)
+            """
+        )
         self._conn.commit()
 
     def _clear_unreviewed_for_chapter(
@@ -1015,7 +1050,7 @@ def _filled_hops(payload: dict) -> dict[str, str]:
     if isinstance(nested, dict):
         source = {**nested, **payload}
     hops: dict[str, str] = {}
-    for field in HOP_WALK_FILTERS:
+    for field in SENTENCE_FIND_HOPS:
         value = source.get(field)
         if isinstance(value, str) and value.strip():
             hops[field] = value.strip()

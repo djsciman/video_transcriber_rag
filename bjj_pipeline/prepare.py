@@ -267,8 +267,13 @@ def prepare_volume(
     payload["chapters"] = nested
     payload.pop("segments", None)
     _atomic_write_json(json_path, payload)
-    if extracted_index is not None:
-        _upsert_prepared_volume(payload, json_path, corpus_root, extracted_index)
+    index, owned = _resolve_extracted_index(extracted_index)
+    try:
+        if index is not None:
+            _upsert_prepared_volume(payload, json_path, corpus_root, index)
+    finally:
+        if owned and index is not None:
+            index.close()
     return 0 if model_ok else 1
 
 
@@ -291,6 +296,29 @@ def ingest_prepared_corpus(corpus_root: Path, extracted_index) -> None:
             _upsert_prepared_volume(payload, json_path, corpus_root, extracted_index)
 
 
+def _chapter_credit(chapters: list, key: str) -> str:
+    for chapter in chapters:
+        if not isinstance(chapter, dict):
+            continue
+        value = chapter.get(key)
+        if isinstance(value, str) and value:
+            return value
+    return ""
+
+
+def _resolve_extracted_index(extracted_index):
+    if extracted_index is not None:
+        return extracted_index, False
+    from coach_app.settings import extracted_index_path
+
+    location = extracted_index_path()
+    if location is None:
+        return None, False
+    from coach_app.extracted_index import ExtractedIndex
+
+    return ExtractedIndex.open(location), True
+
+
 def _upsert_prepared_volume(
     payload: dict, json_path: Path, corpus_root: Path, extracted_index
 ) -> None:
@@ -298,7 +326,11 @@ def _upsert_prepared_volume(
     if not isinstance(chapters, list):
         return
     video_file = payload.get("video_file")
-    volume = {"video_file": video_file if isinstance(video_file, str) else ""}
+    volume = {
+        "video_file": video_file if isinstance(video_file, str) else "",
+        "instructor": _chapter_credit(chapters, "instructor"),
+        "instructional": _chapter_credit(chapters, "instructional"),
+    }
     rel = _corpus_relative_json(json_path, corpus_root)
     for chapter in chapters:
         if isinstance(chapter, dict):
@@ -965,56 +997,63 @@ def run(
     library = Path(library)
     corpus = Path(corpus)
     stdout = stdout if stdout is not None else sys.stdout
-    if extracted_index is not None:
-        ingest_prepared_corpus(corpus, extracted_index)
-    staged = llm and method == "staged"
-    completer_fn: Completer | None = None
-    cleaner_fn: Completer | None = None
-    extractor_fn: Completer | None = None
-    if staged:
-        cleaner_fn = cleaner or make_completer(
-            provider, model, spec=_cleanup_spec(), reasoning_effort="low"
-        )
-        extractor_fn = extractor or make_completer(
-            provider, model, spec=_extract_spec(), reasoning_effort="medium"
-        )
-    elif llm:
-        completer_fn = completer if completer is not None else make_completer(provider, model)
-    failed = False
-    for video in walk_videos(library):
-        output = output_path_for(video, library, corpus)
-        try:
-            label = str(video.relative_to(library))
-        except ValueError:
-            label = str(video)
-        if not prepare_eligible(output):
-            _print(stdout, "SKIP", label)
-            continue
-        if prepare_done(output, llm=llm, method=method) and not force:
-            _print(stdout, "SKIP", label)
-            continue
-        try:
-            code = prepare_volume(
-                output,
-                corpus,
-                library,
-                completer=completer_fn,
-                cleaner=cleaner_fn,
-                extractor=extractor_fn,
-                force=force,
-                max_llm_calls=max_llm_calls,
-                extracted_index=extracted_index,
+    extracted_index, owned_index = _resolve_extracted_index(extracted_index)
+    try:
+        if extracted_index is not None:
+            ingest_prepared_corpus(corpus, extracted_index)
+        staged = llm and method == "staged"
+        completer_fn: Completer | None = None
+        cleaner_fn: Completer | None = None
+        extractor_fn: Completer | None = None
+        if staged:
+            cleaner_fn = cleaner or make_completer(
+                provider, model, spec=_cleanup_spec(), reasoning_effort="low"
             )
-        except Exception as exc:  # noqa: BLE001
-            _print(stdout, "FAIL", label, str(exc))
-            failed = True
-        else:
-            if code:
-                _print(stdout, "FAIL", label, "model half")
+            extractor_fn = extractor or make_completer(
+                provider, model, spec=_extract_spec(), reasoning_effort="medium"
+            )
+        elif llm:
+            completer_fn = completer if completer is not None else make_completer(
+                provider, model
+            )
+        failed = False
+        for video in walk_videos(library):
+            output = output_path_for(video, library, corpus)
+            try:
+                label = str(video.relative_to(library))
+            except ValueError:
+                label = str(video)
+            if not prepare_eligible(output):
+                _print(stdout, "SKIP", label)
+                continue
+            if prepare_done(output, llm=llm, method=method) and not force:
+                _print(stdout, "SKIP", label)
+                continue
+            try:
+                code = prepare_volume(
+                    output,
+                    corpus,
+                    library,
+                    completer=completer_fn,
+                    cleaner=cleaner_fn,
+                    extractor=extractor_fn,
+                    force=force,
+                    max_llm_calls=max_llm_calls,
+                    extracted_index=extracted_index,
+                )
+            except Exception as exc:  # noqa: BLE001
+                _print(stdout, "FAIL", label, str(exc))
                 failed = True
             else:
-                _print(stdout, "RUN", label)
-    return 1 if failed else 0
+                if code:
+                    _print(stdout, "FAIL", label, "model half")
+                    failed = True
+                else:
+                    _print(stdout, "RUN", label)
+        return 1 if failed else 0
+    finally:
+        if owned_index and extracted_index is not None:
+            extracted_index.close()
 
 
 def main(argv: list[str] | None = None) -> int:
