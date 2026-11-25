@@ -163,6 +163,7 @@
       border-radius: 0;
       padding: .45rem .55rem;
       border-bottom: 1px solid #f5f5f4;
+      user-select: none;
     }
     .opt .n { float: right; color: var(--muted); font-size: .72rem; }
     .a-body { display: grid; grid-template-columns: 1.6fr .9fr; gap: .7rem; }
@@ -280,7 +281,7 @@
       letter-spacing: .03em;
       color: var(--muted);
     }
-    .form-grid input, .form-grid textarea {
+    .form-grid input, .form-grid textarea, .form-grid select {
       font: inherit;
       text-transform: none;
       letter-spacing: 0;
@@ -290,6 +291,7 @@
       border-radius: 6px;
       background: #fff;
     }
+    .form-grid select { width: 100%; }
     .form-grid textarea { min-height: 5.5rem; }
     .form-grid label.dirty input, .form-grid label.dirty textarea { outline: 2px solid #16a34a; }
     .modal-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1rem; }
@@ -359,18 +361,18 @@
   ];
 
   var EDIT_FIELDS = [
-    { key: "instructor", label: "Instructor" },
-    { key: "instructional", label: "Instructional" },
-    { key: "volume", label: "Volume" },
-    { key: "chapter_title", label: "Chapter" },
+    { key: "instructor", label: "Instructor", cat: true },
+    { key: "instructional", label: "Instructional", cat: true },
+    { key: "volume", label: "Volume", cat: true },
+    { key: "chapter_title", label: "Chapter", cat: true },
     { key: "chapter_start", label: "Chapter start (s)" },
-    { key: "named_move", label: "Named move" },
-    { key: "ruleset", label: "Ruleset" },
-    { key: "move_type", label: "Type of move" },
-    { key: "start_occupancy", label: "Start occupancy" },
-    { key: "start_position", label: "Start position" },
-    { key: "end_occupancy", label: "End occupancy" },
-    { key: "end_position", label: "End position" },
+    { key: "named_move", label: "Named move", cat: true },
+    { key: "ruleset", label: "Ruleset", cat: true },
+    { key: "move_type", label: "Type of move", cat: true },
+    { key: "start_occupancy", label: "Start occupancy", cat: true },
+    { key: "start_position", label: "Start position", cat: true },
+    { key: "end_occupancy", label: "End occupancy", cat: true },
+    { key: "end_position", label: "End position", cat: true },
     { key: "source_time_ranges", label: "Showings (time ranges)", wide: true, area: true },
     { key: "suggested_tags", label: "Keyword tags", wide: true, area: true },
     { key: "main_ideas", label: "Main ideas", wide: true, area: true },
@@ -386,11 +388,31 @@
     lastChanged: "opened",
     checked: {},
     editor: null,
-    lastWrite: null
+    lastWrite: null,
+    bStep: 0
+  };
+
+  var SEED_CATS = {
+    start_occupancy: ["top", "bottom", "neutral"],
+    end_occupancy: ["top", "bottom", "neutral", ""],
+    ruleset: ["gi", "no-gi", "both"],
+    move_type: ["takedown", "sweep", "pass", "escape", "submission", "transition", "reversal", "back-take"],
+    start_position: ["standing", "clinch", "front-headlock", "closed-guard", "open-guard", "half-guard", "deep-half-guard", "z-guard", "butterfly-guard", "de-la-riva", "reverse-de-la-riva", "spider-guard", "lasso-guard", "collar-sleeve", "x-guard", "single-leg-x", "k-guard", "rubber-guard", "worm-guard", "shin-to-shin", "fifty-fifty", "saddle", "outside-ashi", "headquarters", "leg-drag-position", "side-control", "kesa-gatame", "north-south", "knee-on-belly", "mount", "s-mount", "technical-mount", "turtle", "truck", "back-control", "crucifix"],
+    end_position: ["standing", "clinch", "front-headlock", "closed-guard", "open-guard", "half-guard", "deep-half-guard", "z-guard", "butterfly-guard", "de-la-riva", "reverse-de-la-riva", "spider-guard", "lasso-guard", "collar-sleeve", "x-guard", "single-leg-x", "k-guard", "rubber-guard", "worm-guard", "shin-to-shin", "fifty-fifty", "saddle", "outside-ashi", "headquarters", "leg-drag-position", "side-control", "kesa-gatame", "north-south", "knee-on-belly", "mount", "s-mount", "technical-mount", "turtle", "truck", "back-control", "crucifix", "rear-naked-choke", "guillotine", "darce", "anaconda", "arm-triangle", "triangle", "armbar", "kimura", "americana", "omoplata", "heel-hook", "inside-heel-hook", "outside-heel-hook", "knee-bar", "toe-hold", "ankle-lock"]
   };
 
   function emptyHops() {
     return { occupancy: null, position: null, moveType: null, end: null, namedMove: null, instructor: null };
+  }
+
+  function hopList(v) {
+    if (v == null || v === "") return [];
+    if (Array.isArray(v)) return v.filter(function (x) { return x != null && x !== ""; });
+    return [v];
+  }
+
+  function hopHas(key) {
+    return hopList(state.hops[key]).length > 0;
   }
 
   function starStrip(s) {
@@ -428,8 +450,10 @@
   }
 
   function hopEquals(step, row, chosen) {
-    if (!chosen) return true;
-    return starStrip(step.get(row)) === starStrip(chosen);
+    var list = hopList(chosen);
+    if (!list.length) return true;
+    var got = starStrip(step.get(row));
+    return list.some(function (c) { return starStrip(c) === got; });
   }
 
   function matching(hops) {
@@ -482,16 +506,30 @@
     return m + ":" + String(s).padStart(2, "0");
   }
 
-  function setHop(key, value) {
+  function setHop(key, value, additive) {
     var idx = STEPS.findIndex(function (s) { return s.key === key; });
-    if (state.variant !== "C") {
-      STEPS.forEach(function (s, i) {
-        if (i > idx) state.hops[s.key] = null;
-      });
+    var cur = hopList(state.hops[key]);
+    if (value == null || value === "") {
+      state.hops[key] = null;
+      if (state.variant === "B") state.bStep = idx;
+    } else if (additive) {
+      var at = cur.indexOf(value);
+      if (at >= 0) cur.splice(at, 1);
+      else cur.push(value);
+      state.hops[key] = cur.length ? cur : null;
+      if (state.variant === "B") state.bStep = idx;
+    } else {
+      if (cur.length === 1 && cur[0] === value) state.hops[key] = null;
+      else state.hops[key] = [value];
+      if (state.variant !== "C") {
+        STEPS.forEach(function (s, i) {
+          if (i > idx) state.hops[s.key] = null;
+        });
+      }
+      if (state.variant === "B") state.bStep = state.hops[key] ? idx + 1 : idx;
     }
-    state.hops[key] = (state.hops[key] === value) ? null : value;
     state.selectedId = null;
-    state.lastChanged = key + "=" + (state.hops[key] || "(cleared)");
+    state.lastChanged = key + "=" + (hopList(state.hops[key]).join(" | ") || "(cleared)");
     render();
   }
 
@@ -517,6 +555,7 @@
     state.hops = emptyHops();
     state.selectedId = null;
     state.playback = null;
+    state.bStep = 0;
     state.lastChanged = "reset walk";
     render();
   }
@@ -529,8 +568,8 @@
     var url = new URL(location.href);
     url.searchParams.set("variant", state.variant);
     STEPS.forEach(function (s) {
-      if (state.hops[s.key]) url.searchParams.set(s.key, state.hops[s.key]);
-      else url.searchParams.delete(s.key);
+      url.searchParams.delete(s.key);
+      hopList(state.hops[s.key]).forEach(function (v) { url.searchParams.append(s.key, v); });
     });
     if (state.selectedId) url.searchParams.set("row", state.selectedId);
     else url.searchParams.delete("row");
@@ -628,6 +667,24 @@
     });
   }
 
+  function commonOptions(key) {
+    var counts = {};
+    ROWS.forEach(function (r) {
+      var t = fieldText(r, key);
+      if (t === "") return;
+      counts[t] = (counts[t] || 0) + 1;
+    });
+    (SEED_CATS[key] || []).forEach(function (v) {
+      if (!(v in counts)) counts[v] = 0;
+    });
+    return Object.keys(counts).sort(function (a, b) {
+      var d = (counts[b] || 0) - (counts[a] || 0);
+      return d || a.localeCompare(b);
+    }).map(function (v) {
+      return { value: v, n: counts[v] || 0 };
+    });
+  }
+
   function openEditor(ids) {
     var rows = ids.map(function (id) { return ROWS.find(function (r) { return r.id === id; }); }).filter(Boolean);
     if (!rows.length) return;
@@ -663,15 +720,31 @@
     var fields = EDIT_FIELDS.map(function (f) {
       var val = sharedText(rows, f.key);
       var dirty = ed.dirty[f.key] ? " dirty" : "";
-      var control = f.area
-        ? '<textarea data-field="' + f.key + '">' + esc(val) + "</textarea>"
-        : '<input type="text" data-field="' + f.key + '" value="' + esc(val) + '" />';
+      var control;
+      if (f.area) {
+        control = '<textarea data-field="' + f.key + '">' + esc(val) + "</textarea>";
+      } else if (f.cat) {
+        var opts = commonOptions(f.key);
+        if (val && !opts.some(function (o) { return o.value === val; })) {
+          opts = [{ value: val, n: 0 }].concat(opts);
+        }
+        var options = '<option value="">' + (rows.length > 1 ? "(mixed — leave unchanged)" : "(choose)") + "</option>" +
+          opts.map(function (o) {
+            var sel = val !== "" && o.value === val ? " selected" : "";
+            var n = o.n ? " (" + o.n + ")" : "";
+            return '<option value="' + esc(o.value) + '"' + sel + ">" + esc(o.value) + n + "</option>";
+          }).join("");
+        control = '<select data-field="' + f.key + '">' + options + "</select>" +
+          '<input type="text" data-extra="' + f.key + '" placeholder="Or type another value" />';
+      } else {
+        control = '<input type="text" data-field="' + f.key + '" value="' + esc(val) + '" />';
+      }
       return '<label class="' + (f.wide ? "wide" : "") + dirty + '">' + f.label + control + "</label>";
     }).join("");
     root.innerHTML =
       '<div class="modal-back"><div class="modal coach">' +
         "<h2>Edit " + rows.length + " technique" + (rows.length === 1 ? "" : "s") + "</h2>" +
-        '<p class="muted">Shared values are filled. Mixed values are blank. Only fields you change are written onto every selected technique.</p>' +
+        '<p class="muted">Shared values are filled. Mixed values are blank. Categorical fields have a drop-down of values in this sample plus seed IDs. Only fields you change are written onto every selected technique.</p>' +
         '<div class="form-grid">' + fields + "</div>" +
         '<div class="modal-actions">' +
           '<button type="button" data-save="0">Save</button>' +
@@ -682,19 +755,27 @@
   }
 
   function bindEditor(root) {
+    function markDirty(key) {
+      state.editor.dirty[key] = true;
+      var el = root.querySelector('[data-field="' + key + '"], [data-extra="' + key + '"]');
+      var lab = el && el.closest("label");
+      if (lab) lab.classList.add("dirty");
+    }
     root.querySelectorAll("[data-field]").forEach(function (el) {
-      el.addEventListener("input", function () {
-        state.editor.dirty[el.getAttribute("data-field")] = true;
-        var lab = el.closest("label");
-        if (lab) lab.classList.add("dirty");
-      });
+      el.addEventListener("input", function () { markDirty(el.getAttribute("data-field")); });
+      el.addEventListener("change", function () { markDirty(el.getAttribute("data-field")); });
+    });
+    root.querySelectorAll("[data-extra]").forEach(function (el) {
+      el.addEventListener("input", function () { markDirty(el.getAttribute("data-extra")); });
     });
     root.querySelectorAll("[data-save]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var pending = {};
-        root.querySelectorAll("[data-field]").forEach(function (el) {
-          var key = el.getAttribute("data-field");
-          if (state.editor.dirty[key]) pending[key] = el.value;
+        Object.keys(state.editor.dirty).forEach(function (key) {
+          var extra = root.querySelector('[data-extra="' + key + '"]');
+          var main = root.querySelector('[data-field="' + key + '"]');
+          if (extra && extra.value.trim()) pending[key] = extra.value;
+          else if (main) pending[key] = main.value;
         });
         state.editor.pending = pending;
         state.editor.acceptAfter = btn.getAttribute("data-save") === "1";
@@ -768,8 +849,10 @@
 
   function renderState() {
     var hops = STEPS.map(function (s) {
-      var v = state.hops[s.key];
-      var shown = !v ? "—" : (s.key === "end" ? prettyEnd(v) : pretty(v));
+      var list = hopList(state.hops[s.key]);
+      var shown = !list.length ? "—" : list.map(function (v) {
+        return s.key === "end" ? prettyEnd(v) : pretty(v);
+      }).join(" · ");
       return "<div><dt>" + s.label + "</dt><dd>" + shown + "</dd></div>";
     }).join("");
     var row = ROWS.find(function (r) { return r.id === state.selectedId; });
@@ -790,10 +873,11 @@
 
   function renderA() {
     var cols = STEPS.map(function (step, i) {
-      var ready = i === 0 || !!state.hops[STEPS[i - 1].key];
+      var ready = i === 0 || hopHas(STEPS[i - 1].key);
       var opts = ready ? optionsAt(i, state.hops) : [];
+      var chosen = hopList(state.hops[step.key]);
       var items = opts.map(function (o) {
-        var on = state.hops[step.key] === o.value;
+        var on = chosen.indexOf(o.value) >= 0;
         return '<button type="button" class="opt' + (on ? " active" : "") + '" data-hop="' + step.key + '" data-val="' + encodeURIComponent(o.value) + '">' +
           o.label + '<span class="n">' + o.n + "</span></button>";
       }).join("") || '<div class="empty">Pick the hop before this.</div>';
@@ -804,7 +888,7 @@
     var open = ROWS.find(function (r) { return r.id === state.selectedId; });
     return (
       '<div class="coach">' +
-        '<p class="muted">Click down the columns. Later columns wait. A trailing * still matches the unstarred hop.</p>' +
+        '<p class="muted">Click down the columns. Ctrl+click a value to keep more than one (OR). Later columns wait. A trailing * still matches the unstarred hop.</p>' +
         '<div class="cols">' + cols + "</div>" +
         '<div class="a-body" style="margin-top:.7rem">' +
           '<div><h3 class="muted">Matching rows</h3>' + rowBar(rows) + '<div class="rows">' + (list || '<div class="empty">No rows.</div>') + "</div></div>" +
@@ -814,31 +898,30 @@
     );
   }
 
-  function firstUnsetIndex() {
-    for (var i = 0; i < STEPS.length; i++) {
-      if (!state.hops[STEPS[i].key]) return i;
-    }
-    return STEPS.length;
-  }
-
   function renderB() {
-    var idx = firstUnsetIndex();
+    if (state.bStep == null) state.bStep = 0;
+    var idx = Math.max(0, Math.min(state.bStep, STEPS.length));
     var crumb = ['<button type="button" data-reset="1">All rows</button>'];
     STEPS.forEach(function (step, i) {
-      var v = state.hops[step.key];
-      if (!v) return;
-      var shown = step.key === "end" ? prettyEnd(v) : pretty(v);
+      var list = hopList(state.hops[step.key]);
+      if (!list.length) return;
+      var shown = list.map(function (v) { return step.key === "end" ? prettyEnd(v) : pretty(v); }).join(", ");
       crumb.push('<span class="muted">/</span><button type="button" data-hop="' + step.key + '" data-val="">' + shown + "</button>");
     });
     var body;
     if (idx < STEPS.length) {
       var step = STEPS[idx];
       var opts = optionsAt(idx, state.hops);
+      var chosen = hopList(state.hops[step.key]);
       var chips = opts.map(function (o) {
-        return '<button type="button" class="chip" data-hop="' + step.key + '" data-val="' + encodeURIComponent(o.value) + '">' +
+        var on = chosen.indexOf(o.value) >= 0;
+        return '<button type="button" class="chip' + (on ? " active" : "") + '" data-hop="' + step.key + '" data-val="' + encodeURIComponent(o.value) + '">' +
           o.label + ' <span class="count">' + o.n + "</span></button>";
       }).join("");
-      body = '<h2 class="drill-title">' + step.label + "</h2><div class=\"chips\">" + chips + "</div>";
+      var cont = hopHas(step.key)
+        ? '<p><button type="button" data-b-next>Continue</button> <span class="muted">Ctrl+click to add another value.</span></p>'
+        : '<p class="muted">Ctrl+click to keep more than one value.</p>';
+      body = '<h2 class="drill-title">' + step.label + "</h2><div class=\"chips\">" + chips + "</div>" + cont;
     } else {
       var rows = matching(state.hops);
       var list = rows.map(function (r) { return rowCard(r, r.id === state.selectedId); }).join("");
@@ -852,8 +935,9 @@
   function renderC() {
     var facets = STEPS.map(function (step) {
       var opts = facetOptions(step, state.hops);
+      var chosen = hopList(state.hops[step.key]);
       var items = opts.map(function (o) {
-        var on = state.hops[step.key] === o.value;
+        var on = chosen.indexOf(o.value) >= 0;
         return '<button type="button" class="' + (on ? "active" : "") + '" data-hop="' + step.key + '" data-val="' + encodeURIComponent(o.value) + '">' +
           o.label + ' <span class="count">' + o.n + "</span></button>";
       }).join("");
@@ -865,7 +949,7 @@
     return (
       '<div class="coach c-layout">' +
         "<div>" + facets + '<button type="button" data-reset="1">Clear hops</button></div>' +
-        "<div><p class=\"muted\">Hops are filters, not a forced order. Results stay in view.</p>" +
+        "<div><p class=\"muted\">Hops are filters, not a forced order. Ctrl+click to keep more than one value in a hop. Results stay in view.</p>" +
         rowBar(rows) + '<div class="rows">' + (list || '<div class="empty">No rows.</div>') + "</div>" +
         '<div style="margin-top:.7rem">' + detailHtml(open) + "</div></div>" +
       "</div>"
@@ -874,10 +958,16 @@
 
   function bind(root) {
     root.querySelectorAll("[data-hop]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
+      btn.addEventListener("click", function (e) {
         var raw = btn.getAttribute("data-val");
         var val = raw ? decodeURIComponent(raw) : null;
-        setHop(btn.getAttribute("data-hop"), val);
+        setHop(btn.getAttribute("data-hop"), val, e.ctrlKey || e.metaKey);
+      });
+    });
+    root.querySelectorAll("[data-b-next]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        state.bStep = Math.min((state.bStep || 0) + 1, STEPS.length);
+        render();
       });
     });
     root.querySelectorAll("[data-open]").forEach(function (btn) {
@@ -940,8 +1030,8 @@
     if (!VARIANTS.some(function (v) { return v.id === q; })) q = "A";
     state.variant = q;
     STEPS.forEach(function (s) {
-      var v = url.searchParams.get(s.key);
-      if (v) state.hops[s.key] = v;
+      var all = url.searchParams.getAll(s.key);
+      if (all.length) state.hops[s.key] = all;
     });
     var rowId = url.searchParams.get("row");
     if (rowId && ROWS.some(function (r) { return r.id === rowId; })) state.selectedId = rowId;
