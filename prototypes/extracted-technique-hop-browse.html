@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PROTOTYPE — Hop browse over sample extracted techniques</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --paper: #fffcf6;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #d6d3d1;
+      --accent: #9a3412;
+      --ok: #14532d;
+      --ok-soft: #dcfce7;
+      --warn: #9a3412;
+      --warn-soft: #ffedd5;
+      --star: #9f1239;
+      --star-soft: #ffe4e6;
+      --gi: #1e3a8a;
+      --nogi: #5b21b6;
+      --nogi-soft: #ede9fe;
+      --shadow: 0 1px 2px rgba(28,25,23,.06), 0 8px 24px rgba(28,25,23,.06);
+      --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+      --green-box: 2px dotted #16a34a;
+      --red-box: 2px dotted #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #fde68a55, transparent 60%),
+        radial-gradient(900px 500px at 100% 0%, #bbf7d055, transparent 55%),
+        var(--bg);
+      line-height: 1.45;
+      padding-bottom: 5.5rem;
+    }
+    .banner {
+      background: #7f1d1d;
+      color: #fafaf9;
+      padding: .65rem 1.25rem;
+      font-size: .85rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: baseline;
+      border: var(--red-box);
+    }
+    .banner strong { color: #fecaca; }
+    .banner code { font-family: var(--mono); font-size: .8rem; color: #fecaca; }
+    header.page, .question, .state-panel, #app {
+      max-width: 1280px;
+      margin: 1rem auto 0;
+      padding: 0 1.25rem;
+    }
+    header.page h1 {
+      font-family: var(--serif);
+      font-weight: 600;
+      font-size: 1.55rem;
+      margin: 0 0 .35rem;
+    }
+    header.page .meta { color: var(--muted); max-width: 78ch; }
+    .question details, .state-panel {
+      background: var(--paper);
+      border: var(--red-box);
+      border-radius: 10px;
+      padding: .75rem 1rem;
+    }
+    .question { margin-top: .9rem; }
+    .question summary { cursor: pointer; font-weight: 600; }
+    .question p { margin: .55rem 0 0; color: var(--muted); font-size: .92rem; max-width: 80ch; }
+    .state-panel {
+      margin-top: .75rem;
+      font-size: .85rem;
+    }
+    .state-panel h2 {
+      margin: 0 0 .4rem;
+      font-size: .78rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .state-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: .4rem .8rem;
+    }
+    .state-grid dt { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .03em; }
+    .state-grid dd { margin: 0; font-weight: 600; }
+    .coach { border: var(--green-box); border-radius: 12px; padding: .7rem; background: var(--paper); box-shadow: var(--shadow); padding-bottom: 4.5rem; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .25rem;
+      border-radius: 999px;
+      padding: .1rem .5rem;
+      font-size: .7rem;
+      font-weight: 650;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+    .pill-star { background: var(--star-soft); color: var(--star); }
+    .pill-nogi { background: var(--nogi-soft); color: var(--nogi); }
+    .pill-ok { background: var(--ok-soft); color: var(--ok); }
+    .pill-proto { background: #e7e5e4; color: #44403c; }
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 8px;
+    }
+    button:hover { border-color: #a8a29e; }
+    button.active {
+      background: #1c1917;
+      color: #fafaf9;
+      border-color: #1c1917;
+    }
+    .star { color: var(--star); font-weight: 700; }
+    .muted { color: var(--muted); }
+    .count { font-size: .75rem; color: var(--muted); }
+
+    /* A: columns */
+    .cols {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: .4rem;
+      min-height: 14rem;
+    }
+    .col {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      min-height: 12rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .col h3 {
+      margin: 0;
+      padding: .45rem .55rem;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+    }
+    .col.dim { opacity: .45; }
+    .opt {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: 0;
+      border-radius: 0;
+      padding: .45rem .55rem;
+      border-bottom: 1px solid #f5f5f4;
+    }
+    .opt .n { float: right; color: var(--muted); font-size: .72rem; }
+    .a-body { display: grid; grid-template-columns: 1.6fr .9fr; gap: .7rem; }
+    @media (max-width: 980px) {
+      .cols { grid-template-columns: 1fr 1fr 1fr; }
+      .a-body { grid-template-columns: 1fr; }
+    }
+
+    /* B: drill */
+    .crumb { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; margin-bottom: .7rem; }
+    .crumb button { padding: .2rem .55rem; font-size: .85rem; }
+    .drill-title { font-family: var(--serif); font-size: 1.35rem; margin: 0 0 .6rem; }
+    .chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .chip {
+      padding: .7rem 1rem;
+      font-size: 1.05rem;
+      border-radius: 999px;
+    }
+    .b-layout { max-width: 52rem; }
+
+    /* C: facets */
+    .c-layout { display: grid; grid-template-columns: 16rem 1fr; gap: .8rem; }
+    @media (max-width: 800px) { .c-layout { grid-template-columns: 1fr; } }
+    .facet { margin-bottom: .7rem; }
+    .facet h3 { margin: 0 0 .3rem; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+    .facet button { display: block; width: 100%; text-align: left; padding: .35rem .5rem; margin: .15rem 0; }
+
+    .rows { display: flex; flex-direction: column; gap: .45rem; }
+    .row {
+      text-align: left;
+      padding: .7rem .8rem;
+      width: 100%;
+    }
+    .row h4 { margin: 0 0 .2rem; font-size: 1rem; }
+    .row .meta { font-size: .82rem; color: var(--muted); }
+    .detail {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .8rem;
+      background: #fff;
+    }
+    .detail h3 { margin: 0 0 .4rem; font-family: var(--serif); }
+    .steps { white-space: pre-wrap; font-size: .9rem; }
+    .playback {
+      margin-top: .6rem;
+      padding: .45rem .7rem;
+      background: #1c1917;
+      color: #fafaf9;
+      border: 0;
+    }
+    .playback-note { font-size: .8rem; color: var(--muted); margin-top: .35rem; }
+    .empty { padding: 1rem; color: var(--muted); }
+
+    .switcher {
+      position: fixed;
+      left: 50%;
+      bottom: 1rem;
+      transform: translateX(-50%);
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      background: #0c0a09;
+      color: #fafaf9;
+      padding: .45rem .6rem;
+      border-radius: 999px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.28);
+      border: var(--red-box);
+      font-size: .85rem;
+    }
+    .switcher button {
+      width: 2rem; height: 2rem; border-radius: 999px;
+      background: #292524; color: #fff; border-color: #44403c;
+    }
+    .switcher .name { min-width: 14rem; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <strong>PROTOTYPE — throwaway, do not merge as product code</strong>
+    <span>Red dotted = prototype chrome. Green dotted = proposed coach hop browse.</span>
+    <code>prototypes/extracted-technique-hop-browse.html</code>
+  </div>
+
+  <header class="page">
+    <h1>Hop browse over sample extracted techniques</h1>
+    <p class="meta">
+      Three layouts of the same walk on Marcelo Butterfly S01E01.
+      Start occupancy, start position, type of move, end, named move, instructor, then a row with steps and a playback time.
+      This volume is all bottom butterfly guard and one instructor; later hops still branch.
+    </p>
+  </header>
+
+  <div class="question">
+    <details>
+      <summary>Question this prototype answers</summary>
+      <p>
+        How should hop browse over extracted techniques feel?
+        Walk the hops, open a row, look at steps and a playback time.
+        Trailing <span class="star">*</span> still matches the unstarred value.
+        Playback here only records the time; it does not open a video file.
+        Keyword search and sentence find are out of this prototype.
+      </p>
+    </details>
+  </div>
+
+  <section class="state-panel" id="state-panel" aria-live="polite"></section>
+  <div id="app"></div>
+
+  <div class="switcher" id="switcher">
+    <button type="button" id="prev-v" aria-label="Previous variant">←</button>
+    <div class="name" id="switcher-name"></div>
+    <button type="button" id="next-v" aria-label="Next variant">→</button>
+  </div>
+
+  <script>
+(function () {
+  "use strict";
+
+  var ROWS = [
+    {"id":"process","instructor":"Marcelo Garcia","instructional":"Butterfly by Marcelo Garcia","volume":"Butterfly by Marcelo Garcia - S01E01 - Volume 1.mp4","chapter_title":"BUTTERFLY SWEEP PROCESS","chapter_start":1055,"named_move":"Butterfly sweep","ruleset":"no-gi","move_type":"sweep","start_occupancy":"bottom","start_position":"butterfly-guard","end_occupancy":"top","end_position":"half-guard","technique_steps":"1. Butterfly guard, bottom: close the distance with a strong posture, elbows closed but able to maneuver, and attack so the opponent has to defend.\n2. Take a good underhook: send the hand deeper, higher and farther, and keep the elbow up rather than clamping it down.\n3. Push his elbow in and concentrate on keeping that arm in; do not push the elbow back and do not pull it in.\n4. Once the underhook is clamped and the elbow is in, go immediately with the sweep; do not hold that position.\n5. Close the distance with the hook, bringing the butt as close as possible to the heels.\n6. Scoop and pull his weight off the ground, then guide that weight so his back goes to the floor, not onto you.\n7. Lift as high as needed while turning halfway so your shoulder and side go to the floor, not a flat back.\n8. Keep the lifting knee pointed up and out, never in, until he falls, so the knee does not buckle and collapse the sweep.\n9. Post the other knee close, down, and closed to help get him off the ground, then lift that hook as well.\n10. Come up and hold the top position, even if the landing is half guard.","main_ideas":"Attack so he has to defend; a deep no-gi underhook with the elbow up only works if you push his elbow in and go immediately. Scoop him off the ground and turn onto your shoulder so his back hits the mat, not you. Keep the lifting knee pointed out until he falls, and hold top even if you land in half guard.","source_time_ranges":["1036.24-1603.98"]},
+    {"id":"reshot","instructor":"Marcelo Garcia","instructional":"Butterfly by Marcelo Garcia","volume":"Butterfly by Marcelo Garcia - S01E01 - Volume 1.mp4","chapter_title":"SHOOT & RESHOOT","chapter_start":1627,"named_move":"Butterfly sweep","ruleset":"no-gi","move_type":"sweep","start_occupancy":"bottom","start_position":"butterfly-guard","end_occupancy":"top","end_position":"mount*","technique_steps":"1. Butterfly guard, bottom: close the distance and commit to the sweep.\n2. When the opponent sinks his weight back so you are not close enough to finish, stay in the middle instead of falling back or backing away to reset.\n3. Scoop forward from there and get under again without going back to sit up.\n4. Compress the same sweep and reshoot immediately so he does not have time to stop you twice.","main_ideas":"Do not back away when he sinks his weight and shuts the first sweep. Reshoot from the middle on a quicker beat so he has to stop you twice.","source_time_ranges":["1637.22-1869.25"]},
+    {"id":"farside","instructor":"Marcelo Garcia","instructional":"Butterfly by Marcelo Garcia","volume":"Butterfly by Marcelo Garcia - S01E01 - Volume 1.mp4","chapter_title":"FAR SIDE SWEEP TO COUNTER UNDERHOOK PASS","chapter_start":1897,"named_move":"Butterfly sweep*","ruleset":"no-gi","move_type":"sweep","start_occupancy":"bottom","start_position":"butterfly-guard","end_occupancy":"top","end_position":"mount*","technique_steps":"1. Butterfly guard, bottom: close the distance and engage with the butterfly sweep setup.\n2. When the opponent is stronger, changes your angle, and drives you the opposite way, go to the mat first, accelerating his dump so you arrive ahead of his move.\n3. As you drop, before he closes into you, frame with the free arm; one arm may already be stuck.\n4. As soon as you have space, repummel and suck the stuck hand out.\n5. Get both hands in front of him and sit up; even without a full sit-up, pummel the underhook and work your way up.\n6. Use your hook to push him off you so you can dig under again.\n7. Get under, secure the underhook, and control him.\n8. Rebuild the same butterfly sweep toward the opposite side: push his elbow in and pick him out of the ground.\n9. As soon as you sit up or get up on your knee, keep moving forward, close the distance, and complete the opposite-side sweep.","main_ideas":"When he dumps you the other way, get to the mat first, frame, and rebuild the same sweep to the opposite side. Reconnect immediately; waiting lets him pin or pass the other underhook.","source_time_ranges":["1908.40-2242.40"]},
+    {"id":"twoonone","instructor":"Marcelo Garcia","instructional":"Butterfly by Marcelo Garcia","volume":"Butterfly by Marcelo Garcia - S01E01 - Volume 1.mp4","chapter_title":"2-ON-1 SWEEP","chapter_start":2248,"named_move":"2-on-1 sweep*","ruleset":"no-gi","move_type":"sweep","start_occupancy":"bottom","start_position":"butterfly-guard","end_occupancy":"top","end_position":"mount*","technique_steps":"1. Butterfly guard, bottom: close the distance, looking for hand control, elbow control, an underhook, or a double underhook.\n2. When the opponent has one knee up, take a two-on-one on the opposite arm (right arm if the left knee is up), controlling the elbow and the wrist. The wrist can come from grabbing the top or grabbing the body.\n3. Connect the two-on-one only long enough to scoop forward and get the butt close to the heels.\n4. Lift with the (inside) hook while maintaining the two-on-one on the arm.\n5. Walk the feet in to stay close as the opponent is thrown, so he cannot use the momentum to recover to his knees.\n6. Get the feet on the ground and come up on top, taking the underhook if available.","main_ideas":"When one knee is up, take the two-on-one on the opposite arm and only help him fall; do not hold the grip. Follow faster than you throw him so you finish on top. If the other knee is up, look for single-leg X, an ankle pick, or a single leg instead.","source_time_ranges":["2242.40-2565.04"]},
+    {"id":"backtake","instructor":"Marcelo Garcia","instructional":"Butterfly by Marcelo Garcia","volume":"Butterfly by Marcelo Garcia - S01E01 - Volume 1.mp4","chapter_title":"KICK SPIN BACKTAKE","chapter_start":2580,"named_move":"Kick spin backtake*","ruleset":"no-gi","move_type":"back-take","start_occupancy":"bottom","start_position":"butterfly-guard","end_occupancy":"top","end_position":"back-control","technique_steps":"1. Butterfly guard, bottom: close the distance. His knee is down. Get a two-on-one and hold it solid.\n2. When the two-on-one is strong, pick him up as high as you can instead of sweeping, so you have room to circle him.\n3. Use the two-on-one to rotate him and the hook to lift him high, and make him turn.\n4. Halfway, take one hook out so he falls inside your hooks; as he turns, the remaining butterfly hook becomes a back hook.\n5. Scoop and keep him up, bring him high, and push the controlled arm away.\n6. At the same time, one hand goes over the shoulder and the other hand keeps this out. Put the other hook if you can.\n7. Establish his back and start looking to get a choke.","main_ideas":"When the knee is down, pick him high off a solid two-on-one and dump him into the remaining hook as it becomes a back hook. Throw first; the back lets you score and finish.","source_time_ranges":["2596.78-2825.60"]}
+  ];
+
+  var STEPS = [
+    { key: "occupancy", label: "Start occupancy", get: function (r) { return r.start_occupancy; } },
+    { key: "position", label: "Start position", get: function (r) { return r.start_position; } },
+    { key: "moveType", label: "Type of move", get: function (r) { return r.move_type; } },
+    { key: "end", label: "End", get: endKey },
+    { key: "namedMove", label: "Named move", get: function (r) { return r.named_move; } },
+    { key: "instructor", label: "Instructor", get: function (r) { return r.instructor; } }
+  ];
+
+  var VARIANTS = [
+    { id: "A", name: "Column walk" },
+    { id: "B", name: "One hop at a time" },
+    { id: "C", name: "Facet list" }
+  ];
+
+  var state = {
+    variant: "A",
+    hops: emptyHops(),
+    selectedId: null,
+    playback: null,
+    lastChanged: "opened"
+  };
+
+  function emptyHops() {
+    return { occupancy: null, position: null, moveType: null, end: null, namedMove: null, instructor: null };
+  }
+
+  function starStrip(s) {
+    return String(s || "").replace(/\*+$/, "");
+  }
+
+  function hasStar(s) {
+    return /\*$/.test(String(s || ""));
+  }
+
+  function endKey(r) {
+    return starStrip(r.end_occupancy) + "|" + starStrip(r.end_position);
+  }
+
+  function pretty(raw) {
+    var core = starStrip(raw);
+    if (!core) return "(empty)";
+    if (/\s/.test(core)) {
+      return core.replace(/\b[a-z]/g, function (c) { return c.toUpperCase(); });
+    }
+    return core.replace(/-/g, " ").replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+
+  function prettyEnd(key) {
+    var p = String(key || "").split("|");
+    return pretty(p[0] || "") + " · " + pretty(p[1] || "");
+  }
+
+  function labelFor(step, value, rows) {
+    var base = step.key === "end" ? prettyEnd(value) : pretty(value);
+    var starred = step.key === "end"
+      ? rows.some(function (r) { return hasStar(r.end_occupancy) || hasStar(r.end_position); })
+      : rows.some(function (r) { return hasStar(step.get(r)); });
+    return base + (starred ? ' <span class="pill pill-star">*</span>' : "");
+  }
+
+  function hopEquals(step, row, chosen) {
+    if (!chosen) return true;
+    return starStrip(step.get(row)) === starStrip(chosen);
+  }
+
+  function matching(hops) {
+    return ROWS.filter(function (row) {
+      return STEPS.every(function (step) { return hopEquals(step, row, hops[step.key]); });
+    });
+  }
+
+  function optionsAt(stepIndex, hops) {
+    var prefix = emptyHops();
+    for (var i = 0; i < stepIndex; i++) prefix[STEPS[i].key] = hops[STEPS[i].key];
+    var rows = matching(prefix);
+    var step = STEPS[stepIndex];
+    var map = {};
+    rows.forEach(function (r) {
+      var k = starStrip(step.get(r));
+      if (!map[k]) map[k] = [];
+      map[k].push(r);
+    });
+    return Object.keys(map).sort().map(function (k) {
+      return { value: k, rows: map[k], label: labelFor(step, k, map[k]), n: map[k].length };
+    });
+  }
+
+  function facetOptions(step, hops) {
+    var others = Object.assign({}, hops);
+    others[step.key] = null;
+    var rows = matching(others);
+    var map = {};
+    rows.forEach(function (r) {
+      var k = starStrip(step.get(r));
+      if (!map[k]) map[k] = [];
+      map[k].push(r);
+    });
+    return Object.keys(map).sort().map(function (k) {
+      return { value: k, rows: map[k], label: labelFor(step, k, map[k]), n: map[k].length };
+    });
+  }
+
+  function speechStart(row) {
+    var range = (row.source_time_ranges && row.source_time_ranges[0]) || "";
+    var n = parseFloat(range.split("-")[0]);
+    return isFinite(n) ? n : row.chapter_start;
+  }
+
+  function fmtTime(sec) {
+    sec = Math.floor(Number(sec) || 0);
+    var m = Math.floor(sec / 60);
+    var s = sec % 60;
+    return m + ":" + String(s).padStart(2, "0");
+  }
+
+  function setHop(key, value) {
+    var idx = STEPS.findIndex(function (s) { return s.key === key; });
+    if (state.variant !== "C") {
+      STEPS.forEach(function (s, i) {
+        if (i > idx) state.hops[s.key] = null;
+      });
+    }
+    state.hops[key] = (state.hops[key] === value) ? null : value;
+    state.selectedId = null;
+    state.lastChanged = key + "=" + (state.hops[key] || "(cleared)");
+    render();
+  }
+
+  function selectRow(id) {
+    state.selectedId = id;
+    state.lastChanged = "opened row " + id;
+    render();
+  }
+
+  function play(row) {
+    var t = speechStart(row);
+    state.playback = {
+      volume: row.volume,
+      seconds: t,
+      label: fmtTime(t),
+      chapter: row.chapter_title
+    };
+    state.lastChanged = "playback " + fmtTime(t);
+    render();
+  }
+
+  function resetWalk() {
+    state.hops = emptyHops();
+    state.selectedId = null;
+    state.playback = null;
+    state.lastChanged = "reset walk";
+    render();
+  }
+
+  function currentVariantIndex() {
+    return VARIANTS.findIndex(function (v) { return v.id === state.variant; });
+  }
+
+  function writeUrl() {
+    var url = new URL(location.href);
+    url.searchParams.set("variant", state.variant);
+    STEPS.forEach(function (s) {
+      if (state.hops[s.key]) url.searchParams.set(s.key, state.hops[s.key]);
+      else url.searchParams.delete(s.key);
+    });
+    if (state.selectedId) url.searchParams.set("row", state.selectedId);
+    else url.searchParams.delete("row");
+    if (state.playback) url.searchParams.set("play", "1");
+    else url.searchParams.delete("play");
+    history.replaceState(null, "", url);
+  }
+
+  function setVariant(id) {
+    state.variant = id;
+    state.lastChanged = "variant " + id;
+    render();
+  }
+
+  function cycle(dir) {
+    var i = currentVariantIndex();
+    var next = (i + dir + VARIANTS.length) % VARIANTS.length;
+    setVariant(VARIANTS[next].id);
+  }
+
+  function el(html) {
+    var d = document.createElement("div");
+    d.innerHTML = html.trim();
+    return d.firstElementChild;
+  }
+
+  function starMark(raw) {
+    return hasStar(raw) ? '<span class="pill pill-star">*</span>' : "";
+  }
+
+  function rowCard(row, selected) {
+    var t = speechStart(row);
+    return (
+      '<button type="button" class="row' + (selected ? " active" : "") + '" data-open="' + row.id + '">' +
+        "<h4>" + pretty(row.named_move) + " " + starMark(row.named_move) + "</h4>" +
+        '<div class="meta">' + row.chapter_title + " · " + fmtTime(t) +
+        ' · <span class="pill pill-nogi">' + row.ruleset + "</span></div>" +
+      "</button>"
+    );
+  }
+
+  function detailHtml(row) {
+    if (!row) return '<div class="empty">Open a row to see steps and a playback time.</div>';
+    var t = speechStart(row);
+    var note = state.playback && state.playback.chapter === row.chapter_title
+      ? '<p class="playback-note">Would open <code>' + row.volume + "</code> at " + fmtTime(t) + ". This prototype does not open the file.</p>"
+      : '<p class="playback-note">Playback time is the first showing speech start. Missing file still keeps the row.</p>';
+    return (
+      '<div class="detail">' +
+        "<h3>" + pretty(row.named_move) + " " + starMark(row.named_move) + "</h3>" +
+        '<p class="meta">' + row.instructor + " · " + row.instructional + "<br>" +
+        row.chapter_title + " · " + pretty(row.start_occupancy) + " " + pretty(row.start_position) +
+        " → " + pretty(row.end_occupancy) + " " + pretty(row.end_position) + "</p>" +
+        '<button type="button" class="playback" data-play="' + row.id + '">Playback ' + fmtTime(t) + "</button>" +
+        note +
+        '<p><strong>Main ideas.</strong> ' + row.main_ideas + "</p>" +
+        '<div class="steps">' + row.technique_steps + "</div>" +
+      "</div>"
+    );
+  }
+
+  function renderState() {
+    var hops = STEPS.map(function (s) {
+      var v = state.hops[s.key];
+      var shown = !v ? "—" : (s.key === "end" ? prettyEnd(v) : pretty(v));
+      return "<div><dt>" + s.label + "</dt><dd>" + shown + "</dd></div>";
+    }).join("");
+    var row = ROWS.find(function (r) { return r.id === state.selectedId; });
+    document.getElementById("state-panel").innerHTML =
+      "<h2>Walk state</h2><dl class=\"state-grid\">" + hops +
+      "<div><dt>Open row</dt><dd>" + (row ? row.chapter_title : "—") + "</dd></div>" +
+      "<div><dt>Matching</dt><dd>" + matching(state.hops).length + " of 5</dd></div>" +
+      "<div><dt>Last change</dt><dd>" + state.lastChanged + "</dd></div>" +
+      "<div><dt>Playback</dt><dd>" + (state.playback ? state.playback.label + " " + state.playback.chapter : "—") + "</dd></div>" +
+      "</dl>";
+  }
+
+  function renderA() {
+    var cols = STEPS.map(function (step, i) {
+      var ready = i === 0 || !!state.hops[STEPS[i - 1].key];
+      var opts = ready ? optionsAt(i, state.hops) : [];
+      var items = opts.map(function (o) {
+        var on = state.hops[step.key] === o.value;
+        return '<button type="button" class="opt' + (on ? " active" : "") + '" data-hop="' + step.key + '" data-val="' + encodeURIComponent(o.value) + '">' +
+          o.label + '<span class="n">' + o.n + "</span></button>";
+      }).join("") || '<div class="empty">Pick the hop before this.</div>';
+      return '<div class="col' + (ready ? "" : " dim") + '"><h3>' + step.label + "</h3>" + items + "</div>";
+    }).join("");
+    var rows = matching(state.hops);
+    var list = rows.map(function (r) { return rowCard(r, r.id === state.selectedId); }).join("");
+    var open = ROWS.find(function (r) { return r.id === state.selectedId; });
+    return (
+      '<div class="coach">' +
+        '<p class="muted">Click down the columns. Later columns wait. A trailing * still matches the unstarred hop.</p>' +
+        '<div class="cols">' + cols + "</div>" +
+        '<div class="a-body" style="margin-top:.7rem">' +
+          '<div><h3 class="muted">Matching rows</h3><div class="rows">' + (list || '<div class="empty">No rows.</div>') + "</div></div>" +
+          "<div>" + detailHtml(open) + "</div>" +
+        "</div>" +
+      "</div>"
+    );
+  }
+
+  function firstUnsetIndex() {
+    for (var i = 0; i < STEPS.length; i++) {
+      if (!state.hops[STEPS[i].key]) return i;
+    }
+    return STEPS.length;
+  }
+
+  function renderB() {
+    var idx = firstUnsetIndex();
+    var crumb = ['<button type="button" data-reset="1">All rows</button>'];
+    STEPS.forEach(function (step, i) {
+      var v = state.hops[step.key];
+      if (!v) return;
+      var shown = step.key === "end" ? prettyEnd(v) : pretty(v);
+      crumb.push('<span class="muted">/</span><button type="button" data-hop="' + step.key + '" data-val="">' + shown + "</button>");
+    });
+    var body;
+    if (idx < STEPS.length) {
+      var step = STEPS[idx];
+      var opts = optionsAt(idx, state.hops);
+      var chips = opts.map(function (o) {
+        return '<button type="button" class="chip" data-hop="' + step.key + '" data-val="' + encodeURIComponent(o.value) + '">' +
+          o.label + ' <span class="count">' + o.n + "</span></button>";
+      }).join("");
+      body = '<h2 class="drill-title">' + step.label + "</h2><div class=\"chips\">" + chips + "</div>";
+    } else {
+      var rows = matching(state.hops);
+      var list = rows.map(function (r) { return rowCard(r, r.id === state.selectedId); }).join("");
+      var open = ROWS.find(function (r) { return r.id === state.selectedId; });
+      body = '<h2 class="drill-title">Matching rows</h2><div class="rows">' + list + "</div>" +
+        '<div style="margin-top:.7rem">' + detailHtml(open) + "</div>";
+    }
+    return '<div class="coach b-layout"><div class="crumb">' + crumb.join("") + "</div>" + body + "</div>";
+  }
+
+  function renderC() {
+    var facets = STEPS.map(function (step) {
+      var opts = facetOptions(step, state.hops);
+      var items = opts.map(function (o) {
+        var on = state.hops[step.key] === o.value;
+        return '<button type="button" class="' + (on ? "active" : "") + '" data-hop="' + step.key + '" data-val="' + encodeURIComponent(o.value) + '">' +
+          o.label + ' <span class="count">' + o.n + "</span></button>";
+      }).join("");
+      return '<div class="facet"><h3>' + step.label + "</h3>" + items + "</div>";
+    }).join("");
+    var rows = matching(state.hops);
+    var list = rows.map(function (r) { return rowCard(r, r.id === state.selectedId); }).join("");
+    var open = ROWS.find(function (r) { return r.id === state.selectedId; });
+    return (
+      '<div class="coach c-layout">' +
+        "<div>" + facets + '<button type="button" data-reset="1">Clear hops</button></div>' +
+        "<div><p class=\"muted\">Hops are filters, not a forced order. Results stay in view.</p>" +
+        '<div class="rows">' + (list || '<div class="empty">No rows.</div>') + "</div>" +
+        '<div style="margin-top:.7rem">' + detailHtml(open) + "</div></div>" +
+      "</div>"
+    );
+  }
+
+  function bind(root) {
+    root.querySelectorAll("[data-hop]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var raw = btn.getAttribute("data-val");
+        var val = raw ? decodeURIComponent(raw) : null;
+        setHop(btn.getAttribute("data-hop"), val);
+      });
+    });
+    root.querySelectorAll("[data-open]").forEach(function (btn) {
+      btn.addEventListener("click", function () { selectRow(btn.getAttribute("data-open")); });
+    });
+    root.querySelectorAll("[data-play]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var row = ROWS.find(function (r) { return r.id === btn.getAttribute("data-play"); });
+        if (row) play(row);
+      });
+    });
+    root.querySelectorAll("[data-reset]").forEach(function (btn) {
+      btn.addEventListener("click", resetWalk);
+    });
+  }
+
+  function render() {
+    renderState();
+    var html = state.variant === "B" ? renderB() : state.variant === "C" ? renderC() : renderA();
+    var app = document.getElementById("app");
+    app.innerHTML = html;
+    bind(app);
+    var v = VARIANTS[currentVariantIndex()];
+    document.getElementById("switcher-name").textContent = v.id + " (" + v.name + ")";
+    writeUrl();
+  }
+
+  function init() {
+    var url = new URL(location.href);
+    var q = (url.searchParams.get("variant") || "A").toUpperCase();
+    if (!VARIANTS.some(function (v) { return v.id === q; })) q = "A";
+    state.variant = q;
+    STEPS.forEach(function (s) {
+      var v = url.searchParams.get(s.key);
+      if (v) state.hops[s.key] = v;
+    });
+    var rowId = url.searchParams.get("row");
+    if (rowId && ROWS.some(function (r) { return r.id === rowId; })) state.selectedId = rowId;
+    if (url.searchParams.get("play") === "1" && state.selectedId) {
+      var row = ROWS.find(function (r) { return r.id === state.selectedId; });
+      if (row) {
+        var t = speechStart(row);
+        state.playback = { volume: row.volume, seconds: t, label: fmtTime(t), chapter: row.chapter_title };
+      }
+    }
+    document.getElementById("prev-v").addEventListener("click", function () { cycle(-1); });
+    document.getElementById("next-v").addEventListener("click", function () { cycle(1); });
+    document.addEventListener("keydown", function (e) {
+      var t = e.target;
+      var typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+      if (typing) return;
+      if (e.key === "ArrowLeft") cycle(-1);
+      if (e.key === "ArrowRight") cycle(1);
+    });
+    render();
+  }
+
+  init();
+})();
+  </script>
+</body>
+</html>
