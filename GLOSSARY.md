@@ -65,7 +65,7 @@ One technique the coach has accepted. It lives in the extracted index with statu
 _Avoid_: extracted technique, technique, raw technique, curated technique, named move, concept
 
 **Concept**:
-An independent coaching point from one chapter. One string in that chapter's concepts list is one extracted-index row, tagged concepts. It has no unreviewed or reviewed stamp and no hop fields. The coach finds it by keyword. Rows that share instructional, volume, and chapter are siblings.
+An independent coaching point from one chapter. One string in that chapter's concepts list is one extracted-index row, tagged concepts. It has no unreviewed or reviewed stamp and no hop fields. The coach finds it by keyword and by sentence find, and can limit a find to concepts or to techniques. Rows that share instructional, volume, and chapter are siblings.
 _Avoid_: raw technique, approved technique, technique, extracted technique, cleaned statement, main ideas
 
 **Teaching body**:
@@ -93,7 +93,7 @@ Extra fields on a curated technique besides a pointer to an approved technique: 
 _Avoid_: teaching body, citation, steps
 
 **Advisor**:
-The part of the application that reads the extracted index and the curated store and advises the coach. It searches the whole extracted index: unreviewed techniques, approved techniques, and concepts. An unreviewed hit is flagged. The coach may mark it reviewed in place, or open the edit page, correct details, and return to the same advisor task. It proposes enrichment-node placements for new curated techniques, uses the playback link path for the coach to watch corpus video, and leaves the system to the coach. It does not read the corpus.
+The part of the application that reads the extracted index and the curated store and advises the coach. It searches the whole extracted index: unreviewed techniques, approved techniques, and concepts. A keyword search or sentence find can be limited to concepts, to techniques, or to both. An unreviewed hit is flagged. The coach may mark it reviewed in place, or open the edit page, correct details, and return to the same advisor task. It proposes enrichment-node placements for new curated techniques, uses the playback link path for the coach to watch corpus video, and leaves the system to the coach. It does not read the corpus.
 _Avoid_: chatbot, bot, model, language model
 
 **Gi**:
