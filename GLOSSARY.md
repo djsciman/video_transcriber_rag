@@ -21,7 +21,7 @@ A named series of teaching volumes credited to an instructor. The series is gi o
 _Avoid_: DVD, course, video, mixed series
 
 **Volume**:
-One recording inside an instructional. One transcript file is one volume. It is raw until curation admits it to the curated store.
+One recording inside an instructional. One transcript file is one volume. Raw techniques from that volume sit in the corpus. Prepare also writes them into the extracted index as unreviewed.
 _Avoid_: episode, file
 
 **Chapter**:
@@ -29,31 +29,71 @@ A titled time range inside a volume.
 _Avoid_: clip, section
 
 **Citation**:
-A catalog teaching that belongs to a named move. A corpus citation names the instructor, the instructional, the volume, the chapter, and the movement; its words are the cleaned statement the coach has accepted; each showing in that chapter has a timestamp and a playback link; the volume is the video. A coach-authored citation is written by the coach from their own knowledge as a movement name and step bullets, with no instructional, volume, chapter, or playback link. Many citations can belong to one named move. With no named-move link it stays in the catalog under uncategorized and is not offered on a lesson. When the coach changes the move name on a corpus citation's cleaned statement, the movement name on that citation updates with that edit. The coach may remove an accepted citation from the curated store.
-_Avoid_: clip, quote
+The source fields on a technique in the extracted index: instructor, instructional, volume, chapter, movement, cleaned statement, showings, and playback.
+_Avoid_: clip, quote, coach notes, decorator, duplicated teaching body
 
 **Cleaned statement**:
-One statement of a movement, written from the speech, keeping every spoken detail from each showing in the chapter, with names restored to the words the instructor said. A detail the instructor shows and does not say stays out, and the coach accepts the statement before the advisor may use the citation. The coach may correct those words before accept and after accept; after accept the curated store replaces the statement and keeps no earlier version. Cleaned statements belong to corpus citations only.
-_Avoid_: transcript, quote
+One statement of a movement, written from the speech, keeping every spoken detail from each showing in the chapter, with names restored to the words the instructor said. A detail the instructor shows and does not say stays out. It sits on a technique in the extracted index. The coach may correct those words when accepting and after; after accept the extracted index replaces the statement and keeps no earlier version.
+_Avoid_: transcript, quote, coach notes
 
 **Playback link**:
-A link on a citation that opens that volume's video file at the second when that showing's own speech begins. When that file is not available, the citation still enters the curated store. The timestamp and the volume, including that volume's video file name, let the coach find the video.
+A link on a technique in the extracted index that opens that volume's video file at the second when that showing's own speech begins. Unreviewed and reviewed rows both carry it. When that file is not available, the row still sits in the extracted index. The timestamp and the volume, including that volume's video file name, let the coach find the video.
 _Avoid_: url, deep link
 
 **Corpus**:
-The instructionals transcribed for the coach. A volume is in the corpus as soon as it is transcribed, including while it is still raw, and it reaches the curated store only after curation.
-_Avoid_: library, dataset, knowledge base
+The instructionals transcribed for the coach, as JSON on the coach's machine. A volume is in the corpus as soon as it is transcribed. Pipeline enrichment on those files is unverified. Raw techniques live here.
+_Avoid_: library, dataset, knowledge base, extracted index, curated store
 
 **Application**:
-The coach-only program this spec defines. It curates raw volumes and advises the coach on a topic.
+The coach-only program this spec defines. It accepts raw techniques, curates approved techniques, and advises the coach on a topic.
 _Avoid_: tool, chatbot, product
 
+**Raw technique**:
+One independently taught movement taken from a chapter in the corpus. It is unverified pipeline output. It carries start occupancy and position, a type of move, end occupancy and position or a submission, a named move when known, the mechanical steps, and the times in that volume where it is shown. Prepare writes it into the extracted index as unreviewed.
+_Avoid_: extracted technique, technique, approved technique, curated technique, citation, named move, concept
+
+**Accept**:
+The coach's stamp that marks an unreviewed technique in the extracted index as reviewed. The same row becomes an approved technique. The stamp strips a trailing `*` from every hop field and from the named move; the value stays. The coach may reword or correct steps, occupancy, and other details on the edit page before that stamp. The coach does not have to delete stars by hand.
+_Avoid_: approve, curate
+
+**Extracted index**:
+The coach-queryable store on the coach's machine. It holds unreviewed techniques, approved techniques, and concepts. A raw technique enters as unreviewed when prepare writes it. A concept string enters as a concept row when prepare writes it. Later prepare rewrites update unreviewed techniques and concepts for that chapter; they leave reviewed techniques. Each row holds the keys to that chapter in the corpus so the application can read that chapter's cleaned speech there; the speech is not stored on the row. The advisor reads this store with the curated store.
+_Avoid_: extract index, database, corpus, curated store
+
+**Approved technique**:
+One technique the coach has accepted. It lives in the extracted index with status reviewed and holds the teaching body. Edits to it show through every curated technique that points at it.
+_Avoid_: extracted technique, technique, raw technique, curated technique, named move, concept
+
+**Concept**:
+An independent coaching point from one chapter. One string in that chapter's concepts list is one extracted-index row, tagged concepts. It has no unreviewed or reviewed stamp and no hop fields. The coach finds it by keyword and by sentence find, and can limit a find to concepts or to techniques. Rows that share instructional, volume, and chapter are siblings.
+_Avoid_: raw technique, approved technique, technique, extracted technique, cleaned statement, main ideas
+
+**Teaching body**:
+Occupancy, type of move, steps, hops, times, and citation fields. It lives on a technique in the extracted index, or on a coach-authored curated technique.
+_Avoid_: decorator, coach notes, lesson, concept
+
+**Curate**:
+The coach's stamp that writes a curated technique pointing at an approved technique. It stores only decorators. It does not copy the teaching body already in the extracted index. Placing an approved technique on a lesson curates it.
+_Avoid_: accept, import, duplicate
+
 **Curated store**:
-The records kept on the coach's machine for advising and hand-build, including enrichment nodes. A raw volume is not among them until it passes curation.
-_Avoid_: database, knowledge graph, vector store
+The records kept on the coach's machine for advising and hand-build: curated techniques, enrichment, topics, units, advising records, and systems. An index-originated curated technique points at an approved technique instead of copying it.
+_Avoid_: database, knowledge graph, vector store, extracted index, corpus
+
+**Curated technique**:
+The coach's use of a teaching in the curated store. Index-originated: a pointer to one approved technique plus decorators; many curated techniques may point at one approved technique; removing this record leaves the approved technique. Coach-authored: the teaching body on itself, with no pointer and no citation. It belongs to a named move when linked, may belong to systems, and with no named-move link stays under uncategorized.
+_Avoid_: extracted technique, technique, raw technique, approved technique
+
+**Coach notes**:
+The coach's own words on a curated technique.
+_Avoid_: cleaned statement, citation, steps, teaching body
+
+**Decorator**:
+Extra fields on a curated technique besides a pointer to an approved technique: named-move link, system membership, coach notes, other-ruleset mark, and caveat.
+_Avoid_: teaching body, citation, steps
 
 **Advisor**:
-The part of the application that reads the curated store and advises the coach. It selects citations from that store, proposes enrichment-node placements for new citations, uses the playback link path for the coach to watch corpus video, and leaves the system to the coach.
+The part of the application that reads the extracted index and the curated store and advises the coach. It searches the whole extracted index: unreviewed techniques, approved techniques, and concepts. A keyword search or sentence find can be limited to concepts, to techniques, or to both. An unreviewed hit is flagged. The coach may mark it reviewed in place, or open the edit page, correct details, and return to the same advisor task. It proposes enrichment-node placements for new curated techniques, uses the playback link path for the coach to watch corpus video, and leaves the system to the coach. It does not read the corpus.
 _Avoid_: chatbot, bot, model, language model
 
 **Gi**:
@@ -85,11 +125,11 @@ Incompatible instruction from two or more instructors on the same topic. A citat
 _Avoid_: debate, conflict
 
 **Other-ruleset variant**:
-A showing of a movement, inside an instructional of one ruleset, where the instructor briefly shows that movement for the other ruleset. The coach marks it on the citation, it carries a caveat, and it enters a lesson only when the coach places it there.
+A showing of a movement, inside an instructional of one ruleset, where the instructor briefly shows that movement for the other ruleset. The coach marks it as a decorator on the curated technique, it carries a caveat, and it enters a lesson only when the coach places it there.
 _Avoid_: cross-ruleset chapter, mixed chapter, universal technique
 
 **Caveat**:
-The note that says what may transfer and what depends on tools the topic's ruleset does not share. On an other-ruleset variant, the note sits on that showing. When the coach chooses yes for an instructional of the other ruleset, the note sits on that yes, and each citation from that instructional uses it for the topic.
+The note that says what may transfer and what depends on tools the topic's ruleset does not share. On an other-ruleset variant, the note sits on that showing. When the coach chooses yes for an instructional of the other ruleset, the note sits on that yes, and each curated technique from that instructional uses it for the topic.
 _Avoid_: disclaimer, warning
 
 **Unit**:
@@ -101,12 +141,12 @@ One meeting of students inside a unit. It has a short purpose line, which may be
 _Avoid_: module
 
 **Lesson**:
-One part of a class: a technique, a drill, sparring, or a game. It connects to exactly one named move or exactly one system. While building it, the coach chooses which citations of that target to use in the instruction.
+One part of a class: a technique, a drill, sparring, or a game. It connects to exactly one named move or exactly one system. The advisor may propose approved techniques of that target; placing one on the lesson curates it. The saved lesson points at curated techniques. Instruction steps come through the pointer, or from a coach-authored curated technique.
 _Avoid_: class, module
 
 **Technique**:
 A lesson that explains a movement in detail before the students perform it. In the same class, its drill follows with nothing between them, and the partner job challenges the student who performs the technique.
-_Avoid_: lecture, extracted technique
+_Avoid_: lecture, extracted technique, raw technique, approved technique, curated technique
 
 **Drill**:
 A lesson of regular core movements that students perform with little further instruction against opponents who resist in a predictable way. It carries the partner job as text. A drill may sit in a class with no technique ahead of it.
@@ -145,19 +185,15 @@ What a named move accomplishes (takedown, sweep, pass, escape, submission, trans
 _Avoid_: category, path level
 
 **Named move**:
-One catalog movement such as Hip bump sweep. It consists of a start position plus top, bottom, or neutral; a type of move; and an end (a position plus top, bottom, or neutral, or a submission). Citations belong here. A lesson may connect here.
+One catalog movement such as Hip bump sweep. It consists of a start position plus top, bottom, or neutral; a type of move; and an end (a position plus top, bottom, or neutral, or a submission). Curated techniques belong here. A lesson may connect here.
 _Avoid_: path, leaf, sequence
-
-**Extracted technique**:
-One independently taught movement taken from a chapter. It carries start occupancy and position, a type of move, end occupancy and position or a submission, a named move when known, the mechanical steps, and the times in that volume where it is shown. It is one findable row the coach uses to find teaching before accept. It is not a Technique lesson and not an accepted citation.
-_Avoid_: technique, citation, named move
 
 **Submission**:
 A catalog finishing hold. A named move may end here. It is not a position.
 _Avoid_: tap as a position
 
 **Uncategorized**:
-The hierarchy-browse bucket for citations that have no named-move link. Those citations are not offered on a lesson until they belong to a named move.
+The hierarchy-browse bucket for curated techniques that have no named-move link. Those curated techniques are not offered on a lesson until they belong to a named move.
 _Avoid_: unsorted, misc, other
 
 **Resistance**:

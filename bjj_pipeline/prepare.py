@@ -180,6 +180,7 @@ def prepare_volume(
     extractor: Completer | None = None,
     force: bool = False,
     max_llm_calls: int | None = None,
+    extracted_index=None,
 ) -> int:
     """Rewrite ``json_path`` with nested raw speech and, when possible, pared keys.
 
@@ -266,7 +267,74 @@ def prepare_volume(
     payload["chapters"] = nested
     payload.pop("segments", None)
     _atomic_write_json(json_path, payload)
+    index, owned = _resolve_extracted_index(extracted_index)
+    try:
+        if index is not None:
+            _upsert_prepared_volume(payload, json_path, corpus_root, index)
+    finally:
+        if owned and index is not None:
+            index.close()
     return 0 if model_ok else 1
+
+
+def _corpus_relative_json(json_path: Path, corpus_root: Path) -> str:
+    try:
+        return json_path.resolve().relative_to(Path(corpus_root).resolve()).as_posix()
+    except ValueError:
+        return json_path.name
+
+
+def ingest_prepared_corpus(corpus_root: Path, extracted_index) -> None:
+    """Upsert techniques and concepts already on prepared volume JSON."""
+    corpus_root = Path(corpus_root)
+    for json_path in sorted(corpus_root.rglob("*.json")):
+        try:
+            payload = json.loads(json_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if isinstance(payload, dict):
+            _upsert_prepared_volume(payload, json_path, corpus_root, extracted_index)
+
+
+def _chapter_credit(chapters: list, key: str) -> str:
+    for chapter in chapters:
+        if not isinstance(chapter, dict):
+            continue
+        value = chapter.get(key)
+        if isinstance(value, str) and value:
+            return value
+    return ""
+
+
+def _resolve_extracted_index(extracted_index):
+    if extracted_index is not None:
+        return extracted_index, False
+    from coach_app.settings import extracted_index_path
+
+    location = extracted_index_path()
+    if location is None:
+        return None, False
+    from coach_app.extracted_index import ExtractedIndex
+
+    return ExtractedIndex.open(location), True
+
+
+def _upsert_prepared_volume(
+    payload: dict, json_path: Path, corpus_root: Path, extracted_index
+) -> None:
+    chapters = payload.get("chapters")
+    if not isinstance(chapters, list):
+        return
+    video_file = payload.get("video_file")
+    volume = {
+        "video_file": video_file if isinstance(video_file, str) else "",
+        "instructor": _chapter_credit(chapters, "instructor"),
+        "instructional": _chapter_credit(chapters, "instructional"),
+    }
+    rel = _corpus_relative_json(json_path, corpus_root)
+    for chapter in chapters:
+        if isinstance(chapter, dict):
+            extracted_index.ingest_chapter(volume, chapter, corpus_json_path=rel)
 
 
 def resolve_llm_provider(name: str | None = None) -> str:
@@ -901,6 +969,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Override the provider default model. Env: BJJ_LLM_MODEL.",
     )
+    parser.add_argument(
+        "--extracted-index",
+        type=Path,
+        default=None,
+        help="SQLite extracted index to upsert after prepare writes a volume.",
+    )
     return parser
 
 
@@ -918,70 +992,92 @@ def run(
     cleaner: Completer | None = None,
     extractor: Completer | None = None,
     stdout: TextIO | None = None,
+    extracted_index=None,
 ) -> int:
     library = Path(library)
     corpus = Path(corpus)
     stdout = stdout if stdout is not None else sys.stdout
-    staged = llm and method == "staged"
-    completer_fn: Completer | None = None
-    cleaner_fn: Completer | None = None
-    extractor_fn: Completer | None = None
-    if staged:
-        cleaner_fn = cleaner or make_completer(
-            provider, model, spec=_cleanup_spec(), reasoning_effort="low"
-        )
-        extractor_fn = extractor or make_completer(
-            provider, model, spec=_extract_spec(), reasoning_effort="medium"
-        )
-    elif llm:
-        completer_fn = completer if completer is not None else make_completer(provider, model)
-    failed = False
-    for video in walk_videos(library):
-        output = output_path_for(video, library, corpus)
-        try:
-            label = str(video.relative_to(library))
-        except ValueError:
-            label = str(video)
-        if not prepare_eligible(output):
-            _print(stdout, "SKIP", label)
-            continue
-        if prepare_done(output, llm=llm, method=method) and not force:
-            _print(stdout, "SKIP", label)
-            continue
-        try:
-            code = prepare_volume(
-                output,
-                corpus,
-                library,
-                completer=completer_fn,
-                cleaner=cleaner_fn,
-                extractor=extractor_fn,
-                force=force,
-                max_llm_calls=max_llm_calls,
+    extracted_index, owned_index = _resolve_extracted_index(extracted_index)
+    try:
+        if extracted_index is not None:
+            ingest_prepared_corpus(corpus, extracted_index)
+        staged = llm and method == "staged"
+        completer_fn: Completer | None = None
+        cleaner_fn: Completer | None = None
+        extractor_fn: Completer | None = None
+        if staged:
+            cleaner_fn = cleaner or make_completer(
+                provider, model, spec=_cleanup_spec(), reasoning_effort="low"
             )
-        except Exception as exc:  # noqa: BLE001
-            _print(stdout, "FAIL", label, str(exc))
-            failed = True
-        else:
-            if code:
-                _print(stdout, "FAIL", label, "model half")
+            extractor_fn = extractor or make_completer(
+                provider, model, spec=_extract_spec(), reasoning_effort="medium"
+            )
+        elif llm:
+            completer_fn = completer if completer is not None else make_completer(
+                provider, model
+            )
+        failed = False
+        for video in walk_videos(library):
+            output = output_path_for(video, library, corpus)
+            try:
+                label = str(video.relative_to(library))
+            except ValueError:
+                label = str(video)
+            if not prepare_eligible(output):
+                _print(stdout, "SKIP", label)
+                continue
+            if prepare_done(output, llm=llm, method=method) and not force:
+                _print(stdout, "SKIP", label)
+                continue
+            try:
+                code = prepare_volume(
+                    output,
+                    corpus,
+                    library,
+                    completer=completer_fn,
+                    cleaner=cleaner_fn,
+                    extractor=extractor_fn,
+                    force=force,
+                    max_llm_calls=max_llm_calls,
+                    extracted_index=extracted_index,
+                )
+            except Exception as exc:  # noqa: BLE001
+                _print(stdout, "FAIL", label, str(exc))
                 failed = True
             else:
-                _print(stdout, "RUN", label)
-    return 1 if failed else 0
+                if code:
+                    _print(stdout, "FAIL", label, "model half")
+                    failed = True
+                else:
+                    _print(stdout, "RUN", label)
+        return 1 if failed else 0
+    finally:
+        if owned_index and extracted_index is not None:
+            extracted_index.close()
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    return run(
-        args.library,
-        args.corpus,
-        force=args.force,
-        llm=args.llm,
-        method=args.method,
-        provider=args.provider,
-        model=args.model,
-    )
+    index = None
+    if args.extracted_index is not None:
+        from coach_app.extracted_index import ExtractedIndex
+
+        index = ExtractedIndex.open(args.extracted_index)
+    try:
+        return run(
+            args.library,
+            args.corpus,
+            force=args.force,
+            llm=args.llm,
+            method=args.method,
+            provider=args.provider,
+            model=args.model,
+            extracted_index=index,
+        )
+    finally:
+        if index is not None:
+            index.close()
+
 
 
 if __name__ == "__main__":
