@@ -4,9 +4,14 @@ from __future__ import annotations
 
 import array
 import json
+import re
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
+
+from coach_app.citations import playback_handle, resolve_video_playback
+
+_RANGE = re.compile(r"(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)")
 
 HOP_FIELDS = (
     "named_move",
@@ -32,7 +37,8 @@ _ROW_SELECT = """
             SELECT video_file, chapter_title, chapter_start, kind, array_index,
                    status, named_move, ruleset, move_type, start_occupancy,
                    start_position, end_occupancy, end_position, technique_steps,
-                   main_ideas, concept, instructor, instructional, extract_json
+                   main_ideas, concept, instructor, instructional,
+                   transcript_folder, corpus_json_path, extract_json
             FROM extract
 """
 
@@ -71,6 +77,20 @@ class MiniLMEmbedder:
 
 
 @dataclass(frozen=True)
+class Showing:
+    start: float
+    end: float
+    playback_link: str | None = None
+
+
+@dataclass(frozen=True)
+class Playback:
+    path: Path
+    speech_start: float
+    available: bool
+
+
+@dataclass(frozen=True)
 class ExtractedRow:
     video_file: str
     chapter_title: str
@@ -91,6 +111,9 @@ class ExtractedRow:
     instructor: str = ""
     instructional: str = ""
     extract: dict | None = None
+    transcript_folder: str = ""
+    corpus_json_path: str = ""
+    showings: tuple[Showing, ...] = ()
 
 
 class ExtractedIndex:
@@ -115,7 +138,13 @@ class ExtractedIndex:
         index._init_schema()
         return index
 
-    def ingest_chapter(self, volume, chapter, corpus_json_path=None) -> None:
+    def ingest_chapter(
+        self,
+        volume,
+        chapter,
+        corpus_json_path=None,
+        transcript_folder=None,
+    ) -> None:
         video_file = volume.get("video_file") if isinstance(volume, dict) else ""
         if not isinstance(video_file, str):
             video_file = ""
@@ -139,7 +168,8 @@ class ExtractedIndex:
             chapter_start = float(start)
         except (TypeError, ValueError):
             chapter_start = 0.0
-        json_path = "" if corpus_json_path is None else str(corpus_json_path)
+        json_path = _library_relative(corpus_json_path)
+        folder = _transcript_folder(transcript_folder, json_path)
 
         techniques = chapter.get("techniques") if isinstance(chapter, dict) else None
         if isinstance(techniques, list):
@@ -170,6 +200,7 @@ class ExtractedIndex:
                     instructor=instructor,
                     instructional=instructional,
                     extract=extract,
+                    transcript_folder=folder,
                     corpus_json_path=json_path,
                     embedding=embedding,
                 )
@@ -195,6 +226,7 @@ class ExtractedIndex:
                     instructor=instructor,
                     instructional=instructional,
                     extract={"concept": item},
+                    transcript_folder=folder,
                     corpus_json_path=json_path,
                     embedding=embedding,
                 )
@@ -284,6 +316,42 @@ class ExtractedIndex:
             params.extend((exclude_kind, exclude_index))
         return self._query_rows(" AND ".join(clauses), tuple(params))
 
+    def resolve_playback(self, row: ExtractedRow, showing: Showing, *, video_root) -> Playback:
+        path, speech_start, available = resolve_video_playback(
+            video_root=video_root,
+            transcript_folder=row.transcript_folder,
+            video_file=row.video_file,
+            speech_start=showing.start,
+        )
+        return Playback(path=path, speech_start=speech_start, available=available)
+
+    def cleaned_speech(self, row: ExtractedRow, corpus_root) -> str | None:
+        if not row.corpus_json_path:
+            return None
+        path = Path(corpus_root) / row.corpus_json_path
+        if not path.is_file():
+            return None
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return None
+        chapters = payload.get("chapters") if isinstance(payload, dict) else None
+        if not isinstance(chapters, list):
+            return None
+        for chapter in chapters:
+            if not isinstance(chapter, dict):
+                continue
+            start = chapter.get("start")
+            try:
+                chapter_start = float(start)
+            except (TypeError, ValueError):
+                continue
+            if chapter_start != row.chapter_start:
+                continue
+            cleaned = chapter.get("transcript_cleaned")
+            return cleaned if isinstance(cleaned, str) else None
+        return None
+
     def close(self) -> None:
         self._conn.close()
 
@@ -356,6 +424,7 @@ class ExtractedIndex:
         instructor: str,
         instructional: str,
         extract: dict,
+        transcript_folder: str,
         corpus_json_path: str,
         embedding: bytes | None,
     ) -> None:
@@ -372,8 +441,8 @@ class ExtractedIndex:
                 start_occupancy_stripped, start_position_stripped,
                 end_occupancy_stripped, end_position_stripped,
                 technique_steps, main_ideas, suggested_tags, source_time_ranges,
-                concept, instructor, instructional, corpus_json_path, extract_json,
-                embedding
+                concept, instructor, instructional, transcript_folder,
+                corpus_json_path, extract_json, embedding
             ) VALUES (
                 ?, ?, ?, ?, ?,
                 ?, ?, ?, ?, ?,
@@ -383,7 +452,7 @@ class ExtractedIndex:
                 ?, ?,
                 ?, ?, ?, ?,
                 ?, ?, ?, ?, ?,
-                ?
+                ?, ?
             )
             """,
             (
@@ -414,6 +483,7 @@ class ExtractedIndex:
                 concept,
                 instructor,
                 instructional,
+                transcript_folder,
                 corpus_json_path,
                 json.dumps(extract),
                 embedding,
@@ -432,6 +502,7 @@ class ExtractedIndex:
 
     def _row_from_sql(self, row: sqlite3.Row) -> ExtractedRow:
         extract = json.loads(row["extract_json"] or "{}")
+        ranges = extract.get("source_time_ranges") if isinstance(extract, dict) else []
         return ExtractedRow(
             video_file=row["video_file"],
             chapter_title=row["chapter_title"],
@@ -452,6 +523,9 @@ class ExtractedIndex:
             instructor=row["instructor"],
             instructional=row["instructional"],
             extract=extract,
+            transcript_folder=row["transcript_folder"],
+            corpus_json_path=row["corpus_json_path"],
+            showings=_parse_showings(ranges, row["video_file"]),
         )
 
 
@@ -461,3 +535,47 @@ def _filter_values(value) -> tuple[str, ...]:
     if isinstance(value, str):
         return (value,) if value else ()
     return tuple(item for item in value if isinstance(item, str) and item)
+
+
+def _library_relative(corpus_json_path) -> str:
+    if corpus_json_path is None:
+        return ""
+    path = Path(corpus_json_path)
+    if path.is_absolute():
+        return path.name
+    return path.as_posix()
+
+
+def _transcript_folder(transcript_folder, json_path: str) -> str:
+    if transcript_folder is not None:
+        folder = Path(transcript_folder)
+        if folder.is_absolute():
+            return folder.name
+        return folder.as_posix()
+    if not json_path:
+        return ""
+    parent = Path(json_path).parent
+    if parent.as_posix() in (".", ""):
+        return ""
+    return parent.as_posix()
+
+
+def _parse_showings(ranges, video_file: str) -> tuple[Showing, ...]:
+    values = ranges if isinstance(ranges, list) else []
+    found: list[Showing] = []
+    for item in values:
+        if not isinstance(item, str):
+            continue
+        match = _RANGE.fullmatch(item.strip())
+        if not match:
+            continue
+        start = float(match.group(1))
+        end = float(match.group(2))
+        found.append(
+            Showing(
+                start=start,
+                end=end,
+                playback_link=playback_handle(video_file, start),
+            )
+        )
+    return tuple(found)
