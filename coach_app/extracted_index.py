@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import array
 import json
+import math
+import os
 import re
 import sqlite3
 from dataclasses import dataclass
@@ -58,6 +60,33 @@ _FTS_COLUMNS = (
 
 MINILM_MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"
 MINILM_PROVIDERS = ["CPUExecutionProvider"]
+
+SENTENCE_FIND_VENDORS = (
+    {
+        "provider": "anthropic",
+        "model": "claude-haiku-5-5",
+        "key_env": "ANTHROPIC_API_KEY",
+    },
+    {
+        "provider": "openai",
+        "model": "gpt-5.4-mini",
+        "key_env": "OPENAI_API_KEY",
+    },
+    {
+        "provider": "xai",
+        "model": "grok-4.3",
+        "key_env": "XAI_API_KEY",
+    },
+)
+SENTENCE_FIND_SPEC = (
+    "Return a JSON object only. Fill hop fields when the sentence names them "
+    "(named_move, ruleset, move_type, start_occupancy, start_position, "
+    "end_occupancy, end_position, instructor). Leave unknown hops as empty "
+    "strings. Put search keywords in a keywords array. Put one short English "
+    "find-string in find_string for vector search. Do not write teaching "
+    "advice. Do not explain how to perform a move."
+)
+SENTENCE_FIND_TIMEOUT = 30.0
 
 
 def TextEmbedding(*args, **kwargs):
@@ -391,6 +420,43 @@ class ExtractedIndex:
         sql += " ORDER BY video_file, chapter_start, kind, array_index"
         cursor = self._conn.execute(sql, params)
         return tuple(self._row_from_sql(row) for row in cursor)
+
+    def sentence_find(self, sentence, kind="both") -> tuple[ExtractedRow, ...]:
+        if kind == "techniques":
+            kind_value = "technique"
+        elif kind == "concepts":
+            kind_value = "concept"
+        elif kind == "both":
+            kind_value = None
+        else:
+            raise ValueError("kind must be 'techniques', 'concepts', or 'both'")
+        parsed = self._sentence_find_query(sentence)
+        if parsed is None:
+            return ()
+        hops, keywords, find_string = parsed
+        query = self.embed_query(find_string)
+        hop_ids = None
+        if hops:
+            hop_ids = {_row_id(row) for row in self.hop_walk(**hops)}
+        keyword_ids = None
+        if keywords:
+            matched: set[tuple] | None = None
+            for word in keywords:
+                ids = {_row_id(row) for row in self.keyword_search(word, kind=kind)}
+                matched = ids if matched is None else matched & ids
+            keyword_ids = matched or set()
+        scored: list[tuple[int, float, ExtractedRow]] = []
+        for row in self.rows():
+            if kind_value is not None and row.kind != kind_value:
+                continue
+            ident = _row_id(row)
+            hop_ok = hop_ids is None or ident in hop_ids
+            keyword_ok = keyword_ids is None or ident in keyword_ids
+            full = row.kind == "technique" and hop_ok and keyword_ok
+            similarity = _cosine(query, self.embedding(row))
+            scored.append((0 if full else 1, -similarity, row))
+        scored.sort(key=lambda item: (item[0], item[1]))
+        return tuple(item[2] for item in scored)
 
     def save(self, row, fields, *, write_back_corpus=False, corpus_root=None) -> None:
         self._write_finder(
@@ -802,6 +868,22 @@ class ExtractedIndex:
         )
         self._conn.commit()
 
+    def _sentence_find_query(self, sentence):
+        try:
+            chat = self._chat
+            if chat is None:
+                chat = production_sentence_find_chat
+            raw = chat(sentence)
+        except Exception:
+            return None
+        payload = _parse_json_object(raw)
+        if payload is None:
+            return None
+        find_string = payload.get("find_string")
+        if not isinstance(find_string, str):
+            find_string = ""
+        return _filled_hops(payload), _filled_keywords(payload), find_string.strip()
+
     def _resolve_embedder(self):
         if self._embedder is None:
             self._embedder = MiniLMEmbedder()
@@ -838,6 +920,117 @@ class ExtractedIndex:
             corpus_json_path=row["corpus_json_path"],
             showings=_parse_showings(ranges, row["video_file"]),
         )
+
+
+def complete_sentence_find_vendor(
+    prompt,
+    *,
+    provider,
+    model,
+    urlopen=None,
+    timeout=SENTENCE_FIND_TIMEOUT,
+):
+    from bjj_pipeline.prepare import complete_chat
+
+    return complete_chat(
+        prompt,
+        provider=provider,
+        model=model,
+        spec=SENTENCE_FIND_SPEC,
+        urlopen=urlopen,
+        timeout=timeout,
+    )
+
+
+def production_sentence_find_chat(sentence: str) -> dict:
+    for vendor in SENTENCE_FIND_VENDORS:
+        key = os.environ.get(vendor["key_env"], "")
+        if not isinstance(key, str) or not key.strip():
+            continue
+        try:
+            text = complete_sentence_find_vendor(
+                sentence,
+                provider=vendor["provider"],
+                model=vendor["model"],
+            )
+        except Exception:
+            continue
+        payload = _parse_json_object(text)
+        if payload is None:
+            continue
+        return payload
+    raise RuntimeError("sentence find chat failed")
+
+
+def _row_id(row) -> tuple:
+    return (
+        row.video_file,
+        row.chapter_title,
+        row.chapter_start,
+        row.kind,
+        row.array_index,
+    )
+
+
+def _cosine(left, right) -> float:
+    if left is None or right is None:
+        return 0.0
+    if len(left) != len(right) or not left:
+        return 0.0
+    dot = 0.0
+    left_norm = 0.0
+    right_norm = 0.0
+    for x, y in zip(left, right):
+        fx = float(x)
+        fy = float(y)
+        dot += fx * fy
+        left_norm += fx * fx
+        right_norm += fy * fy
+    if left_norm == 0.0 or right_norm == 0.0:
+        return 0.0
+    return dot / (math.sqrt(left_norm) * math.sqrt(right_norm))
+
+
+def _parse_json_object(raw):
+    if isinstance(raw, dict):
+        return raw
+    if not isinstance(raw, str):
+        return None
+    text = raw.strip()
+    if text.startswith("```"):
+        text = text.strip("`")
+        if text.lower().startswith("json"):
+            text = text[4:]
+        text = text.strip()
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _filled_hops(payload: dict) -> dict[str, str]:
+    source = payload
+    nested = payload.get("hops")
+    if isinstance(nested, dict):
+        source = {**nested, **payload}
+    hops: dict[str, str] = {}
+    for field in HOP_WALK_FILTERS:
+        value = source.get(field)
+        if isinstance(value, str) and value.strip():
+            hops[field] = value.strip()
+    return hops
+
+
+def _filled_keywords(payload: dict) -> tuple[str, ...]:
+    value = payload.get("keywords", payload.get("keyword"))
+    if isinstance(value, str):
+        return (value.strip(),) if value.strip() else ()
+    if not isinstance(value, list):
+        return ()
+    return tuple(
+        item.strip() for item in value if isinstance(item, str) and item.strip()
+    )
 
 
 def _filter_values(value) -> tuple[str, ...]:
