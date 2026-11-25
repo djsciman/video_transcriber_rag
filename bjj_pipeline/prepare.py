@@ -180,6 +180,7 @@ def prepare_volume(
     extractor: Completer | None = None,
     force: bool = False,
     max_llm_calls: int | None = None,
+    extracted_index=None,
 ) -> int:
     """Rewrite ``json_path`` with nested raw speech and, when possible, pared keys.
 
@@ -266,7 +267,42 @@ def prepare_volume(
     payload["chapters"] = nested
     payload.pop("segments", None)
     _atomic_write_json(json_path, payload)
+    if extracted_index is not None:
+        _upsert_prepared_volume(payload, json_path, corpus_root, extracted_index)
     return 0 if model_ok else 1
+
+
+def _corpus_relative_json(json_path: Path, corpus_root: Path) -> str:
+    try:
+        return json_path.resolve().relative_to(Path(corpus_root).resolve()).as_posix()
+    except ValueError:
+        return json_path.name
+
+
+def ingest_prepared_corpus(corpus_root: Path, extracted_index) -> None:
+    """Upsert techniques and concepts already on prepared volume JSON."""
+    corpus_root = Path(corpus_root)
+    for json_path in sorted(corpus_root.rglob("*.json")):
+        try:
+            payload = json.loads(json_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if isinstance(payload, dict):
+            _upsert_prepared_volume(payload, json_path, corpus_root, extracted_index)
+
+
+def _upsert_prepared_volume(
+    payload: dict, json_path: Path, corpus_root: Path, extracted_index
+) -> None:
+    chapters = payload.get("chapters")
+    if not isinstance(chapters, list):
+        return
+    video_file = payload.get("video_file")
+    volume = {"video_file": video_file if isinstance(video_file, str) else ""}
+    rel = _corpus_relative_json(json_path, corpus_root)
+    for chapter in chapters:
+        if isinstance(chapter, dict):
+            extracted_index.ingest_chapter(volume, chapter, corpus_json_path=rel)
 
 
 def resolve_llm_provider(name: str | None = None) -> str:
@@ -901,6 +937,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Override the provider default model. Env: BJJ_LLM_MODEL.",
     )
+    parser.add_argument(
+        "--extracted-index",
+        type=Path,
+        default=None,
+        help="SQLite extracted index to upsert after prepare writes a volume.",
+    )
     return parser
 
 
@@ -918,10 +960,13 @@ def run(
     cleaner: Completer | None = None,
     extractor: Completer | None = None,
     stdout: TextIO | None = None,
+    extracted_index=None,
 ) -> int:
     library = Path(library)
     corpus = Path(corpus)
     stdout = stdout if stdout is not None else sys.stdout
+    if extracted_index is not None:
+        ingest_prepared_corpus(corpus, extracted_index)
     staged = llm and method == "staged"
     completer_fn: Completer | None = None
     cleaner_fn: Completer | None = None
@@ -958,6 +1003,7 @@ def run(
                 extractor=extractor_fn,
                 force=force,
                 max_llm_calls=max_llm_calls,
+                extracted_index=extracted_index,
             )
         except Exception as exc:  # noqa: BLE001
             _print(stdout, "FAIL", label, str(exc))
@@ -973,15 +1019,26 @@ def run(
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    return run(
-        args.library,
-        args.corpus,
-        force=args.force,
-        llm=args.llm,
-        method=args.method,
-        provider=args.provider,
-        model=args.model,
-    )
+    index = None
+    if args.extracted_index is not None:
+        from coach_app.extracted_index import ExtractedIndex
+
+        index = ExtractedIndex.open(args.extracted_index)
+    try:
+        return run(
+            args.library,
+            args.corpus,
+            force=args.force,
+            llm=args.llm,
+            method=args.method,
+            provider=args.provider,
+            model=args.model,
+            extracted_index=index,
+        )
+    finally:
+        if index is not None:
+            index.close()
+
 
 
 if __name__ == "__main__":
