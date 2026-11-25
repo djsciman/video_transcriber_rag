@@ -53,7 +53,7 @@ One independently taught movement taken from a chapter in the corpus. It is unve
 _Avoid_: extracted technique, technique, approved technique, curated technique, citation, named move, concept
 
 **Accept**:
-The coach's stamp that marks an unreviewed technique in the extracted index as reviewed. The same row becomes an approved technique. The stamp strips a trailing `*` from every hop field and from the named move; the value stays. The coach may reword or correct steps, occupancy, and other details on the edit page before that stamp. The coach does not have to delete stars by hand.
+The coach's stamp that marks an unreviewed technique in the extracted index as reviewed. The same row becomes an approved technique. The stamp strips a trailing `*` from every hop field and from the named move; the value stays. On the finder edit popup, Save and Accept is this stamp after the write; Save writes without it. The coach does not have to delete stars by hand.
 _Avoid_: approve, curate
 
 **Extracted index**:
@@ -93,7 +93,7 @@ Extra fields on a curated technique besides a pointer to an approved technique: 
 _Avoid_: teaching body, citation, steps
 
 **Advisor**:
-The part of the application that reads the extracted index and the curated store and advises the coach. It searches the whole extracted index: unreviewed techniques, approved techniques, and concepts. An unreviewed hit is flagged. The coach may mark it reviewed in place, or open the edit page, correct details, and return to the same advisor task. It proposes enrichment-node placements for new curated techniques, uses the playback link path for the coach to watch corpus video, and leaves the system to the coach. It does not read the corpus.
+The part of the application that reads the extracted index and the curated store and advises the coach. It searches the whole extracted index: unreviewed techniques, approved techniques, and concepts. An unreviewed hit is flagged. The coach may mark it reviewed in place, or open the same finder edit popup, correct any teaching-body field, Save or Save and Accept, and return to the same advisor task. It proposes enrichment-node placements for new curated techniques, uses the playback link path for the coach to watch corpus video, and leaves the system to the coach. It does not read the corpus.
 _Avoid_: chatbot, bot, model, language model
 
 **Gi**:

@@ -239,6 +239,61 @@
       background: #292524; color: #fff; border-color: #44403c;
     }
     .switcher .name { min-width: 14rem; text-align: center; }
+    .row-wrap {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: .4rem;
+      align-items: start;
+    }
+    .row-wrap .row { width: auto; }
+    .row-bar { display: flex; flex-wrap: wrap; gap: .45rem; margin: 0 0 .5rem; align-items: center; }
+    body.editing .switcher { visibility: hidden; }
+    .modal-back {
+      position: fixed;
+      inset: 0;
+      background: rgba(28,25,23,.45);
+      z-index: 80;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      overflow: auto;
+      padding: 2rem 1rem 6rem;
+    }
+    .modal {
+      background: var(--paper);
+      border: var(--green-box);
+      border-radius: 12px;
+      max-width: 52rem;
+      width: 100%;
+      padding: 1rem 1.1rem 1.2rem;
+      box-shadow: var(--shadow);
+    }
+    .modal h2 { font-family: var(--serif); margin: 0 0 .35rem; font-size: 1.25rem; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem .7rem; }
+    .form-grid .wide { grid-column: 1 / -1; }
+    .form-grid label {
+      display: flex;
+      flex-direction: column;
+      gap: .2rem;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      color: var(--muted);
+    }
+    .form-grid input, .form-grid textarea {
+      font: inherit;
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--ink);
+      padding: .35rem .45rem;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+    }
+    .form-grid textarea { min-height: 5.5rem; }
+    .form-grid label.dirty input, .form-grid label.dirty textarea { outline: 2px solid #16a34a; }
+    .modal-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1rem; }
+    .btn-accept { background: #14532d; color: #fff; border-color: #14532d; }
   </style>
 </head>
 <body>
@@ -264,13 +319,16 @@
         Walk the hops, open a row, look at steps and a playback time.
         Trailing <span class="star">*</span> still matches the unstarred value.
         Playback here only records the time; it does not open a video file.
-        Keyword search and sentence find are out of this prototype.
+        Edit opens a popup on one row or a multi-select. Save writes changed fields only.
+        Save and Accept then stamps reviewed. A fake corpus-JSON prompt follows either write.
+        Keyword search and sentence find are out of this file; they use the same popup.
       </p>
     </details>
   </div>
 
   <section class="state-panel" id="state-panel" aria-live="polite"></section>
   <div id="app"></div>
+  <div id="editor-root"></div>
 
   <div class="switcher" id="switcher">
     <button type="button" id="prev-v" aria-label="Previous variant">←</button>
@@ -300,12 +358,35 @@
     { id: "C", name: "Facet list" }
   ];
 
+  var EDIT_FIELDS = [
+    { key: "instructor", label: "Instructor" },
+    { key: "instructional", label: "Instructional" },
+    { key: "volume", label: "Volume" },
+    { key: "chapter_title", label: "Chapter" },
+    { key: "chapter_start", label: "Chapter start (s)" },
+    { key: "named_move", label: "Named move" },
+    { key: "ruleset", label: "Ruleset" },
+    { key: "move_type", label: "Type of move" },
+    { key: "start_occupancy", label: "Start occupancy" },
+    { key: "start_position", label: "Start position" },
+    { key: "end_occupancy", label: "End occupancy" },
+    { key: "end_position", label: "End position" },
+    { key: "source_time_ranges", label: "Showings (time ranges)", wide: true, area: true },
+    { key: "suggested_tags", label: "Keyword tags", wide: true, area: true },
+    { key: "main_ideas", label: "Main ideas", wide: true, area: true },
+    { key: "technique_steps", label: "Steps", wide: true, area: true }
+  ];
+  var HOP_KEYS = ["named_move", "ruleset", "move_type", "start_occupancy", "start_position", "end_occupancy", "end_position"];
+
   var state = {
     variant: "A",
     hops: emptyHops(),
     selectedId: null,
     playback: null,
-    lastChanged: "opened"
+    lastChanged: "opened",
+    checked: {},
+    editor: null,
+    lastWrite: null
   };
 
   function emptyHops() {
@@ -482,13 +563,186 @@
 
   function rowCard(row, selected) {
     var t = speechStart(row);
+    var on = !!state.checked[row.id];
     return (
-      '<button type="button" class="row' + (selected ? " active" : "") + '" data-open="' + row.id + '">' +
-        "<h4>" + pretty(row.named_move) + " " + starMark(row.named_move) + "</h4>" +
-        '<div class="meta">' + row.instructor + " · " + row.chapter_title + " · " + fmtTime(t) +
-        ' · <span class="pill ' + ({ gi: "pill-gi", "no-gi": "pill-nogi" }[starStrip(row.ruleset)] || "pill-ok") + '">' + row.ruleset + "</span></div>" +
-      "</button>"
+      '<div class="row-wrap">' +
+        '<input type="checkbox" data-check="' + row.id + '"' + (on ? " checked" : "") + " />" +
+        '<button type="button" class="row' + (selected ? " active" : "") + '" data-open="' + row.id + '">' +
+          "<h4>" + pretty(row.named_move) + " " + starMark(row.named_move) +
+          (row.reviewed ? ' <span class="pill pill-ok">Reviewed</span>' : "") + "</h4>" +
+          '<div class="meta">' + row.instructor + " · " + row.chapter_title + " · " + fmtTime(t) +
+          ' · <span class="pill ' + ({ gi: "pill-gi", "no-gi": "pill-nogi" }[starStrip(row.ruleset)] || "pill-ok") + '">' + row.ruleset + "</span></div>" +
+        "</button>" +
+        '<button type="button" data-edit="' + row.id + '">Edit</button>' +
+      "</div>"
     );
+  }
+
+  function checkedIds() {
+    return Object.keys(state.checked).filter(function (id) { return state.checked[id]; });
+  }
+
+  function rowBar(rows) {
+    var n = checkedIds().filter(function (id) {
+      return rows.some(function (r) { return r.id === id; });
+    }).length;
+    return (
+      '<div class="row-bar">' +
+        '<button type="button" data-select-matching>Select matching</button>' +
+        '<button type="button" data-clear-checked>Clear selection</button>' +
+        '<button type="button" data-edit-selected' + (n ? "" : " disabled") + ">Edit selected (" + n + ")</button>" +
+      "</div>"
+    );
+  }
+
+  function fieldText(row, key) {
+    var v = row[key];
+    if (Array.isArray(v)) return v.join("\n");
+    if (v == null) return "";
+    return String(v);
+  }
+
+  function sharedText(rows, key) {
+    if (!rows.length) return "";
+    var first = fieldText(rows[0], key);
+    for (var i = 1; i < rows.length; i++) {
+      if (fieldText(rows[i], key) !== first) return "";
+    }
+    return first;
+  }
+
+  function parseField(key, text) {
+    if (key === "source_time_ranges" || key === "suggested_tags") {
+      return String(text || "").split(/[\n,]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+    }
+    if (key === "chapter_start") {
+      var n = parseFloat(text);
+      return isFinite(n) ? n : text;
+    }
+    return text;
+  }
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+    });
+  }
+
+  function openEditor(ids) {
+    var rows = ids.map(function (id) { return ROWS.find(function (r) { return r.id === id; }); }).filter(Boolean);
+    if (!rows.length) return;
+    state.editor = { ids: rows.map(function (r) { return r.id; }), dirty: {}, phase: "form", acceptAfter: false };
+    document.body.classList.add("editing");
+    drawEditor();
+  }
+
+  function closeEditor() {
+    state.editor = null;
+    document.body.classList.remove("editing");
+    document.getElementById("editor-root").innerHTML = "";
+  }
+
+  function drawEditor() {
+    var root = document.getElementById("editor-root");
+    var ed = state.editor;
+    if (!ed) { root.innerHTML = ""; return; }
+    var rows = ed.ids.map(function (id) { return ROWS.find(function (r) { return r.id === id; }); }).filter(Boolean);
+    if (ed.phase === "corpus") {
+      root.innerHTML =
+        '<div class="modal-back"><div class="modal">' +
+          "<h2>Update corpus JSON as well?</h2>" +
+          '<p class="muted">No writes the extracted index only. Yes writes the index and the matching <code>techniques[]</code> object in the volume JSON. This prototype records the choice; it does not touch disk.</p>' +
+          '<div class="modal-actions">' +
+            '<button type="button" data-corpus="yes">Yes, index and corpus</button>' +
+            '<button type="button" data-corpus="no">No, index only</button>' +
+            '<button type="button" data-corpus-cancel>Back to edit</button>' +
+          "</div></div></div>";
+      bindEditor(root);
+      return;
+    }
+    var fields = EDIT_FIELDS.map(function (f) {
+      var val = sharedText(rows, f.key);
+      var dirty = ed.dirty[f.key] ? " dirty" : "";
+      var control = f.area
+        ? '<textarea data-field="' + f.key + '">' + esc(val) + "</textarea>"
+        : '<input type="text" data-field="' + f.key + '" value="' + esc(val) + '" />';
+      return '<label class="' + (f.wide ? "wide" : "") + dirty + '">' + f.label + control + "</label>";
+    }).join("");
+    root.innerHTML =
+      '<div class="modal-back"><div class="modal coach">' +
+        "<h2>Edit " + rows.length + " technique" + (rows.length === 1 ? "" : "s") + "</h2>" +
+        '<p class="muted">Shared values are filled. Mixed values are blank. Only fields you change are written onto every selected technique.</p>' +
+        '<div class="form-grid">' + fields + "</div>" +
+        '<div class="modal-actions">' +
+          '<button type="button" data-save="0">Save</button>' +
+          '<button type="button" class="btn-accept" data-save="1">Save and Accept</button>' +
+          '<button type="button" data-cancel-edit>Cancel</button>' +
+        "</div></div></div>";
+    bindEditor(root);
+  }
+
+  function bindEditor(root) {
+    root.querySelectorAll("[data-field]").forEach(function (el) {
+      el.addEventListener("input", function () {
+        state.editor.dirty[el.getAttribute("data-field")] = true;
+        var lab = el.closest("label");
+        if (lab) lab.classList.add("dirty");
+      });
+    });
+    root.querySelectorAll("[data-save]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var pending = {};
+        root.querySelectorAll("[data-field]").forEach(function (el) {
+          var key = el.getAttribute("data-field");
+          if (state.editor.dirty[key]) pending[key] = el.value;
+        });
+        state.editor.pending = pending;
+        state.editor.acceptAfter = btn.getAttribute("data-save") === "1";
+        state.editor.phase = "corpus";
+        drawEditor();
+      });
+    });
+    root.querySelectorAll("[data-cancel-edit]").forEach(function (btn) {
+      btn.addEventListener("click", closeEditor);
+    });
+    root.querySelectorAll("[data-corpus-cancel]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        state.editor.phase = "form";
+        drawEditor();
+      });
+    });
+    root.querySelectorAll("[data-corpus]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        applyEditor(btn.getAttribute("data-corpus") === "yes");
+      });
+    });
+  }
+
+  function applyEditor(corpusToo) {
+    var ed = state.editor;
+    var pending = ed.pending || {};
+    var rows = ed.ids.map(function (id) { return ROWS.find(function (r) { return r.id === id; }); }).filter(Boolean);
+    Object.keys(pending).forEach(function (key) {
+      var parsed = parseField(key, pending[key]);
+      rows.forEach(function (row) { row[key] = parsed; });
+    });
+    if (ed.acceptAfter) {
+      rows.forEach(function (row) {
+        HOP_KEYS.forEach(function (k) { row[k] = starStrip(row[k]); });
+        row.reviewed = true;
+      });
+    }
+    state.lastWrite = {
+      n: rows.length,
+      fields: Object.keys(pending),
+      corpus: corpusToo,
+      accept: ed.acceptAfter
+    };
+    state.lastChanged = (ed.acceptAfter ? "Save and Accept" : "Save") + " " + rows.length +
+      " · " + (corpusToo ? "index+corpus" : "index") +
+      " · " + (Object.keys(pending).length ? Object.keys(pending).join(", ") : "no field edits");
+    closeEditor();
+    render();
   }
 
   function detailHtml(row) {
@@ -504,6 +758,7 @@
         row.chapter_title + " · " + pretty(row.start_occupancy) + " " + pretty(row.start_position) +
         " → " + pretty(row.end_occupancy) + " " + pretty(row.end_position) + "</p>" +
         '<button type="button" class="playback" data-play="' + row.id + '">Playback ' + fmtTime(t) + "</button>" +
+        '<button type="button" data-edit="' + row.id + '">Edit</button>' +
         note +
         '<p><strong>Main ideas.</strong> ' + row.main_ideas + "</p>" +
         '<div class="steps">' + row.technique_steps + "</div>" +
@@ -524,6 +779,12 @@
       "<div><dt>Matching</dt><dd>" + matching(state.hops).length + " of " + ROWS.length + "</dd></div>" +
       "<div><dt>Last change</dt><dd>" + state.lastChanged + "</dd></div>" +
       "<div><dt>Playback</dt><dd>" + (state.playback ? state.playback.label + " " + state.playback.chapter : "—") + "</dd></div>" +
+      "<div><dt>Selected</dt><dd>" + checkedIds().length + "</dd></div>" +
+      "<div><dt>Last write</dt><dd>" + (state.lastWrite
+        ? state.lastWrite.n + " · " + (state.lastWrite.accept ? "Save and Accept" : "Save") +
+          " · " + (state.lastWrite.corpus ? "index+corpus" : "index") +
+          " · " + (state.lastWrite.fields.length ? state.lastWrite.fields.join(", ") : "no field edits")
+        : "—") + "</dd></div>" +
       "</dl>";
   }
 
@@ -546,7 +807,7 @@
         '<p class="muted">Click down the columns. Later columns wait. A trailing * still matches the unstarred hop.</p>' +
         '<div class="cols">' + cols + "</div>" +
         '<div class="a-body" style="margin-top:.7rem">' +
-          '<div><h3 class="muted">Matching rows</h3><div class="rows">' + (list || '<div class="empty">No rows.</div>') + "</div></div>" +
+          '<div><h3 class="muted">Matching rows</h3>' + rowBar(rows) + '<div class="rows">' + (list || '<div class="empty">No rows.</div>') + "</div></div>" +
           "<div>" + detailHtml(open) + "</div>" +
         "</div>" +
       "</div>"
@@ -582,7 +843,7 @@
       var rows = matching(state.hops);
       var list = rows.map(function (r) { return rowCard(r, r.id === state.selectedId); }).join("");
       var open = ROWS.find(function (r) { return r.id === state.selectedId; });
-      body = '<h2 class="drill-title">Matching rows</h2><div class="rows">' + list + "</div>" +
+      body = '<h2 class="drill-title">Matching rows</h2>' + rowBar(rows) + '<div class="rows">' + list + "</div>" +
         '<div style="margin-top:.7rem">' + detailHtml(open) + "</div>";
     }
     return '<div class="coach b-layout"><div class="crumb">' + crumb.join("") + "</div>" + body + "</div>";
@@ -605,7 +866,7 @@
       '<div class="coach c-layout">' +
         "<div>" + facets + '<button type="button" data-reset="1">Clear hops</button></div>' +
         "<div><p class=\"muted\">Hops are filters, not a forced order. Results stay in view.</p>" +
-        '<div class="rows">' + (list || '<div class="empty">No rows.</div>') + "</div>" +
+        rowBar(rows) + '<div class="rows">' + (list || '<div class="empty">No rows.</div>') + "</div>" +
         '<div style="margin-top:.7rem">' + detailHtml(open) + "</div></div>" +
       "</div>"
     );
@@ -631,6 +892,34 @@
     root.querySelectorAll("[data-reset]").forEach(function (btn) {
       btn.addEventListener("click", resetWalk);
     });
+    root.querySelectorAll("[data-check]").forEach(function (el) {
+      el.addEventListener("click", function (e) { e.stopPropagation(); });
+      el.addEventListener("change", function () {
+        state.checked[el.getAttribute("data-check")] = el.checked;
+        render();
+      });
+    });
+    root.querySelectorAll("[data-edit]").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        openEditor([btn.getAttribute("data-edit")]);
+      });
+    });
+    root.querySelectorAll("[data-edit-selected]").forEach(function (btn) {
+      btn.addEventListener("click", function () { openEditor(checkedIds()); });
+    });
+    root.querySelectorAll("[data-select-matching]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        matching(state.hops).forEach(function (r) { state.checked[r.id] = true; });
+        render();
+      });
+    });
+    root.querySelectorAll("[data-clear-checked]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        state.checked = {};
+        render();
+      });
+    });
   }
 
   function render() {
@@ -645,6 +934,7 @@
   }
 
   function init() {
+    ROWS.forEach(function (r) { if (!r.reviewed) r.reviewed = false; });
     var url = new URL(location.href);
     var q = (url.searchParams.get("variant") || "A").toUpperCase();
     if (!VARIANTS.some(function (v) { return v.id === q; })) q = "A";
@@ -662,16 +952,18 @@
         state.playback = { volume: row.volume, seconds: t, label: fmtTime(t), chapter: row.chapter_title };
       }
     }
+    var editId = url.searchParams.get("edit");
     document.getElementById("prev-v").addEventListener("click", function () { cycle(-1); });
     document.getElementById("next-v").addEventListener("click", function () { cycle(1); });
     document.addEventListener("keydown", function (e) {
       var t = e.target;
       var typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
-      if (typing) return;
+      if (typing || state.editor) return;
       if (e.key === "ArrowLeft") cycle(-1);
       if (e.key === "ArrowRight") cycle(1);
     });
     render();
+    if (editId) openEditor([editId]);
   }
 
   init();
