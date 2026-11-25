@@ -10,6 +10,7 @@ from tests.test_extracted_index import (
     VIDEO_FILE,
     _introduction_chapter,
     _process_chapter,
+    _stub_embedder,
     _volume,
 )
 
@@ -46,7 +47,7 @@ def _reshoot_chapter(**overrides) -> dict:
 
 
 def _index_with_process_reshoot_and_intro() -> ExtractedIndex:
-    index = ExtractedIndex()
+    index = ExtractedIndex(embedder=_stub_embedder)
     index.ingest_chapter(_volume(), _process_chapter())
     index.ingest_chapter(_volume(), _reshoot_chapter())
     index.ingest_chapter(_volume(), _introduction_chapter())
@@ -70,7 +71,7 @@ def test_hop_walk_bottom_butterfly_sweep_returns_process_and_reshoot():
 
 
 def test_hop_walk_ors_selected_start_positions():
-    index = ExtractedIndex()
+    index = ExtractedIndex(embedder=_stub_embedder)
     index.ingest_chapter(_volume(), _process_chapter())
     index.ingest_chapter(DANAHER_VOLUME, DANAHER_CHAPTER)
     both = index.hop_walk(start_position=["butterfly-guard", "closed-guard"])
@@ -97,7 +98,7 @@ def test_hop_walk_excludes_concept_rows():
 
 
 def test_hop_walk_filters_instructor():
-    index = ExtractedIndex()
+    index = ExtractedIndex(embedder=_stub_embedder)
     index.ingest_chapter(_volume(), _process_chapter())
     index.ingest_chapter(DANAHER_VOLUME, DANAHER_CHAPTER)
     marcelo = index.hop_walk(instructor="Marcelo Garcia")
@@ -120,7 +121,7 @@ def test_hop_walk_flags_unreviewed_techniques():
 
 
 def test_siblings_by_keys_return_techniques_and_concepts_from_chapter():
-    index = ExtractedIndex()
+    index = ExtractedIndex(embedder=_stub_embedder)
     index.ingest_chapter(
         _volume(),
         _process_chapter(concepts=[INTRODUCTION_CONCEPT]),
@@ -141,7 +142,7 @@ def test_siblings_by_keys_return_techniques_and_concepts_from_chapter():
 
 
 def test_siblings_of_row_return_other_rows_from_chapter():
-    index = ExtractedIndex()
+    index = ExtractedIndex(embedder=_stub_embedder)
     index.ingest_chapter(
         _volume(),
         _process_chapter(concepts=[INTRODUCTION_CONCEPT]),
