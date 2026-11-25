@@ -21,7 +21,7 @@ A named series of teaching volumes credited to an instructor. The series is gi o
 _Avoid_: DVD, course, video, mixed series
 
 **Volume**:
-One recording inside an instructional. One transcript file is one volume. Raw techniques from that volume sit in the corpus until the coach accepts them.
+One recording inside an instructional. One transcript file is one volume. Raw techniques from that volume sit in the corpus. Prepare also writes them into the extracted index as unreviewed.
 _Avoid_: episode, file
 
 **Chapter**:
@@ -29,15 +29,15 @@ A titled time range inside a volume.
 _Avoid_: clip, section
 
 **Citation**:
-The source fields on an approved technique: instructor, instructional, volume, chapter, movement, cleaned statement, showings, and playback.
+The source fields on a technique in the extracted index: instructor, instructional, volume, chapter, movement, cleaned statement, showings, and playback.
 _Avoid_: clip, quote, coach notes, decorator, duplicated teaching body
 
 **Cleaned statement**:
-One statement of a movement, written from the speech, keeping every spoken detail from each showing in the chapter, with names restored to the words the instructor said. A detail the instructor shows and does not say stays out. It sits on an approved technique. The coach may correct those words when accepting and after; after accept the extracted index replaces the statement and keeps no earlier version.
+One statement of a movement, written from the speech, keeping every spoken detail from each showing in the chapter, with names restored to the words the instructor said. A detail the instructor shows and does not say stays out. It sits on a technique in the extracted index. The coach may correct those words when accepting and after; after accept the extracted index replaces the statement and keeps no earlier version.
 _Avoid_: transcript, quote, coach notes
 
 **Playback link**:
-A link on an approved technique that opens that volume's video file at the second when that showing's own speech begins. When that file is not available, the approved technique still enters the extracted index. The timestamp and the volume, including that volume's video file name, let the coach find the video.
+A link on a technique in the extracted index that opens that volume's video file at the second when that showing's own speech begins. Unreviewed and reviewed rows both carry it. When that file is not available, the row still sits in the extracted index. The timestamp and the volume, including that volume's video file name, let the coach find the video.
 _Avoid_: url, deep link
 
 **Corpus**:
@@ -49,24 +49,28 @@ The coach-only program this spec defines. It accepts raw techniques, curates app
 _Avoid_: tool, chatbot, product
 
 **Raw technique**:
-One independently taught movement taken from a chapter in the corpus. It is unverified pipeline output. It carries start occupancy and position, a type of move, end occupancy and position or a submission, a named move when known, the mechanical steps, and the times in that volume where it is shown.
-_Avoid_: extracted technique, technique, approved technique, curated technique, citation, named move
+One independently taught movement taken from a chapter in the corpus. It is unverified pipeline output. It carries start occupancy and position, a type of move, end occupancy and position or a submission, a named move when known, the mechanical steps, and the times in that volume where it is shown. Prepare writes it into the extracted index as unreviewed.
+_Avoid_: extracted technique, technique, approved technique, curated technique, citation, named move, concept
 
 **Accept**:
-The coach's stamp that copies a raw technique from the corpus into the extracted index as an approved technique.
+The coach's stamp that marks an unreviewed technique in the extracted index as reviewed. The same row becomes an approved technique. The stamp strips a trailing `*` from every hop field and from the named move; the value stays. The coach may reword or correct steps, occupancy, and other details on the edit page before that stamp. The coach does not have to delete stars by hand.
 _Avoid_: approve, curate
 
 **Extracted index**:
-The approved techniques kept on the coach's machine. A raw technique enters when the coach accepts it. The advisor reads this store with the curated store.
+The coach-queryable store on the coach's machine. It holds unreviewed techniques, approved techniques, and concepts. A raw technique enters as unreviewed when prepare writes it. A concept string enters as a concept row when prepare writes it. Later prepare rewrites update unreviewed techniques and concepts for that chapter; they leave reviewed techniques. The advisor reads this store with the curated store.
 _Avoid_: extract index, database, corpus, curated store
 
 **Approved technique**:
-One raw technique the coach has accepted. It lives in the extracted index and holds the teaching body. The advisor may select it for briefing and unit proposals. Edits to it show through every curated technique that points at it.
-_Avoid_: extracted technique, technique, raw technique, curated technique, named move
+One technique the coach has accepted. It lives in the extracted index with status reviewed and holds the teaching body. Edits to it show through every curated technique that points at it.
+_Avoid_: extracted technique, technique, raw technique, curated technique, named move, concept
+
+**Concept**:
+An independent coaching point from one chapter. One string in that chapter's concepts list is one extracted-index row, tagged concepts. It has no unreviewed or reviewed stamp. Rows that share instructional, volume, and chapter are siblings.
+_Avoid_: raw technique, approved technique, technique, extracted technique, cleaned statement, main ideas
 
 **Teaching body**:
-Occupancy, type of move, steps, hops, times, and citation fields. It lives on an approved technique, or on a coach-authored curated technique.
-_Avoid_: decorator, coach notes, lesson
+Occupancy, type of move, steps, hops, times, and citation fields. It lives on a technique in the extracted index, or on a coach-authored curated technique.
+_Avoid_: decorator, coach notes, lesson, concept
 
 **Curate**:
 The coach's stamp that writes a curated technique pointing at an approved technique. It stores only decorators. It does not copy the teaching body already in the extracted index. Placing an approved technique on a lesson curates it.
@@ -89,7 +93,7 @@ Extra fields on a curated technique besides a pointer to an approved technique: 
 _Avoid_: teaching body, citation, steps
 
 **Advisor**:
-The part of the application that reads the extracted index and the curated store and advises the coach. It selects approved techniques and curated techniques, proposes enrichment-node placements for new curated techniques, uses the playback link path for the coach to watch corpus video, and leaves the system to the coach. It does not read the corpus or raw techniques.
+The part of the application that reads the extracted index and the curated store and advises the coach. It searches the whole extracted index: unreviewed techniques, approved techniques, and concepts. An unreviewed hit is flagged. The coach may mark it reviewed in place, or open the edit page, correct details, and return to the same advisor task. It proposes enrichment-node placements for new curated techniques, uses the playback link path for the coach to watch corpus video, and leaves the system to the coach. It does not read the corpus.
 _Avoid_: chatbot, bot, model, language model
 
 **Gi**:
