@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>design-map-perf</title>
+  <style>
+    #map-host { width: 1200px; height: 640px; }
+    #design-map { width: 1200px; height: 640px; }
+    #out { font: 13px/1.4 Consolas, monospace; white-space: pre; }
+  </style>
+</head>
+<body>
+<div id="map-host">
+  <svg id="design-map" viewBox="0 0 1200 640" preserveAspectRatio="xMidYMid meet">
+    <rect x="0" y="0" width="1200" height="640" fill="#ffffff"></rect>
+    <g id="world"></g>
+  </svg>
+</div>
+<pre id="out">running</pre>
+<script>
+(function () {
+  function svgEl(name, attrs) {
+    var n = document.createElementNS("http://www.w3.org/2000/svg", name);
+    Object.keys(attrs || {}).forEach(function (k) { n.setAttribute(k, attrs[k]); });
+    return n;
+  }
+  function layoutLabels(nodes, fontSize, w, h) {
+    var char = fontSize * 0.62;
+    nodes.forEach(function (n) {
+      n.labW = Math.max(28, String(n.label).length * char);
+      n.labH = fontSize + 8;
+      var ang = Math.atan2(n.y - h / 2, n.x - w / 2);
+      var r = n.r + fontSize + 10;
+      n.lx = n.x + Math.cos(ang) * r;
+      n.ly = n.y + Math.sin(ang) * r;
+      n.anchor = Math.cos(ang) > 0.25 ? "start" : (Math.cos(ang) < -0.25 ? "end" : "middle");
+    });
+    function box(n) {
+      var x = n.lx;
+      if (n.anchor === "end") x = n.lx - n.labW;
+      if (n.anchor === "middle") x = n.lx - n.labW / 2;
+      return { x: x, y: n.ly - n.labH / 2, w: n.labW, h: n.labH };
+    }
+    for (var iter = 0; iter < 28; iter++) {
+      for (var i = 0; i < nodes.length; i++) {
+        var A = box(nodes[i]);
+        nodes.forEach(function (m) {
+          var nx1 = m.x - m.r - 6, ny1 = m.y - m.r - 6;
+          var nx2 = m.x + m.r + 6, ny2 = m.y + m.r + 6;
+          var ox = Math.min(A.x + A.w, nx2) - Math.max(A.x, nx1);
+          var oy = Math.min(A.y + A.h, ny2) - Math.max(A.y, ny1);
+          if (ox > 0 && oy > 0) {
+            var dx = (A.x + A.w / 2) - m.x;
+            var dy = (A.y + A.h / 2) - m.y;
+            var d = Math.sqrt(dx * dx + dy * dy) || 1;
+            nodes[i].lx += (dx / d) * (ox * 0.4 + 2);
+            nodes[i].ly += (dy / d) * (oy * 0.4 + 2);
+          }
+        });
+        for (var j = i + 1; j < nodes.length; j++) {
+          var B = box(nodes[j]);
+          var ox = Math.min(A.x + A.w, B.x + B.w) - Math.max(A.x, B.x);
+          var oy = Math.min(A.y + A.h, B.y + B.h) - Math.max(A.y, B.y);
+          if (ox > 0 && oy > 0) {
+            var sign = (nodes[j].ly - nodes[i].ly) >= 0 ? 1 : -1;
+            nodes[i].ly -= sign * (oy / 2 + 2);
+            nodes[j].ly += sign * (oy / 2 + 2);
+          }
+        }
+        nodes[i].lx = Math.max(8 + nodes[i].labW / 4, Math.min(w - 8 - nodes[i].labW / 4, nodes[i].lx));
+        nodes[i].ly = Math.max(fontSize, Math.min(h - 4, nodes[i].ly));
+      }
+    }
+  }
+  function appendMarkShape(g, n, fill, stroke, sw) {
+    var shape = (n.style && n.style.shape) || "circle";
+    if (shape === "diamond") {
+      g.appendChild(svgEl("polygon", {
+        points: [n.x, n.y - n.r, n.x + n.r, n.y, n.x, n.y + n.r, n.x - n.r, n.y].join(" "),
+        fill: fill, stroke: stroke, "stroke-width": String(sw)
+      }));
+    } else if (shape === "hex") {
+      var pts = [];
+      for (var i = 0; i < 6; i++) {
+        var a = Math.PI / 3 * i - Math.PI / 6;
+        pts.push((n.x + Math.cos(a) * n.r) + "," + (n.y + Math.sin(a) * n.r));
+      }
+      g.appendChild(svgEl("polygon", { points: pts.join(" "), fill: fill, stroke: stroke, "stroke-width": String(sw) }));
+    } else if (shape === "triangle") {
+      g.appendChild(svgEl("polygon", {
+        points: [n.x, n.y - n.r, n.x + n.r, n.y + n.r, n.x - n.r, n.y + n.r].join(" "),
+        fill: fill, stroke: stroke, "stroke-width": String(sw)
+      }));
+    } else if (shape === "rect") {
+      g.appendChild(svgEl("rect", {
+        x: String(n.x - n.r), y: String(n.y - n.r), width: String(n.r * 2), height: String(n.r * 2), rx: "4",
+        fill: fill, stroke: stroke, "stroke-width": String(sw)
+      }));
+    } else {
+      g.appendChild(svgEl("circle", {
+        cx: String(n.x), cy: String(n.y), r: String(n.r), fill: fill, stroke: stroke, "stroke-width": String(sw)
+      }));
+    }
+  }
+  function makeMarks(n) {
+    var labels = [
+      "Knee lever", "Tight waist", "Far-leg come-up", "Roll-through sweep",
+      "Back take from tight waist", "Tight waist trilemma"
+    ];
+    var marks = [];
+    for (var i = 0; i < n; i++) {
+      marks.push({
+        id: "m" + i,
+        kind: i === 5 && n >= 6 ? "system" : "named move",
+        label: labels[i % labels.length] + (i >= labels.length ? " " + i : ""),
+        style: { fill: "#1d4ed8", shape: "circle" }
+      });
+    }
+    return marks;
+  }
+  function median(xs) {
+    var a = xs.slice().sort(function (x, y) { return x - y; });
+    var m = Math.floor(a.length / 2);
+    return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+  }
+  function timePaint(markCount, runs) {
+    var svg = document.getElementById("design-map");
+    var ui = { pan: { x: 0, y: 0 }, zoom: 1, markPos: {}, labelSize: 16 };
+    var width = 1200, height = 640;
+    var state = { marks: makeMarks(markCount) };
+    var nodes = [];
+    (state.marks || []).forEach(function (mark, i) {
+      nodes.push({
+        id: mark.id, kind: mark.kind, label: mark.label, style: mark.style || {},
+        r: mark.kind === "occupancy" ? 26 : 16,
+        x: 220 + (i % 5) * 160, y: 160 + Math.floor(i / 5) * 120
+      });
+    });
+    var world = svg.querySelector("#world");
+    world.innerHTML = "";
+    var linkG = svgEl("g");
+    var nodeG = svgEl("g");
+    var labelG = svgEl("g");
+    world.appendChild(linkG);
+    world.appendChild(nodeG);
+    world.appendChild(labelG);
+    function applyPan() {
+      world.setAttribute("transform", "translate(" + ui.pan.x + " " + ui.pan.y + ") scale(" + (ui.zoom || 1) + ")");
+    }
+    function paintGraph() {
+      applyPan();
+      for (var i = 0; i < nodes.length; i++) {
+        for (var j = i + 1; j < nodes.length; j++) {
+          var a = nodes[i], b = nodes[j];
+          var dx = b.x - a.x, dy = b.y - a.y;
+          var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          var min = a.r + b.r + 28;
+          if (dist < min) {
+            var p = (min - dist) / dist * 0.5;
+            a.x -= dx * p; a.y -= dy * p; b.x += dx * p; b.y += dy * p;
+          }
+        }
+      }
+      nodes.forEach(function (n) { if (n.id !== "draft") ui.markPos[n.id] = { x: n.x, y: n.y }; });
+      layoutLabels(nodes, ui.labelSize, width, height);
+      linkG.innerHTML = "";
+      nodeG.innerHTML = "";
+      labelG.innerHTML = "";
+      nodes.forEach(function (n) {
+        var leader = svgEl("line", {
+          x1: String(n.x), y1: String(n.y), x2: String(n.lx), y2: String(n.ly),
+          stroke: "#a8a29e", "stroke-width": "1", "pointer-events": "none", "class": "leader"
+        });
+        labelG.appendChild(leader);
+        var lab = svgEl("text", {
+          x: String(n.lx), y: String(n.ly), "text-anchor": n.anchor, fill: "#1c1917",
+          "font-size": String(ui.labelSize), "data-mark": n.id
+        });
+        lab.textContent = n.label;
+        labelG.appendChild(lab);
+        var g = svgEl("g", { "data-mark": n.id, style: "cursor:grab" });
+        var fill = (n.style && n.style.fill) || (n.kind === "occupancy" ? "#78716c" : "#1d4ed8");
+        if (n.kind === "draft") {
+          g.appendChild(svgEl("circle", {
+            cx: String(n.x), cy: String(n.y), r: String(n.r), fill: "#fff", stroke: "#1c1917",
+            "stroke-width": "2.5", "stroke-dasharray": "5 4", "class": "draft"
+          }));
+        } else if (n.kind === "occupancy" || n.kind === "system") {
+          g.appendChild(svgEl("circle", {
+            cx: String(n.x), cy: String(n.y), r: String(n.r),
+            fill: n.kind === "system" ? "#c2410c" : fill, stroke: "#1c1917", "stroke-width": "3"
+          }));
+        } else {
+          appendMarkShape(g, n, fill, "#1c1917", 2);
+        }
+        nodeG.appendChild(g);
+      });
+    }
+    paintGraph();
+    var samples = [];
+    for (var r = 0; r < runs; r++) {
+      var t0 = performance.now();
+      paintGraph();
+      samples.push(performance.now() - t0);
+    }
+    return {
+      marks: markCount,
+      runs: runs,
+      min_ms: Math.min.apply(null, samples),
+      median_ms: median(samples),
+      max_ms: Math.max.apply(null, samples),
+      samples_ms: samples
+    };
+  }
+  var results = {
+    source: "spec-70 coach_app/ui_design.py _map_script paintGraph + layoutLabels (copied)",
+    cases: [0, 6, 20, 50].map(function (n) { return timePaint(n, 8); })
+  };
+  var text = JSON.stringify(results, null, 2);
+  document.getElementById("out").textContent = text;
+  document.title = "DESIGN_PERF " + JSON.stringify(results.cases);
+})();
+</script>
+</body>
+</html>

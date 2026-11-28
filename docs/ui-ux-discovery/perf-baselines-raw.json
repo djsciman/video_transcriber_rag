@@ -1,0 +1,382 @@
+{
+  "hardware": {
+    "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "processor": "Intel64 Family 6 Model 158 Stepping 13, GenuineIntel",
+    "sqlite": "3.49.1",
+    "note": "Windows 10 Home 10.0.26300; Intel i9-9980HK 8c/16t; ~32 GB RAM; GTX 1650 4 GB unused"
+  },
+  "live_index": {
+    "settings_path": "C:\\Users\\dumbo\\.coach_app\\settings.json",
+    "present": false,
+    "extracted_index_file": null
+  },
+  "corpus_count": {
+    "path": "C:\\Users\\dumbo\\Documents\\GitHub\\bjj_transcripts\\library",
+    "present": true,
+    "json_volumes": 558,
+    "instructional_folders": 84,
+    "chapters": 4669,
+    "technique_objects": 5378,
+    "concept_strings": 16846,
+    "chapters_filled_techniques": 3552,
+    "chapters_empty_techniques": 927,
+    "chapters_missing_techniques": 190,
+    "parse_errors": 0
+  },
+  "sample": {
+    "path": "C:\\Users\\dumbo\\.grok\\worktrees\\github-video-transcriber-rag\\subagent-01a2233a-d32a-7b83-a3e7-cb3521a60b6e\\docs\\samples\\butterfly-marcelo-s01e01-pare.json",
+    "present": true,
+    "ingest_s": 0.0032703999895602465,
+    "chapters_ingested": 9,
+    "index": {
+      "rows": 5,
+      "techniques": 5,
+      "concepts": 0,
+      "instructors": 1,
+      "top_instructors": [
+        [
+          "Marcelo Garcia",
+          5
+        ]
+      ],
+      "top_start_positions": [
+        [
+          "butterfly-guard",
+          5
+        ]
+      ]
+    },
+    "timings": {
+      "hop_walk_empty": {
+        "n_hits": 5,
+        "runs": 5,
+        "warmup": 1,
+        "min_s": 0.00013509998098015785,
+        "median_s": 0.00013860012404620647,
+        "max_s": 0.00014670006930828094,
+        "samples_s": [
+          0.00013509998098015785,
+          0.00013770000077784061,
+          0.00013860012404620647,
+          0.0001409000251442194,
+          0.00014670006930828094
+        ]
+      },
+      "hop_walk_butterfly": {
+        "n_hits": 4,
+        "runs": 5,
+        "warmup": 1,
+        "min_s": 0.00011539994738996029,
+        "median_s": 0.00012190011329948902,
+        "max_s": 0.00013429997488856316,
+        "samples_s": [
+          0.00011539994738996029,
+          0.00011710007674992085,
+          0.00012190011329948902,
+          0.00012230011634528637,
+          0.00013429997488856316
+        ]
+      },
+      "keyword_reshoot": {
+        "n_hits": 1,
+        "runs": 5,
+        "warmup": 1,
+        "min_s": 5.75000885874033e-05,
+        "median_s": 6.08998816460371e-05,
+        "max_s": 7.810001261532307e-05,
+        "samples_s": [
+          5.75000885874033e-05,
+          5.9099867939949036e-05,
+          6.08998816460371e-05,
+          6.54999166727066e-05,
+          7.810001261532307e-05
+        ]
+      },
+      "sentence_find_stub": {
+        "n_hits": 5,
+        "runs": 5,
+        "warmup": 1,
+        "min_s": 0.0008370999712496996,
+        "median_s": 0.0008381998632103205,
+        "max_s": 0.0009192000143229961,
+        "samples_s": [
+          0.0008370999712496996,
+          0.0008371002040803432,
+          0.0008381998632103205,
+          0.0008443999104201794,
+          0.0009192000143229961
+        ]
+      }
+    }
+  },
+  "minilm_query": {
+    "available": false,
+    "error": "ModuleNotFoundError: No module named 'fastembed'"
+  },
+  "live_ingest": {
+    "sqlite": "C:\\Users\\dumbo\\AppData\\Local\\Temp\\extracted-index-perf-p8pp6ksn\\extracted.sqlite",
+    "seconds": 130.23912509996444,
+    "sqlite_bytes": 103481344,
+    "index": {
+      "rows": 21322,
+      "techniques": 5207,
+      "concepts": 16115,
+      "instructors": 22,
+      "top_instructors": [
+        [
+          "John Danaher",
+          10366
+        ],
+        [
+          "Lachlan Giles",
+          2180
+        ],
+        [
+          "Adam Wardzinski",
+          1726
+        ],
+        [
+          "Gordon Ryan",
+          1479
+        ],
+        [
+          "Craig Jones",
+          1309
+        ]
+      ],
+      "top_start_positions": [
+        [
+          "standing",
+          976
+        ],
+        [
+          "half-guard",
+          569
+        ],
+        [
+          "open-guard",
+          400
+        ],
+        [
+          "side-control",
+          389
+        ],
+        [
+          "closed-guard",
+          334
+        ],
+        [
+          "butterfly-guard",
+          296
+        ],
+        [
+          "back-control",
+          245
+        ],
+        [
+          "mount",
+          198
+        ]
+      ]
+    },
+    "embedder": "384-d sha256 stub (same width as MiniLM-L6; not the model)"
+  },
+  "live_timings": {
+    "rows()": {
+      "n_hits": 21322,
+      "runs": 5,
+      "warmup": 1,
+      "min_s": 0.522176600061357,
+      "median_s": 0.5426846998743713,
+      "max_s": 0.5524804000742733,
+      "samples_s": [
+        0.522176600061357,
+        0.5269987001083791,
+        0.5426846998743713,
+        0.5518932999111712,
+        0.5524804000742733
+      ]
+    },
+    "hop_walk_empty": {
+      "n_hits": 5207,
+      "runs": 5,
+      "warmup": 1,
+      "min_s": 0.15406450000591576,
+      "median_s": 0.16177539993077517,
+      "max_s": 0.17582210013642907,
+      "samples_s": [
+        0.15406450000591576,
+        0.1615999999921769,
+        0.16177539993077517,
+        0.16469960007816553,
+        0.17582210013642907
+      ]
+    },
+    "hop_walk_butterfly": {
+      "n_hits": 120,
+      "runs": 5,
+      "warmup": 1,
+      "min_s": 0.0028961999341845512,
+      "median_s": 0.0029720000457018614,
+      "max_s": 0.003266700077801943,
+      "samples_s": [
+        0.0028961999341845512,
+        0.0029186001047492027,
+        0.0029720000457018614,
+        0.0030925997998565435,
+        0.003266700077801943
+      ]
+    },
+    "hop_walk_start_position_or": {
+      "n_hits": 630,
+      "runs": 5,
+      "warmup": 1,
+      "min_s": 0.0189022000413388,
+      "median_s": 0.01975119998678565,
+      "max_s": 0.01992569980211556,
+      "samples_s": [
+        0.0189022000413388,
+        0.0196730000898242,
+        0.01975119998678565,
+        0.019907299894839525,
+        0.01992569980211556
+      ]
+    },
+    "hop_walk_instructor_danaher": {
+      "n_hits": 2555,
+      "runs": 5,
+      "warmup": 1,
+      "min_s": 0.1361197999212891,
+      "median_s": 0.1392459999769926,
+      "max_s": 0.14586529997177422,
+      "samples_s": [
+        0.1361197999212891,
+        0.1381753000896424,
+        0.1392459999769926,
+        0.1403532000258565,
+        0.14586529997177422
+      ]
+    },
+    "keyword_reshoot_both": {
+      "n_hits": 8,
+      "runs": 5,
+      "warmup": 1,
+      "min_s": 0.0003239000216126442,
+      "median_s": 0.0003309000749140978,
+      "max_s": 0.0003633000887930393,
+      "samples_s": [
+        0.0003239000216126442,
+        0.0003269000444561243,
+        0.0003309000749140978,
+        0.0003450000658631325,
+        0.0003633000887930393
+      ]
+    },
+    "keyword_butterfly_both": {
+      "n_hits": 1959,
+      "runs": 5,
+      "warmup": 1,
+      "min_s": 0.05592359998263419,
+      "median_s": 0.05898420000448823,
+      "max_s": 0.0658542001619935,
+      "samples_s": [
+        0.05592359998263419,
+        0.05885479995049536,
+        0.05898420000448823,
+        0.06542979995720088,
+        0.0658542001619935
+      ]
+    },
+    "keyword_underhook_both": {
+      "n_hits": 1660,
+      "runs": 5,
+      "warmup": 1,
+      "min_s": 0.05279699992388487,
+      "median_s": 0.05401919991709292,
+      "max_s": 0.05842570005916059,
+      "samples_s": [
+        0.05279699992388487,
+        0.053047999972477555,
+        0.05401919991709292,
+        0.054093799786642194,
+        0.05842570005916059
+      ]
+    },
+    "keyword_butterfly_techniques": {
+      "n_hits": 604,
+      "runs": 5,
+      "warmup": 1,
+      "min_s": 0.024296199902892113,
+      "median_s": 0.024810499977320433,
+      "max_s": 0.026031000073999166,
+      "samples_s": [
+        0.024296199902892113,
+        0.0246203001588583,
+        0.024810499977320433,
+        0.025247199926525354,
+        0.026031000073999166
+      ]
+    },
+    "keyword_butterfly_concepts": {
+      "n_hits": 1355,
+      "runs": 5,
+      "warmup": 1,
+      "min_s": 0.03326840000227094,
+      "median_s": 0.03386919992044568,
+      "max_s": 0.03487000009045005,
+      "samples_s": [
+        0.03326840000227094,
+        0.03334520012140274,
+        0.03386919992044568,
+        0.03420559992082417,
+        0.03487000009045005
+      ]
+    },
+    "sentence_find_hops_and_keyword": {
+      "n_hits": 21322,
+      "runs": 5,
+      "warmup": 1,
+      "min_s": 3.7822328000329435,
+      "median_s": 3.895407799864188,
+      "max_s": 4.1179442999418825,
+      "samples_s": [
+        3.7822328000329435,
+        3.808600799879059,
+        3.895407799864188,
+        3.9635594999417663,
+        4.1179442999418825
+      ]
+    },
+    "sentence_find_find_string_only": {
+      "n_hits": 21322,
+      "runs": 5,
+      "warmup": 1,
+      "min_s": 3.73466830002144,
+      "median_s": 3.793469100026414,
+      "max_s": 3.8931030000094324,
+      "samples_s": [
+        3.73466830002144,
+        3.7463544998317957,
+        3.793469100026414,
+        3.8390250001102686,
+        3.8931030000094324
+      ]
+    },
+    "sentence_find_hops_only": {
+      "n_hits": 21322,
+      "runs": 5,
+      "warmup": 1,
+      "min_s": 3.765999000053853,
+      "median_s": 3.859657300170511,
+      "max_s": 3.9505745999049395,
+      "samples_s": [
+        3.765999000053853,
+        3.8299402999691665,
+        3.859657300170511,
+        3.917893100064248,
+        3.9505745999049395
+      ]
+    }
+  }
+}
